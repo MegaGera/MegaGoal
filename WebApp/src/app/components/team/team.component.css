@@ -1,0 +1,51 @@
+.informationColumn {
+  background-color: blanchedalmond; 
+  border-radius: 0 0 30px 30px; 
+  height: fit-content; 
+  padding: 2%;
+}
+
+.centralTeamInformation {
+  padding: 2%;
+}
+
+.teamImage {
+  width: 150px;
+  margin: auto;
+}
+
+.teamNameText {
+  margin: 2% auto;
+}
+
+.informationTable {
+  width: fit-content; 
+  margin: auto;
+}
+
+.tableCol {
+  padding: 8px;
+}
+
+.competitionsRow {
+  margin: 5% auto;
+}
+
+.leagueImage {
+  height: 50px; 
+  width: fit-content; 
+  margin: auto;
+}
+
+/* Color the odd rows of the table */
+tr:nth-child(odd) {
+  background-color: #D6EEEE;
+}
+
+.marginAuto {
+  margin: auto;
+}
+
+.centerText {
+  text-align: center
+}

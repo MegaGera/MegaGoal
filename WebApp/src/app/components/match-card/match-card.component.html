@@ -1,0 +1,39 @@
+
+<!-- Iterate the matches array -->
+@for (match of matches; track $index) {
+<div class="matchCard">
+  <div class="row">
+
+    <!-- Left part of the Match Card -->
+    <div class="col-8 matchCardLeft">
+      <div class="row">
+        <div class="col-6 centerText">
+          <img class="teamImage" [src]="images.getRouteImageTeam(match.team_0_id)">
+        </div>
+        <div class="col-6 centerText">
+          <img class="teamImage" [src]="images.getRouteImageTeam(match.team_1_id)">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6 centerText">
+          <h1 class="goalsText"><b>{{match.team_0_goals}}</b></h1>
+        </div>
+        <div class="col-6 centerText">
+          <h1 class="goalsText"><b>{{match.team_1_goals}}</b></h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right part of the Match Card -->
+    <div class="col-4 matchCardRight">
+      <div class="row leagueRowImage">
+        <img class="leagueImage" [src]="images.getRouteImageLeague(match.competition_id)">
+      </div>
+      <div class="row dateRowText">
+        <h2 class="goalsText">{{match.date}}</h2>
+      </div>
+    </div>
+  </div>
+  
+</div>
+}

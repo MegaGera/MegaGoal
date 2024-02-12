@@ -1,0 +1,47 @@
+.matchCard {
+	width: 35%;
+	margin: 2% auto;
+}
+
+.matchCardLeft {
+	text-align: center;
+	background-color: blanchedalmond;
+	border-radius: 20px 0 0 20px;
+}
+
+.matchCardRight {
+	text-align: center;
+	background-color: aqua;
+	border-radius: 0 20px 20px 0;
+}
+
+.teamImage {
+  height: 80px; 
+	width: fit-content; 
+	margin: 2% auto;
+}
+
+.goalsText {
+  margin: 2% auto;
+}
+
+.leagueRowImage {
+	height: 70%;
+}
+
+.leagueImage {
+  width: 100px;
+	margin: auto;
+}
+
+.dateRowText {
+	height: 30%;
+}
+
+.marginAuto {
+  margin: auto;
+}
+
+.centerText {
+  text-align: center
+}
