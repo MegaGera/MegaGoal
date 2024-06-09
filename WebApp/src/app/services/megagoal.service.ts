@@ -7,7 +7,9 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { League } from '../models/league';
 import { Match } from '../models/match';
 import { Team } from '../models/team';
+import { Location } from '../models/location';
 import { Observable } from 'rxjs';
+import { RealMatch } from '../models/realMatch';
 
 @Injectable({
   providedIn: 'root'
@@ -66,14 +68,63 @@ export class MegaGoalService {
   */
   getTeamsByLeagueAndSeason(league_id: number, season: number): Observable<Team[]> {
     let params = new HttpParams().set('league_id', league_id).set('season', season); 
-    return this.http.get<Team[]>(this.url + '/teams/', {params: params});
+    return this.http.get<Team[]>(this.url + '/team/', {params: params});
   }
+
+  /*
+    Method to get a Teams by its id from the API
+  */
+    getTeamById(team_id: number): Observable<Team> {
+      return this.http.get<Team>(this.url + '/team/' + team_id);
+    }
 
   /*
     Method to get the top Leagues from the API
   */
   getTopLeagues(): Observable<League[]> {
     return this.http.get<League[]>(this.url + '/leaguestop/');
+  }
+
+  /*
+    Method to get all the Teams by league and season from the API
+  */
+  getRealMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<RealMatch[]> {
+    let params = new HttpParams().set('team_id', team_id).set('season', season); 
+    return this.http.get<RealMatch[]>(this.url + '/real_matches/', {params: params});
+  }
+
+  /*
+    Method to create a new Match from a Real Match
+  */
+  createMatch(match: Match): Observable<Match> {
+    console.log(match)
+    return this.http.post<Match>(this.url + '/matches/', match);
+  }
+
+  /*
+    Method to get all the Teams by league and season from the API
+  */
+  getMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<Match[]> {
+    let params = new HttpParams().set('team_id', team_id).set('season', season); 
+    return this.http.get<Match[]>(this.url + '/matches/', {params: params});
+  }
+  
+  /*
+    Method to set a Location for a Match
+  */
+  setLocation(fixtureId: number, location: string): Observable<number> {
+    let body = {
+      fixtureId: fixtureId,
+      location: location
+    }
+    return this.http.post<number>(this.url + '/location/set_location', body);
+  }
+
+  /*
+    Method to get all the Locations from the API
+  */
+  getLocations(): Observable<Location[]> {
+    return this.http.get<Location[]>(this.url + '/location/');
   }
 
 }

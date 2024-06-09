@@ -57,17 +57,24 @@ export class LeaguesComponent {
 
   /* Seasons */
   seasons: SeasonInfo[] = 
-    [{id: 2023, text: "2023-2024"}, 
+    [{id: 2024, text: "2024-2025"}, 
+    {id: 2023, text: "2023-2024"}, 
     {id: 2022, text: "2022-2023"}, 
     {id: 2021 ,text: "2021-2022"}, 
-    {id: 2020, text: "2020-2021"}]
+    {id: 2020, text: "2020-2021"}, 
+    {id: 2019, text: "2019-2020"}, 
+    {id: 2018, text: "2018-2019"}, 
+    {id: 2017, text: "2017-2018"}, 
+    {id: 2016, text: "2016-2017"}, 
+    {id: 2015, text: "2015-2016"}, 
+    {id: 2014, text: "2014-2015"}]
   selectedSeason!: SeasonInfo;
 
   /* Teams */
   teams: Team[] = [];
 
   constructor(private megagoal: MegaGoalService, public images: ImagesService) {
-    this.selectedSeason = this.seasons[0];
+    this.selectedSeason = this.seasons[1];
     this.getLeagues();
   }
 

@@ -1,51 +1,76 @@
-<div class="container">
-  <div class="row">
 
-    <!-- Stadium information column -->
-    <div class="col-3 informationColumn">
-      <div class="centerText">
-        <h2 class="marginAuto"><u>Stadium</u></h2>
-        <h3 class="marginAuto">{{team.venue.name}}</h3>
-        <h3 class="marginAuto">Capacity: {{team.venue.capacity}}</h3>
-      </div>
-    </div>
+@if (team !== undefined) {
+  <div class="container">
+    <div class="row">
 
-    <!-- Team main information column -->
-    <div class="col-6 centralTeamInformation">
-      <div class="row">
-        <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
-      </div>
-      <div class="row centerText">
-        <h1 class="teamNameText">{{team.team.name}}</h1>
-      </div>
-      <div class="row centerText">
-        <table class="informationTable">
-          <tr>
-            <th class="tableCol" scope="col">Code</th>
-            <th class="tableCol" scope="col">Country</th>
-            <th class="tableCol">City</th>
-            <th class="tableCol">Founded</th>
-          </tr>
-          <tr>
-            <td>{{team.team.code}}</td>
-            <td>{{team.team.country}}</td>
-            <td>{{team.venue.city}}</td>
-            <td>{{team.team.founded}}</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- Competitions information column -->
-    <div class="col-3 informationColumn">
-      <div class="centerText">
-        <h2 class="marginAuto"><u>Competitions</u></h2>
-      </div>
-      @for (league of getDifferentLeagues(); track $index) {
-        <div class="row competitionsRow">
-          <img class="leagueImage" [src]="images.getRouteImageLeague(league)">
+      <!-- Stadium information column -->
+      <div class="col-3 informationColumn">
+        <div class="centerText">
+          <h2 class="marginAuto"><u>Stadium</u></h2>
+          <h3 class="marginAuto">{{team.venue.name}}</h3>
+          <h3 class="marginAuto">Capacity: {{team.venue.capacity}}</h3>
         </div>
-      }
+      </div>
+
+      <!-- Team main information column -->
+      <div class="col-6 centralTeamInformation">
+        <div class="row">
+          <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
+        </div>
+        <div class="row centerText">
+          <h1 class="teamNameText">{{team.team.name}}</h1>
+        </div>
+        <div class="row centerText">
+          <table class="informationTable">
+            <tr>
+              <th class="tableCol" scope="col">Code</th>
+              <th class="tableCol" scope="col">Country</th>
+              <th class="tableCol">City</th>
+              <th class="tableCol">Founded</th>
+            </tr>
+            <tr>
+              <td>{{team.team.code}}</td>
+              <td>{{team.team.country}}</td>
+              <td>{{team.venue.city}}</td>
+              <td>{{team.team.founded}}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="row mt-4 text-center">
+          <form class="formLeagues">
+            <mat-form-field class="fullWidth">
+              <mat-label>Season</mat-label>
+              <mat-select name="seasonSelect" [(ngModel)]="selectedSeason" (selectionChange)="selectSeason(selectedSeason)">
+                @for (season of seasons; track $index) {
+                  <mat-option [value]="season">{{season.text}}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Competitions information column -->
+      <div class="col-3 informationColumn">
+        <div class="centerText">
+          <h2 class="marginAuto"><u>Competitions</u></h2>
+        </div>
+        @for (league of getDifferentLeagues(); track $index) {
+          <div class="row competitionsRow">
+            <img class="leagueImage" [src]="images.getRouteImageLeagueSm(league)">
+          </div>
+        }
+      </div>
     </div>
+    
+    @for (match of realMatches; track $index) {
+      <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+      [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+      [locations]="locations"></app-real-match-card>
+    }
+
   </div>
-</div>
+
+}

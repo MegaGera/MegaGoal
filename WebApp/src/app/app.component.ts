@@ -4,11 +4,12 @@ import { RouterModule } from '@angular/router';
 import { TopMenuComponent } from './components/top-menu/top-menu.component';
 import { MegaGoalService } from './services/megagoal.service';
 import { HttpClientModule } from '@angular/common/http';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterModule, TopMenuComponent, HttpClientModule],
+  imports: [NgbModule, CommonModule, RouterModule, TopMenuComponent, HttpClientModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   providers: [MegaGoalService]

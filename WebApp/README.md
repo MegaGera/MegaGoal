@@ -23,17 +23,19 @@ The source code is under the src folder.
 
 ## Screenshots
 
-Matches Component
+**Home / Favourite Football Matches**
 
-![Matches Component](src/assets/img/screenshots/matches_component.png)
+![Matches Component](src/assets/img/screenshots/matches.png)
 
-Leagues Component
+**Leagues page**
 
 ![Leagues Component](src/assets/img/screenshots/leagues_component.png)
 
-Team Component
+**Team page**
 
-![Team Component](src/assets/img/screenshots/team_component.png)
+![Team Component](src/assets/img/screenshots/team_component_info.png)
+
+![Team Component](src/assets/img/screenshots/team_component_matches.png)
 
 ## Dependencies
 

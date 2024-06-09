@@ -18,6 +18,20 @@ export class ImagesService {
   }
 
   /*
+    Get the route for a league image back
+  */
+  getRouteImageLeagueBack(id: number | string): string {
+    return "/assets/img/leagues/back/" + id + ".png"; 
+  }
+
+  /*
+    Get the route for a league image back
+  */
+  getRouteImageLeagueSm(id: number | string): string {
+    return "/assets/img/leagues/sm/" + id + ".png"; 
+  }
+
+  /*
     Get the route for a team image
   */
   getRouteImageTeam(id: number | string): string {

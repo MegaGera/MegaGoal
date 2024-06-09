@@ -7,7 +7,6 @@
 import { SeasonTeam } from "./season"
 
 export interface Team {
-    _id: string,
     team: team,
     venue: venue,
     seasons: SeasonTeam[]

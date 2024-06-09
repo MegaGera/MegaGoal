@@ -1,0 +1,6 @@
+<div class="container">
+  <!-- Iterate the matches array -->
+  @for (match of matches; track $index) {
+    <app-real-match-card [match]="match" [watched]="true" [locations]="locations"></app-real-match-card>
+  }
+</div>

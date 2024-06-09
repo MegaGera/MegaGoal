@@ -1,4 +1,35 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
+html, body { height: 100%; background-color: #FAFAFA; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+@font-face {
+  font-family: 'Poppins-Regular';
+  src: url('assets/fonts/Poppins/Poppins-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  font-family: 'Poppins-Regular', 'arial', sans-serif;
+}
+
+.row-cols-7 > * {
+  flex: 0 0 auto;
+  width: 14.2857142857%; /* 100/7 */
+}
+
+.row-cols-8 > * {
+  flex: 0 0 auto;
+  width: 12.5%; /* 100/8 */
+}
+
+.row-cols-9 > * {
+  flex: 0 0 auto;
+  width: 11.111111111%%; /* 100/9 */
+}
+
+.row-cols-10 > * {
+  flex: 0 0 auto;
+  width: 10%; /* 100/10 */
+}

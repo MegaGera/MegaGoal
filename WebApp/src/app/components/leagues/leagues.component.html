@@ -37,24 +37,49 @@
 	
 	<!-- Grid list of the leagues and the teams -->
 	@if (checkTopLeagues) {
-		<mat-grid-list cols="5" rowHeight="3:1">
+		<div class="row row-cols-lg-5 row-cols-md-4 row-cols-3">
 			@for (league of leagues; track $index) {
-			<mat-grid-tile class="tileGridLeague" (click)="getTeamsByLeague(league)">
-				<img class="imgLeague" [src]="images.getRouteImageLeague(league.league.id)">
-			</mat-grid-tile>
+			<div class="col gridLeague">
+				<div class="cardLeague" (click)="getTeamsByLeague(league)">
+					<img class="img-fluid p-1 imgLeague" [src]="images.getRouteImageLeagueSm(league.league.id)">
+				</div>
+			</div>
 			}
-		</mat-grid-list>
+		</div>
 
-		<mat-grid-list style="margin-top: 5vh" cols="8" rowHeight="2:1">
+		<hr class="hr hr-blurry" />
+
+		<div class="row">
 			@for (team of teams; track $index) {
-			<a (click)="selectTeam(team)" class="nav-link" routerLink="/team" routerLinkActive="active" ariaCurrentWhenActive="page">
-				<mat-grid-tile class="tileGridLeague">
-					<img class="imgLeague" [src]="images.getRouteImageTeam(team.team.id)">
-					<h3 style="text-align: center; margin: auto;">{{team.team.name}}</h3>
-				</mat-grid-tile>
-			</a>
+			<div class="gridTeam">
+				<a (click)="selectTeam(team)" class="nav-link m-auto w-100 h-100 d-flex" routerLink="/team" [queryParams]="{id: team.team.id, season: selectedSeason.id}" routerLinkActive="active" ariaCurrentWhenActive="page">
+					<div class="cardTeam">
+						<div class="divImgTeam d-flex">
+							<img class="img-fluid p-1 imgTeam" [src]="images.getRouteImageTeam(team.team.id)">
+						</div>
+						
+						<div class="text-center d-flex divNameTeam">
+							<p class="text-muted mt-2">{{team.team.name}}</p>
+						</div>
+						
+					</div>
+				</a>
+			</div>
 			}
-		</mat-grid-list>
+		</div>
+
+		<!-- <div class="row row-cols-lg-10 row-cols-md-8 row-cols-4" style="margin-top: 5vh">
+			@for (team of teams; track $index) {
+				<div class="col gridTeam">
+					<a (click)="selectTeam(team)" class="nav-link" routerLink="/team" [queryParams]="{id: team.team.id, season: selectedSeason.id}" routerLinkActive="active" ariaCurrentWhenActive="page">
+						<div class="cardTeam">
+							<img class="img-fluid p-1 imgLeague" [src]="images.getRouteImageTeam(team.team.id)">
+							<h3 style="text-align: center; margin: auto;">{{team.team.name}}</h3>
+						</div>
+					</a>
+				</div>
+			}
+		</div> -->
 	}
 
 	<!-- Information of the filtered leagues in All view -->

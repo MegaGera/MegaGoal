@@ -4,7 +4,6 @@
     - country: Information about the country of the league
 */
 export interface League {
-    _id: string,
     league: league,
     country: country
 }

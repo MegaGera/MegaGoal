@@ -15,17 +15,125 @@
   width: 100%;
 }
 
-.tileGridLeague {
-  cursor: pointer;
-  border-radius: 5px;
-  transition: 0.3s;
-  background-color: rgb(255, 235, 205, 0.7);
+.gridLeague {
+  height: 14vh;
+  display: flex;
 }
-.tileGridLeague:hover {
-  background-color: aqua;
+
+.cardLeague {
+  cursor: pointer;
+  text-align: center;
+  height: 12vh;
+  width: 90%;
+  margin: auto;
+	border: 2px solid #DCDCDC;
+	border-radius: 10px;
+	box-shadow: 0 0 2px 0 rgba(48,48,48, 0.1), 0 4px 4px 0 rgba(48,48,48, 0.1);
+  background-color: white;
+
+  display: flex;
+  align-items: center; /* Vertically centers the image */
+  justify-content: center;
+}
+
+.cardLeague:hover {
+  background-color: #FFDAB9;
+  height: 13vh;
+  width: 100%;
+  transition: 0.2s;
 }
 
 .imgLeague {
-  height: -webkit-fill-available; 
-  padding: 5px;
+  height: auto;
+  max-height: -webkit-fill-available;
+  object-fit: cover;
+}
+
+.gridTeam {
+  height: 14vh;
+  margin-bottom: 1%;
+  display: flex;
+}
+
+@media only screen and (max-width: 768px) {
+  .gridTeam {
+    flex: 0 0 auto;
+    width: 33.3333333%; /* 100/3 */
+  }
+}
+
+@media only screen and (max-width: 1200px) and (min-width: 769px) {
+  .gridTeam {
+    flex: 0 0 auto;
+    width: 20%; /* 100/5 */
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .gridTeam {
+    flex: 0 0 auto;
+    width: 12.5%; /* 100/8 */
+  }
+}
+
+.cardTeam {
+  cursor: pointer;
+  text-align: center;
+  height: 90%;
+  width: 90%;
+  margin: auto;
+	border: 2px solid #DCDCDC;
+	border-radius: 10px;
+	box-shadow: 0 0 2px 0 rgba(48,48,48, 0.1), 0 4px 4px 0 rgba(48,48,48, 0.1);
+  background-color: white;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Vertically centers the image */
+  justify-content: center;
+}
+
+.cardTeam:hover {
+  background-color: #FFDAB9;
+  height: 100%;
+  width: 100%;
+  transition: 0.2s;
+}
+
+.divImgTeam {
+  height: 70%;
+  align-items: center;
+  justify-content: center;
+}
+
+.imgTeam {
+  height: auto;
+  max-height: -webkit-fill-available;
+  object-fit: cover;
+}
+
+.divNameTeam {
+  height: 30%;
+  width: 95%;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+}
+
+@media only screen and (max-width: 768px) {
+  .divNameTeam {
+    font-size: calc(2.4vw);
+  }
+}
+
+@media only screen and (max-width: 1200px) and (min-width: 769px) {
+  .divNameTeam {
+    font-size: calc(1.6vw);
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .divNameTeam {
+    font-size: 0.9em;
+  }
 }

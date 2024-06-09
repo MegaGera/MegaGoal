@@ -1,0 +1,102 @@
+<div class="row matchCard" [ngClass]="leagueCSSSelector(match.league.id)">
+  <div class="generalMatchCard">
+
+    <div class="position-absolute top-50 start-50 translate-middle" style="height: 25vh;">
+      <div class="position-relative h-100">
+        <img class="position-absolute start-50 translate-middle imgLeagueBack p-1" 
+        [ngClass]="{'imgLeagueBackWatched': watched}" style="top: 55%" [src]="images.getRouteImageLeagueBack(match.league.id)"
+        alt="error-img" (error)="this.getDefaultLeagueImg($any($event))">
+      </div>
+    </div>
+
+    <div class="col-12 h-100">
+      <div class="row h-100">
+
+        <div class="col-4 h-100 z-1">
+          <div style="height: 50%; margin: 10% auto">
+
+            <div class="team h-100">
+              <div class="teamLogo h-100" [ngClass]="leagueCSSSelector(match.league.id)">
+                <img class="imgLogo p-1" [src]="images.getRouteImageTeam(match.teams.home.id)">
+              </div>
+            </div>
+
+          </div>
+          <div class="text-center">
+            <h2 class="m-auto">{{match.teams.home.name}}</h2>
+          </div>
+        </div>
+
+        <div class="col-4 h-100 z-1">
+
+          <div class="row" style="width: fit-content; height: 30%; margin:auto;">
+              <div class="match-eye-button" [ngClass]="{'match-eye-button-unwatched': !watched}" (click)="createMatch()">
+                @if (watched) {
+                  <ng-icon name="jamEyeF"></ng-icon>
+                } @else {
+                  <ng-icon name="jamEyeCloseF"></ng-icon>
+                }
+              </div>
+          </div>
+
+          <div class="row" style="width: fit-content; margin:auto;">
+            <div class="match-score">
+              <span class="match-score-number" [class]="{'leading': match.goals.home > match.goals.away}">{{match.goals.home}}</span>
+              <span class="match-score-divider">:</span>
+              <span class="match-score-number" [class]="{'leading': match.goals.home < match.goals.away}">{{match.goals.away}}</span>
+            </div>
+          </div>
+
+          <div class="row" class="location-selector-row">
+            <div class="location-selector">
+              <mat-select name="locationSelect" panelWidth="null" [(ngModel)]="match.location" 
+                (selectionChange)="setLocation(match.fixture.id, $event.value)">
+                @for (location of locations; track $index) {
+                  <mat-option [value]="location.name">{{location.name}}</mat-option>
+                }
+              </mat-select>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="col-4 h-100 z-1">
+          
+          <div style="height: 50%; margin: 10% auto">
+
+            <div class="team h-100">
+              <div class="teamLogo h-100" [ngClass]="leagueCSSSelector(match.league.id)">
+                <img class="imgLogo p-1" [src]="images.getRouteImageTeam(match.teams.away.id)">
+              </div>
+            </div>
+
+          </div>
+          <div class="text-center">
+            <h2 class="m-auto">{{match.teams.away.name}}</h2>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="infoMatchCard">
+
+    <div class="row h-100">
+      <div class="col-4 match-info text">
+        <span class="text">{{match.league.round}}</span>
+      </div>
+
+      <div class="col-4 match-info text">
+        <span class="text">{{match.league.season}}/{{match.league.season + 1}}</span>
+      </div>
+
+      <div class="col-4 match-info">
+        <span class="text">{{getDate(match.fixture.timestamp)}}</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
