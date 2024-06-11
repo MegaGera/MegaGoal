@@ -46,21 +46,21 @@ export class MegaGoalService {
     Method to get all the Matches from the API
   */
   getAllMatches(): Observable<Match[]> {
-    return this.http.get<Match[]>(this.url + '/matches/');
+    return this.http.get<Match[]>(this.url + '/match/');
   }
 
   /*
     Method to get all the Leagues from the API
   */
   getAllLeagues(): Observable<League[]> {
-    return this.http.get<League[]>(this.url + '/leagues/');
+    return this.http.get<League[]>(this.url + '/league/');
   }
 
   /*
     Method to get all the Leagues by country from the API
   */
   getAllLeaguesFromCountry(countryName: string): Observable<League[]> {
-    return this.http.get<League[]>(this.url + '/leagues/' + countryName);
+    return this.http.get<League[]>(this.url + '/league/' + countryName);
   }
 
   /*
@@ -82,7 +82,7 @@ export class MegaGoalService {
     Method to get the top Leagues from the API
   */
   getTopLeagues(): Observable<League[]> {
-    return this.http.get<League[]>(this.url + '/leaguestop/');
+    return this.http.get<League[]>(this.url + '/league/top/');
   }
 
   /*
@@ -90,7 +90,7 @@ export class MegaGoalService {
   */
   getRealMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<RealMatch[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 
-    return this.http.get<RealMatch[]>(this.url + '/real_matches/', {params: params});
+    return this.http.get<RealMatch[]>(this.url + '/real_match/', {params: params});
   }
 
   /*
@@ -98,7 +98,7 @@ export class MegaGoalService {
   */
   createMatch(match: Match): Observable<Match> {
     console.log(match)
-    return this.http.post<Match>(this.url + '/matches/', match);
+    return this.http.post<Match>(this.url + '/match/', match);
   }
 
   /*
@@ -106,7 +106,7 @@ export class MegaGoalService {
   */
   getMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<Match[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 
-    return this.http.get<Match[]>(this.url + '/matches/', {params: params});
+    return this.http.get<Match[]>(this.url + '/match/', {params: params});
   }
   
   /*
@@ -117,7 +117,7 @@ export class MegaGoalService {
       fixtureId: fixtureId,
       location: location
     }
-    return this.http.post<number>(this.url + '/location/set_location', body);
+    return this.http.post<number>(this.url + '/match/set_location', body);
   }
 
   /*
