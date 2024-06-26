@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  megagoal_server:
+    image : megagoal_server
+    container_name: megagoal_server
+    build: .
+    ports:
+      - "3150:3150"    
+    networks:
+      - megagera_network
+    environment:
+      NODE_ENV: "production"
+
+networks:
+  megagera_network:
+    external: true

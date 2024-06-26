@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "NODE_ENV=development supervisor index.js",
+    "start": "node index.js",
+    "start:dev": "NODE_ENV=development supervisor index.js",
+    "start:prod": "NODE_ENV=production supervisor index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Gonzalo",

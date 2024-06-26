@@ -37,4 +37,7 @@ testem.log
 
 # ipynb checkpoints
 .ipynb_checkpoints/
+
+# Custom
 /python
+/MongoDB

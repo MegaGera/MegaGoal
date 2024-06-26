@@ -1,0 +1,11 @@
+# compiled output
+
+# dependencies
+/node_modules
+
+# IDEs and editors
+/.idea
+
+# Git
+.git
+.gitignore
