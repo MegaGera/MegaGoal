@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  meagagoal:
+    image: megagoal
+    container_name: megagoal
+    build: .
+    ports: 
+      - "80"
+    networks:
+      - megagera_network
+
+networks:
+  megagera_network:
+    external: true

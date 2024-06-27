@@ -19,7 +19,7 @@ export class MegaGoalService {
   /*
     URL of the API server
   */
-  url = "http://localhost:3150";
+  url = "http://127.0.0.1:3150";
   
   /*
     Selected team variable shared between components
