@@ -19,7 +19,7 @@ export class MegaGoalService {
   /*
     URL of the API server
   */
-  url = "http://127.0.0.1:3150";
+  url = "https://megagoal.megagera.com:3150";
   
   /*
     Selected team variable shared between components
@@ -46,21 +46,21 @@ export class MegaGoalService {
     Method to get all the Matches from the API
   */
   getAllMatches(): Observable<Match[]> {
-    return this.http.get<Match[]>(this.url + '/match/');
+    return this.http.get<Match[]>(this.url + '/match/', { withCredentials: true });
   }
 
   /*
     Method to get all the Leagues from the API
   */
   getAllLeagues(): Observable<League[]> {
-    return this.http.get<League[]>(this.url + '/league/');
+    return this.http.get<League[]>(this.url + '/league/', { withCredentials: true });
   }
 
   /*
     Method to get all the Leagues by country from the API
   */
   getAllLeaguesFromCountry(countryName: string): Observable<League[]> {
-    return this.http.get<League[]>(this.url + '/league/' + countryName);
+    return this.http.get<League[]>(this.url + '/league/' + countryName, { withCredentials: true });
   }
 
   /*
@@ -68,21 +68,21 @@ export class MegaGoalService {
   */
   getTeamsByLeagueAndSeason(league_id: number, season: number): Observable<Team[]> {
     let params = new HttpParams().set('league_id', league_id).set('season', season); 
-    return this.http.get<Team[]>(this.url + '/team/', {params: params});
+    return this.http.get<Team[]>(this.url + '/team/', { params: params, withCredentials: true });
   }
 
   /*
     Method to get a Teams by its id from the API
   */
     getTeamById(team_id: number): Observable<Team> {
-      return this.http.get<Team>(this.url + '/team/' + team_id);
+      return this.http.get<Team>(this.url + '/team/' + team_id, { withCredentials: true });
     }
 
   /*
     Method to get the top Leagues from the API
   */
   getTopLeagues(): Observable<League[]> {
-    return this.http.get<League[]>(this.url + '/league/top/');
+    return this.http.get<League[]>(this.url + '/league/top/', { withCredentials: true });
   }
 
   /*
@@ -90,7 +90,7 @@ export class MegaGoalService {
   */
   getRealMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<RealMatch[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 
-    return this.http.get<RealMatch[]>(this.url + '/real_match/', {params: params});
+    return this.http.get<RealMatch[]>(this.url + '/real_match/', { params: params,  withCredentials: true });
   }
 
   /*
@@ -98,7 +98,7 @@ export class MegaGoalService {
   */
   createMatch(match: Match): Observable<Match> {
     console.log(match)
-    return this.http.post<Match>(this.url + '/match/', match);
+    return this.http.post<Match>(this.url + '/match/', match, { withCredentials: true });
   }
 
   /*
@@ -106,7 +106,7 @@ export class MegaGoalService {
   */
   getMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<Match[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 
-    return this.http.get<Match[]>(this.url + '/match/', {params: params});
+    return this.http.get<Match[]>(this.url + '/match/', { params: params, withCredentials: true });
   }
   
   /*
@@ -117,14 +117,14 @@ export class MegaGoalService {
       fixtureId: fixtureId,
       location: location
     }
-    return this.http.post<number>(this.url + '/match/set_location', body);
+    return this.http.post<number>(this.url + '/match/set_location', body, { withCredentials: true });
   }
 
   /*
     Method to get all the Locations from the API
   */
   getLocations(): Observable<Location[]> {
-    return this.http.get<Location[]>(this.url + '/location/');
+    return this.http.get<Location[]>(this.url + '/location/', { withCredentials: true });
   }
 
 }

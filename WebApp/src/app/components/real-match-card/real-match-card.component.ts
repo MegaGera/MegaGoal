@@ -90,7 +90,7 @@ export class RealMatchCardComponent {
   }
 
   getDefaultLeagueImg(event: any) {
-    event.target.src = "http://localhost:4200/assets/img/leagues/back/0.png"
+    event.target.src = "https://megagoal.megagera.com/assets/img/leagues/back/0.png"
   }
 
 }

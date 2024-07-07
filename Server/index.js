@@ -6,6 +6,9 @@ import './config/loadEnv.js';
 import { connectDB } from './config/db.js';
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
+import https from 'https';
+import cookieParser from 'cookie-parser';
 
 import matchRoutes from './routes/matchRoutes.js';
 import leagueRoutes from './routes/leagueRoutes.js';
@@ -20,9 +23,45 @@ connectDB();
 
 // Parses incoming requests with JSON payloads 
 app.use(express.json())
+app.use(cookieParser());
 
-// Use CORS library for all the routes
-app.use(cors())
+// CORS configuration
+const allowedOrigins = [/\.?megagera\.com$/];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.some((regex) => regex.test(origin))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }, credentials: true
+};
+
+app.use(cors(corsOptions));
+
+// Validate Api Key
+const validateApiKey = async (req, res, next) => {
+  console.log(req.cookies.access_token);
+  try {
+    const headers = new Headers({
+      Cookie: "access_token=" + req.cookies.access_token
+    });
+    const validateRequest = new Request("https://megaauth.megagera.com/validate/megagoal", {
+      headers: headers,
+    });
+    const validateResponse = await fetch(validateRequest);
+    console.log(validateResponse.status)
+    if (validateResponse.status === 200) {
+      next();
+    } else {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  } catch (error) {
+    return res.status(401).json({ error: 'Can\'t validate token from catch' });
+  }
+};
+app.use(validateApiKey)
 
 // Routes
 app.use('/match', matchRoutes);
@@ -31,6 +70,14 @@ app.use('/team', teamRoutes);
 app.use('/real_match', realMatchRoutes);
 app.use('/location', locationRoutes);
 
+// SSL Options
+const sslOptions = {
+  key: fs.readFileSync('/certificates/wildcard/privkey.pem'),
+  cert: fs.readFileSync('/certificates/wildcard/fullchain.pem')
+};
+
 // Start the server
 const PORT = process.env.PORT || 3150;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+https.createServer(sslOptions, app).listen(PORT, () => {
+  console.log(`Server running with SSL on port ${PORT}`);
+});
