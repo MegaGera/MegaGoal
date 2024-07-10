@@ -61,11 +61,11 @@
 	--color-world-cup: 	#ffbf00;
 	--color-world-cup-trans: rgba(255, 191, 0, 0.9);
 
-	--color-euro-cup: #d4e7f0;
-	--color-euro-cup-trans: rgba(212, 231, 240, 0.9);
+	--color-euro-cup: #98dbfa;
+	--color-euro-cup-trans: rgba(152, 219, 250, 0.9);
 
 	--color-none: #000000;
-	--color-none-trans: rgba(0, 0, 0, 0.9);
+	--color-none-trans: rgba(92, 86, 86, 0.9);
 }
 
 .generalMatchCard {

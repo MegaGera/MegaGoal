@@ -13,11 +13,10 @@
 
 import { Component } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgClass } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
@@ -35,20 +34,12 @@ import { Team } from '../../models/team';
   selector: 'app-leagues',
   standalone: true,
   imports: [FormsModule, MatFormFieldModule, MatInputModule, MatAutocompleteModule,
-    ReactiveFormsModule, AsyncPipe, MatCheckboxModule, MatGridListModule, MatSelectModule, RouterModule],
+    ReactiveFormsModule, AsyncPipe, NgClass, MatCheckboxModule, MatGridListModule, MatSelectModule, RouterModule],
   templateUrl: './leagues.component.html',
   styleUrl: './leagues.component.css',
   providers: [ImagesService]
 })
 export class LeaguesComponent {
-
-  /* Form Controles */
-  filterLeaguesControl = new FormControl('');
-  setSeasonControl = new FormControl('');
-
-  /* Checkbox booleans */
-  checkTopLeagues: boolean = true;
-  checkAllLeagues: boolean = false;
 
   /* Leagues */
   leagues: League[] = [];
@@ -68,52 +59,31 @@ export class LeaguesComponent {
     {id: 2016, text: "2016-2017"}, 
     {id: 2015, text: "2015-2016"}, 
     {id: 2014, text: "2014-2015"}]
+  seasonsFiltered: SeasonInfo[] = [];
   selectedSeason!: SeasonInfo;
 
   /* Teams */
   teams: Team[] = [];
 
   constructor(private megagoal: MegaGoalService, public images: ImagesService) {
-    this.selectedSeason = this.seasons[1];
+    this.seasonsFiltered = this.seasons;
+    this.selectedSeason = this.seasonsFiltered[1];
     this.getLeagues();
   }
 
   /*
-    Get leagues depending on the checkbox checked
+    Get leagues
   */
   getLeagues(): void {
-    if (this.checkTopLeagues) {
-      this.getTopLeagues();
-    } else {
-      this.getAllLeagues();
-    }
+    this.getTopLeagues();
   }
 
   /*
-    Reset league arrays
-  */
-  resetLeagues(): void {
-    this.leagues = [];
-    this.filteredLeagues = of([]);
-  }
-
-  /*
-    Get all leagues from the service
-  */
-  getAllLeagues(): void {
-    this.megagoal.getAllLeagues().subscribe((result: League[]) => {
-      this.leagues = result;
-      this.setFilteredLeagues();
-    })
-  }
-
-  /*
-    Get top leagues from the service
+    Get top leagues from the backend service
   */
   getTopLeagues(): void {
     this.megagoal.getTopLeagues().subscribe((result: League[]) => {
       this.leagues = result;
-      this.setFilteredLeagues();
     })
   }
 
@@ -122,7 +92,18 @@ export class LeaguesComponent {
   */
   getTeamsByLeague(league: League): void {
     this.selectedLeague = league;
-    if (this.selectedSeason != undefined) {
+
+    // Show seasons that are in the league
+    this.seasonsFiltered = this.seasons.filter(season =>
+      league.seasons.find(seasonLeague => seasonLeague.year === season.id) != undefined);
+
+    // If there is a season selected and it is in the league, get the teams
+    if (this.selectedSeason != undefined && this.selectedLeague.seasons.find(season => season.year == this.selectedSeason.id) !== undefined) {
+      this.getTeamsByLeagueAndSeason(league.league.id, this.selectedSeason.id);
+    } else {
+
+      // Else, select the first season that is in the league
+      this.selectedSeason = this.seasonsFiltered[0];
       this.getTeamsByLeagueAndSeason(league.league.id, this.selectedSeason.id);
     }
   }
@@ -138,50 +119,12 @@ export class LeaguesComponent {
   }
 
   /*
-    Get teams by league and seasons from the service
+    Get teams by league and seasons from the backend service
   */
   getTeamsByLeagueAndSeason(id: number, season: number): void {
     this.megagoal.getTeamsByLeagueAndSeason(id, season).subscribe((result: Team[]) => {
       this.teams = result;
     })
-  }
-
-  /*
-    Method to set the filtered leagues from the text form
-  */
-  setFilteredLeagues(): void {
-    this.filteredLeagues = this.filterLeaguesControl.valueChanges.pipe(
-      startWith(''),
-      map(value => {
-        const name = typeof value === 'string' ? value : value ? ['league.name'] : '';
-        return name ? this._filter(name as string) : this.leagues.slice();
-      }),
-    );
-  }
-
-  /*
-    Method to display filtered leagues from the text form
-  */
-  displayFn(league: League): string {
-    return league && league.league.name ? league.league.name : '';
-  }
-
-  /*
-    Method to filter leagues from the text form
-  */
-  private _filter(name: string): League[] {
-    const filterValue = name.toLowerCase();
-    return this.leagues.filter(league => league.league.name.toLowerCase().includes(filterValue));
-  }
-
-  /*
-    Method to change the view by the checkboxes
-  */
-  checkBoxChange(topLeagues: boolean): void {
-    this.resetLeagues();
-    this.checkTopLeagues = topLeagues;
-    this.checkAllLeagues = !topLeagues;
-    this.getLeagues();
   }
 
   /*

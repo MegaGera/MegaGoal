@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -90,7 +91,7 @@ export class RealMatchCardComponent {
   }
 
   getDefaultLeagueImg(event: any) {
-    event.target.src = "https://megagoal.megagera.com/assets/img/leagues/back/0.png"
+    //event.target.src = environment.serverURL + "/assets/img/leagues/back/0.png"
   }
 
 }
