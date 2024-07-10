@@ -26,43 +26,46 @@ app.use(express.json())
 app.use(cookieParser());
 
 // CORS configuration
-const allowedOrigins = [/\.?megagera\.com$/];
+if (process.env.NODE_ENV === 'production') {
+  const allowedOrigins = [/\.?megagera\.com$/];
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.some((regex) => regex.test(origin))) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }, credentials: true
-};
+  const corsOptions = {
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.some((regex) => regex.test(origin))) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }, credentials: true
+  };
 
-app.use(cors(corsOptions));
+  app.use(cors(corsOptions));
+} else {
+  app.use(cors());
+}
 
 // Validate Api Key
-const validateApiKey = async (req, res, next) => {
-  console.log(req.cookies.access_token);
-  try {
-    const headers = new Headers({
-      Cookie: "access_token=" + req.cookies.access_token
-    });
-    const validateRequest = new Request("https://megaauth.megagera.com/validate/megagoal", {
-      headers: headers,
-    });
-    const validateResponse = await fetch(validateRequest);
-    console.log(validateResponse.status)
-    if (validateResponse.status === 200) {
-      next();
-    } else {
-      return res.status(401).json({ error: 'Unauthorized' });
+if (process.env.NODE_ENV === 'production') {
+  const validateApiKey = async (req, res, next) => {
+    try {
+      const headers = new Headers({
+        Cookie: "access_token=" + req.cookies.access_token
+      });
+      const validateRequest = new Request("https://megaauth.megagera.com/validate/megagoal", {
+        headers: headers,
+      });
+      const validateResponse = await fetch(validateRequest);
+      if (validateResponse.status === 200) {
+        next();
+      } else {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+    } catch (error) {
+      return res.status(401).json({ error: 'Can\'t validate token from catch' });
     }
-  } catch (error) {
-    return res.status(401).json({ error: 'Can\'t validate token from catch' });
-  }
-};
-app.use(validateApiKey)
-
+  };
+  app.use(validateApiKey)
+}
 // Routes
 app.use('/match', matchRoutes);
 app.use('/league', leagueRoutes);
@@ -70,14 +73,19 @@ app.use('/team', teamRoutes);
 app.use('/real_match', realMatchRoutes);
 app.use('/location', locationRoutes);
 
-// SSL Options
-const sslOptions = {
-  key: fs.readFileSync('/certificates/wildcard/privkey.pem'),
-  cert: fs.readFileSync('/certificates/wildcard/fullchain.pem')
-};
-
 // Start the server
 const PORT = process.env.PORT || 3150;
-https.createServer(sslOptions, app).listen(PORT, () => {
-  console.log(`Server running with SSL on port ${PORT}`);
-});
+
+if (process.env.NODE_ENV === 'production') {
+  // SSL Options
+  const sslOptions = {
+    key: fs.readFileSync('/certificates/wildcard/privkey.pem'),
+    cert: fs.readFileSync('/certificates/wildcard/fullchain.pem')
+  };
+  
+  https.createServer(sslOptions, app).listen(PORT, () => {
+    console.log(`Server running with SSL on port ${PORT}`);
+  });
+} else {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}

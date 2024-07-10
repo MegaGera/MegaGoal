@@ -10,6 +10,7 @@ import { Team } from '../models/team';
 import { Location } from '../models/location';
 import { Observable } from 'rxjs';
 import { RealMatch } from '../models/realMatch';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,13 @@ export class MegaGoalService {
   /*
     URL of the API server
   */
-  url = "https://megagoal.megagera.com:3150";
+  url = environment.serverURL + ":" + environment.serverPort;
+  options = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json'
+    }),
+    withCredentials: environment.production ? true : false
+  }
   
   /*
     Selected team variable shared between components
@@ -46,21 +53,21 @@ export class MegaGoalService {
     Method to get all the Matches from the API
   */
   getAllMatches(): Observable<Match[]> {
-    return this.http.get<Match[]>(this.url + '/match/', { withCredentials: true });
+    return this.http.get<Match[]>(this.url + '/match/', this.options);
   }
 
   /*
     Method to get all the Leagues from the API
   */
   getAllLeagues(): Observable<League[]> {
-    return this.http.get<League[]>(this.url + '/league/', { withCredentials: true });
+    return this.http.get<League[]>(this.url + '/league/', this.options);
   }
 
   /*
     Method to get all the Leagues by country from the API
   */
   getAllLeaguesFromCountry(countryName: string): Observable<League[]> {
-    return this.http.get<League[]>(this.url + '/league/' + countryName, { withCredentials: true });
+    return this.http.get<League[]>(this.url + '/league/' + countryName, this.options);
   }
 
   /*
@@ -68,21 +75,21 @@ export class MegaGoalService {
   */
   getTeamsByLeagueAndSeason(league_id: number, season: number): Observable<Team[]> {
     let params = new HttpParams().set('league_id', league_id).set('season', season); 
-    return this.http.get<Team[]>(this.url + '/team/', { params: params, withCredentials: true });
+    return this.http.get<Team[]>(this.url + '/team/', { ...this.options, params: params });
   }
 
   /*
     Method to get a Teams by its id from the API
   */
     getTeamById(team_id: number): Observable<Team> {
-      return this.http.get<Team>(this.url + '/team/' + team_id, { withCredentials: true });
+      return this.http.get<Team>(this.url + '/team/' + team_id, this.options);
     }
 
   /*
     Method to get the top Leagues from the API
   */
   getTopLeagues(): Observable<League[]> {
-    return this.http.get<League[]>(this.url + '/league/top/', { withCredentials: true });
+    return this.http.get<League[]>(this.url + '/league/top/', this.options);
   }
 
   /*
@@ -90,7 +97,7 @@ export class MegaGoalService {
   */
   getRealMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<RealMatch[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 
-    return this.http.get<RealMatch[]>(this.url + '/real_match/', { params: params,  withCredentials: true });
+    return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
   }
 
   /*
@@ -98,7 +105,7 @@ export class MegaGoalService {
   */
   createMatch(match: Match): Observable<Match> {
     console.log(match)
-    return this.http.post<Match>(this.url + '/match/', match, { withCredentials: true });
+    return this.http.post<Match>(this.url + '/match/', match, this.options);
   }
 
   /*
@@ -106,7 +113,7 @@ export class MegaGoalService {
   */
   getMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<Match[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 
-    return this.http.get<Match[]>(this.url + '/match/', { params: params, withCredentials: true });
+    return this.http.get<Match[]>(this.url + '/match/', { ...this.options, params: params });
   }
   
   /*
@@ -117,14 +124,14 @@ export class MegaGoalService {
       fixtureId: fixtureId,
       location: location
     }
-    return this.http.post<number>(this.url + '/match/set_location', body, { withCredentials: true });
+    return this.http.post<number>(this.url + '/match/set_location', body, this.options);
   }
 
   /*
     Method to get all the Locations from the API
   */
   getLocations(): Observable<Location[]> {
-    return this.http.get<Location[]>(this.url + '/location/', { withCredentials: true });
+    return this.http.get<Location[]>(this.url + '/location/', this.options);
   }
 
 }
