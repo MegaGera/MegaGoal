@@ -1,0 +1,17 @@
+.paginationDiv {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.noMatches {
+  text-align: center;
+  margin-top: 4%;
+}
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 4%;
+}

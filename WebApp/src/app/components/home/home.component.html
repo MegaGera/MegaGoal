@@ -1,6 +1,21 @@
 <div class="container">
-  <!-- Iterate the matches array -->
-  @for (match of matches; track $index) {
-    <app-real-match-card [match]="match" [watched]="true" [locations]="locations"></app-real-match-card>
+  @if (this.matchesLoaded && this.matches.length > 0) {
+    <!-- Iterate the matches filtered array -->
+    @for (match of matchesFiltered; track $index) {
+      <app-real-match-card [match]="match" [watched]="true" [locations]="locations" />
+    }
+
+    <!-- Pagination -->
+    <div class="paginationDiv">
+      <app-pagination [elements]="this.matches" [elementsPerPage]="20" [(elementsFiltered)]="this.matchesFiltered" />
+    </div>
+  } @else if (this.matchesLoaded && this.matches.length == 0) {
+    <div class="noMatches">
+      <h1>No matches found</h1>
+    </div>
+  } @else if (!this.matchesLoaded) {
+    <div class="spinner">
+      <mat-spinner />
+    </div>
   }
 </div>

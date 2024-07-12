@@ -1,0 +1,7 @@
+<ul class="pagination modal-6">
+  <li><span (click)="changePageSelected(1)" class="prev">&laquo;</span></li>
+  @for (page of getArrayPages(); track $index) {
+    <li><span (click)="changePageSelected(page)" class="{{page == pageSelected ? 'active' : ''}}">{{page}}</span></li>
+  }
+  <li><span (click)="changePageSelected(pages)" class="next">&raquo;</span></li>
+</ul>
