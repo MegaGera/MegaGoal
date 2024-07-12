@@ -55,6 +55,8 @@ if (process.env.NODE_ENV === 'production') {
         headers: headers,
       });
       const validateResponse = await fetch(validateRequest);
+      const validateData = await validateResponse.json();
+      req.validateData = validateData.data;
       if (validateResponse.status === 200) {
         next();
       } else {

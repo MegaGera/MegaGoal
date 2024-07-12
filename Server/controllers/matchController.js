@@ -5,6 +5,7 @@ const getMatches = async (req, res) => {
   const db = getDB();
   try {
     let {team_id, season} = req.query;
+    let username = req.validateData.username;
 
     const filters = [];
     if (team_id) {
@@ -16,6 +17,7 @@ const getMatches = async (req, res) => {
       });
     }
     if (season) filters.push({ 'league.season': +season });
+    if (username) filters.push({ 'user.username': username });
 
     const query = filters.length > 0 ? { $and: filters } : {};
     const result = await db.collection('matches').find(query).toArray();
@@ -32,25 +34,28 @@ const createMatch = async (req, res) => {
   const db = getDB();
   try {
     let match = req.body;
-    let result = db.collection('matches').insertOne(match);
+    let username = req.validateData.username;
+    match.user = { username: username };
+
+    let result = await db.collection('matches').insertOne(match);
     console.log("Match inserted for fixture " + match.fixture.id);
-    res.status(201).json(result.ops[0]);
+    res.status(201).json(result.insertedId);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 }
-
 
 // Post change location of a match
 const changeLocation = async (req, res) => {
   const db = getDB();
   try {
     let {fixtureId, location} = req.body;
-    const filter = { "fixture.id": +fixtureId };
+    let username = req.validateData.username;
+    const filter = { "fixture.id": +fixtureId, "user.username": username };
     const update = { $set: { "location": location} };
-    let result = db.collection('matches').updateOne(filter, update);
-    console.log("Location updated for fixture " + match.fixture.id + " to " + location);
-    res.status(201).json(result.ops[0]);
+    let result = await db.collection('matches').updateOne(filter, update);
+    console.log("Location updated for fixture " + fixtureId + " to " + location);
+    res.status(201).json(result.acknowledged);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

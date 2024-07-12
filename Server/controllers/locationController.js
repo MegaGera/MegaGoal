@@ -4,7 +4,10 @@ import { getDB } from '../config/db.js';
 const getLocations = async (req, res) => {
   const db = getDB();
   try {
-    const result = await db.collection('locations').find().toArray();
+    let username = req.validateData.username;
+
+    const filter = { "user.username": username };
+    const result = await db.collection('locations').find(filter).toArray();
     console.log("Locations Getted");
     res.send(result);
   } catch (error) {
