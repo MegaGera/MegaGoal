@@ -5,7 +5,8 @@
 */
 export interface League {
     league: league,
-    country: country
+    country: country,
+    seasons: seasons[]
 }
 
 interface league {
@@ -19,4 +20,8 @@ interface country {
     name: string,
     code: string,
     flag: string
+}
+
+interface seasons {
+    year: number
 }
