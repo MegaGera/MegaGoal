@@ -77,6 +77,8 @@ export class RealMatchCardComponent {
         return 'WorldCup';
       } else if (leagueId == 4) {
         return 'EuroCup';
+      } else if (leagueId == 9) {
+        return 'AmericanCup';
       } else {
         return 'None';
       }

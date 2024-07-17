@@ -20,7 +20,8 @@ const getTopLeagues = async (req, res) => {
       $or: [
         { "league.id": 2 }, { "league.id": 3 }, { "league.id": 39 }, { "league.id": 140 }, { "league.id": 143 },
         { "league.id": 45 }, { "league.id": 141 }, { "league.id": 135 }, { "league.id": 78 }, { "league.id": 61 },
-        { "league.id": 556 } , { "league.id": 531 } , { "league.id": 848 }, { "league.id": 4 }, { "league.id": 1 }
+        { "league.id": 556 } , { "league.id": 531 } , { "league.id": 848 }, { "league.id": 4 }, { "league.id": 1 }, 
+        { "league.id": 9 }
       ]
     }
     const result = await db.collection('leagues').find(query).toArray();
