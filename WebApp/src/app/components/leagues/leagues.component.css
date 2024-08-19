@@ -1,6 +1,28 @@
+@media only screen and (max-width: 768px) {
+  .matchCardAdapter {
+    width: 95%;
+  }
+}
+
+@media only screen and (max-width: 1200px) and (min-width: 769px) {
+  .matchCardAdapter {
+    width: 85%;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .matchCardAdapter {
+    width: 45%;
+  }
+}
+
+.matchCardAdapter {
+	margin: 1% auto;
+}
+
 .formLeagues {
   min-width: 150px;
-  max-width: 500px;
+  max-width: 400px;
   width: 100%;
   margin: 2% auto;
 }
@@ -30,17 +52,35 @@
   justify-content: center;
 }
 
-.cardLeagueSelected {
+.cardLeague:hover {
   background-color: #FFDAB9;
   height: 13vh;
   width: 100%;
   transition: 0.2s;
 }
 
-.cardLeague:hover {
-  background-color: #FFDAB9;
+.cardLeagueSelected {
+  cursor: pointer;
+  text-align: center;
   height: 13vh;
-  width: 100%;
+  width: 18%;
+  margin: auto;
+	border: 2px solid #DCDCDC;
+	border-radius: 10px;
+	box-shadow: 0 0 2px 0 rgba(48,48,48, 0.1), 0 4px 4px 0 rgba(48,48,48, 0.1);
+  background-color: rgba(78, 37, 1, 0.1);
+
+  display: flex;
+  align-items: center; /* Vertically centers the image */
+  justify-content: center;
+
+  position: absolute;
+  top: 9vh;
+  left: 8vw;
+}
+
+.cardLeagueSelected:hover {
+  background-color: #FFDAB9;
   transition: 0.2s;
 }
 
@@ -138,4 +178,15 @@
   .divNameTeam {
     font-size: 0.9em;
   }
+}
+
+.arrowRound {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #FFDAB9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }

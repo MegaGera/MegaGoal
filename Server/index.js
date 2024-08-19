@@ -51,7 +51,7 @@ if (process.env.NODE_ENV === 'production') {
       const headers = new Headers({
         Cookie: "access_token=" + req.cookies.access_token
       });
-      const validateRequest = new Request("https://megaauth.megagera.com/validate/megagoal", {
+      const validateRequest = new Request(process.env.VALIDATE_URI, {
         headers: headers,
       });
       const validateResponse = await fetch(validateRequest);

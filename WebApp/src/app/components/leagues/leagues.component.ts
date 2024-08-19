@@ -26,15 +26,21 @@ import { MatSelectModule } from '@angular/material/select'
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
+import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
+import { MatchParserService } from '../../services/match-parser.service';
 import { League } from '../../models/league';
 import { SeasonInfo } from '../../models/season';
 import { Team } from '../../models/team';
+import { RealMatch } from '../../models/realMatch';
+import { Match } from '../../models/match';
+import { Location } from '../../models/location';
 
 @Component({
   selector: 'app-leagues',
   standalone: true,
   imports: [FormsModule, MatFormFieldModule, MatInputModule, MatAutocompleteModule,
-    ReactiveFormsModule, AsyncPipe, NgClass, MatCheckboxModule, MatGridListModule, MatSelectModule, RouterModule],
+    ReactiveFormsModule, AsyncPipe, NgClass, MatCheckboxModule, MatGridListModule, 
+    MatSelectModule, RouterModule, RealMatchCardComponent],
   templateUrl: './leagues.component.html',
   styleUrl: './leagues.component.css',
   providers: [ImagesService]
@@ -44,7 +50,12 @@ export class LeaguesComponent {
   /* Leagues */
   leagues: League[] = [];
   filteredLeagues: Observable<League[]> = of([]);
-  selectedLeague!: League;
+  selectedLeague!: League | undefined;
+  realMatches: RealMatch[] = [];
+  groupedRealMatches: RealMatch[][] = [];
+  selectedRound: number = 0;
+  matches: Match[] = [];
+  locations: Location[] = [];
 
   /* Seasons */
   seasons: SeasonInfo[] = 
@@ -65,10 +76,16 @@ export class LeaguesComponent {
   /* Teams */
   teams: Team[] = [];
 
-  constructor(private megagoal: MegaGoalService, public images: ImagesService) {
+  constructor(private megagoal: MegaGoalService, public images: ImagesService, public matchParser: MatchParserService) {
+    this.init();
+  }
+
+  init(): void {
     this.seasonsFiltered = this.seasons;
-    this.selectedSeason = this.seasonsFiltered[1];
+    this.selectedSeason = this.seasonsFiltered[0];
     this.getLeagues();
+    this.getMatches();
+    this.getLocations();
   }
 
   /*
@@ -88,17 +105,124 @@ export class LeaguesComponent {
   }
 
   /*
+    Get Real Matches by league_id and season
+  */
+  getRealMatches() {
+    if (this.selectedLeague !== undefined && this.selectedSeason !== undefined) {
+      this.megagoal.getRealMatchesByLeagueIDAndSeason(this.selectedLeague.league.id, this.selectedSeason.id).subscribe(result => {
+        this.realMatches = result;
+        this.realMatches.sort(function(x, y){
+            return y.fixture.timestamp - x.fixture.timestamp;
+        })
+        this.groupRealMatches();
+      })
+    } else {
+      this.realMatches = [];
+    }
+  }
+
+  /*
+    This method group Real Matches by round in a matrix to have easy acces to them
+  */
+  groupRealMatches() {
+    // Step 1: Group matches by round using forEach
+    const groupedMatches: { [round: string]: RealMatch[] } = {};
+
+    this.realMatches.forEach(match => {
+        const round = match.league.round;
+        if (!groupedMatches[round]) {
+            groupedMatches[round] = [];
+        }
+        groupedMatches[round].push(match);
+    });
+
+    // Step 2: Extract and sort "Regular Season - n" rounds
+    const regularSeasonMatches = Object.keys(groupedMatches)
+        .filter(round => round.startsWith("Regular Season"))
+        .sort((a, b) => {
+            const roundA = parseInt(a.split(" - ")[1], 10);
+            const roundB = parseInt(b.split(" - ")[1], 10);
+            return roundA - roundB;
+        })
+        .map(round => groupedMatches[round]);
+
+    // Step 3: Extract non-regular season matches
+    const otherMatches = Object.keys(groupedMatches)
+        .filter(round => !round.startsWith("Regular Season"))
+        .map(round => groupedMatches[round]);
+
+    // Step 4: Combine sorted regular season matches with other matches
+    this.groupedRealMatches = [...regularSeasonMatches, ...otherMatches];
+    console.log("Real Matches: ");
+    console.log(this.groupedRealMatches)
+
+    // Step 5: Reverse iterate to find the last played round
+    for (let i = regularSeasonMatches.length - 1; i >= 0; i--) {
+        const matchesInRound = regularSeasonMatches[i];
+        if (matchesInRound.some(match => match.fixture.status.short !== "NS")) {
+            this.selectedRound = i;
+            break;
+        }
+    }
+  }
+
+  /*
+    This method change the round of the matches by the arrows
+  */
+  changeRound(n: number) {
+    if (this.selectedRound + n >= 0 && this.selectedRound + n < this.groupedRealMatches.length) {
+      console.log("SI")
+      console.log(this.selectedRound)
+      this.selectedRound = this.selectedRound + n;
+    } else {
+      console.log("NO")
+    }
+  }
+
+  /*
+    Get Real Matches by team_id and season
+  */
+  getMatches() {
+    this.megagoal.getAllMatches().subscribe(result => {
+      this.matches = result;
+      console.log("Matches: ");
+      console.log(this.matches);
+    })
+  }
+
+  findRealMatchInMatches(id: number) {
+    return this.matches.find(match => match.fixture.id === id);
+  }
+
+  getLocations() {
+    this.megagoal.getLocations().subscribe(result => {
+      this.locations = <Location[]>result;
+    })
+  }
+
+  selectLeague(league: League): void {
+    // If the league selected is the same, show all the leagues and remove the teams
+    if (this.selectedLeague != undefined && this.selectedLeague.league.id === league.league.id) {
+      this.selectedLeague = undefined;
+      this.seasonsFiltered = this.seasons;
+      this.teams = [];
+      this.realMatches = [];
+    } else {
+      this.selectedLeague = league;
+      this.getTeamsByLeague(league);
+    }
+  }
+
+  /*
     Get teams by league with the season selected (if there is one)
   */
   getTeamsByLeague(league: League): void {
-    this.selectedLeague = league;
-
     // Show seasons that are in the league
     this.seasonsFiltered = this.seasons.filter(season =>
       league.seasons.find(seasonLeague => seasonLeague.year === season.id) != undefined);
 
     // If there is a season selected and it is in the league, get the teams
-    if (this.selectedSeason != undefined && this.selectedLeague.seasons.find(season => season.year == this.selectedSeason.id) !== undefined) {
+    if (this.selectedSeason != undefined && league.seasons.find(season => season.year == this.selectedSeason.id) !== undefined) {
       this.getTeamsByLeagueAndSeason(league.league.id, this.selectedSeason.id);
     } else {
 
@@ -106,6 +230,7 @@ export class LeaguesComponent {
       this.selectedSeason = this.seasonsFiltered[0];
       this.getTeamsByLeagueAndSeason(league.league.id, this.selectedSeason.id);
     }
+  
   }
 
   /*
@@ -124,6 +249,7 @@ export class LeaguesComponent {
   getTeamsByLeagueAndSeason(id: number, season: number): void {
     this.megagoal.getTeamsByLeagueAndSeason(id, season).subscribe((result: Team[]) => {
       this.teams = result;
+      this.getRealMatches();
     })
   }
 

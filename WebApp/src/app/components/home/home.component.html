@@ -2,7 +2,9 @@
   @if (this.matchesLoaded && this.matches.length > 0) {
     <!-- Iterate the matches filtered array -->
     @for (match of matchesFiltered; track $index) {
-      <app-real-match-card [match]="match" [watched]="true" [locations]="locations" />
+      <div class="matchCardAdapter">
+        <app-real-match-card [match]="match" [watched]="true" [locations]="locations" />
+      </div>
     }
 
     <!-- Pagination -->

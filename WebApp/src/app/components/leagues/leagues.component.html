@@ -11,37 +11,63 @@
 			</mat-select>
 		</mat-form-field>
 	</form>
-	
-	<!-- Grid list of the leagues and the teams -->
-	<div class="row row-cols-lg-5 row-cols-md-4 row-cols-3">
-		@for (league of leagues; track $index) {
-		<div class="col gridLeague">
-			<div class="cardLeague" (click)="getTeamsByLeague(league)"
-				[ngClass]="{'cardLeagueSelected': selectedLeague && selectedLeague.league.id === league.league.id}">
-				<img class="img-fluid p-1 imgLeague" [src]="images.getRouteImageLeagueSm(league.league.id)">
-			</div>
+
+	<!-- Selected league - Absolute position -->
+	 @if (selectedLeague) {
+		<div class="cardLeagueSelected" (click)="selectLeague(selectedLeague)">
+			<img class="img-fluid p-1 imgLeague" [src]="images.getRouteImageLeagueSm(selectedLeague.league.id)">
 		</div>
-		}
-	</div>
-
-	<hr class="hr hr-blurry" />
-
-	<div class="row">
-		@for (team of teams; track $index) {
-		<div class="gridTeam">
-			<a (click)="selectTeam(team)" class="nav-link m-auto w-100 h-100 d-flex" routerLink="/team" [queryParams]="{id: team.team.id, season: selectedSeason.id}" routerLinkActive="active" ariaCurrentWhenActive="page">
-				<div class="cardTeam">
-					<div class="divImgTeam d-flex">
-						<img class="img-fluid p-1 imgTeam" [src]="images.getRouteImageTeam(team.team.id)">
-					</div>
-					
-					<div class="text-center d-flex divNameTeam">
-						<p class="text-muted mt-2">{{team.team.name}}</p>
-					</div>
-					
+	} @else {
+		<!-- Grid list of the leagues and the teams -->
+		<div class="row row-cols-lg-5 row-cols-md-4 row-cols-3">
+			@for (league of leagues; track $index) {
+			<div class="col gridLeague">
+				<div class="cardLeague" (click)="selectLeague(league)">
+					<img class="img-fluid p-1 imgLeague" [src]="images.getRouteImageLeagueSm(league.league.id)">
 				</div>
-			</a>
+			</div>
+			}
 		</div>
-		}
-	</div>
+	}
+	
+	@if (selectedLeague) {
+		<div class="row">
+			@for (team of teams; track $index) {
+			<div class="gridTeam">
+				<a (click)="selectTeam(team)" class="nav-link m-auto w-100 h-100 d-flex" routerLink="/team" [queryParams]="{id: team.team.id, season: selectedSeason.id}" routerLinkActive="active" ariaCurrentWhenActive="page">
+					<div class="cardTeam">
+						<div class="divImgTeam d-flex">
+							<img class="img-fluid p-1 imgTeam" [src]="images.getRouteImageTeam(team.team.id)">
+						</div>
+						
+						<div class="text-center d-flex divNameTeam">
+							<p class="text-muted mt-2">{{team.team.name}}</p>
+						</div>
+						
+					</div>
+				</a>
+			</div>
+			}
+		</div>
+
+		<hr class="hr hr-blurry" />
+
+		<div class="row">
+			<div class="text-center d-flex">
+				@if (groupedRealMatches.length > 0 && groupedRealMatches[selectedRound][0]) {
+					<h2 class="arrowRound" (click)="changeRound(-1)">&laquo;</h2>
+					<h2 class="m-auto"><u>{{groupedRealMatches[selectedRound][0].league.round}}</u></h2>
+					<h2 class="arrowRound" (click)="changeRound(1)">&raquo;</h2>
+				}
+			</div>
+			@for (match of groupedRealMatches[selectedRound]; track $index) {
+				<div class="matchCardAdapter">
+					<app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+					[watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+					[locations]="locations"></app-real-match-card>
+				</div>
+			}
+		</div>
+
+	}
 </div>

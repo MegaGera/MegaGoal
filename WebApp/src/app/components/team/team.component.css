@@ -1,3 +1,25 @@
+@media only screen and (max-width: 768px) {
+  .matchCardAdapter {
+    width: 95%;
+  }
+}
+
+@media only screen and (max-width: 1200px) and (min-width: 769px) {
+  .matchCardAdapter {
+    width: 80%;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .matchCardAdapter {
+    width: 50%;
+  }
+}
+
+.matchCardAdapter {
+	margin: 1% auto;
+}
+
 .informationColumn {
   background-color: #FFE4E1; 
   border-radius: 0 0 30px 30px; 
@@ -40,12 +62,4 @@
 /* Color the odd rows of the table */
 tr:nth-child(odd) {
   background-color: #D6EEEE;
-}
-
-.marginAuto {
-  margin: auto;
-}
-
-.centerText {
-  text-align: center
 }

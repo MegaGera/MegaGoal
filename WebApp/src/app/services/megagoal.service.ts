@@ -93,10 +93,18 @@ export class MegaGoalService {
   }
 
   /*
-    Method to get all the Teams by league and season from the API
+    Method to get Real Matches by team and season from the API
   */
   getRealMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<RealMatch[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 
+    return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
+  }
+
+  /*
+    Method to get Real Matches by league and season from the API
+  */
+  getRealMatchesByLeagueIDAndSeason(league_id: number, season: number): Observable<RealMatch[]> {
+    let params = new HttpParams().set('league_id', league_id).set('season', season); 
     return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
   }
 
@@ -109,7 +117,7 @@ export class MegaGoalService {
   }
 
   /*
-    Method to get all the Teams by league and season from the API
+    Method to get all the Matches by team and season from the API
   */
   getMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<Match[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 

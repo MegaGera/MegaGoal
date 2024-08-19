@@ -5,10 +5,10 @@
 
       <!-- Stadium information column -->
       <div class="col-3 informationColumn">
-        <div class="centerText">
-          <h2 class="marginAuto"><u>Stadium</u></h2>
-          <h3 class="marginAuto">{{team.venue.name}}</h3>
-          <h3 class="marginAuto">Capacity: {{team.venue.capacity}}</h3>
+        <div class="text-center">
+          <h2 class="m-auto"><u>Stadium</u></h2>
+          <h3 class="m-auto">{{team.venue.name}}</h3>
+          <h3 class="m-auto">Capacity: {{team.venue.capacity}}</h3>
         </div>
       </div>
 
@@ -17,10 +17,10 @@
         <div class="row">
           <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
         </div>
-        <div class="row centerText">
+        <div class="row text-center">
           <h1 class="teamNameText">{{team.team.name}}</h1>
         </div>
-        <div class="row centerText">
+        <div class="row text-center">
           <table class="informationTable">
             <tr>
               <th class="tableCol" scope="col">Code</th>
@@ -54,8 +54,8 @@
 
       <!-- Competitions information column -->
       <div class="col-3 informationColumn">
-        <div class="centerText">
-          <h2 class="marginAuto"><u>Competitions</u></h2>
+        <div class="text-center">
+          <h2 class="m-auto"><u>Competitions</u></h2>
         </div>
         @for (league of getDifferentLeagues(); track $index) {
           <div class="row competitionsRow">
@@ -66,9 +66,11 @@
     </div>
     
     @for (match of realMatches; track $index) {
-      <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-      [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-      [locations]="locations"></app-real-match-card>
+      <div class="matchCardAdapter">
+        <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+        [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+        [locations]="locations"></app-real-match-card>
+      </div>
     }
 
   </div>

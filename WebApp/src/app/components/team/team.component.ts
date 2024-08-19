@@ -132,7 +132,6 @@ export class TeamComponent {
   getLocations() {
     this.megagoal.getLocations().subscribe(result => {
       this.locations = <Location[]>result;
-      console.log(this.locations)
     })
   }
 
