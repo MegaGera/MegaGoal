@@ -63,11 +63,17 @@ if (process.env.NODE_ENV === 'production') {
         return res.status(401).json({ error: 'Unauthorized' });
       }
     } catch (error) {
-      return res.status(401).json({ error: 'Can\'t validate token from catch' });
+      return res.status(401).json({ error: 'Can\'t validate token' });
     }
   };
   app.use(validateApiKey)
+} else if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    req.validateData = { username: process.env.WEB_USERNAME || 'test' };
+    next();
+  });
 }
+
 // Routes
 app.use('/match', matchRoutes);
 app.use('/league', leagueRoutes);
