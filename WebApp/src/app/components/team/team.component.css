@@ -12,12 +12,18 @@
 
 @media only screen and (min-width: 1200px) {
   .matchCardAdapter {
-    width: 50%;
+    width: 45%;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .matchCardAdapterTwoColumns {
+    width: 95%;
   }
 }
 
 .matchCardAdapter {
-	margin: 1% auto;
+	margin: 2% auto;
 }
 
 .informationColumn {
@@ -54,9 +60,20 @@
 }
 
 .leagueImage {
-  height: 50px; 
+  cursor: pointer;
+  height: 50px;
   width: fit-content; 
   margin: auto;
+}
+
+.leagueImageUnselected {
+  opacity: 0.3;
+}
+
+
+.leagueImageUnselected:hover {
+  opacity: 1;
+  transition: 0.2s;
 }
 
 /* Color the odd rows of the table */

@@ -118,6 +118,7 @@ export class LeaguesComponent {
       })
     } else {
       this.realMatches = [];
+      this.groupedRealMatches = [];
     }
   }
 
@@ -153,13 +154,11 @@ export class LeaguesComponent {
 
     // Step 4: Combine sorted regular season matches with other matches
     this.groupedRealMatches = [...regularSeasonMatches, ...otherMatches];
-    console.log("Real Matches: ");
-    console.log(this.groupedRealMatches)
 
     // Step 5: Reverse iterate to find the last played round
     for (let i = regularSeasonMatches.length - 1; i >= 0; i--) {
-        const matchesInRound = regularSeasonMatches[i];
-        if (matchesInRound.some(match => match.fixture.status.short !== "NS")) {
+        let matchesInRound = regularSeasonMatches[i];
+        if (matchesInRound.some(match => match.fixture.status.short === "FT")) {
             this.selectedRound = i;
             break;
         }
@@ -171,11 +170,7 @@ export class LeaguesComponent {
   */
   changeRound(n: number) {
     if (this.selectedRound + n >= 0 && this.selectedRound + n < this.groupedRealMatches.length) {
-      console.log("SI")
-      console.log(this.selectedRound)
       this.selectedRound = this.selectedRound + n;
-    } else {
-      console.log("NO")
     }
   }
 
@@ -185,13 +180,18 @@ export class LeaguesComponent {
   getMatches() {
     this.megagoal.getAllMatches().subscribe(result => {
       this.matches = result;
-      console.log("Matches: ");
-      console.log(this.matches);
     })
   }
 
   findRealMatchInMatches(id: number) {
     return this.matches.find(match => match.fixture.id === id);
+  }
+
+  /*
+    This methods filter half Real Matches for display in two columns
+  */
+  filterHalfRealMatches(matches: RealMatch[], col: number) {
+    return matches.filter((match, index) => index % 2 === col % 2);
   }
 
   getLocations() {
@@ -207,6 +207,7 @@ export class LeaguesComponent {
       this.seasonsFiltered = this.seasons;
       this.teams = [];
       this.realMatches = [];
+      this.groupedRealMatches = [];
     } else {
       this.selectedLeague = league;
       this.getTeamsByLeague(league);

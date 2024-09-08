@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TopMenuComponent } from './components/top-menu/top-menu.component';
 import { MegaGoalService } from './services/megagoal.service';
+import { StatsService } from './services/stats.service';
 import { HttpClientModule } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -12,11 +13,11 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
   imports: [NgbModule, CommonModule, RouterModule, TopMenuComponent, HttpClientModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
-  providers: [MegaGoalService]
+  providers: [MegaGoalService, StatsService]
 })
 export class AppComponent {
   title = 'WebApp';
 
-  constructor(public megagoal: MegaGoalService) { }
+  constructor() { }
 
 }

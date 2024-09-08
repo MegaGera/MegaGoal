@@ -16,8 +16,14 @@
   }
 }
 
+@media only screen and (min-width: 1200px) {
+  .matchCardAdapterTwoColumns {
+    width: 95%;
+  }
+}
+
 .matchCardAdapter {
-	margin: 1% auto;
+	margin: 2% auto;
 }
 
 .formLeagues {

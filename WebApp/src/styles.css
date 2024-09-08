@@ -33,3 +33,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   flex: 0 0 auto;
   width: 10%; /* 100/10 */
 }
+
+/* Display Contents */
+.d-contents {
+  display: contents;
+}

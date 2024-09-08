@@ -6,9 +6,8 @@
       <!-- Stadium information column -->
       <div class="col-3 informationColumn">
         <div class="text-center">
-          <h2 class="m-auto"><u>Stadium</u></h2>
-          <h3 class="m-auto">{{team.venue.name}}</h3>
-          <h3 class="m-auto">Capacity: {{team.venue.capacity}}</h3>
+          <h2 class="m-auto"><u>Stats</u></h2>
+          <h3 class="m-auto">Total views:</h3>
         </div>
       </div>
 
@@ -27,12 +26,14 @@
               <th class="tableCol" scope="col">Country</th>
               <th class="tableCol">City</th>
               <th class="tableCol">Founded</th>
+              <th class="tableCol">Stadium</th>
             </tr>
             <tr>
               <td>{{team.team.code}}</td>
               <td>{{team.team.country}}</td>
               <td>{{team.venue.city}}</td>
               <td>{{team.team.founded}}</td>
+              <td>{{team.venue.name}}</td>
             </tr>
           </table>
         </div>
@@ -57,19 +58,63 @@
         <div class="text-center">
           <h2 class="m-auto"><u>Competitions</u></h2>
         </div>
-        @for (league of getDifferentLeagues(); track $index) {
-          <div class="row competitionsRow">
-            <img class="leagueImage" [src]="images.getRouteImageLeagueSm(league)">
+
+        <div class="row">
+        @for (league of leagues; track $index) {
+          <div class="col-6 mt-3 text-center" (click)="selectLeague(league)">
+            <img class="leagueImage" [ngClass]="{'leagueImageUnselected': !this.selectedLeagues.includes(league)}" [src]="images.getRouteImageLeagueSm(league)">
           </div>
         }
       </div>
+      </div>
     </div>
-    
-    @for (match of realMatches; track $index) {
-      <div class="matchCardAdapter">
-        <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-        [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-        [locations]="locations"></app-real-match-card>
+    @if (selectedSeason.id == seasons[0].id) {
+      <div class="row">
+        <div class="col-12 col-lg-6">
+          <div class="text-center d-flex">
+            <h2 class="m-auto"><u>Last played</u></h2>
+          </div>
+          @for (match of filterStartedRealMatches(); track $index) {
+            <div class="matchCardAdapter matchCardAdapterTwoColumns">
+              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+              [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+              [locations]="locations"></app-real-match-card>
+            </div>
+          }
+        </div>
+        <div class="col-12 col-lg-6">
+          <div class="text-center d-flex">
+            <h2 class="m-auto"><u>Next matches</u></h2>
+          </div>
+          @for (match of filterNotStartedRealMatches(); track $index) {
+            <div class="matchCardAdapter matchCardAdapterTwoColumns">
+              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+              [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+              [locations]="locations"></app-real-match-card>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="row">
+        <div class="col-12 col-lg-6">
+          @for (match of filterHalfRealMatches(showRealMatches, 0); track $index) {
+            <div class="matchCardAdapter matchCardAdapterTwoColumns">
+              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+              [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+              [locations]="locations"></app-real-match-card>
+            </div>
+          }
+        </div>
+        <div class="col-12 col-lg-6 mt-4">
+          @for (match of filterHalfRealMatches(showRealMatches, 1); track $index) {
+            <div class="matchCardAdapter matchCardAdapterTwoColumns">
+              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+              [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+              [locations]="locations"></app-real-match-card>
+            </div>
+          }
+        </div>
       </div>
     }
 
