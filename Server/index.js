@@ -87,8 +87,8 @@ const PORT = process.env.PORT || 3150;
 if (process.env.NODE_ENV === 'production') {
   // SSL Options
   const sslOptions = {
-    key: fs.readFileSync('/certificates/wildcard/privkey.pem'),
-    cert: fs.readFileSync('/certificates/wildcard/fullchain.pem')
+    key: fs.readFileSync('/certificates/privkey.pem'),
+    cert: fs.readFileSync('/certificates/fullchain.pem')
   };
   
   https.createServer(sslOptions, app).listen(PORT, () => {
