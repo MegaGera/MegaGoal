@@ -75,6 +75,7 @@ export class LeaguesComponent {
 
   /* Teams */
   teams: Team[] = [];
+  showTeams: Team[] = [];
 
   constructor(private megagoal: MegaGoalService, public images: ImagesService, public matchParser: MatchParserService) {
     this.init();
@@ -191,7 +192,10 @@ export class LeaguesComponent {
     This methods filter half Real Matches for display in two columns
   */
   filterHalfRealMatches(matches: RealMatch[], col: number) {
-    return matches.filter((match, index) => index % 2 === col % 2);
+    if (matches != undefined && matches.length > 0) {
+      return matches.filter((match, index) => index % 2 === col % 2);
+    }
+    return [];
   }
 
   getLocations() {
@@ -206,6 +210,7 @@ export class LeaguesComponent {
       this.selectedLeague = undefined;
       this.seasonsFiltered = this.seasons;
       this.teams = [];
+      this.showTeams = [];
       this.realMatches = [];
       this.groupedRealMatches = [];
     } else {
@@ -250,6 +255,7 @@ export class LeaguesComponent {
   getTeamsByLeagueAndSeason(id: number, season: number): void {
     this.megagoal.getTeamsByLeagueAndSeason(id, season).subscribe((result: Team[]) => {
       this.teams = result;
+      this.showTeams = this.teams.slice(0, 24);
       this.getRealMatches();
     })
   }

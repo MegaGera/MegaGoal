@@ -15,4 +15,20 @@ const getLocations = async (req, res) => {
   }
 }
 
-export { getLocations };
+// Post create a Location
+const createLocation = async (req, res) => {
+  const db = getDB();
+  try {
+    let location = req.body;
+    let username = req.validateData.username;
+    location.user = { username: username };
+
+    let result = await db.collection('locations').insertOne(location);
+    console.log("Location " + location.name + " inserted for user " + req.validateData.username);
+    res.status(201).json(result.insertedId);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+export { getLocations, createLocation };

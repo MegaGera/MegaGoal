@@ -106,9 +106,9 @@ export class HomeComponent implements OnInit {
 
     // Filter by team selection
     if (this.filterPanelChipSelected == 1) {
-      this.matches = this.matches.filter(match => match.league.id != 10 && match.league.id != 1 && match.league.id != 4 && match.league.id != 9);
+      this.matches = this.matches.filter(match => match.league.id != 10 && match.league.id != 1 && match.league.id != 4 && match.league.id != 9 && match.league.id != 5);
     } else if (this.filterPanelChipSelected == 2) {
-      this.matches = this.matches.filter(match => match.league.id == 10 || match.league.id == 1 || match.league.id == 4 || match.league.id == 9);
+      this.matches = this.matches.filter(match => match.league.id == 10 || match.league.id == 1 || match.league.id == 4 || match.league.id == 9 || match.league.id == 5);
     }
 
     // Filter by league selection

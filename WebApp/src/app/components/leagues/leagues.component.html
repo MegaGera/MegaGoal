@@ -31,8 +31,10 @@
 	}
 	
 	@if (selectedLeague) {
+
+		<!-- List of teams -->
 		<div class="row">
-			@for (team of teams; track $index) {
+			@for (team of showTeams; track $index) {
 			<div class="gridTeam">
 				<a (click)="selectTeam(team)" class="nav-link m-auto w-100 h-100 d-flex" routerLink="/team" [queryParams]="{id: team.team.id, season: selectedSeason.id}" routerLinkActive="active" ariaCurrentWhenActive="page">
 					<div class="cardTeam">
@@ -52,6 +54,7 @@
 
 		<hr class="hr hr-blurry" />
 
+		<!-- Round selector for matches -->
 		<div class="row">
 			<div class="text-center d-flex">
 				@if (groupedRealMatches.length > 0 && groupedRealMatches[selectedRound][0]) {
@@ -61,6 +64,7 @@
 				}
 			</div>
 
+		<!-- List of matches -->
 			<div class="col-12 col-lg-6">
 				@for (match of filterHalfRealMatches(groupedRealMatches[selectedRound], 0); track $index) {
 					<div class="matchCardAdapter matchCardAdapterTwoColumns">

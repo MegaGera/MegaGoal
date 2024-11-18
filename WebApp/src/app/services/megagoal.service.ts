@@ -136,6 +136,14 @@ export class MegaGoalService {
   }
 
   /*
+    Method to create a new Locatoin
+  */
+  createLocation(location: any): Observable<number> {
+    console.log(location)
+    return this.http.post<number>(this.url + '/location/', location, this.options);
+  }
+
+  /*
     Method to get all the Locations from the API
   */
   getLocations(): Observable<Location[]> {
