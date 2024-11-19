@@ -15,6 +15,8 @@ import leagueRoutes from './routes/leagueRoutes.js';
 import teamRoutes from './routes/teamRoutes.js';
 import realMatchRoutes from './routes/realMatchRoutes.js';
 import locationRoutes from './routes/locationRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+
 
 const app = express();
 
@@ -80,6 +82,7 @@ app.use('/league', leagueRoutes);
 app.use('/team', teamRoutes);
 app.use('/real_match', realMatchRoutes);
 app.use('/location', locationRoutes);
+app.use('/admin', adminRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3150;

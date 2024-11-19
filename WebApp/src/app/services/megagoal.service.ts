@@ -11,6 +11,7 @@ import { Location } from '../models/location';
 import { Observable } from 'rxjs';
 import { RealMatch } from '../models/realMatch';
 import { environment } from '../../environments/environment';
+import { LeaguesSettings } from '../models/leaguesSettings';
 
 @Injectable({
   providedIn: 'root'
@@ -139,7 +140,6 @@ export class MegaGoalService {
     Method to create a new Locatoin
   */
   createLocation(location: any): Observable<number> {
-    console.log(location)
     return this.http.post<number>(this.url + '/location/', location, this.options);
   }
 
@@ -150,4 +150,21 @@ export class MegaGoalService {
     return this.http.get<Location[]>(this.url + '/location/', this.options);
   }
 
+  /*
+    Method to get the Leagues Settings from the API for Admin page
+  */
+  getLeaguesSettings(): Observable<LeaguesSettings[]> {
+    return this.http.get<LeaguesSettings[]>(this.url + '/admin/leagues_settings/', this.options);
+  }
+
+  /*
+    Method to change the Update Frequency of a League Settings
+  */
+  changeUpdateFrequency(league_id: number, update_frequency: number): Observable<number> {
+    let body = {
+      league_id: league_id,
+      update_frequency: update_frequency
+    }
+    return this.http.patch<number>(this.url + '/admin/leagues_settings/update_frequency', body, this.options);
+  }
 }

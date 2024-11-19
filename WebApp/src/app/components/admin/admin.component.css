@@ -1,0 +1,8 @@
+.tableLeaguesSettings {
+  margin: 5%;
+  background-color: transparent;
+}
+
+th, td {
+  background-color: inherit;
+}

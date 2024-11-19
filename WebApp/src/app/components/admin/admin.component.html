@@ -1,0 +1,59 @@
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <table class="table tableLeaguesSettings">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">League</th>
+            <th scope="col">Frequency (days)</th>
+            <th scope="col">Last Update</th>
+            <th scope="col">Next Match</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (leaguesSetting of leaguesSettings; track $index) {
+            <tr>
+              <th scope="row">{{$index + 1}}</th>
+              <td>{{leaguesSetting.league_name}}</td>
+              <!-- <td>{{leaguesSetting.update_frequency}}</td> -->
+                <td>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency1{{$index}}"
+                    [(ngModel)]="leaguesSetting.update_frequency" [value]="1" (click)="changeUpdateFrequency(leaguesSetting.league_id, 1)">
+                  <label class="form-check-label" for="frequency1{{$index}}">
+                    1
+                  </label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency3{{$index}}"
+                    [(ngModel)]="leaguesSetting.update_frequency" [value]="3" (click)="changeUpdateFrequency(leaguesSetting.league_id, 3)">
+                  <label class="form-check-label" for="frequency3{{$index}}">
+                    3
+                  </label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency7{{$index}}" 
+                    [(ngModel)]="leaguesSetting.update_frequency" [value]="7" (click)="changeUpdateFrequency(leaguesSetting.league_id, 7)">
+                  <label class="form-check-label" for="frequency7{{$index}}">
+                    7
+                  </label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency30{{$index}}"
+                    [(ngModel)]="leaguesSetting.update_frequency" [value]="30" (click)="changeUpdateFrequency(leaguesSetting.league_id, 30)">
+                  <label class="form-check-label" for="frequency30{{$index}}">
+                    30
+                  </label>
+                </div>
+                
+                </td>
+              <td>{{leaguesSetting.last_update | date:'dd-MM-yyyy'}}</td>
+              <td>{{leaguesSetting.next_match | date:'dd-MM-yyyy'}}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
