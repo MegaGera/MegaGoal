@@ -2,7 +2,7 @@
 	
 	<!-- Season select form in Top Leagues view -->
 	<form class="formLeagues">
-		<mat-form-field class="fullWidth">
+		<mat-form-field class="w-100">
 			<mat-label>Season</mat-label>
 			<mat-select name="seasonSelect" [(ngModel)]="selectedSeason" (selectionChange)="getTeamsBySeason(selectedSeason)">
 				@for (season of seasonsFiltered; track $index) {
@@ -52,6 +52,13 @@
 			}
 		</div>
 
+		<!-- Show all teams button (only for leagues with more than 24 teams) -->
+		@if (teams.length > 24 && showTeams.length == 24) {
+			<div class="text-center showAllButton" (click)="showAllTeams()">
+				<ng-icon name="jamPlus"></ng-icon>
+			</div>
+		}
+
 		<hr class="hr hr-blurry" />
 
 		<!-- Round selector for matches -->
@@ -59,7 +66,18 @@
 			<div class="text-center d-flex">
 				@if (groupedRealMatches.length > 0 && groupedRealMatches[selectedRound][0]) {
 					<h2 class="arrowRound" (click)="changeRound(-1)">&laquo;</h2>
-					<h2 class="m-auto"><u>{{groupedRealMatches[selectedRound][0].league.round}}</u></h2>
+					
+					<form class="formLeagues">
+						<mat-form-field class="w-100">
+							<mat-label>Round</mat-label>
+							<mat-select name="roundSelect" [(ngModel)]="selectedRound">
+								@for (round of groupedRealMatches; track $index) {
+									<mat-option [value]="$index">{{groupedRealMatches[$index][0].league.round}}</mat-option>
+								}
+							</mat-select>
+						</mat-form-field>
+					</form>
+
 					<h2 class="arrowRound" (click)="changeRound(1)">&raquo;</h2>
 				}
 			</div>

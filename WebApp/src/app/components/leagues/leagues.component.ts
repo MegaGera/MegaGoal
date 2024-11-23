@@ -22,7 +22,10 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
-import { MatSelectModule } from '@angular/material/select'
+import { MatSelectModule } from '@angular/material/select';
+
+import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
+import { jamPlus } from '@ng-icons/jam-icons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -40,10 +43,12 @@ import { Location } from '../../models/location';
   standalone: true,
   imports: [FormsModule, MatFormFieldModule, MatInputModule, MatAutocompleteModule,
     ReactiveFormsModule, AsyncPipe, NgClass, MatCheckboxModule, MatGridListModule, 
-    MatSelectModule, RouterModule, RealMatchCardComponent],
+    MatSelectModule, RouterModule, RealMatchCardComponent, NgIconComponent],
   templateUrl: './leagues.component.html',
   styleUrl: './leagues.component.css',
-  providers: [ImagesService]
+  providers: [ImagesService, provideNgIconsConfig({
+    size: '2em',
+  }), provideIcons({ jamPlus })]
 })
 export class LeaguesComponent {
 
@@ -175,6 +180,10 @@ export class LeaguesComponent {
     }
   }
 
+  getGroupedRealMatchesKeys(): string[] {
+    return Object.keys(this.groupedRealMatches);
+  }
+
   /*
     Get Real Matches by team_id and season
   */
@@ -208,6 +217,7 @@ export class LeaguesComponent {
     // If the league selected is the same, show all the leagues and remove the teams
     if (this.selectedLeague != undefined && this.selectedLeague.league.id === league.league.id) {
       this.selectedLeague = undefined;
+      this.selectedRound = 0;
       this.seasonsFiltered = this.seasons;
       this.teams = [];
       this.showTeams = [];
@@ -258,6 +268,13 @@ export class LeaguesComponent {
       this.showTeams = this.teams.slice(0, 24);
       this.getRealMatches();
     })
+  }
+
+  /*
+    Method to show all teams trigerred by a button
+  */
+  showAllTeams(): void {
+    this.showTeams = this.teams;
   }
 
   /*

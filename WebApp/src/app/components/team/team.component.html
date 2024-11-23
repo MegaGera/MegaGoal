@@ -40,7 +40,7 @@
 
         <div class="row mt-4 text-center">
           <form class="formLeagues">
-            <mat-form-field class="fullWidth">
+            <mat-form-field class="w-100">
               <mat-label>Season</mat-label>
               <mat-select name="seasonSelect" [(ngModel)]="selectedSeason" (selectionChange)="selectSeason(selectedSeason)">
                 @for (season of seasons; track $index) {
