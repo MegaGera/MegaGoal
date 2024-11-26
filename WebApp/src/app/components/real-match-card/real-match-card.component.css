@@ -53,14 +53,68 @@
 	--color-none-trans: rgba(92, 86, 86, 0.9);
 }
 
+@media only screen and (max-width: 768px) {
+
+	::ng-deep :root {
+		--img-team-shadow: 0 0 0 5px;
+	}
+
+  .generalMatchCard {
+    height: 12vh;
+  }
+
+	.matchCard {
+    height: 12vh;
+  }
+
+	.matchCard:hover {
+		height: 20vh;
+
+		.generalMatchCard {
+			height: 14vh;
+		}
+
+		.infoMatchCard {
+			height: 6vh;
+		}
+	}
+}
+
+
+@media only screen and (min-width: 769px) {
+
+	::ng-deep :root {
+		--img-team-shadow: 0 0 0 10px;
+	}
+
+  .generalMatchCard {
+    height: 25vh;
+  }
+
+	.matchCard {
+    height: 25vh;
+  }
+	
+	.matchCard:hover {
+		height: 35vh;
+
+		.generalMatchCard {
+			height: 29vh;
+		}
+
+		.infoMatchCard {
+			height: 6vh;
+		}
+	}
+}
+
+
 .generalMatchCard {
 	position: relative;
-  height: 25vh;
   transition: 0.2s;
 }
 
 .matchCard {
-  height: 25vh;
 	overflow: hidden;
 	border: 2px solid var(--color-predefined-border);
 	border-radius: 10px;
@@ -71,16 +125,13 @@
 
 .matchCard:hover {
   background-color: #FFDAB9;
-	height: 35vh;
   transition: 0.2s;
 
 	.generalMatchCard {
-		height: 29vh;
 		transition: 0.2s;
 	}
 
 	.infoMatchCard {
-		height: 6vh;
 		transition: 0.2s;
 	}
 
@@ -196,75 +247,75 @@
 	aspect-ratio: 1 / 1;
 	border-radius: 50%;
 	background-color: #ffffff;
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px #f3f5f9;
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) #f3f5f9;
 }
 
 .teamLogo.SegundaDivision {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-segunda-division-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-segunda-division-trans);
 }
 
 .teamLogo.PrimeraDivision {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-primera-division-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-primera-division-trans);
 }
 
 .teamLogo.PremierLeague {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-premier-league-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-premier-league-trans);
 }
 
 .teamLogo.ChampionsLeague {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-champions-league-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-champions-league-trans);
 }
 
 .teamLogo.EuropaLeague {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-europa-league-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-europa-league-trans);
 }
 
 .teamLogo.Bundesliga {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-bundesliga-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-bundesliga-trans);
 }
 
 .teamLogo.Ligue1 {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-ligue1-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-ligue1-trans);
 }
 
 .teamLogo.SerieA {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-seriea-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-seriea-trans);
 }
 
 .teamLogo.CopaDelRey {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-copa-rey-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-copa-rey-trans);
 }
 
 .teamLogo.FaCup {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-fa-cup-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-fa-cup-trans);
 }
 
 .teamLogo.SpanishSupercup {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-spanish-supercup-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-spanish-supercup-trans);
 }
 
 .teamLogo.UefaSupercup {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-uefa-supercup-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-uefa-supercup-trans);
 }
 
 .teamLogo.ConferenceLeague {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-conference-league-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-conference-league-trans);
 }
 
 .teamLogo.WorldCup {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-world-cup-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-world-cup-trans);
 }
 
 .teamLogo.EuroCup {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-euro-cup-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-euro-cup-trans);
 }
 
 .teamLogo.AmericanCup {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-american-cup-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-american-cup-trans);
 }
 
 .teamLogo.None {
-	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), 0 0 0 10px var(--color-none-trans);
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-none-trans);
 }
 
 .imgLogo {
@@ -273,6 +324,39 @@
 	object-fit: contain;
   display: flex;
   margin: auto;
+}
+
+@media only screen and (max-width: 768px) {
+
+	.team-name {
+		font-size: 0.8rem;
+	}
+
+}
+
+@media only screen and (min-width: 769px) {
+
+	.team-name {
+		font-size: 1.2rem;
+	}
+	
+}
+
+
+@media only screen and (max-width: 768px) {
+
+	.divImgLeague {
+		height: 12vh;
+	}
+
+}
+
+@media only screen and (min-width: 769px) {
+
+	.divImgLeague {
+		height: 25vh;
+	}
+	
 }
 
 .imgLeagueBack {
@@ -300,9 +384,25 @@
 }
 
 .match-score-number {
-	font-size: 3rem;
 	font-weight: 600;
 	line-height: 1;
+}
+
+
+@media only screen and (max-width: 768px) {
+
+	.match-score-number {
+		font-size: 2rem;
+	}
+
+}
+
+@media only screen and (min-width: 769px) {
+
+	.match-score-number {
+		font-size: 3rem;
+	}
+	
 }
 
 .leading {
@@ -324,7 +424,6 @@
 	border-radius: 10px;
 
 	.text {
-		font-size: 1rem;
 		font-weight: 600;
 		line-height: 1;
 	}
@@ -333,6 +432,29 @@
 		font-size: 0.8rem;
 	}
 }
+
+
+
+@media only screen and (max-width: 768px) {
+
+	.match-info {
+		.text {
+			font-size: 0.8rem;
+		}
+	}
+
+}
+
+@media only screen and (min-width: 769px) {
+
+	.match-info {
+		.text {
+			font-size: 1rem;
+		}
+	}
+	
+}
+
 
 .match-eye-button {
 	margin: auto;

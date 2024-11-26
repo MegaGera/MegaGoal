@@ -1,7 +1,7 @@
 <div class="row matchCard" [ngClass]="leagueCSSSelector(match.league.id)">
   <div class="generalMatchCard">
 
-    <div class="position-absolute top-50 start-50 translate-middle" style="height: 25vh;">
+    <div class="position-absolute top-50 start-50 translate-middle divImgLeague">
       <div class="position-relative h-100">
         <img class="position-absolute start-50 translate-middle imgLeagueBack p-1" 
         [ngClass]="{'imgLeagueBackWatched': watched}" style="top: 55%" [src]="images.getRouteImageLeagueBack(match.league.id)"
@@ -23,7 +23,7 @@
 
           </div>
           <div class="text-center">
-            <h2 class="m-auto">{{match.teams.home.name}}</h2>
+            <h2 class="m-auto team-name">{{match.teams.home.name}}</h2>
           </div>
         </div>
 
@@ -72,7 +72,7 @@
 
           </div>
           <div class="text-center">
-            <h2 class="m-auto">{{match.teams.away.name}}</h2>
+            <h2 class="m-auto team-name">{{match.teams.away.name}}</h2>
           </div>
 
         </div>
@@ -84,11 +84,11 @@
   <div class="infoMatchCard">
 
     <div class="row h-100">
-      <div class="col-4 match-info text">
+      <div class="col-4 match-info">
         <span class="text">{{match.league.round}}</span>
       </div>
 
-      <div class="col-4 match-info text">
+      <div class="col-4 match-info">
         <span class="text">{{match.league.season}}/{{match.league.season + 1}}</span>
       </div>
 

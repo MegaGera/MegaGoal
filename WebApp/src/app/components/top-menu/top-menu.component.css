@@ -6,16 +6,40 @@
 }
 
 .topMenuRow {
-    height: 100%; 
-    width: 40%;
+    height: 100%;
     margin: auto;
 }
 
 .menuButton {
-    margin: auto 5%;
     border-radius: 15px;
     background-color: #f3f5f9;
 }
+
+
+@media only screen and (max-width: 768px) {
+
+	.topMenuRow {
+		width: 70%;
+	}
+
+    .menuButton {
+        margin: auto;
+    }
+
+}
+
+@media only screen and (min-width: 769px) {
+
+	.topMenuRow {
+		width: 40%;
+	}
+
+    .menuButton {
+        margin: auto 5%;
+    }
+
+}
+
 
 .buttonText {
     margin: auto; 
@@ -41,7 +65,7 @@
     border-radius: 20px;
     background-color: #eba59d;
     position: relative;
-    z-index: 1;
+    z-index: 2;
     top: -0.8vh;
     border: 3px solid white;
     box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
@@ -50,6 +74,17 @@
         visibility: hidden; /* Hide panel initially */
     opacity: 0; /* Start fully transparent */
     transition: visibility 0s, opacity 0.2s, height 0.2s ease-in-out; /* Smooth fade effect */
+}
+
+
+@media only screen and (max-width: 768px) {
+
+	.userPanel {
+		position: relative;
+        width: 30vw;
+        right: 80px;
+	}
+
 }
 
 .userButton:hover .userPanel {

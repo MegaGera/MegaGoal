@@ -1,23 +1,23 @@
 @media only screen and (max-width: 768px) {
   .matchCardAdapter {
-    width: 95%;
+    margin: 5% auto;
   }
 }
 
 @media only screen and (max-width: 1200px) and (min-width: 769px) {
   .matchCardAdapter {
-    width: 90%;
+    margin: 2% auto;
   }
 }
 
 @media only screen and (min-width: 1200px) {
   .matchCardAdapter {
-    width: 90%;
+    margin: 2% auto;
   }
 }
 
 .matchCardAdapter {
-	margin: 2% auto;
+  width: 90%;
 }
 
 .paginationDiv {

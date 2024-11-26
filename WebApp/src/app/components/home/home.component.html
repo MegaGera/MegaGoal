@@ -2,7 +2,7 @@
 
   <div class="row">
 
-    <div class="col-3">
+    <div class="col-md-3 d-none d-md-block">
 
       <!-- Left column: Stats information column -->
       <div class="informationColumn">
@@ -22,7 +22,7 @@
 
 
     <!-- Center column: Matches -->
-    <div class="col-6">
+    <div class="col-md-6 col-12">
 
       @if (this.matchesLoaded && this.matches.length > 0) {
       <!-- Iterate the matches filtered array -->
@@ -49,7 +49,7 @@
     </div>
 
     <!-- Right column: -->
-    <div class="col-3">
+    <div class="col-md-3 d-none d-md-block">
 
       <div class="filterBadge">
         <ng-icon name="jamFilterF"></ng-icon>
