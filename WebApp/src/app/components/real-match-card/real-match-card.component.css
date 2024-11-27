@@ -492,3 +492,7 @@
 	backdrop-filter: blur(3px);
 	cursor: pointer;
 }
+
+.location-mat-select {
+	font-size: 0.9rem;
+}

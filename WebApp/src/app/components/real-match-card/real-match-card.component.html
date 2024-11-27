@@ -49,7 +49,7 @@
 
           <div class="row" class="location-selector-row">
             <div class="location-selector">
-              <mat-select name="locationSelect" panelWidth="null" [(ngModel)]="match.location" 
+              <mat-select name="locationSelect" class="location-mat-select" panelWidth="null" [(ngModel)]="match.location" 
                 (selectionChange)="setLocation(match.fixture.id, $event.value)">
                 @for (location of locations; track $index) {
                   <mat-option [value]="location.name">{{location.name}}</mat-option>

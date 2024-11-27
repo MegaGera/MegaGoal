@@ -1,9 +1,15 @@
 <div class="container">
 
-  <div class="row">
-
-    <div class="col-md-3 d-none d-md-block">
-
+  <nav class="nav-class">
+    <div class="nav nav-tabs d-md-none" id="nav-tab" role="tablist">
+      <button class="nav-link" id="nav-stats-tab" data-bs-toggle="tab" data-bs-target="#nav-stats" type="button" role="tab" aria-controls="nav-stats" aria-selected="true">Stats</button>
+      <button class="nav-link active" id="nav-matches-tab" data-bs-toggle="tab" data-bs-target="#nav-matches" type="button" role="tab" aria-controls="nav-matches" aria-selected="false">Matches</button>
+      <button class="nav-link" id="nav-filters-tab" data-bs-toggle="tab" data-bs-target="#nav-filters" type="button" role="tab" aria-controls="nav-filters" aria-selected="false">Filters</button>
+    </div>
+  </nav>
+  <div class="tab-content row m-auto" id="nav-tabContent">
+    <div class="tab-pane fade show col-md-3 col-12" id="nav-stats" role="tabpanel" aria-labelledby="nav-home-tab">
+      
       <!-- Left column: Stats information column -->
       <div class="informationColumn">
         <div class="text-center">
@@ -19,38 +25,35 @@
       </div>
 
     </div>
-
-
-    <!-- Center column: Matches -->
-    <div class="col-md-6 col-12">
-
+    <div class="tab-pane fade show active col-md-6 col-12" id="nav-matches" role="tabpanel" aria-labelledby="nav-profile-tab">
+      
+      <!-- Center column: Matches -->
       @if (this.matchesLoaded && this.matches.length > 0) {
-      <!-- Iterate the matches filtered array -->
-      @for (match of matchesFiltered; track $index) {
-      <div class="matchCardAdapter">
-        <app-real-match-card [match]="match" [watched]="true" [locations]="locations" />
-      </div>
-      }
+        <!-- Iterate the matches filtered array -->
+        @for (match of matchesFiltered; track $index) {
+          <div class="matchCardAdapter">
+            <app-real-match-card [match]="match" [watched]="true" [locations]="locations" />
+          </div>
+        }
 
-      <!-- Pagination -->
-      <div class="paginationDiv">
-        <app-pagination [elements]="this.matches" [elementsPerPage]="20" [(elementsFiltered)]="this.matchesFiltered" />
-      </div>
+        <!-- Pagination -->
+        <div class="paginationDiv">
+          <app-pagination [elements]="this.matches" [elementsPerPage]="20" [(elementsFiltered)]="this.matchesFiltered" />
+        </div>
       } @else if (this.matchesLoaded && this.matches.length == 0) {
-      <div class="noMatches">
-        <h1>No matches found</h1>
-      </div>
+        <div class="noMatches">
+          <h1>No matches found</h1>
+        </div>
       } @else if (!this.matchesLoaded) {
-      <div class="spinner">
-        <mat-spinner />
-      </div>
+        <div class="spinner">
+          <mat-spinner />
+        </div>
       }
 
     </div>
-
-    <!-- Right column: -->
-    <div class="col-md-3 d-none d-md-block">
-
+    <div class="tab-pane fade show col-md-3 col-12" id="nav-filters" role="tabpanel" aria-labelledby="nav-contact-tab">
+      
+      <!-- Right column: -->
       <div class="filterBadge">
         <ng-icon name="jamFilterF"></ng-icon>
       </div>
@@ -130,25 +133,24 @@
 
       <!-- Ready to implement the filter panel with expansion hover
 
-        <mat-expansion-panel 
-          #panel
-          hideToggle="true"
-          (opened)="panelOpenState.set(true)"
-          (closed)="panelOpenState.set(false)"
-          (mouseenter)="panel.open()"
-          (mouseleave)="panel.close()"
-          class="filterPanelExpanded"
-        >
-          <mat-expansion-panel-header>
-            <mat-panel-title>                   
-              <ng-icon name="jamFilterF"></ng-icon>
-            </mat-panel-title>
-          </mat-expansion-panel-header>
-          <p>I'm visible because I am open</p>
-        </mat-expansion-panel> -->
+          <mat-expansion-panel 
+            #panel
+            hideToggle="true"
+            (opened)="panelOpenState.set(true)"
+            (closed)="panelOpenState.set(false)"
+            (mouseenter)="panel.open()"
+            (mouseleave)="panel.close()"
+            class="filterPanelExpanded"
+          >
+            <mat-expansion-panel-header>
+              <mat-panel-title>                   
+                <ng-icon name="jamFilterF"></ng-icon>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>I'm visible because I am open</p>
+          </mat-expansion-panel> -->
 
     </div>
-
   </div>
 
 </div>

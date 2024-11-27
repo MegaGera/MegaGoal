@@ -1,6 +1,21 @@
+/* Custom styling for large screens to show columns */
+@media (min-width: 768px) {
+  .tab-content > .tab-pane {
+      display: block !important; /* Make all tab panes visible */
+  }
+
+  .nav-tabs {
+      display: none;
+  }
+}
+
 @media only screen and (max-width: 768px) {
   .matchCardAdapter {
     margin: 5% auto;
+  }
+
+  .nav-class {
+    margin-top: 3% !important;
   }
 }
 
@@ -73,7 +88,7 @@
 }
 
 .filterBadge {
-  width: 10vw;
+  width: 40%;
   box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
   border-radius: 10px; 
   background-color: white;
