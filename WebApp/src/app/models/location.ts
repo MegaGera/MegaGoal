@@ -1,3 +1,7 @@
 export interface Location {
-    name: string
+    name: string,
+    id: string,
+    private: boolean,
+    stadium: boolean,
+    official: boolean
 }

@@ -1,15 +1,21 @@
 import { Component } from '@angular/core';
 import { FormsModule, FormBuilder, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 
+import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
+import { jamShieldF } from '@ng-icons/jam-icons';
+
 import { MegaGoalService } from '../../services/megagoal.service';
 import { Location } from '../../models/location';
 
 @Component({
   selector: 'app-locations',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule],
+  imports: [FormsModule, ReactiveFormsModule, NgIconComponent],
   templateUrl: './locations.component.html',
-  styleUrl: './locations.component.css'
+  styleUrl: './locations.component.css',
+  providers: [provideNgIconsConfig({
+    size: '1.5em',
+  }), provideIcons({ jamShieldF })]
 })
 export class LocationsComponent {
 

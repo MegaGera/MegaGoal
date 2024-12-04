@@ -18,14 +18,20 @@
       <table class="table tableLocations">
         <thead>
           <tr>
-            <th scope="col">#</th>
-            <th scope="col">Name</th>
+            <th scope="col" style="width: 5%;">#</th>
+            <th scope="col" style="width: 5%;"></th>
+            <th scope="col" style="width: 90%;">Name</th>
           </tr>
         </thead>
         <tbody>
           @for (location of locations; track $index) {
             <tr>
               <th scope="row">{{$index + 1}}</th>
+              <td>
+                @if (location.stadium) {
+                  <ng-icon name="jamShieldF"></ng-icon>
+                }
+              </td>
               <td>{{location.name}}</td>
             </tr>
           }
