@@ -1,25 +1,33 @@
 <div class="container">
-	
-	<!-- Season select form in Top Leagues view -->
-	<form class="formLeagues">
-		<mat-form-field class="w-100">
-			<mat-label>Season</mat-label>
-			<mat-select name="seasonSelect" [(ngModel)]="selectedSeason" (selectionChange)="getTeamsBySeason(selectedSeason)">
-				@for (season of seasonsFiltered; track $index) {
-					<mat-option [value]="season">{{season.text}}</mat-option>
-				}
-			</mat-select>
-		</mat-form-field>
-	</form>
 
 	<!-- Selected league - Absolute position -->
 	 @if (selectedLeague) {
-		<div class="cardLeagueSelected" (click)="selectLeague(selectedLeague)">
-			<img class="img-fluid p-1 imgLeague" [src]="images.getRouteImageLeagueSm(selectedLeague.league.id)">
+		
+		<!-- League logo for come back to league selector -->
+		<div class="row topRow">
+			<div class="col-4 h-100">
+				<div class="cardLeagueSelected" (click)="selectLeague(selectedLeague)">
+					<img class="img-fluid p-1 imgLeague" [src]="images.getRouteImageLeagueSm(selectedLeague.league.id)">
+				</div>
+			</div>
+
+			<!-- Season select form in Top Leagues view -->
+			<form class="col-8">
+				<div class="formLeagues">
+					<mat-form-field class="w-100">
+						<mat-label>Season</mat-label>
+						<mat-select name="seasonSelect" [(ngModel)]="selectedSeason" (selectionChange)="getTeamsBySeason(selectedSeason)">
+							@for (season of seasonsFiltered; track $index) {
+								<mat-option [value]="season">{{season.text}}</mat-option>
+							}
+						</mat-select>
+					</mat-form-field>
+				</div>
+			</form>
 		</div>
 	} @else {
 		<!-- Grid list of the leagues and the teams -->
-		<div class="row row-cols-lg-5 row-cols-md-4 row-cols-3">
+		<div class="mt-3 row row-cols-lg-5 row-cols-md-4 row-cols-3">
 			@for (league of leagues; track $index) {
 			<div class="col gridLeague">
 				<div class="cardLeague" (click)="selectLeague(league)">
@@ -30,9 +38,9 @@
 		</div>
 	}
 	
+	<!-- List of teams -->
 	@if (selectedLeague) {
 
-		<!-- List of teams -->
 		<div class="row">
 			@for (team of showTeams; track $index) {
 			<div class="gridTeam">
@@ -67,7 +75,7 @@
 				@if (groupedRealMatches.length > 0 && groupedRealMatches[selectedRound][0]) {
 					<h2 class="arrowRound" (click)="changeRound(-1)">&laquo;</h2>
 					
-					<form class="formLeagues">
+					<form class="formRounds">
 						<mat-form-field class="w-100">
 							<mat-label>Round</mat-label>
 							<mat-select name="roundSelect" [(ngModel)]="selectedRound">
@@ -82,7 +90,7 @@
 				}
 			</div>
 
-		<!-- List of matches -->
+			<!-- List of matches -->
 			<div class="col-12 col-lg-6">
 				@for (match of filterHalfRealMatches(groupedRealMatches[selectedRound], 0); track $index) {
 					<div class="matchCardAdapter matchCardAdapterTwoColumns">
