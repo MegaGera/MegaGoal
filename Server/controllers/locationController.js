@@ -1,4 +1,5 @@
 import { getDB } from '../config/db.js';
+import { v4 as uuidv4 } from 'uuid';
 
 // Get locations
 const getLocations = async (req, res) => {
@@ -21,7 +22,11 @@ const createLocation = async (req, res) => {
   try {
     let location = req.body;
     let username = req.validateData.username;
+    location.id = uuidv4();
     location.user = { username: username };
+    location.official = false;
+    location.stadium = false;
+    location.private = true;
 
     let result = await db.collection('locations').insertOne(location);
     console.log("Location " + location.name + " inserted for user " + req.validateData.username);
