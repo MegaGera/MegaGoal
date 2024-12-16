@@ -1,4 +1,5 @@
 import { getDB } from '../config/db.js';
+import { ObjectId } from 'mongodb';
 
 // Get matches
 const getMatches = async (req, res) => {
@@ -45,6 +46,34 @@ const createMatch = async (req, res) => {
   }
 }
 
+// Delete a match
+const deleteMatch = async (req, res) => {
+  const db = getDB();
+  try {
+    let { _id } = req.params;
+    let username = req.validateData.username;
+    // The "_id" can be a string or an ObjectId
+    const filter = {
+      $or: [
+      { "_id": new ObjectId(_id) },
+      { "_id": _id }
+      ]
+    };
+    let result = await db.collection('matches').findOne(filter) || undefined;
+    if (!result) {
+      return res.status(404).json({ message: "Match not found" });
+    }
+    if (result.user.username !== username) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+    await db.collection('matches').deleteOne(filter);
+    console.log("Match deleted with id " + id);
+    res.status(200).json({ message: "Match deleted successfully" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
 // Post change location of a match
 const changeLocation = async (req, res) => {
   const db = getDB();
@@ -61,4 +90,4 @@ const changeLocation = async (req, res) => {
   }
 }
 
-export { getMatches, createMatch, changeLocation };
+export { getMatches, createMatch, deleteMatch, changeLocation };
