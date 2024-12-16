@@ -1,8 +1,7 @@
 /*
-    Match interface for football matches viewed (with the _id)
+    This interface is used to represent the request to create a new Match (without the _id)
 */
-export interface Match {
-    _id: string,
+export interface MatchRequest {
     fixture: {
         id: number,
         timestamp: number

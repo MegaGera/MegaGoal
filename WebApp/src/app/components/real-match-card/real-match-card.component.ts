@@ -13,6 +13,8 @@ import { ImagesService } from '../../services/images.service';
 import { MegaGoalService } from '../../services/megagoal.service';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
+import { MatchParserService } from '../../services/match-parser.service';
+
 
 @Component({
   selector: 'app-real-match-card',
@@ -29,7 +31,7 @@ export class RealMatchCardComponent {
   @Input() watched: boolean = false;
   @Input() locations!: Location[];
 
-  constructor(public images: ImagesService, private megaGoal: MegaGoalService) { }
+  constructor(public images: ImagesService, private megaGoal: MegaGoalService, public matchParser: MatchParserService) { }
 
   getDate(timestamp: number) {
     let date = new Date((timestamp * 1000));
@@ -39,9 +41,10 @@ export class RealMatchCardComponent {
   createMatch() {
     if (!this.watched) {
       this.watched = true;
-      this.megaGoal.createMatch(this.match).subscribe(result => {
-        console.log(result)
-      })
+      this.megaGoal.createMatch(this.matchParser.matchToMatchRequest(this.match)).subscribe(result => { })
+    } else {
+      this.watched = false;
+      this.megaGoal.deleteMatch(this.match._id).subscribe(result => { });
     }
   }
 

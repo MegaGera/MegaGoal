@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, ɵgetUnknownElementStrictMode } from '@angular/core';
 import { RealMatch } from '../models/realMatch';
 import { Match } from '../models/match';
+import { MatchRequest } from '../models/matchRequest';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,7 @@ export class MatchParserService {
 
   realMatchToMatch(realMatch: RealMatch, match?: Match): Match {
     let matchModel: Match = {
+      _id:  match ? match._id : '', 
       fixture: {
         id: realMatch.fixture.id,
         timestamp: realMatch.fixture.timestamp
@@ -38,6 +40,11 @@ export class MatchParserService {
       location: match ? match.location : '' 
     }
     return matchModel;
+  }
+  
+  matchToMatchRequest(match: Match): MatchRequest {
+    const { _id, ...matchRequest } = match;
+    return matchRequest;
   }
 
 }

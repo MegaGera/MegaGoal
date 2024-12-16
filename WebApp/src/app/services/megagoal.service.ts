@@ -12,6 +12,7 @@ import { Observable } from 'rxjs';
 import { RealMatch } from '../models/realMatch';
 import { environment } from '../../environments/environment';
 import { LeaguesSettings } from '../models/leaguesSettings';
+import { MatchRequest } from '../models/matchRequest';
 
 @Injectable({
   providedIn: 'root'
@@ -112,11 +113,17 @@ export class MegaGoalService {
   /*
     Method to create a new Match from a Real Match
   */
-  createMatch(match: Match): Observable<Match> {
-    console.log(match)
+  createMatch(match: MatchRequest): Observable<Match> {
     return this.http.post<Match>(this.url + '/match/', match, this.options);
   }
 
+  /*
+    Method to delete a match by the _id
+  */
+  deleteMatch(_id: string): Observable<string> {
+    return this.http.delete<string>(this.url + '/match/' + _id, this.options);
+  }
+    
   /*
     Method to get all the Matches by team and season from the API
   */
