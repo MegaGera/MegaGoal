@@ -4,5 +4,7 @@ export interface LeaguesSettings {
     update_frequency: number,
     last_update: Date,
     next_match: Date,
-    is_active: boolean
+    is_active: boolean,
+    last_daily_update: Date,
+    daily_update: boolean
 }

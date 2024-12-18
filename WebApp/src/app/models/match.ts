@@ -27,5 +27,6 @@ export interface Match {
         home: number,
         away: number
     },
-    location: string
+    location: string,
+    status: string
 }

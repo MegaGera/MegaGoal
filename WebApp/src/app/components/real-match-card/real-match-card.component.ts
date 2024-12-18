@@ -99,4 +99,9 @@ export class RealMatchCardComponent {
     //event.target.src = environment.serverURL + "/assets/img/leagues/back/0.png"
   }
 
+  isLive() {
+    const liveStatuses = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'INT'];
+    return liveStatuses.includes(this.match.status);
+  }
+
 }

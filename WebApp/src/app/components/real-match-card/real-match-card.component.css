@@ -496,3 +496,29 @@
 .location-mat-select {
 	font-size: 0.9rem;
 }
+
+/* Blinking live red circle */
+.live-indicator {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	top: 5%;
+}
+  
+.circle {
+	width: 12px; /* Adjust size as needed */
+	height: 12px;
+	background-color: red;
+	border-radius: 50%;
+	animation: blink 1s infinite;
+}
+  
+@keyframes blink {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+}
+  

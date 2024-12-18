@@ -37,7 +37,8 @@ export class MatchParserService {
         home: realMatch.goals.home,
         away: realMatch.goals.away
       },
-      location: match ? match.location : '' 
+      location: match ? match.location : '',
+      status: realMatch.fixture.status.short
     }
     return matchModel;
   }
