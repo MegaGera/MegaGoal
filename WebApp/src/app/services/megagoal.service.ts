@@ -167,11 +167,33 @@ export class MegaGoalService {
   /*
     Method to change the Update Frequency of a League Settings
   */
+  changeIsActive(league_id: number, is_active: boolean): Observable<number> {
+    let body = {
+      league_id: league_id,
+      is_active: is_active
+    }
+    return this.http.patch<number>(this.url + '/admin/leagues_settings/is_active', body, this.options);
+  }
+
+  /*
+    Method to change the Update Frequency of a League Settings
+  */
   changeUpdateFrequency(league_id: number, update_frequency: number): Observable<number> {
     let body = {
       league_id: league_id,
       update_frequency: update_frequency
     }
     return this.http.patch<number>(this.url + '/admin/leagues_settings/update_frequency', body, this.options);
+  }
+
+  /*
+    Method to change the Update Frequency of a League Settings
+  */
+  changeDailyUpdate(league_id: number, daily_update: boolean): Observable<number> {
+    let body = {
+      league_id: league_id,
+      daily_update: daily_update
+    }
+    return this.http.patch<number>(this.url + '/admin/leagues_settings/daily_update', body, this.options);
   }
 }

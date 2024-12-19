@@ -76,13 +76,39 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+const validateAdmin = async (req, res, next) => {
+  // Validate Admin permissions
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      const headers = new Headers({
+        Cookie: "access_token=" + req.cookies.access_token
+      });
+      const validateRequest = new Request(process.env.VALIDATE_URI_ADMIN, {
+        headers: headers,
+      });
+      const validateResponse = await fetch(validateRequest);
+      const validateData = await validateResponse.json();
+      req.validateData = validateData.data;
+      if (validateResponse.status === 200) {
+        next();
+      } else {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+    } catch (error) {
+      return res.status(401).json({ error: 'Can\'t validate token' });
+    }
+  } else if (process.env.NODE_ENV === 'development') {
+    next();
+  }
+};
+
 // Routes
 app.use('/match', matchRoutes);
 app.use('/league', leagueRoutes);
 app.use('/team', teamRoutes);
 app.use('/real_match', realMatchRoutes);
 app.use('/location', locationRoutes);
-app.use('/admin', adminRoutes);
+app.use('/admin', validateAdmin, adminRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3150;

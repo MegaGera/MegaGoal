@@ -6,50 +6,65 @@
           <tr>
             <th scope="col">#</th>
             <th scope="col">League</th>
+            <th scope="col">Active</th>
             <th scope="col">Frequency (days)</th>
             <th scope="col">Last Update</th>
             <th scope="col">Next Match</th>
+            <th scope="col">Daily Update</th>
+            <th scope="col">Last Daily Update</th>
           </tr>
         </thead>
         <tbody>
           @for (leaguesSetting of leaguesSettings; track $index) {
-            <tr>
+            <tr [ngClass]="{'inactive': !leaguesSetting.is_active,
+              'daily_update': leaguesSetting.is_active && leaguesSetting.daily_update}">
               <th scope="row">{{$index + 1}}</th>
               <td>{{leaguesSetting.league_name}}</td>
-              <!-- <td>{{leaguesSetting.update_frequency}}</td> -->
-                <td>
+              <td>
+                <div class="form-check form-check-inline">
+                  <input class="form-check input" type="checkbox" id="active{{$index}}" [(ngModel)]="leaguesSetting.is_active"
+                    (click)="changeIsActive(leaguesSetting.league_id, !leaguesSetting.is_active)">
+                </div>
+              </td>
+              <td>
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency1{{$index}}"
-                    [(ngModel)]="leaguesSetting.update_frequency" [value]="1" (click)="changeUpdateFrequency(leaguesSetting.league_id, 1)">
+                    [(ngModel)]="leaguesSetting.update_frequency" [value]="1" [disabled]="!leaguesSetting.is_active" (click)="changeUpdateFrequency(leaguesSetting.league_id, 1)">
                   <label class="form-check-label" for="frequency1{{$index}}">
                     1
                   </label>
                 </div>
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency3{{$index}}"
-                    [(ngModel)]="leaguesSetting.update_frequency" [value]="3" (click)="changeUpdateFrequency(leaguesSetting.league_id, 3)">
+                    [(ngModel)]="leaguesSetting.update_frequency" [value]="3" [disabled]="!leaguesSetting.is_active" (click)="changeUpdateFrequency(leaguesSetting.league_id, 3)">
                   <label class="form-check-label" for="frequency3{{$index}}">
                     3
                   </label>
                 </div>
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency7{{$index}}" 
-                    [(ngModel)]="leaguesSetting.update_frequency" [value]="7" (click)="changeUpdateFrequency(leaguesSetting.league_id, 7)">
+                    [(ngModel)]="leaguesSetting.update_frequency" [value]="7" [disabled]="!leaguesSetting.is_active" (click)="changeUpdateFrequency(leaguesSetting.league_id, 7)">
                   <label class="form-check-label" for="frequency7{{$index}}">
                     7
                   </label>
                 </div>
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency30{{$index}}"
-                    [(ngModel)]="leaguesSetting.update_frequency" [value]="30" (click)="changeUpdateFrequency(leaguesSetting.league_id, 30)">
+                    [(ngModel)]="leaguesSetting.update_frequency" [value]="30" [disabled]="!leaguesSetting.is_active" (click)="changeUpdateFrequency(leaguesSetting.league_id, 30)">
                   <label class="form-check-label" for="frequency30{{$index}}">
                     30
                   </label>
                 </div>
-                
-                </td>
+              </td>
               <td>{{leaguesSetting.last_update | date:'dd-MM-yyyy'}}</td>
               <td>{{leaguesSetting.next_match | date:'dd-MM-yyyy'}}</td>
+              <td>
+                <div class="form-check form-check-inline">
+                    <input class="form-check input" type="checkbox" id="dailyUpdate{{$index}}" [(ngModel)]="leaguesSetting.daily_update"
+                    [disabled]="!leaguesSetting.is_active" (click)="changeDailyUpdate(leaguesSetting.league_id, !leaguesSetting.daily_update)">
+                </div>
+              </td>
+              <td>{{leaguesSetting.last_daily_update | date:'dd-MM-yyyy HH:mm:ss'}}</td>
             </tr>
           }
         </tbody>

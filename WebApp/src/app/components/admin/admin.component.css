@@ -6,3 +6,11 @@
 th, td {
   background-color: inherit;
 }
+
+.inactive {
+  background-color: #f8d7da;
+}
+
+.daily_update {
+  background-color: #ffcc00;
+}
