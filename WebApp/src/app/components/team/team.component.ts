@@ -4,7 +4,7 @@
 
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgClass } from '@angular/common';
+import { NgClass, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select'
@@ -23,7 +23,7 @@ import { Location } from '../../models/location';
 @Component({
   selector: 'app-team',
   standalone: true,
-  imports: [FormsModule, MatFormFieldModule, MatSelectModule, RealMatchCardComponent, NgClass],
+  imports: [FormsModule, MatFormFieldModule, MatSelectModule, RealMatchCardComponent, NgClass, NgFor],
   templateUrl: './team.component.html',
   styleUrl: './team.component.css',
   providers: [ImagesService]
@@ -162,6 +162,10 @@ export class TeamComponent {
   */
   filterHalfRealMatches(matches: RealMatch[], col: number) {
     return matches.filter((match, index) => index % 2 === col % 2);
+  }
+
+  trackByMatchId(index: number, match: any): number {
+    return match.fixture.id; // Ensure each match has a unique identifier
   }
 
   /*

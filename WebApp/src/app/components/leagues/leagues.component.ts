@@ -13,7 +13,7 @@
 
 import { Component } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { AsyncPipe, NgClass } from '@angular/common';
+import { AsyncPipe, NgClass, NgFor } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -43,7 +43,7 @@ import { Location } from '../../models/location';
   standalone: true,
   imports: [FormsModule, MatFormFieldModule, MatInputModule, MatAutocompleteModule,
     ReactiveFormsModule, AsyncPipe, NgClass, MatCheckboxModule, MatGridListModule, 
-    MatSelectModule, RouterModule, RealMatchCardComponent, NgIconComponent],
+    MatSelectModule, RouterModule, RealMatchCardComponent, NgIconComponent, NgFor],
   templateUrl: './leagues.component.html',
   styleUrl: './leagues.component.css',
   providers: [ImagesService, provideNgIconsConfig({
@@ -175,6 +175,7 @@ export class LeaguesComponent {
     This method change the round of the matches by the arrows
   */
   changeRound(n: number) {
+    this.getMatches();
     if (this.selectedRound + n >= 0 && this.selectedRound + n < this.groupedRealMatches.length) {
       this.selectedRound = this.selectedRound + n;
     }
@@ -205,6 +206,10 @@ export class LeaguesComponent {
       return matches.filter((match, index) => index % 2 === col % 2);
     }
     return [];
+  }
+
+  trackByMatchId(index: number, match: any): number {
+    return match.fixture.id; // Ensure each match has a unique identifier
   }
 
   getLocations() {

@@ -51,16 +51,18 @@
             </div>
           </div>
 
-          <div class="row" class="location-selector-row">
-            <div class="location-selector">
-              <mat-select name="locationSelect" class="location-mat-select" panelWidth="null" [(ngModel)]="match.location" 
-                (selectionChange)="setLocation(match.fixture.id, $event.value)">
-                @for (location of locations; track $index) {
-                  <mat-option [value]="location.id">{{location.name}}</mat-option>
-                }
-              </mat-select>
+          @if (watched) {
+            <div class="row" class="location-selector-row">
+              <div class="location-selector">
+                <mat-select name="locationSelect" class="location-mat-select" panelWidth="null" [(ngModel)]="match.location" 
+                  (selectionChange)="setLocation(match.fixture.id, $event.value)">
+                  @for (location of locations; track $index) {
+                    <mat-option [value]="location.id">{{location.name}}</mat-option>
+                  }
+                </mat-select>
+              </div>
             </div>
-          </div>
+          }
 
         </div>
 

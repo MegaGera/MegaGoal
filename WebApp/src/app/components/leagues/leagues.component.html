@@ -92,22 +92,20 @@
 
 			<!-- List of matches -->
 			<div class="col-12 col-lg-6">
-				@for (match of filterHalfRealMatches(groupedRealMatches[selectedRound], 0); track $index) {
-					<div class="matchCardAdapter matchCardAdapterTwoColumns">
-						<app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-						[watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-						[locations]="locations"></app-real-match-card>
-					</div>
-				}
+				<div class="matchCardAdapter matchCardAdapterTwoColumns"
+					*ngFor="let match of filterHalfRealMatches(groupedRealMatches[selectedRound], 0); trackBy: trackByMatchId" >
+					<app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+					[watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+					[locations]="locations"></app-real-match-card>
+				</div>
 			</div>
 			<div class="col-12 col-lg-6">
-				@for (match of filterHalfRealMatches(groupedRealMatches[selectedRound], 1); track $index) {
-					<div class="matchCardAdapter matchCardAdapterTwoColumns">
-						<app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-						[watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-						[locations]="locations"></app-real-match-card>
-					</div>
-				}
+				<div class="matchCardAdapter matchCardAdapterTwoColumns"
+					*ngFor="let match of filterHalfRealMatches(groupedRealMatches[selectedRound], 1); trackBy: trackByMatchId" >
+					<app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+					[watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+					[locations]="locations"></app-real-match-card>
+				</div>
 			</div>
 		</div>
 
