@@ -158,6 +158,13 @@ export class MegaGoalService {
   }
 
   /*
+    Method to get all the Locations from the API
+  */
+  getLocationsCounts(): Observable<Location[]> {
+    return this.http.get<Location[]>(this.url + '/location/counts/', this.options);
+  }
+
+  /*
     Method to get the Leagues Settings from the API for Admin page
   */
   getLeaguesSettings(): Observable<LeaguesSettings[]> {

@@ -6,7 +6,7 @@ services:
     container_name: megagoal
     build: .
     ports: 
-      - "80:80"
+      - "80"
     networks:
       - megagera_network
 

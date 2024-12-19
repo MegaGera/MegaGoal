@@ -31,7 +31,9 @@ export class RealMatchCardComponent {
   @Input() watched: boolean = false;
   @Input() locations!: Location[];
 
-  constructor(public images: ImagesService, private megaGoal: MegaGoalService, public matchParser: MatchParserService) { }
+  constructor(public images: ImagesService, private megaGoal: MegaGoalService, public matchParser: MatchParserService) {
+    this.orderLocations();
+  }
 
   getDate(timestamp: number) {
     let date = new Date((timestamp * 1000));
@@ -90,9 +92,7 @@ export class RealMatchCardComponent {
   }
 
   setLocation(fixtureId: number, location: string) {
-    this.megaGoal.setLocation(fixtureId, location).subscribe(result => {
-      console.log(result)
-    });
+    this.megaGoal.setLocation(fixtureId, location).subscribe(result => { });
   }
 
   getDefaultLeagueImg(event: any) {
@@ -102,6 +102,12 @@ export class RealMatchCardComponent {
   isLive() {
     const liveStatuses = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'INT'];
     return liveStatuses.includes(this.match.status);
+  }
+
+  orderLocations() {
+    if (this.locations) {
+      this.locations.sort((a, b) => a.matchCount > b.matchCount ? -1 : 1);
+    }
   }
 
 }

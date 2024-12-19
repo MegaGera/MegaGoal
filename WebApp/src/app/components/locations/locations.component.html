@@ -20,7 +20,10 @@
           <tr>
             <th scope="col" style="width: 5%;">#</th>
             <th scope="col" style="width: 5%;"></th>
-            <th scope="col" style="width: 90%;">Name</th>
+            <th scope="col" style="width: 80%;">Name</th>
+            <th scope="col" style="width: 10%;">
+              <ng-icon name="jamEyeF"></ng-icon>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -33,6 +36,7 @@
                 }
               </td>
               <td>{{location.name}}</td>
+              <td>{{location.matchCount}}</td>
             </tr>
           }
         </tbody>

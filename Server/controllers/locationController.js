@@ -2,7 +2,7 @@ import { getDB } from '../config/db.js';
 import { v4 as uuidv4 } from 'uuid';
 
 // Get locations
-const getLocations = async (req, res) => {
+export const getLocations = async (req, res) => {
   const db = getDB();
   try {
     let username = req.validateData.username;
@@ -16,8 +16,49 @@ const getLocations = async (req, res) => {
   }
 }
 
+// Get location counts
+export const getLocationCounts = async (req, res) => {
+  const db = getDB();
+  try {
+    let username = req.validateData.username;
+
+    const pipeline = [
+      { $match: { "user.username": username } },
+      {
+        $lookup: {
+          from: 'matches',
+          localField: 'id',
+          foreignField: 'location',
+          as: 'matches'
+        }
+      },
+      {
+        $addFields: {
+          matchCount: { $size: "$matches" }
+        }
+      },
+      {
+        $project: {
+          matches: 0
+        }
+      },
+      {
+        $sort: {
+          matchCount: -1
+        }
+      }
+    ];
+
+    const result = await db.collection('locations').aggregate(pipeline).toArray();
+    console.log("Location with counts retrieved");
+    res.send(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
 // Post create a Location
-const createLocation = async (req, res) => {
+export const createLocation = async (req, res) => {
   const db = getDB();
   try {
     let location = req.body;
@@ -35,5 +76,3 @@ const createLocation = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 }
-
-export { getLocations, createLocation };

@@ -3,5 +3,6 @@ export interface Location {
     id: string,
     private: boolean,
     stadium: boolean,
-    official: boolean
+    official: boolean,
+    matchCount: number
 }

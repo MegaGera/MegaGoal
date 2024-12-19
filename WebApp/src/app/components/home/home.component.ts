@@ -88,7 +88,7 @@ export class HomeComponent implements OnInit {
   }
 
   getLocations() {
-    this.megagoal.getLocations().subscribe(result => {
+    this.megagoal.getLocationsCounts().subscribe(result => {
       this.locations = <Location[]>result;
     })
   }

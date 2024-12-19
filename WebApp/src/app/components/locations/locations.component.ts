@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule, FormBuilder, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamShieldF } from '@ng-icons/jam-icons';
+import { jamShieldF, jamEyeF } from '@ng-icons/jam-icons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { Location } from '../../models/location';
@@ -15,7 +15,7 @@ import { Location } from '../../models/location';
   styleUrl: './locations.component.css',
   providers: [provideNgIconsConfig({
     size: '1.5em',
-  }), provideIcons({ jamShieldF })]
+  }), provideIcons({ jamShieldF, jamEyeF })]
 })
 export class LocationsComponent {
 
@@ -32,12 +32,13 @@ export class LocationsComponent {
       name: ['', Validators.required]
     });
     this.locations = [];
-    this.getLocations();
+    this.getLocationsCounts();
   }
 
-  getLocations() {
-    this.megagoal.getLocations().subscribe(result => {
+  getLocationsCounts() {
+    this.megagoal.getLocationsCounts().subscribe(result => {
       this.locations = <Location[]>result;
+      this.locations.sort((a, b) => a.matchCount > b.matchCount ? -1 : 1);
     })
   }
 

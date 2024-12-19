@@ -208,7 +208,7 @@ export class LeaguesComponent {
   }
 
   getLocations() {
-    this.megagoal.getLocations().subscribe(result => {
+    this.megagoal.getLocationsCounts().subscribe(result => {
       this.locations = <Location[]>result;
     })
   }
