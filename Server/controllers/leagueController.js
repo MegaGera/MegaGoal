@@ -21,7 +21,7 @@ const getTopLeagues = async (req, res) => {
         { "league.id": 2 }, { "league.id": 3 }, { "league.id": 39 }, { "league.id": 140 }, { "league.id": 143 },
         { "league.id": 45 }, { "league.id": 141 }, { "league.id": 135 }, { "league.id": 78 }, { "league.id": 61 },
         { "league.id": 556 }, { "league.id": 531 }, { "league.id": 848 }, { "league.id": 4 }, { "league.id": 1 }, 
-        { "league.id": 9 }, { "league.id": 40 }, { "league.id": 41 }, { "league.id": 42 }, { "league.id": 46 },
+        { "league.id": 9 }, { "league.id": 40 }, { "league.id": 41 }, { "league.id": 42 }, { "league.id": 48 },
         { "league.id": 5 }
       ]
     }
