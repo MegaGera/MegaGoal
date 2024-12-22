@@ -16,7 +16,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
   providers: [MegaGoalService, StatsService]
 })
 export class AppComponent {
-  title = 'WebApp';
+  title = 'MegaGoal';
 
   constructor() { }
 
