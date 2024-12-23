@@ -99,6 +99,11 @@
       <div class="tab-content row m-auto" id="nav-team-matches">
 
         <div class="tab-pane show active col-12 col-lg-6" id="nav-last" role="tabpanel" aria-labelledby="nav-last-tab">
+
+          <div class="text-center d-none d-md-flex">
+            <h2 class="m-auto"><u>Last played</u></h2>
+          </div>
+          
           @for (match of filterStartedRealMatches(); track $index) {
             <div class="matchCardAdapter matchCardAdapterTwoColumns">
               <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
@@ -109,6 +114,11 @@
         </div>
 
         <div class="tab-pane show col-12 col-lg-6" id="nav-next" role="tabpanel" aria-labelledby="nav-next-tab">
+
+          <div class="text-center d-none d-md-flex">
+            <h2 class="m-auto"><u>Next matches</u></h2>
+          </div>
+
           @for (match of filterNotStartedRealMatches(); track $index) {
             <div class="matchCardAdapter matchCardAdapterTwoColumns">
               <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
@@ -120,7 +130,7 @@
         
       </div>
     } @else {
-      <div class="row">
+      <div class="row d-none d-md-flex">
         <div class="col-12 col-lg-6">
           <div class="matchCardAdapter matchCardAdapterTwoColumns"
             *ngFor="let match of filterHalfRealMatches(showRealMatches, 0); trackBy: trackByMatchId">
@@ -132,6 +142,17 @@
         <div class="col-12 col-lg-6 mt-4">
           <div class="matchCardAdapter matchCardAdapterTwoColumns"
             *ngFor="let match of filterHalfRealMatches(showRealMatches, 1); trackBy: trackByMatchId">
+            <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+            [locations]="locations"></app-real-match-card>
+          </div>
+        </div>
+      </div>
+
+      <div class="row d-md-none">
+        <div class="col-12 col-lg-6">
+          <div class="matchCardAdapter matchCardAdapterTwoColumns"
+            *ngFor="let match of showRealMatches; trackBy: trackByMatchId">
             <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
             [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
             [locations]="locations"></app-real-match-card>
