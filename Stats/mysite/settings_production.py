@@ -14,8 +14,9 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from pathlib import Path
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env.development file
+env_file = os.getenv('ENV_FILE', '.env.production')
+load_dotenv(env_file)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#8k)&8rn=lfx10qg73$r&^17e%6pgcrh%or5ulvtcfu*h)^an('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Application definition
 
