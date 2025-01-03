@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
@@ -7,7 +7,8 @@ import { MatSelectModule } from '@angular/material/select'
 import { FormsModule } from '@angular/forms';
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamFilterF } from '@ng-icons/jam-icons';
+import { jamFilterF, jamEyeF, jamHomeF } from '@ng-icons/jam-icons';
+import { ionFootball } from '@ng-icons/ionicons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -16,18 +17,19 @@ import { Location } from '../../models/location';
 import { SeasonInfo } from '../../models/season';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { TeamStatsListComponent } from '../stats/team-stats-list/team-stats-list.component';
 import { StatsService } from '../../services/stats.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [FormsModule, NgIconComponent, CommonModule, RealMatchCardComponent, PaginationComponent, MatProgressSpinnerModule, 
-    MatExpansionModule, MatChipsModule, MatSelectModule],
+    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   providers: [ImagesService, provideNgIconsConfig({
-    size: '1.5em',
-  }), provideIcons({ jamFilterF })]
+    size: '1.2rem',
+  }), provideIcons({ jamFilterF, jamEyeF, jamHomeF, ionFootball })]
 })
 export class HomeComponent implements OnInit {
 
@@ -43,6 +45,7 @@ export class HomeComponent implements OnInit {
   matchesFiltered: Match[] = [];
   locations: Location[] = [];
   stats: { teamsViewed: any[] } = { teamsViewed: []};
+  statsLoaded: boolean = false;
   filterPanelChipSelected: number = 1; // 0 All, 1 Watched, 2 Not Watched
   filterLeagueSelected: number[] = []; // 40: Premier League, 140: La Liga, 141: La Liga 2, 2: Champions League
 
@@ -96,12 +99,14 @@ export class HomeComponent implements OnInit {
   getStats() {
     this.statsService.getTeamsViewed(this.filterPanelChipSelected, this.filterLeagueSelected, this.filterSeasonSelected.id).subscribe(result => {
       this.stats.teamsViewed = result;
+      this.statsLoaded = true;
     })
   }
 
   filterMatches() {
 
     // First: Take all the matches
+    this.statsLoaded = false;
     this.matches = this.matchesOriginal;
 
     // Filter by team selection

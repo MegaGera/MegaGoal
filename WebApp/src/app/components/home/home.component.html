@@ -11,18 +11,18 @@
     <div class="tab-pane fade show col-md-3 col-12" id="nav-stats" role="tabpanel" aria-labelledby="nav-home-tab">
       
       <!-- Left column: Stats information column -->
-      <div class="informationColumn">
-        <div class="text-center">
-          <h2 class="m-auto"><u>Teams viewed</u></h2>
-          @for (team of stats.teamsViewed.slice(0,19); track $index) {
-          <div class="rowTeamStats">
-            <img class="img-fluid p-1 imgTeamIcon" [src]="images.getRouteImageTeam(team.team_id)">
-            <h4 class="textTeamStats">{{ team.team_name }}: {{ team.count }}</h4>
+      @if (this.statsLoaded && stats.teamsViewed.length > 0) {
+        <div class="statsColumn">
+          <div class="text-center">
+              <app-team-stats-list [teams]="stats.teamsViewed" />
+            <br>
           </div>
-          }
-          <br>
         </div>
-      </div>
+      } @else if (!this.statsLoaded) {
+        <div class="spinner">
+          <mat-spinner />
+        </div>
+      }
 
     </div>
     <div class="tab-pane fade show active col-md-6 col-12" id="nav-matches" role="tabpanel" aria-labelledby="nav-profile-tab">

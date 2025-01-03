@@ -1,0 +1,27 @@
+
+@if (teams.length > 0) {
+
+    <div class="row">
+
+        <!-- Stats of Main Team -->
+        <div class="col-12 p-0 mb-3 mt-2">
+            <app-team-stats-badge [team]="teams[0]" [class]="'Main'" />
+        </div>
+
+        <!-- Stats of Secondary Team -->
+        @for (team of teams.slice(1,5); track $index) {
+            <div class="col-6 mb-3" [ngClass]="{biPosLeft: $index % 2 == 0, biPosRight: $index % 2 == 1}">
+                <app-team-stats-badge [team]="team" [class]="'Secondary'" />
+            </div>
+        }
+
+        <!-- Stats of Tertiary Team -->
+        @for (team of teams.slice(5,20); track $index) {
+            <div class="col-4 mb-3" [ngClass]="{triPosLeft: $index % 3 == 0, triPosMid: $index % 3 == 1, triPosRight: $index % 3 == 2}">
+                <app-team-stats-badge [team]="team" [class]="'Tertiary'" />
+            </div>
+        }
+
+    </div>
+
+}

@@ -1,0 +1,81 @@
+.divTeamStats {
+    margin: auto;
+    background-color: #fff5f5;
+    border-radius: 10px;
+    padding: 3px;
+    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+}
+
+.divTeamStats:hover {
+    background-color: #FFDAB9;
+    transition: 0.4s;
+    cursor: pointer;
+}
+
+.divMainBorder {
+    border: 4px solid goldenrod;
+}
+
+.divSecondaryBorder {
+    border: 3px solid indigo;
+}
+
+.divTertiaryBorder {
+    border: 2px solid rgba(220, 20, 60, 0.8);
+}
+
+.divTeamImg {
+    padding: 0 !important;
+}
+
+.divMainTeamImg {
+    height: 12vh;
+}
+
+.divSecondaryTeamImg {
+    height: 7vh;
+}
+
+.divTertiaryTeamImg {
+    height: 5vh;
+}
+
+.imgTeamIcon {
+    padding-left: 5%;
+    padding-right: 5%;
+    height: 100%;
+    max-height: -webkit-fill-available;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+}
+
+.RowTeamStats {
+    color: #012971;
+    font-weight: 600;
+    line-height: 1;
+
+    .divMainTeamStats {
+        font-size: 1.5rem;
+    }
+
+    .divSecondaryTeamStats {
+        font-size: 1.1rem;
+    }
+    
+    .divTertiaryTeamStats {
+        font-size: 0.9rem;
+    }
+
+    .iconMain {
+        --ng-icon__size: 1.8rem !important;
+    }
+
+    .iconSecondary {
+        --ng-icon__size: 1.3rem !important;
+    }
+
+    .iconTertiary {
+        --ng-icon__size: 0.9rem !important;
+    }
+
+}

@@ -53,19 +53,14 @@
   margin-top: 4%;
 }
 
-.informationColumn {
+.statsColumn {
   height: fit-content;
+  margin-bottom: 5%;
   padding-inline: 10%;
-  padding-top: 5%;
+  padding: 5% 8% 0;
   background-color: #FFE4E1;
   border-radius: 0 0 30px 30px;
-}
-
-.rowTeamStats {
-  height: 5vh;
-  display: flex;
-  margin-top: 2%;
-  text-align: left;
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
 }
 
 .imgTeamIcon {
@@ -73,10 +68,6 @@
   max-height: -webkit-fill-available;
   aspect-ratio: 1 / 1;
   object-fit: contain;
-}
-
-.textTeamStats {
-  margin: auto auto auto 5px;
 }
 
 .filterPanelExpanded {

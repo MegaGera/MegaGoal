@@ -26,6 +26,7 @@
     "@angular/router": "^17.3.11",
     "@ng-bootstrap/ng-bootstrap": "^16.0.0-rc.2",
     "@ng-icons/core": "^27.5.2",
+    "@ng-icons/ionicons": "^30.2.0",
     "@ng-icons/jam-icons": "^27.5.2",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.2",

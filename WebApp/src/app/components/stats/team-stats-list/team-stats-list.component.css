@@ -1,0 +1,24 @@
+.biPosLeft {
+    padding-left: 0%;
+    padding-right: 2%;
+}
+
+.biPosRight {
+    padding-left: 2%;
+    padding-right: 0%;
+}
+
+.triPosLeft {
+    padding-left: 0%;
+    padding-right: 1%;
+}
+
+.triPosMid {
+    padding-left: 2%;
+    padding-right: 2%;
+}
+
+.triPosRight {
+    padding-left: 1%;
+    padding-right: 0%;
+}

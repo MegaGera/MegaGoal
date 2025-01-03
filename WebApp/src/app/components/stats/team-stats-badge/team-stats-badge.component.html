@@ -1,0 +1,40 @@
+<div class="row divTeamStats" [ngClass]="{divMainBorder: class=='Main', 
+                                            divSecondaryBorder: class=='Secondary',
+                                            divTertiaryBorder: class=='Tertiary'}">
+
+    <!-- Team image -->
+    <div class="col-4 divTeamImg" [ngClass]="{divMainTeamImg: class=='Main', 
+                                            divSecondaryTeamImg: class=='Secondary',
+                                            divTertiaryTeamImg: class=='Tertiary'}">
+        <img class="img-fluid pl-1 imgTeamIcon" [src]="images.getRouteImageTeam(team.team_id)">
+    </div>
+
+    <!-- Total team views -->
+    <div class="col-4 m-auto p-0">
+        <div class="row RowTeamStats">
+            <div [ngClass]="{divMainTeamStats: class=='Main',
+                            divSecondaryTeamStats: class=='Secondary',
+                            divTertiaryTeamStats: class=='Tertiary'}">
+                <ng-icon name="jamEyeF" class="m-auto d-grid mb-1" [ngClass]="{iconMain: class=='Main', 
+                                                                                iconSecondary: class=='Secondary',
+                                                                                iconTertiary: class=='Tertiary'}"></ng-icon>
+                <span>{{ team.count }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total team goals -->
+    <div class="col-4 m-auto p-0">
+        <div class="row RowTeamStats">
+            <div [ngClass]="{divMainTeamStats: class=='Main',
+                            divSecondaryTeamStats: class=='Secondary',
+                            divTertiaryTeamStats: class=='Tertiary'}">
+                <ng-icon name="ionFootball" class="m-auto d-flex mb-1" [ngClass]="{iconMain: class=='Main', 
+                                                                                iconSecondary: class=='Secondary',
+                                                                                iconTertiary: class=='Tertiary'}"></ng-icon>
+                <span>{{ team.total_goals }}</span>
+            </div>
+        </div>
+    </div>
+
+</div>
