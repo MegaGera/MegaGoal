@@ -4,15 +4,25 @@ import { getDB } from '../config/db.js';
 const getTeams = async (req, res) => {
   const db = getDB();
   try {
-    let {league_id, season} = req.query;
-    const query = {
-      "seasons": 
-        { "$elemMatch": { "league": league_id, "season": season } } 
-    };
+    let {league_id, season, country} = req.query;
+
+    const filters = [];
+    if (league_id && season) {
+      filters.push({
+        "seasons": 
+          { "$elemMatch": { "league": league_id, "season": season } } 
+      });
+    } else if (league_id && !season) {
+      filters.push({ "seasons.league": league_id });
+    }
+    if (country) filters.push({ 'team.country': country });
+
+    const query = filters.length > 0 ? { $and: filters } : {};
     const result = await db.collection('teams').find(query).toArray();
     console.log("Teams Getted");
     res.send(result);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 }
