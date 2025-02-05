@@ -11,7 +11,7 @@ export class StatsService {
   /*
     URL of the API server
   */
-  url = environment.serverStatsURL + ":" + environment.serverStatsPort + "/api";
+  url = environment.serverStatsURL + "/api";
   options = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'

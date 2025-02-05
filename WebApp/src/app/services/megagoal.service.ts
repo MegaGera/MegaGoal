@@ -22,7 +22,7 @@ export class MegaGoalService {
   /*
     URL of the API server
   */
-  url = environment.serverURL + ":" + environment.serverPort;
+  url = environment.serverURL;
   options = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
@@ -129,7 +129,7 @@ export class MegaGoalService {
   */
   getMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<Match[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 
-    return this.http.get<Match[]>(this.url + '/match/', { ...this.options, params: params });
+    return this.http.get<Match[]>(this.url + '/match', { ...this.options, params: params });
   }
   
   /*
@@ -191,6 +191,7 @@ export class MegaGoalService {
       update_frequency: update_frequency
     }
     return this.http.patch<number>(this.url + '/admin/leagues_settings/update_frequency', body, this.options);
+    
   }
 
   /*
