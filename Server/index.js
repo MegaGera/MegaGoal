@@ -29,6 +29,7 @@ app.use(cookieParser());
 
 // CORS configuration
 if (process.env.NODE_ENV === 'production') {
+  console.log("Production mode - cors")
   const allowedOrigins = [/\.?megagera\.com$/];
 
   const corsOptions = {
@@ -43,7 +44,15 @@ if (process.env.NODE_ENV === 'production') {
 
   app.use(cors(corsOptions));
 } else {
+  
+  // Normal use in development
   app.use(cors());
+
+  // Only use if send credentials in development
+  // app.use(cors({
+  //   origin: 'http://localhost:3000',
+  //   credentials: true,
+  // }));
 }
 
 // Validate Api Key
@@ -80,6 +89,7 @@ const validateAdmin = async (req, res, next) => {
   // Validate Admin permissions
   if (process.env.NODE_ENV === 'production') {
     try {
+      console.log("Let's validate Admin")
       const headers = new Headers({
         Cookie: "access_token=" + req.cookies.access_token
       });
@@ -113,16 +123,17 @@ app.use('/admin', validateAdmin, adminRoutes);
 // Start the server
 const PORT = process.env.PORT || 3150;
 
-if (process.env.NODE_ENV === 'production') {
-  // SSL Options
-  const sslOptions = {
-    key: fs.readFileSync('/certificates/privkey.pem'),
-    cert: fs.readFileSync('/certificates/fullchain.pem')
-  };
+// if (process.env.NODE_ENV === 'production') {
+//   // SSL Options
+//   const sslOptions = {
+//     key: fs.readFileSync('/certificates/privkey.pem'),
+//     cert: fs.readFileSync('/certificates/fullchain.pem')
+//   };
   
-  https.createServer(sslOptions, app).listen(PORT, () => {
-    console.log(`Server running with SSL on port ${PORT}`);
-  });
-} else {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
+//   https.createServer(sslOptions, app).listen(PORT, () => {
+//     console.log(`Server running with SSL on port ${PORT}`);
+//   });
+// } else {
+//   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// }
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -6,7 +6,7 @@ services:
     container_name: megagoal_server
     build: .
     ports:
-      - "3150:3150"
+      - "3150"
     volumes:
       - ../../certificates:/certificates
     networks:
