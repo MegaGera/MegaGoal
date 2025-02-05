@@ -17,5 +17,5 @@ COPY . .
 EXPOSE 8000
 
 # Run gunicorn, with SSL certificate and key
-CMD ["gunicorn", "--certfile=/certificates/fullchain.pem", "--keyfile=/certificates/privkey.pem", "--bind", "0.0.0.0:8000", "mysite.wsgi:application"]
-# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "mysite.wsgi:application"]
+# CMD ["gunicorn", "--certfile=/certificates/fullchain.pem", "--keyfile=/certificates/privkey.pem", "--bind", "0.0.0.0:8000", "mysite.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "mysite.wsgi:application"]

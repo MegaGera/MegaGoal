@@ -6,9 +6,7 @@ services:
     container_name: megagoal_stats
     build: .
     ports:
-      - "8000:8000"
-    volumes:
-      - ../../certificates:/certificates
+      - "8000"
     networks:
       - megagera_network
 
