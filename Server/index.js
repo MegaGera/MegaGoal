@@ -6,8 +6,6 @@ import './config/loadEnv.js';
 import { connectDB } from './config/db.js';
 import express from 'express';
 import cors from 'cors';
-import fs from 'fs';
-import https from 'https';
 import cookieParser from 'cookie-parser';
 
 import matchRoutes from './routes/matchRoutes.js';

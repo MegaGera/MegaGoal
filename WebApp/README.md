@@ -1,6 +1,32 @@
 # MegaGoal - WebApp
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.0.8.
+WebApp microservice built with [Angular v17](https://angular.io/) (TypeScript) for *MegaGoal*.
+
+## Table of Contents
+
+- [Service Description](#service-description)
+  - [Features](#features)
+- [Project Composition](#project-composition)
+- [Dependencies](#dependencies)
+- [Environment Variables](#environment-variables)
+- [Development Server](#development-server)
+- [Build & Deploy](#build--deploy)
+
+## Service Description
+
+Web Application microservice for *MegaGoal* where mark the viewed football matches, navigate through the different football leagues and teams and see their information and matches played for each season in different competitions.
+
+UI responsive design. The design is adapted to be opened with big screens and mobile screens.
+
+All the images are from *MegaMedia* service.
+
+The application is already deployed and available at: [https://megagoal.megagera.com](https://megagoal.megagera.com)
+
+The deployment in production is done with [Nginx](https://nginx.org/en/) and [Docker](https://www.docker.com/).
+
+### Features
+
+Refer to [Features section in general README.md](../README.md#features) of the *MegaGoal* service.
 
 ## Project composition
 
@@ -12,7 +38,7 @@ This project contains: **Components**, **Services** and **Models**.
   - App Component is the parent component of the web application.
   - With the Router Module is possible to navigate through the different components of the application.
 
-- **Services**_
+- **Services**:
   - **Megagoal** Service provides the connection to the API where the data is stored. Is imported directly in the App Component to create just one instance of the Service and mantain the state across the components.
   - **Images** Service get the source of an image. It's only imported in the components where it's necessary.
 
@@ -21,40 +47,33 @@ This project contains: **Components**, **Services** and **Models**.
 
 The source code is under the src folder.
 
-## Screenshots
-
-**Home / Favourite Football Matches**
-
-![Matches Component](src/assets/img/screenshots/matches.png)
-
-**Leagues page**
-
-![Leagues Component](src/assets/img/screenshots/leagues_component.png)
-
-**Team page**
-
-![Team Component](src/assets/img/screenshots/team_component_info.png)
-
-![Team Component](src/assets/img/screenshots/team_component_matches.png)
-
 ## Dependencies
 
-The dependencies and the scripts are defined in the file `package.json` and managed with [npm](https://www.npmjs.com/).
+The dependencies and the scripts are defined in the file [`package.json`](package.json) and managed with [npm](https://www.npmjs.com/).
 
 To install the dependencies run the command: `npm install`.
+
+## Environment Variables
+
+In: `src/app/environments/environment.ts` || `src/app/environments/environment.development.ts`
+
+```javascript
+export const environment = {
+    production: boolean,
+    serverURL: string,
+    serverStatsURL: string,
+    serverImagesURL: string,
+};
+```
 
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if detects any change of the source files.
 
-## Code scaffolding
+## Build & Deploy
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+[`nginx.conf`](nginx.conf) generates the server to deploy the app in production.
 
-## Build
+[`Dockerfile`](Dockerfile) file builds the app for production and generates de Docker container.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+[`docker-compose.yml`](docker-compose.yml) file manages the image and handle it easily within the *Mega* network.
