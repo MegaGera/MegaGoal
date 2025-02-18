@@ -17,7 +17,7 @@
 
 ## Service Description
 
-MegaGoal offers a web application to save your historical data of viewed football matches of different competitions and then receive statistics of your favourite teams.
+*MegaGoal* offers a web application to save your historical data of viewed football matches of different competitions and then receive statistics of your favourite teams.
 
 You can navigate through the data of more than 20 different competitions such as the Champions League, LaLiga, Premier League and more, follow live matches as its database is updated daily and then mark your favourites. You can filter the stats and see how many goals each team scored in the matches you watched. And much more is coming soon!
 
@@ -80,7 +80,7 @@ The admin users can change the periodicity of the updates of the leagues and mat
 
 ## Part of Mega
 
-MegaGoal is part of the larger [**Mega**](https://github.com/MegaGera/Mega) project, a collection of web applications built with a **microservices architecture**.
+*MegaGoal* is part of the larger [**Mega**](https://github.com/MegaGera/Mega) project, a collection of web applications built with a **microservices architecture**.
 
 [**Mega**](https://github.com/MegaGera/Mega) includes other services such as a [Proxy (*MegaProxy*)](https://github.com/MegaGera/MegaProxy), [Authentication (*MegaAuth*)](https://github.com/MegaGera/MegaAuth), and other Web Applications ([*MegaMedia*](https://github.com/MegaGera/MegaMedia), [*MegaHome*](https://github.com/MegaGera/MegaHome), [*MegaDocu*](https://docusaurus.io/))
 
