@@ -43,7 +43,7 @@ Desktop view:
 
 Mobile view:
 
-<img style="width:30%; margin-left:30%" src="WebApp/src/assets/img/screenshots/live-matches-mobile.gif" alt="live-matches-mobile"/>
+<img style="width:50%" src="WebApp/src/assets/img/screenshots/live-matches-mobile.gif" alt="live-matches-mobile"/>
 
 #### League Matches
 
@@ -63,10 +63,13 @@ The user can see the **information of a team** and their actual matches or from 
 
 The matches can be updated in the database to be live follow in the WebApp. A live match will be marked with a red flash light circle and its score will be live updated. 
 
-<div style="display: inline-block">
-  <img style="width:70%; margin-right: 5%" src="WebApp/src/assets/img/screenshots/live-matches-desktop.gif" alt="live-matches-desktop"/>
-  <img style="width:20%" src="WebApp/src/assets/img/screenshots/live-matches-mobile.gif" alt="live-matches-mobile"/>
-</div>
+Desktop view:
+
+<img  src="WebApp/src/assets/img/screenshots/live-matches-desktop.gif" alt="live-matches-desktop"/>
+  
+Mobile view:
+
+<img style="width:50%" src="WebApp/src/assets/img/screenshots/live-matches-mobile.gif" alt="live-matches-mobile"/>
 
 #### Locations
 
