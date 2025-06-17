@@ -49,6 +49,9 @@
 	--color-american-cup: #0063e1;
 	--color-american-cup-trans: rgba(0, 99, 225, 0.9);
 
+	--color-club-world-cup: #d4af37;
+	--color-club-world-cup-trans: rgba(255, 191, 0, 0.9);
+
 	--color-none: #000000;
 	--color-none-trans: rgba(92, 86, 86, 0.9);
 }
@@ -221,6 +224,11 @@
 	box-shadow: 0 0 4px 2px var(--color-american-cup-trans), 0 4px 4px 0 var(--color-american-cup-trans);
 }
 
+.matchCard.ClubWorldCup {
+	border: 2px solid var(--color-club-world-cup);
+	box-shadow: 0 0 4px 2px var(--color-club-world-cup-trans), 0 4px 4px 0 var(--color-club-world-cup-trans);
+}
+
 .matchCard.None {
 	border: 2px solid var(--color-none);
 	box-shadow: 0 0 4px 2px var(--color-none-trans), 0 4px 4px 0 var(--color-none-trans);
@@ -312,6 +320,10 @@
 
 .teamLogo.AmericanCup {
 	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-american-cup-trans);
+}
+
+.teamLogo.ClubWorldCup {
+	box-shadow: 0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) var(--color-club-world-cup-trans);
 }
 
 .teamLogo.None {

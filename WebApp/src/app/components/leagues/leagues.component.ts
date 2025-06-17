@@ -64,7 +64,8 @@ export class LeaguesComponent {
 
   /* Seasons */
   seasons: SeasonInfo[] = 
-    [{id: 2024, text: "2024-2025"}, 
+    [{id: 2025, text: "2025-2026"}, 
+    {id: 2024, text: "2024-2025"}, 
     {id: 2023, text: "2023-2024"}, 
     {id: 2022, text: "2022-2023"}, 
     {id: 2021 ,text: "2021-2022"}, 
@@ -74,7 +75,10 @@ export class LeaguesComponent {
     {id: 2017, text: "2017-2018"}, 
     {id: 2016, text: "2016-2017"}, 
     {id: 2015, text: "2015-2016"}, 
-    {id: 2014, text: "2014-2015"}]
+    {id: 2014, text: "2014-2015"}, 
+    {id: 2013, text: "2013-2014"}, 
+    {id: 2012, text: "2012-2013"}, 
+    {id: 2011, text: "2011-2012"}]
   seasonsFiltered: SeasonInfo[] = [];
   selectedSeason!: SeasonInfo;
 
