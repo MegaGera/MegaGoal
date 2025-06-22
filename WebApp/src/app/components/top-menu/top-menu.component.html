@@ -2,40 +2,37 @@
   Top Menu Bar Component. Includes:
   - Button to go to Home Component
   - Button to go to Leagues Component
+  - User dropdown with Profile, Locations, and Admin options
 -->
-<div class="topMenu">
-    <div class="row topMenuRow">
-        <div class="col-5 col-md menuButton">
+<nav class="top-menu">
+    <div class="top-menu-container">
+        <div class="nav-section">
             <a class="nav-link" routerLink="/home" routerLinkActive="active">
-                <h1 class="buttonText">Home</h1>
+                <span class="nav-text">Home</span>
             </a>
-        </div>
-        <div class="col-5 col-md menuButton">
             <a class="nav-link" routerLink="/leagues" routerLinkActive="active" ariaCurrentWhenActive="page">
-                <h1 class="buttonText">Leagues</h1>
+                <span class="nav-text">Leagues</span>
             </a>
         </div>
-        <!-- User button -->
-        <div class="userButton">
-            <ng-icon class="userIcon" name="jamUserCircle"></ng-icon>
-            <div class="userPanel">
-                <div class="col userPanelButton">
-                    <a class="nav-link" href="https://megaauth.megagera.com" target="_blank">
-                        <h3 class="buttonText">Profile</h3>
-                    </a>
-                </div>
-                <div class="col userPanelButton">
-                    <a class="nav-link" routerLink="/locations" routerLinkActive="active">
-                        <h3 class="buttonText">Locations</h3>
-                    </a>
-                </div>
-                <div class="col userPanelButton">
-                    <a class="nav-link" routerLink="/admin" routerLinkActive="active">
-                        <h3 class="buttonText">Admin</h3>
-                    </a>
-                </div>
+        
+        <!-- User dropdown -->
+        <div class="user-dropdown">
+            <button class="user-button" (click)="toggleUserMenu()" [class.active]="isUserMenuOpen">
+                <ng-icon class="user-icon" name="jamUserCircle"></ng-icon>
+            </button>
+            
+            <div class="user-panel" [class.open]="isUserMenuOpen">
+                <a class="user-panel-link" href="https://megaauth.megagera.com" target="_blank">
+                    <span class="user-panel-text">Profile</span>
+                </a>
+                <a class="user-panel-link" routerLink="/locations" routerLinkActive="active">
+                    <span class="user-panel-text">Locations</span>
+                </a>
+                <a class="user-panel-link" routerLink="/admin" routerLinkActive="active">
+                    <span class="user-panel-text">Admin</span>
+                </a>
             </div>
         </div>
     </div>
-</div>
+</nav>
 
