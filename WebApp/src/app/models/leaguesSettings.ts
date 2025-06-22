@@ -6,5 +6,6 @@ export interface LeaguesSettings {
     next_match: Date,
     is_active: boolean,
     last_daily_update: Date,
-    daily_update: boolean
+    daily_update: boolean,
+    season: number
 }
