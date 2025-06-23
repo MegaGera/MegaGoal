@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { LeagueSelectorComponent } from './league-selector.component';
 
-import { LeaguesComponent } from './leagues.component';
-
-describe('LeaguesComponent', () => {
-  let component: LeaguesComponent;
-  let fixture: ComponentFixture<LeaguesComponent>;
+describe('LeagueSelectorComponent', () => {
+  let component: LeagueSelectorComponent;
+  let fixture: ComponentFixture<LeagueSelectorComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LeaguesComponent]
+      imports: [LeagueSelectorComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(LeaguesComponent);
+    fixture = TestBed.createComponent(LeagueSelectorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -20,4 +19,4 @@ describe('LeaguesComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-});
+}); 

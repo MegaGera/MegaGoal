@@ -1,0 +1,143 @@
+<!-- Loading overlay -->
+@if (isLoading) {
+  <div class="loading-overlay">
+    <div class="loading-spinner"></div>
+  </div>
+}
+
+<div class="container">
+  @if (selectedLeague) {
+    <section class="slide-in">
+      <!-- Season selector with league logo -->
+      <div class="season-selector">
+        <div class="season-header">
+          <h2 class="section-title">{{ selectedLeague.league.name }}</h2>
+          <div class="logo-selector-row">
+            <img 
+              class="league-logo-season" 
+              [src]="images.getRouteImageLeagueSm(selectedLeague.league.id)"
+              [alt]="selectedLeague.league.name + ' logo'"
+              (click)="goToLeagueSelector()"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="'Go back to league selector'">
+            <div class="season-info">
+              <mat-form-field appearance="outline">
+                <mat-label>Select Season</mat-label>
+                <mat-select 
+                  [(ngModel)]="selectedSeason" 
+                  (selectionChange)="getTeamsBySeason(selectedSeason)"
+                  aria-label="Select season">
+                  @for (season of seasonsFiltered; track season.id) {
+                    <mat-option [value]="season">{{ season.text }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teams and Matches Container -->
+      <div class="teams-matches-container">
+        <!-- Teams grid -->
+        @if (showTeams.length > 0) {
+          <div class="teams-section">
+            <h2 class="section-title">Teams</h2>
+            <div class="teams-grid">
+              @for (team of showTeams; track team.team.id) {
+                <a 
+                  class="team-card"
+                  (click)="selectTeam(team)" 
+                  routerLink="/team" 
+                  [queryParams]="{id: team.team.id, season: selectedSeason.id}" 
+                  routerLinkActive="active" 
+                  ariaCurrentWhenActive="page"
+                  [attr.aria-label]="'View ' + team.team.name + ' team details'">
+                  <img 
+                    class="team-logo" 
+                    [src]="images.getRouteImageTeam(team.team.id)"
+                    [alt]="team.team.name + ' logo'">
+                  <p class="team-name">{{ team.team.name }}</p>
+                </a>
+              }
+            </div>
+
+            <!-- Show all teams button -->
+            @if (teams.length > 24 && showTeams.length === 24) {
+              <button 
+                class="show-all-btn"
+                (click)="showAllTeams()"
+                aria-label="Show all teams">
+                <ng-icon name="jamPlus"></ng-icon>
+                Show All Teams ({{ teams.length }})
+              </button>
+            }
+          </div>
+        }
+
+        <!-- Matches section -->
+        @if (groupedRealMatches.length > 0) {
+          <div class="matches-section">
+            <h2 class="section-title">Matches</h2>
+            
+            <!-- Round selector -->
+            <div class="round-selector">
+              <button 
+                class="round-nav-btn"
+                (click)="changeRound(-1)"
+                [disabled]="selectedRound <= 0"
+                aria-label="Previous round">
+                <span>&laquo;</span>
+              </button>
+              
+              <mat-form-field appearance="outline">
+                <mat-label>Round</mat-label>
+                <mat-select 
+                  [(ngModel)]="selectedRound"
+                  (selectionChange)="onRoundChange(selectedRound)"
+                  aria-label="Select round">
+                  @for (round of groupedRealMatches; track $index) {
+                    <mat-option [value]="$index">
+                      {{ groupedRealMatches[$index][0].league.round }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              
+              <button 
+                class="round-nav-btn"
+                (click)="changeRound(1)"
+                [disabled]="selectedRound >= groupedRealMatches.length - 1"
+                aria-label="Next round">
+                <span>&raquo;</span>
+              </button>
+            </div>
+
+            <!-- Matches grid -->
+            <div class="matches-grid">
+              @for (match of groupedRealMatches[selectedRound]; track match.fixture.id) {
+                <div class="match-card-wrapper">
+                  <app-real-match-card 
+                    [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                    [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                    [locations]="locations">
+                  </app-real-match-card>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Empty matches state -->
+      @if (groupedRealMatches.length === 0 && !isLoading) {
+        <div class="empty-state">
+          <div class="empty-state-icon">⚽</div>
+          <h2 class="empty-state-title">No Matches Available</h2>
+          <p class="empty-state-description">There are no matches scheduled for this league and season.</p>
+        </div>
+      }
+    </section>
+  }
+</div> 

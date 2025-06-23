@@ -1,0 +1,39 @@
+<!-- Loading overlay -->
+@if (isLoading) {
+  <div class="loading-overlay">
+    <div class="loading-spinner"></div>
+  </div>
+}
+
+<div class="container">
+  <section class="fade-in">
+    <h1 class="section-title">Select a League</h1>
+    <p class="section-description">Choose a league to view teams and matches</p>
+    
+    <div class="leagues-grid">
+      @for (league of leagues; track league.league.id) {
+        <div 
+          class="league-card" 
+          (click)="selectLeague(league)"
+          (keydown.enter)="selectLeague(league)"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'Select ' + league.league.name + ' league'">
+          <img 
+            class="league-logo" 
+            [src]="images.getRouteImageLeagueSm(league.league.id)"
+            [alt]="league.league.name + ' logo'">
+          <h3 class="league-name">{{ league.league.name }}</h3>
+        </div>
+      }
+    </div>
+    
+    @if (leagues.length === 0 && !isLoading) {
+      <div class="empty-state">
+        <div class="empty-state-icon">🏆</div>
+        <h2 class="empty-state-title">No Leagues Available</h2>
+        <p class="empty-state-description">There are currently no leagues to display.</p>
+      </div>
+    }
+  </section>
+</div> 
