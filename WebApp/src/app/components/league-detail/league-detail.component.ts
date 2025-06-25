@@ -289,7 +289,7 @@ export class LeagueDetailComponent implements OnInit {
   }
 
   getLocations() {
-    this.megagoal.getLocations().subscribe({
+    this.megagoal.getLocationsCounts().subscribe({
       next: (result: Location[]) => {
         this.locations = result;
       },
