@@ -99,7 +99,7 @@
                   aria-label="Select round">
                   @for (round of groupedRealMatches; track $index) {
                     <mat-option [value]="$index">
-                      {{ groupedRealMatches[$index][0].league.round }}
+                      {{ parseRoundName(groupedRealMatches[$index][0].league.round) }}
                     </mat-option>
                   }
                 </mat-select>
@@ -121,7 +121,8 @@
                   <app-real-match-card 
                     [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
                     [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-                    [locations]="locations">
+                    [locations]="locations"
+                    [size]="'md'">
                   </app-real-match-card>
                 </div>
               }

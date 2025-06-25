@@ -1,11 +1,11 @@
-<div class="row matchCard" [ngClass]="leagueCSSSelector(match.league.id)">
-  <div class="generalMatchCard">
+<div class="row matchCard" [ngClass]="[leagueCSSSelector(match.league.id), size === 'md' ? 'matchCardMd' : '']">
+  <div class="generalMatchCard" [ngClass]="{'generalMatchCardMd': size === 'md'}">
 
     <div class="live-indicator" *ngIf="isLive()">
       <div class="circle"></div>
     </div>
 
-    <div class="position-absolute top-50 start-50 translate-middle divImgLeague">
+    <div class="position-absolute top-50 start-50 translate-middle divImgLeague" [ngClass]="{'divImgLeagueMd' : size === 'md'}">
       <div class="position-relative h-100">
         <img class="position-absolute start-50 translate-middle imgLeagueBack p-1" 
         [ngClass]="{'imgLeagueBackWatched': watched}" style="top: 55%" [src]="images.getRouteImageLeagueBack(match.league.id)"
@@ -17,7 +17,7 @@
       <div class="row h-100">
 
         <div class="col-4 h-100 z-1">
-          <div style="height: 50%; margin: 10% auto">
+          <div class="teamLogoSection">
 
             <div class="team h-100">
               <div class="teamLogo h-100" [ngClass]="leagueCSSSelector(match.league.id)">
@@ -27,7 +27,7 @@
 
           </div>
           <div class="text-center">
-            <h2 class="m-auto team-name">{{match.teams.home.name}}</h2>
+            <h2 class="m-auto team-name" [ngClass]="{'team-name-md': size === 'md'}">{{match.teams.home.name}}</h2>
           </div>
         </div>
 
@@ -45,9 +45,9 @@
 
           <div class="row" style="width: fit-content; margin:auto;">
             <div class="match-score">
-              <span class="match-score-number" [class]="{'leading': match.goals.home > match.goals.away}">{{match.goals.home}}</span>
+              <span class="match-score-number" [ngClass]="{'match-score-number-md': size === 'md', 'leading': match.goals.home > match.goals.away}">{{match.goals.home}}</span>
               <span class="match-score-divider">:</span>
-              <span class="match-score-number" [class]="{'leading': match.goals.home < match.goals.away}">{{match.goals.away}}</span>
+              <span class="match-score-number" [ngClass]="{'match-score-number-md': size === 'md', 'leading': match.goals.home < match.goals.away}">{{match.goals.away}}</span>
             </div>
           </div>
 
@@ -57,7 +57,9 @@
                 <mat-select name="locationSelect" class="location-mat-select" panelWidth="null" [(ngModel)]="match.location" 
                   (selectionChange)="setLocation(match.fixture.id, $event.value)">
                   @for (location of locations; track $index) {
-                    <mat-option [value]="location.id">{{location.name}}</mat-option>
+                    <mat-option [value]="location.id">
+                      <span>{{location.name}}</span>
+                    </mat-option>
                   }
                 </mat-select>
               </div>
@@ -68,7 +70,7 @@
 
         <div class="col-4 h-100 z-1">
           
-          <div style="height: 50%; margin: 10% auto">
+          <div class="teamLogoSection">
 
             <div class="team h-100">
               <div class="teamLogo h-100" [ngClass]="leagueCSSSelector(match.league.id)">
@@ -78,7 +80,7 @@
 
           </div>
           <div class="text-center">
-            <h2 class="m-auto team-name">{{match.teams.away.name}}</h2>
+            <h2 class="m-auto team-name" [ngClass]="{'team-name-md': size === 'md'}">{{match.teams.away.name}}</h2>
           </div>
 
         </div>
@@ -90,15 +92,15 @@
   <div class="infoMatchCard">
 
     <div class="row h-100">
-      <div class="col-4 match-info">
-        <span class="text">{{match.league.round}}</span>
+      <div class="col-4 match-info" [ngClass]="{'match-info-md': size === 'md'}">
+        <span class="text">{{parseRoundName(match.league.round)}}</span>
       </div>
 
-      <div class="col-4 match-info">
+      <div class="col-4 match-info" [ngClass]="{'match-info-md': size === 'md'}">
         <span class="text">{{match.league.season}}/{{match.league.season + 1}}</span>
       </div>
 
-      <div class="col-4 match-info">
+      <div class="col-4 match-info" [ngClass]="{'match-info-md': size === 'md'}">
         <span class="text">{{getDate(match.fixture.timestamp)}}</span>
       </div>
 

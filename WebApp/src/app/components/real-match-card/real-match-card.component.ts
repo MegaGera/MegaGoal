@@ -23,13 +23,14 @@ import { MatchParserService } from '../../services/match-parser.service';
   templateUrl: './real-match-card.component.html',
   styleUrl: './real-match-card.component.css',
   providers: [ImagesService, MegaGoalService, provideNgIconsConfig({
-    size: '1.5em',
+    size: window.innerWidth < 769 ? '1.2em' : '1.5em',
   }), provideIcons({ jamEyeCloseF, jamEyeF })]
 })
 export class RealMatchCardComponent {
   @Input() match!: Match;
   @Input() watched: boolean = false;
   @Input() locations!: Location[];
+  @Input() size: string = 'lg';
 
   constructor(public images: ImagesService, private megaGoal: MegaGoalService, public matchParser: MatchParserService) {
     this.orderLocations();
@@ -110,6 +111,37 @@ export class RealMatchCardComponent {
     if (this.locations) {
       this.locations.sort((a, b) => a.matchCount > b.matchCount ? -1 : 1);
     }
+  }
+
+  /*
+    Parse the round name:
+     - Regular Season - [N] -> Round - [N]
+     - League Stage - [N] -> League R. - [N]
+     - Group Stage - [N] -> Group R. - [N]
+  */
+  parseRoundName(round: string): string {
+    // Regular Season - [n] -> Round - [n]
+    const regularSeasonRegex = /^Regular Season - (\d+)$/;
+    const regularSeasonMatch = round.match(regularSeasonRegex);
+    if (regularSeasonMatch) {
+      return `Round - ${regularSeasonMatch[1]}`;
+    }
+
+    // League Stage - [n] -> League R. - [n]
+    const leagueStageRegex = /^League Stage - (\d+)$/;
+    const leagueStageMatch = round.match(leagueStageRegex);
+    if (leagueStageMatch) {
+      return `League R. - ${leagueStageMatch[1]}`;
+    }
+
+    // Group Stage - [n] -> Group R. - [n]
+    const groupStageRegex = /^Group Stage - (\d+)$/;
+    const groupStageMatch = round.match(groupStageRegex);
+    if (groupStageMatch) {
+      return `Group R. - ${groupStageMatch[1]}`;
+    }
+
+    return round;
   }
 
 }

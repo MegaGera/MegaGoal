@@ -63,22 +63,22 @@
 	}
 
   .generalMatchCard {
-    height: 12vh;
+    height: 14vh;
   }
 
 	.matchCard {
-    height: 12vh;
+    height: 14vh;
   }
 
 	.matchCard:hover {
 		height: 20vh;
 
 		.generalMatchCard {
-			height: 14vh;
+			height: 16vh;
 		}
 
 		.infoMatchCard {
-			height: 6vh;
+			height: 4vh;
 		}
 	}
 }
@@ -90,13 +90,21 @@
 		--img-team-shadow: 0 0 0 10px;
 	}
 
-  .generalMatchCard {
-    height: 25vh;
-  }
+  	.generalMatchCard {
+		height: 25vh;
+	}
+
+	.generalMatchCardMd {
+		height: 20vh;
+	}
 
 	.matchCard {
-    height: 25vh;
-  }
+		height: 25vh;
+	}
+
+	.matchCardMd {
+		height: 20vh;
+	}
 	
 	.matchCard:hover {
 		height: 35vh;
@@ -107,6 +115,18 @@
 
 		.infoMatchCard {
 			height: 6vh;
+		}
+	}
+	
+	.matchCardMd:hover {
+		height: 25vh;
+
+		.generalMatchCard {
+			height: 21vh;
+		}
+
+		.infoMatchCard {
+			height: 4vh;
 		}
 	}
 }
@@ -246,6 +266,19 @@
 	flex-direction: column;
 	align-items: center;
 }
+@media only screen and (max-width: 768px) {
+  .teamLogoSection {
+    height: 50%;
+    margin: 10% auto 15% auto;
+  }
+}
+
+@media only screen and (min-width: 769px) {
+  .teamLogoSection {
+    height: 50%;
+    margin: 10% auto;
+  }
+}
 
 .teamLogo {
 	display: flex;
@@ -342,6 +375,7 @@
 
 	.team-name {
 		font-size: 0.8rem;
+		line-height: 1;
 	}
 
 }
@@ -350,6 +384,11 @@
 
 	.team-name {
 		font-size: 1.2rem;
+		line-height: 1.4;
+	}
+
+	.team-name-md {
+		font-size: 1rem;
 	}
 	
 }
@@ -358,7 +397,7 @@
 @media only screen and (max-width: 768px) {
 
 	.divImgLeague {
-		height: 12vh;
+		height: 14vh;
 	}
 
 }
@@ -367,6 +406,10 @@
 
 	.divImgLeague {
 		height: 25vh;
+	}
+
+	.divImgLeagueMd {
+		height: 20vh;
 	}
 	
 }
@@ -385,7 +428,7 @@
 }
 
 .match-score {
-	margin: auto auto 0;
+	margin: 5% auto 0;
 	display: flex;
 	align-items: center;
 	border-radius: 10px;
@@ -403,8 +446,14 @@
 
 @media only screen and (max-width: 768px) {
 
+	.match-score {
+		padding: 4px 8px;
+	}
+
 	.match-score-number {
-		font-size: 2rem;
+		font-size: 1.9rem;
+		font-weight: 600;
+		line-height: 1;
 	}
 
 }
@@ -413,6 +462,10 @@
 
 	.match-score-number {
 		font-size: 3rem;
+	}
+
+	.match-score-number-md {
+		font-size: 2.6rem;
 	}
 	
 }
@@ -450,8 +503,10 @@
 @media only screen and (max-width: 768px) {
 
 	.match-info {
+		margin: 0;
 		.text {
-			font-size: 0.8rem;
+			font-size: 0.7rem;
+			font-weight: 400;
 		}
 	}
 
@@ -462,6 +517,13 @@
 	.match-info {
 		.text {
 			font-size: 1rem;
+		}
+	}
+
+	.match-info-md {
+		.text {
+			font-size: 0.8rem;
+			font-weight: 500;
 		}
 	}
 	

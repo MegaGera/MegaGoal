@@ -371,4 +371,36 @@ export class LeagueDetailComponent implements OnInit {
   goToLeagueSelector(): void {
     this.router.navigate(['/leagues']);
   }
+
+  /*
+    Parse the round name:
+     - Regular Season - [N] -> Round - [N]
+     - League Stage - [N] -> League R. - [N]
+     - Group Stage - [N] -> Group R. - [N]
+  */
+  parseRoundName(round: string): string {
+  // Regular Season - [n] -> Round - [n]
+    const regularSeasonRegex = /^Regular Season - (\d+)$/;
+    const regularSeasonMatch = round.match(regularSeasonRegex);
+    if (regularSeasonMatch) {
+      return `Round - ${regularSeasonMatch[1]}`;
+    }
+
+    // League Stage - [n] -> League R. - [n]
+    const leagueStageRegex = /^League Stage - (\d+)$/;
+    const leagueStageMatch = round.match(leagueStageRegex);
+    if (leagueStageMatch) {
+      return `League R. - ${leagueStageMatch[1]}`;
+    }
+
+    // Group Stage - [n] -> Group R. - [n]
+    const groupStageRegex = /^Group Stage - (\d+)$/;
+    const groupStageMatch = round.match(groupStageRegex);
+    if (groupStageMatch) {
+      return `Group R. - ${groupStageMatch[1]}`;
+    }
+
+    return round;
+  }
+
 } 
