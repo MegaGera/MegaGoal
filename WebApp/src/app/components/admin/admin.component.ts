@@ -3,6 +3,7 @@ import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { MegaGoalService } from '../../services/megagoal.service';
+import { ImagesService } from '../../services/images.service';
 import { LeaguesSettings } from '../../models/leaguesSettings';
 
 @Component({
@@ -16,7 +17,10 @@ export class AdminComponent {
 
   leaguesSettings: LeaguesSettings[] = [];
   
-  constructor(private megagoal: MegaGoalService) {
+  constructor(
+    private megagoal: MegaGoalService,
+    public images: ImagesService
+  ) {
     this.init();
   }
 
@@ -27,8 +31,36 @@ export class AdminComponent {
   
   getLeaguesSettings() {
     this.megagoal.getLeaguesSettings().subscribe(result => {
-      this.leaguesSettings = <LeaguesSettings[]>result;
+      this.leaguesSettings = this.sortLeagues(<LeaguesSettings[]>result);
     })
+  }
+
+  sortLeagues(leagues: LeaguesSettings[]): LeaguesSettings[] {
+    return leagues.sort((a, b) => {
+      // First, sort by status priority: daily update active > active > inactive
+      const aPriority = this.getStatusPriority(a);
+      const bPriority = this.getStatusPriority(b);
+      
+      if (aPriority !== bPriority) {
+        return bPriority - aPriority; // Higher priority first
+      }
+      
+      // Within same status, sort by last update date (newest first)
+      const aDate = a.last_update ? new Date(a.last_update).getTime() : 0;
+      const bDate = b.last_update ? new Date(b.last_update).getTime() : 0;
+      
+      return bDate - aDate; // Newest first
+    });
+  }
+
+  getStatusPriority(league: LeaguesSettings): number {
+    if (league.is_active && league.daily_update) {
+      return 3; // Highest priority: active with daily updates
+    } else if (league.is_active) {
+      return 2; // Medium priority: active without daily updates
+    } else {
+      return 1; // Lowest priority: inactive
+    }
   }
 
   changeIsActive(league_id: number, is_active: boolean) {

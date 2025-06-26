@@ -1,74 +1,91 @@
-<div class="container">
-  <div class="row">
-    <div class="col-12">
-      <table class="table tableLeaguesSettings">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">League</th>
-            <th scope="col">Active</th>
-            <th scope="col">Frequency (days)</th>
-            <th scope="col">Last Update</th>
-            <th scope="col">Next Match</th>
-            <th scope="col">Daily Update</th>
-            <th scope="col">Last Daily Update</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (leaguesSetting of leaguesSettings; track $index) {
-            <tr [ngClass]="{'inactive': !leaguesSetting.is_active,
-              'daily_update': leaguesSetting.is_active && leaguesSetting.daily_update}">
-              <th scope="row">{{$index + 1}}</th>
-              <td>{{leaguesSetting.league_name}}</td>
-              <td>
-                <div class="form-check form-check-inline">
-                  <input class="form-check input" type="checkbox" id="active{{$index}}" [(ngModel)]="leaguesSetting.is_active"
-                    (click)="changeIsActive(leaguesSetting.league_id, !leaguesSetting.is_active)">
-                </div>
-              </td>
-              <td>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency1{{$index}}"
-                    [(ngModel)]="leaguesSetting.update_frequency" [value]="1" [disabled]="!leaguesSetting.is_active" (click)="changeUpdateFrequency(leaguesSetting.league_id, 1)">
-                  <label class="form-check-label" for="frequency1{{$index}}">
-                    1
-                  </label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency3{{$index}}"
-                    [(ngModel)]="leaguesSetting.update_frequency" [value]="3" [disabled]="!leaguesSetting.is_active" (click)="changeUpdateFrequency(leaguesSetting.league_id, 3)">
-                  <label class="form-check-label" for="frequency3{{$index}}">
-                    3
-                  </label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency7{{$index}}" 
-                    [(ngModel)]="leaguesSetting.update_frequency" [value]="7" [disabled]="!leaguesSetting.is_active" (click)="changeUpdateFrequency(leaguesSetting.league_id, 7)">
-                  <label class="form-check-label" for="frequency7{{$index}}">
-                    7
-                  </label>
-                </div>
-                <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" name="frequency{{$index}}" id="frequency30{{$index}}"
-                    [(ngModel)]="leaguesSetting.update_frequency" [value]="30" [disabled]="!leaguesSetting.is_active" (click)="changeUpdateFrequency(leaguesSetting.league_id, 30)">
-                  <label class="form-check-label" for="frequency30{{$index}}">
-                    30
-                  </label>
-                </div>
-              </td>
-              <td>{{leaguesSetting.last_update | date:'dd-MM-yyyy'}}</td>
-              <td>{{leaguesSetting.next_match | date:'dd-MM-yyyy'}}</td>
-              <td>
-                <div class="form-check form-check-inline">
-                    <input class="form-check input" type="checkbox" id="dailyUpdate{{$index}}" [(ngModel)]="leaguesSetting.daily_update"
-                    [disabled]="!leaguesSetting.is_active" (click)="changeDailyUpdate(leaguesSetting.league_id, !leaguesSetting.daily_update)">
-                </div>
-              </td>
-              <td>{{leaguesSetting.last_daily_update | date:'dd-MM-yyyy HH:mm:ss'}}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+<div class="admin-container">
+  <section class="fade-in">
+    <h1 class="section-title">League Automation Management</h1>
+    <p class="section-description">Configure automatic match updates for each league</p>
+    
+    <div class="leagues-list">
+      @for (leaguesSetting of leaguesSettings; track $index) {
+        <div class="league-row" [ngClass]="{
+          'league-inactive': !leaguesSetting.is_active,
+          'league-daily-update': leaguesSetting.is_active && leaguesSetting.daily_update
+        }">
+          <div class="league-info">
+            <div class="league-header-info">
+              <img 
+                class="league-logo" 
+                [src]="images.getRouteImageLeagueSm(leaguesSetting.league_id)"
+                [alt]="leaguesSetting.league_name + ' logo'">
+              <div class="league-text">
+                <h3 class="league-name">{{leaguesSetting.league_name}}</h3>
+                <span class="league-id">#{{leaguesSetting.league_id}}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="league-controls">
+            <div class="control-group">
+              <label class="control-label">Status</label>
+              <div class="status-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" 
+                         [(ngModel)]="leaguesSetting.is_active"
+                         (change)="changeIsActive(leaguesSetting.league_id, leaguesSetting.is_active)">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label">Frequency</label>
+              <div class="frequency-options" [class.disabled]="!leaguesSetting.is_active">
+                <label class="frequency-option" *ngFor="let freq of [1, 3, 7, 30]">
+                  <input type="radio" 
+                         name="frequency{{$index}}" 
+                         [value]="freq"
+                         [(ngModel)]="leaguesSetting.update_frequency"
+                         [disabled]="!leaguesSetting.is_active"
+                         (change)="changeUpdateFrequency(leaguesSetting.league_id, freq)">
+                  <span class="frequency-label">{{freq}}d</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label">Daily Updates</label>
+              <div class="daily-update-control">
+                <label class="toggle-switch small">
+                  <input type="checkbox" 
+                         [(ngModel)]="leaguesSetting.daily_update"
+                         [disabled]="!leaguesSetting.is_active"
+                         (change)="changeDailyUpdate(leaguesSetting.league_id, leaguesSetting.daily_update)">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="league-dates">
+            <div class="date-item">
+              <span class="date-label">Last Update</span>
+              <span class="date-value">{{leaguesSetting.last_update | date:'dd/MM/yyyy'}}</span>
+            </div>
+            <div class="date-item">
+              <span class="date-label">Next Match</span>
+              <span class="date-value">{{leaguesSetting.next_match | date:'dd/MM/yyyy'}}</span>
+            </div>
+            <div class="date-item">
+              <span class="date-label">Last Daily</span>
+              <span class="date-value">{{leaguesSetting.last_daily_update ? (leaguesSetting.last_daily_update | date:'dd/MM HH:mm') : '-'}}</span>
+            </div>
+          </div>
+        </div>
+      }
     </div>
-  </div>
+
+    <div class="empty-state" *ngIf="leaguesSettings.length === 0">
+      <div class="empty-state-icon">⚽</div>
+      <h2 class="empty-state-title">No Leagues Configured</h2>
+      <p class="empty-state-description">Leagues will appear here once they are added to the system.</p>
+    </div>
+  </section>
 </div>

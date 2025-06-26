@@ -1,16 +1,583 @@
-.tableLeaguesSettings {
-  margin: 5%;
-  background-color: transparent;
+/* Admin Container */
+.admin-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-th, td {
-  background-color: inherit;
+/* Section titles and descriptions - matching league selector */
+.section-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a202c;
+  margin-bottom: 12px;
+  margin-top: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.inactive {
-  background-color: #f8d7da;
+.section-description {
+  font-size: 18px;
+  color: #4a5568;
+  margin-bottom: 32px;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
-.daily_update {
-  background-color: #ffcc00;
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Leagues List - Row based layout */
+.leagues-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+/* League Row */
+.league-row {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.league-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #dc143c, #ff6b6b);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.league-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+  border-color: #dc143c;
+}
+
+.league-row:hover::before {
+  transform: scaleY(1);
+}
+
+/* Enhanced gray contrast for inactive leagues */
+.league-row.league-inactive {
+  background: #f8f9fa;
+  border-color: #dee2e6;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  opacity: 0.85;
+}
+
+.league-row.league-inactive .league-name {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.league-row.league-inactive .league-id {
+  color: #adb5bd;
+}
+
+.league-row.league-inactive .control-label {
+  color: #6c757d;
+}
+
+.league-row.league-inactive .date-label {
+  color: #adb5bd;
+}
+
+.league-row.league-inactive .date-value {
+  color: #6c757d;
+}
+
+.league-row.league-inactive:hover {
+  transform: none;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  border-color: #dee2e6;
+}
+
+/* Enhanced contrast for daily update leagues */
+.league-row.league-daily-update {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #ffffff 100%);
+  border: 3px solid #10b981;
+  border-left: 6px solid #10b981;
+  box-shadow: 0 6px 12px -2px rgba(16, 185, 129, 0.15), 0 4px 8px -1px rgba(16, 185, 129, 0.1);
+  position: relative;
+}
+
+.league-row.league-daily-update:hover {
+  border-color: #059669;
+  box-shadow: 0 8px 20px -3px rgba(16, 185, 129, 0.2), 0 6px 12px -2px rgba(16, 185, 129, 0.15);
+}
+
+.league-row.league-daily-update .league-name {
+  color: #065f46;
+  font-weight: 800;
+}
+
+/* League Info */
+.league-info {
+  min-width: 300px;
+  flex-shrink: 0;
+}
+
+.league-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.league-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: white;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+}
+
+.league-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.league-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.league-id {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* League Controls */
+.league-controls {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.control-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+/* Status Control */
+.status-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.toggle-switch.small {
+  width: 36px;
+  height: 18px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.3s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch.small .toggle-slider:before {
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  bottom: 3px;
+}
+
+input:checked + .toggle-slider {
+  background-color: #10b981;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+
+.toggle-switch.small input:checked + .toggle-slider:before {
+  transform: translateX(18px);
+}
+
+input:disabled + .toggle-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Frequency Options */
+.frequency-options {
+  display: flex;
+  gap: 8px;
+}
+
+.frequency-options.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.frequency-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 2px solid #e5e7eb;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.frequency-option:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.frequency-option input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #10b981;
+}
+
+.frequency-option input[type="radio"]:checked + .frequency-label {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.frequency-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+/* Daily Update Control */
+.daily-update-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* League Dates */
+.league-dates {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
+.date-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.date-label {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.date-value {
+  font-size: 13px;
+  color: #374151;
+  font-weight: 600;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #6c757d;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  margin-top: 40px;
+}
+
+.empty-state-icon {
+  font-size: 64px;
+  margin-bottom: 24px;
+  opacity: 0.6;
+}
+
+.empty-state-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #495057;
+}
+
+.empty-state-description {
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+/* Responsive Design - Card layout on mobile */
+@media (max-width: 1024px) {
+  .league-row {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .league-info {
+    min-width: auto;
+    text-align: center;
+  }
+  
+  .league-controls {
+    justify-content: space-around;
+    gap: 16px;
+  }
+  
+  .league-dates {
+    min-width: auto;
+    justify-content: space-around;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 16px;
+  }
+  
+  .section-title {
+    font-size: 24px;
+  }
+  
+  .section-description {
+    font-size: 16px;
+  }
+  
+  /* Mobile card layout */
+  .league-row {
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  /* Top row: Title/ID */
+  .league-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: auto;
+    text-align: left;
+    width: 100%;
+  }
+  
+  .league-header-info {
+    gap: 8px;
+  }
+  
+  .league-logo {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .league-name {
+    font-size: 16px;
+    margin: 0;
+  }
+  
+  .league-id {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  /* Middle row: Status, Frequency, Daily Updates in one row */
+  .league-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    width: 100%;
+  }
+  
+  .control-group {
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+  }
+  
+  .control-label {
+    font-size: 12px;
+  }
+  
+  /* Frequency options in two rows */
+  .frequency-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  
+  .frequency-option {
+    padding: 4px 6px;
+    justify-content: center;
+  }
+  
+  .frequency-label {
+    font-size: 11px;
+  }
+  
+  /* Bottom row: Dates */
+  .league-dates {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .date-item {
+    text-align: center;
+    flex: 1;
+  }
+  
+  .date-label {
+    font-size: 10px;
+  }
+  
+  .date-value {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-container {
+    padding: 12px;
+  }
+  
+  .league-row {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .league-name {
+    font-size: 14px;
+  }
+  
+  .league-id {
+    font-size: 11px;
+  }
+  
+  .league-controls {
+    gap: 12px;
+  }
+  
+  .control-group {
+    gap: 6px;
+  }
+  
+  .control-label {
+    font-size: 11px;
+  }
+  
+  .frequency-options {
+    gap: 3px;
+  }
+  
+  .frequency-option {
+    padding: 3px 4px;
+  }
+  
+  .frequency-label {
+    font-size: 10px;
+  }
+  
+  .league-dates {
+    gap: 8px;
+  }
+  
+  .date-label {
+    font-size: 9px;
+  }
+  
+  .date-value {
+    font-size: 11px;
+  }
+  
+  .league-logo {
+    width: 28px;
+    height: 28px;
+  }
 }
