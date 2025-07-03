@@ -41,9 +41,7 @@ def perform_full_update():
         league_id = str(league["league_id"])
         season = str(league["season"])
         print(f"Adding the matches of league {league_id} in {season}")
-        json_object_matches = updater.get_matches_from_api(league_id, season)
-        updater.add_real_matches(json_object_matches)
-        updater.update_league_last_update(int(league_id))
+        updater.update_league_matches(league_id, season)
         print("OK")
 
 if __name__ == "__main__":

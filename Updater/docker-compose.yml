@@ -11,6 +11,8 @@ services:
       - megagera_network
     volumes:
       - ./logs:/var/log
+    ports:
+      - "8100:8100"
 
 networks:
   megagera_network:

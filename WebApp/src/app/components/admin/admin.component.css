@@ -361,6 +361,141 @@ input:disabled + .toggle-slider {
   font-weight: 600;
 }
 
+/* League Actions */
+.league-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.settings-button {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-button:hover {
+  background: #e5e7eb;
+  color: #374151;
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settings-button:active {
+  transform: scale(0.95);
+  background: #d1d5db;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 700px;
+  width: 98%;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.modal-body {
+  padding: 24px;
+  color: #6b7280;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal responsive styles */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    margin: 20px;
+  }
+  
+  .modal-header {
+    padding: 20px 20px 0 20px;
+  }
+  
+  .modal-title {
+    font-size: 18px;
+  }
+  
+  .modal-body {
+    padding: 20px;
+    font-size: 14px;
+  }
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;
@@ -433,6 +568,7 @@ input:disabled + .toggle-slider {
     flex-direction: column;
     padding: 16px;
     gap: 16px;
+    position: relative;
   }
   
   /* Top row: Title/ID */
@@ -462,6 +598,22 @@ input:disabled + .toggle-slider {
   .league-id {
     font-size: 12px;
     color: #9ca3af;
+  }
+  
+  /* Position settings button in top-right corner of card */
+  .league-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: auto;
+    flex-shrink: 0;
+  }
+  
+  .settings-button {
+    padding: 6px;
   }
   
   /* Middle row: Status, Frequency, Daily Updates in one row */
@@ -511,14 +663,6 @@ input:disabled + .toggle-slider {
   .date-item {
     text-align: center;
     flex: 1;
-  }
-  
-  .date-label {
-    font-size: 10px;
-  }
-  
-  .date-value {
-    font-size: 12px;
   }
 }
 
@@ -580,4 +724,196 @@ input:disabled + .toggle-slider {
     width: 28px;
     height: 28px;
   }
+}
+
+/* --- Modern Modal Section Styles --- */
+.modal-section {
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.modal-section label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  margin-right: 8px;
+  min-width: 120px;
+}
+
+.modal-section select {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  background: #f8fafc;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1e293b;
+  transition: border 0.2s, box-shadow 0.2s;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.04);
+  margin-right: 8px;
+}
+
+.modal-section select:focus {
+  border-color: #dc143c;
+  box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.15);
+}
+
+.modal-action-btn {
+  background: linear-gradient(90deg, #dc143c 0%, #ff6b6b 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.10);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-action-btn:disabled {
+  background: #e5e7eb;
+  color: #b0b0b0;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+.modal-action-btn:not(:disabled):hover {
+  background: linear-gradient(90deg, #b91c3c 0%, #dc143c 100%);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(220, 20, 60, 0.18);
+}
+
+@media (max-width: 600px) {
+  .modal-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .modal-section label {
+    margin-bottom: 4px;
+    min-width: 0;
+  }
+  .modal-action-btn {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .modal-content {
+    max-width: 98vw;
+    width: 99%;
+  }
+}
+
+.modal-league-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #dc143c;
+  margin-top: 2px;
+  margin-bottom: 0;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 2px rgba(220, 20, 60, 0.08);
+}
+
+.modal-seasons-status-list {
+  margin-bottom: 18px;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 12px 18px;
+  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.04);
+  max-height: 220px;
+  overflow-y: auto;
+}
+.season-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #ececec;
+  font-size: 15px;
+}
+.season-status-row:last-child {
+  border-bottom: none;
+}
+.season-status-year {
+  font-weight: 600;
+  color: #374151;
+}
+.season-status-yesno {
+  font-weight: 700;
+  font-size: 15px;
+  padding: 2px 14px;
+  border-radius: 6px;
+  margin-left: 10px;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, color 0.2s;
+}
+.season-status-yesno.yes {
+  background: #dcfce7;
+  color: #059669;
+  border: 1.5px solid #10b981;
+}
+.season-status-yesno.no {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1.5px solid #f87171;
+}
+
+.admin-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 18px;
+}
+.settings-btn {
+  background: #dc143c !important;
+  color: #fff;
+  border: 2px solid #dc143c;
+  box-shadow: none;
+  outline: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 0;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+.settings-btn ng-icon {
+  color: #fff;
+}
+.settings-btn:hover,
+.settings-btn:focus {
+  background: #b91c3c !important;
+  color: #fff;
+  border-color: #b91c3c;
+  box-shadow: none;
+  outline: none;
+}
+.settings-btn:hover ng-icon,
+.settings-btn:focus ng-icon {
+  color: #fff;
+}
+.settings-btn:active {
+  outline: none;
+  box-shadow: none;
 }

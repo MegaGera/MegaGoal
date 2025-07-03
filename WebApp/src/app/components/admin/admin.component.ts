@@ -1,25 +1,44 @@
 import { Component, NgModule } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { jamSettingsAlt, jamClose } from '@ng-icons/jam-icons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
+import { UpdaterService } from '../../services/updater.service';
 import { LeaguesSettings } from '../../models/leaguesSettings';
+import { League } from '../../models/league';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgClass],
+  imports: [CommonModule, FormsModule, NgClass, NgIconComponent],
+  providers: [provideIcons({ jamSettingsAlt, jamClose })],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
 export class AdminComponent {
 
+  leagues: League[] = [];
   leaguesSettings: LeaguesSettings[] = [];
-  
+  showSettingsModal: boolean = false;
+  selectedLeague: LeaguesSettings | null = null;
+  selectedSeason: number | null = null;
+  selectedFullUpdateSeason: number | null = null;
+  isUpdateSeasonLoading: boolean = false;
+  isFullUpdateLoading: boolean = false;
+  showSeasonsStatusList: boolean = false;
+  showGeneralModal: boolean = false;
+  isUpdateLeaguesLoading: boolean = false;
+
+  seasonsList: number[] = [2020, 2021, 2022, 2023, 2024, 2025];
+  shortSeasonsList: number[] = [2024, 2025];
+
   constructor(
     private megagoal: MegaGoalService,
-    public images: ImagesService
+    public images: ImagesService,
+    private updater: UpdaterService
   ) {
     this.init();
   }
@@ -27,11 +46,18 @@ export class AdminComponent {
   init(): void {
     this.leaguesSettings = [];
     this.getLeaguesSettings();
+    this.getLeagues();
   }
   
   getLeaguesSettings() {
     this.megagoal.getLeaguesSettings().subscribe(result => {
       this.leaguesSettings = this.sortLeagues(<LeaguesSettings[]>result);
+    })
+  }
+
+  getLeagues() {
+    this.megagoal.getAllLeagues().subscribe(result => {
+      this.leagues = result;
     })
   }
 
@@ -63,6 +89,18 @@ export class AdminComponent {
     }
   }
 
+  openSettingsModal(league: LeaguesSettings): void {
+    this.selectedLeague = league;
+    this.selectedSeason = league.season;
+    this.selectedFullUpdateSeason = league.season;
+    this.showSettingsModal = true;
+  }
+
+  closeSettingsModal(): void {
+    this.showSettingsModal = false;
+    this.selectedLeague = null;
+  }
+
   changeIsActive(league_id: number, is_active: boolean) {
     if (!is_active) {
       const league = this.leaguesSettings.find(l => l.league_id === league_id);
@@ -79,6 +117,55 @@ export class AdminComponent {
 
   changeDailyUpdate(league_id: number, daily_update: boolean) {
     this.megagoal.changeDailyUpdate(league_id, daily_update).subscribe(result => { });
+  }
+
+  triggerUpdateSeason(): void {
+    if (!this.selectedLeague || this.selectedSeason === null) return;
+    this.isUpdateSeasonLoading = true;
+    this.updater.updateLeagueSeason(this.selectedLeague.league_id, this.selectedSeason).subscribe({
+      next: () => {
+        this.isUpdateSeasonLoading = false;
+        if (this.selectedLeague) this.selectedLeague.season = this.selectedSeason!;
+      },
+      error: () => { this.isUpdateSeasonLoading = false; }
+    });
+  }
+
+  triggerFullUpdate(): void {
+    if (!this.selectedLeague || this.selectedFullUpdateSeason === null) return;
+    this.isFullUpdateLoading = true;
+    this.updater.updateMatches(this.selectedLeague.league_id, this.selectedFullUpdateSeason).subscribe({
+      next: () => { this.isFullUpdateLoading = false; },
+      error: () => { this.isFullUpdateLoading = false; }
+    });
+  }
+
+  get availableSeasonsForSelectedLeague(): number[] {
+    if (!this.selectedLeague) return [];
+    const leagueObj = this.leagues.find(l => l.league.id === this.selectedLeague!.league_id);
+    if (!leagueObj) return [];
+    // Extract and sort years descending
+    return leagueObj.seasons.map(s => s.year).sort((a, b) => b - a);
+  }
+
+  toggleSeasonsStatusList(): void {
+    this.showSeasonsStatusList = !this.showSeasonsStatusList;
+  }
+
+  openGeneralModal(): void {
+    this.showGeneralModal = true;
+  }
+
+  closeGeneralModal(): void {
+    this.showGeneralModal = false;
+  }
+
+  triggerUpdateLeagues(): void {
+    this.isUpdateLeaguesLoading = true;
+    this.updater.updateLeagues().subscribe({
+      next: () => { this.isUpdateLeaguesLoading = false; },
+      error: () => { this.isUpdateLeaguesLoading = false; }
+    });
   }
 
 }
