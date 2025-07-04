@@ -31,6 +31,8 @@ export class AdminComponent {
   showSeasonsStatusList: boolean = false;
   showGeneralModal: boolean = false;
   isUpdateLeaguesLoading: boolean = false;
+  isCheckSeasonsLoading: boolean = false;
+  isUpdateTeamsLoading: boolean = false;
 
   seasonsList: number[] = [2020, 2021, 2022, 2023, 2024, 2025];
   shortSeasonsList: number[] = [2024, 2025];
@@ -148,6 +150,11 @@ export class AdminComponent {
     return leagueObj.seasons.map(s => s.year).sort((a, b) => b - a);
   }
 
+  get availableSeasonsDetails(): any[] {
+    if (!this.selectedLeague || !this.selectedLeague.available_seasons) return [];
+    return this.selectedLeague.available_seasons;
+  }
+
   toggleSeasonsStatusList(): void {
     this.showSeasonsStatusList = !this.showSeasonsStatusList;
   }
@@ -166,6 +173,36 @@ export class AdminComponent {
       next: () => { this.isUpdateLeaguesLoading = false; },
       error: () => { this.isUpdateLeaguesLoading = false; }
     });
+  }
+
+  triggerCheckAvailableSeasons(): void {
+    this.isCheckSeasonsLoading = true;
+    this.updater.checkAvailableSeasons().subscribe({
+      next: () => { 
+        this.isCheckSeasonsLoading = false;
+        // Refresh the leagues settings to show updated available_seasons
+        this.getLeaguesSettings();
+      },
+      error: () => { this.isCheckSeasonsLoading = false; }
+    });
+  }
+
+  triggerUpdateTeams(): void {
+    if (!this.selectedLeague || this.selectedFullUpdateSeason === null) return;
+    this.isUpdateTeamsLoading = true;
+    this.updater.updateTeams(this.selectedLeague.league_id, this.selectedFullUpdateSeason).subscribe({
+      next: () => { 
+        this.isUpdateTeamsLoading = false;
+        // Refresh the leagues settings to show updated teams count
+        this.getLeaguesSettings();
+      },
+      error: () => { this.isUpdateTeamsLoading = false; }
+    });
+  }
+
+  onFullUpdateSelectorChange(): void {
+    // This method is called when the full update season selector changes
+    // Currently no additional logic needed, but can be extended if needed
   }
 
 }

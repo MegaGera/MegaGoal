@@ -48,4 +48,26 @@ export class UpdaterService {
       this.options
     );
   }
+
+  /**
+   * Check and update available seasons for all leagues
+   */
+  checkAvailableSeasons(): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/check_available_seasons/',
+      {},
+      this.options
+    );
+  }
+
+  /**
+   * Add teams for a league and season
+   */
+  updateTeams(league_id: number, season: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_teams/',
+      { league_id, season },
+      this.options
+    );
+  }
 } 

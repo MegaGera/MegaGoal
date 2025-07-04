@@ -778,6 +778,7 @@ input:disabled + .toggle-slider {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 10px;
 }
 
 .modal-action-btn:disabled {
@@ -830,6 +831,7 @@ input:disabled + .toggle-slider {
 
 .modal-seasons-status-list {
   margin-bottom: 18px;
+  padding-bottom: 40px;
   background: #f8fafc;
   border-radius: 10px;
   padding: 12px 18px;
@@ -841,7 +843,7 @@ input:disabled + .toggle-slider {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #ececec;
   font-size: 15px;
 }
@@ -851,25 +853,35 @@ input:disabled + .toggle-slider {
 .season-status-year {
   font-weight: 600;
   color: #374151;
+  min-width: 60px;
 }
-.season-status-yesno {
-  font-weight: 700;
-  font-size: 15px;
-  padding: 2px 14px;
-  border-radius: 6px;
-  margin-left: 10px;
-  letter-spacing: 0.5px;
-  transition: background 0.2s, color 0.2s;
+.season-status-details {
+  display: flex;
+  gap: 16px;
+  align-items: center;
 }
-.season-status-yesno.yes {
+.season-status-matches,
+.season-status-teams {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.season-status-matches {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.season-status-teams {
   background: #dcfce7;
   color: #059669;
-  border: 1.5px solid #10b981;
 }
-.season-status-yesno.no {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1.5px solid #f87171;
+.season-status-matches.no-data,
+.season-status-teams.no-data {
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-style: italic;
 }
 
 .admin-header-row {
@@ -916,4 +928,36 @@ input:disabled + .toggle-slider {
 .settings-btn:active {
   outline: none;
   box-shadow: none;
+}
+
+.season-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 2px solid #d1d5db;
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 8px;
+}
+.season-status-header .season-status-year {
+  min-width: 60px;
+  font-weight: 700;
+}
+.season-status-header .season-status-details {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.season-status-header .season-status-matches,
+.season-status-header .season-status-teams {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  color: #374151;
+  min-width: 40px;
+  text-align: center;
 }

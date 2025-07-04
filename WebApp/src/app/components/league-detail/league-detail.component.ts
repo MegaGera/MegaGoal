@@ -49,22 +49,6 @@ export class LeagueDetailComponent implements OnInit {
   locations: Location[] = [];
 
   /* Seasons */
-  seasons: SeasonInfo[] = 
-    [{id: 2025, text: "2025-2026"}, 
-    {id: 2024, text: "2024-2025"}, 
-    {id: 2023, text: "2023-2024"}, 
-    {id: 2022, text: "2022-2023"}, 
-    {id: 2021 ,text: "2021-2022"}, 
-    {id: 2020, text: "2020-2021"}, 
-    {id: 2019, text: "2019-2020"}, 
-    {id: 2018, text: "2018-2019"}, 
-    {id: 2017, text: "2017-2018"}, 
-    {id: 2016, text: "2016-2017"}, 
-    {id: 2015, text: "2015-2016"}, 
-    {id: 2014, text: "2014-2015"}, 
-    {id: 2013, text: "2013-2014"}, 
-    {id: 2012, text: "2012-2013"}, 
-    {id: 2011, text: "2011-2012"}]
   seasonsFiltered: SeasonInfo[] = [];
   selectedSeason!: SeasonInfo;
 
@@ -82,8 +66,8 @@ export class LeagueDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router
   ) {
-    this.seasonsFiltered = this.seasons;
-    this.selectedSeason = this.seasonsFiltered[0];
+    // Initialize with empty arrays, will be populated when league is loaded
+    this.seasonsFiltered = [];
   }
 
   ngOnInit(): void {
@@ -126,10 +110,8 @@ export class LeagueDetailComponent implements OnInit {
       next: (leagues: League[]) => {
         this.selectedLeague = leagues.find(league => league.league.id === leagueId);
         if (this.selectedLeague) {
-          // Filter seasons based on what's available for this league
-          this.seasonsFiltered = this.seasons.filter(season =>
-            this.selectedLeague!.seasons.find(seasonLeague => seasonLeague.year === season.id) !== undefined
-          );
+          // Generate seasons dynamically from league data
+          this.generateSeasonsFromLeague();
           
           // Select the first available season (most recent)
           if (this.seasonsFiltered.length > 0) {
@@ -152,6 +134,28 @@ export class LeagueDetailComponent implements OnInit {
         this.router.navigate(['/leagues']);
       }
     });
+  }
+
+  /*
+    Generate seasons dynamically from league data
+  */
+  generateSeasonsFromLeague(): void {
+    if (!this.selectedLeague || !this.selectedLeague.seasons) {
+      this.seasonsFiltered = [];
+      return;
+    }
+
+    // Convert league seasons to SeasonInfo format and sort by year (descending)
+    this.seasonsFiltered = this.selectedLeague.seasons
+      .map(season => {
+        // Ensure year is a number
+        const year = typeof season.year === 'string' ? parseInt(season.year, 10) : season.year;
+        return {
+          id: year,
+          text: `${year}-${year + 1}`
+        };
+      })
+      .sort((a, b) => b.id - a.id); // Sort by year descending (most recent first)
   }
 
   /*

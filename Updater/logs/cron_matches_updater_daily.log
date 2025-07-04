@@ -53,3 +53,31 @@ Connecting to MongoDB: megagoal_db:27017
 Username: root
 Database: megagoal
 Leagues to update: 0
+Starting matches_updater_daily.py
+-------------- Starting New Update On --------------
+2025-07-04 16:28:01
+Connecting to MongoDB: megagoal_db:27017
+Username: root
+Database: megagoal
+Leagues to update: 0
+Starting matches_updater_daily.py
+-------------- Starting New Update On --------------
+2025-07-04 16:56:01
+Connecting to MongoDB: megagoal_db:27017
+Username: root
+Database: megagoal
+Leagues to update: 0
+Starting matches_updater_daily.py
+-------------- Starting New Update On --------------
+2025-07-04 17:00:01
+Connecting to MongoDB: megagoal_db:27017
+Username: root
+Database: megagoal
+Leagues to update: 0
+Starting matches_updater_daily.py
+-------------- Starting New Update On --------------
+2025-07-04 17:28:01
+Connecting to MongoDB: megagoal_db:27017
+Username: root
+Database: megagoal
+Leagues to update: 0

@@ -47,3 +47,21 @@ def update_leagues():
         return {"status": "success", "message": "Leagues updated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/check_available_seasons/")
+def check_available_seasons():
+    updater = MatchUpdater()
+    try:
+        updater.check_and_update_available_seasons()
+        return {"status": "success", "message": "Available seasons checked and updated for all leagues"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_teams/")
+def update_teams(req: UpdateRequest):
+    updater = MatchUpdater()
+    try:
+        updater.update_teams_by_league_and_season(req.league_id, req.season)
+        return {"status": "success", "message": f"Updated teams for league {req.league_id} in season {req.season}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

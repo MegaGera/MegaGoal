@@ -136,7 +136,7 @@
           <!-- Full Update Section -->
           <div class="modal-section">
             <label for="full-update-selector">Full Update for Season:</label>
-            <select id="full-update-selector" [(ngModel)]="selectedFullUpdateSeason">
+            <select id="full-update-selector" [(ngModel)]="selectedFullUpdateSeason" (change)="onFullUpdateSelectorChange()">
               <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
             </select>
             <button 
@@ -147,19 +147,42 @@
             </button>
           </div>
 
+          <!-- Update Teams Section -->
+          <div class="modal-section">
+            <label for="teams-update-selector">Update Teams for Season:</label>
+            <select id="teams-update-selector" [(ngModel)]="selectedFullUpdateSeason">
+              <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
+            </select>
+            <button 
+              (click)="triggerUpdateTeams()"
+              [disabled]="isUpdateTeamsLoading"
+              class="modal-action-btn">
+              {{ isUpdateTeamsLoading ? 'Updating...' : 'Update Teams' }}
+            </button>
+          </div>
+
           <!-- Toggleable Available Seasons Status List -->
           <button (click)="toggleSeasonsStatusList()" class="modal-action-btn" style="margin-bottom: 10px;">
             {{ showSeasonsStatusList ? 'Hide' : 'Show' }} Season Status
           </button>
           <div *ngIf="showSeasonsStatusList && selectedLeague" class="modal-seasons-status-list">
-            <div *ngFor="let s of availableSeasonsForSelectedLeague" class="season-status-row">
-              <span class="season-status-year">{{ s }}</span>
-              <span class="season-status-yesno" [ngClass]="{
-                'yes': selectedLeague.available_seasons && selectedLeague.available_seasons.includes(s),
-                'no': !selectedLeague.available_seasons || !selectedLeague.available_seasons.includes(s)
-              }">
-                {{ selectedLeague.available_seasons && selectedLeague.available_seasons.includes(s) ? 'Yes' : 'No' }}
-              </span>
+            <div class="season-status-header">
+              <span class="season-status-year">Season</span>
+              <div class="season-status-details">
+                <span class="season-status-matches">Matches</span>
+                <span class="season-status-teams">Teams</span>
+              </div>
+            </div>
+            <div *ngFor="let seasonDetail of availableSeasonsDetails.slice().reverse()" class="season-status-row">
+              <span class="season-status-year">{{ seasonDetail.season }}</span>
+              <div class="season-status-details">
+                <span class="season-status-matches" [ngClass]="{'no-data': seasonDetail.real_matches === null}">
+                  {{ seasonDetail.real_matches !== null ? seasonDetail.real_matches : 'No data' }}
+                </span>
+                <span class="season-status-teams" [ngClass]="{'no-data': seasonDetail.teams === null}">
+                  {{ seasonDetail.teams !== null ? seasonDetail.teams : 'No data' }}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -184,6 +207,13 @@
             (click)="triggerUpdateLeagues()"
             [disabled]="isUpdateLeaguesLoading">
             {{ isUpdateLeaguesLoading ? 'Updating...' : 'Update All Leagues' }}
+          </button>
+          
+          <button 
+            class="modal-action-btn"
+            (click)="triggerCheckAvailableSeasons()"
+            [disabled]="isCheckSeasonsLoading">
+            {{ isCheckSeasonsLoading ? 'Checking...' : 'Check Matches by League and Season' }}
           </button>
         </div>
       </div>
