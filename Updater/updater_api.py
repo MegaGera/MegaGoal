@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import httpx
-import re
 from utils import MatchUpdater
 
 app = FastAPI()
@@ -14,10 +13,11 @@ if os.getenv('NODE_ENV') == 'production':
     
     app.add_middleware(
         CORSMiddleware,
-        allow_origin_regex=r"\.?megagera\.com$",
+        allow_origin_regex=r".*\.megagera\.com$",
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
+        max_age=86400,  # Cache preflight for 24 hours
     )
 else:
     # Normal use in development
