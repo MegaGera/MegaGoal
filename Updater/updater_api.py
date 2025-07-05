@@ -3,18 +3,31 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import httpx
+import re
 from utils import MatchUpdater
 
 app = FastAPI()
 
-# Allow all origins for now; restrict in production as needed
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS configuration - matching the Node.js server approach
+if os.getenv('NODE_ENV') == 'production':
+    print("Production mode - cors")
+    
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"\.?megagera\.com$",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    # Normal use in development
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # Admin validation middleware
 async def validate_admin(request: Request):
