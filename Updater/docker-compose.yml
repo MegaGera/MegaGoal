@@ -1,9 +1,9 @@
 version: "3.8"
 
 services:
-  megagoal_db_updater:
-    image: megagoal_db_updater
-    container_name: megagoal_db_updater
+  megagoal_updater:
+    image: megagoal_updater
+    container_name: megagoal_updater
     build: .
     env_file:
       - .env
