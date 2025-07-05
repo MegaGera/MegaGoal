@@ -121,7 +121,7 @@
 
           <!-- Update Season Section -->
           <div class="modal-section">
-            <label for="season-selector">Set Season (2024/2025):</label>
+            <label for="season-selector">Current Season</label>
             <select id="season-selector" [(ngModel)]="selectedSeason">
               <option *ngFor="let s of shortSeasonsList" [value]="s">{{s}}</option>
             </select>
@@ -129,43 +129,40 @@
               (click)="triggerUpdateSeason()"
               [disabled]="selectedSeason === selectedLeague?.season || isUpdateSeasonLoading"
               class="modal-action-btn">
-              {{ isUpdateSeasonLoading ? 'Updating...' : 'Update Season' }}
+              {{ isUpdateSeasonLoading ? 'Updating...' : 'Update' }}
             </button>
           </div>
 
-          <!-- Full Update Section -->
+          <!-- Matches Update Section -->
           <div class="modal-section">
-            <label for="full-update-selector">Full Update for Season:</label>
-            <select id="full-update-selector" [(ngModel)]="selectedFullUpdateSeason" (change)="onFullUpdateSelectorChange()">
+            <label for="full-update-selector">Matches Update</label>
+            <select id="full-update-selector" [(ngModel)]="selectedMatchesUpdateSeason">
               <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
             </select>
             <button 
-              (click)="triggerFullUpdate()"
-              [disabled]="isFullUpdateLoading"
+              (click)="triggerMatchesUpdate()"
+              [disabled]="isMatchesUpdateLoading"
               class="modal-action-btn">
-              {{ isFullUpdateLoading ? 'Updating...' : 'Full Update' }}
+              {{ isMatchesUpdateLoading ? 'Updating...' : 'Update' }}
             </button>
           </div>
 
-          <!-- Update Teams Section -->
+          <!-- Teams Update Section -->
           <div class="modal-section">
-            <label for="teams-update-selector">Update Teams for Season:</label>
-            <select id="teams-update-selector" [(ngModel)]="selectedFullUpdateSeason">
+            <label for="teams-update-selector">Teams Update</label>
+            <select id="teams-update-selector" [(ngModel)]="selectedTeamsUpdateSeason">
               <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
             </select>
             <button 
-              (click)="triggerUpdateTeams()"
+              (click)="triggerTeamsUpdate()"
               [disabled]="isUpdateTeamsLoading"
               class="modal-action-btn">
-              {{ isUpdateTeamsLoading ? 'Updating...' : 'Update Teams' }}
+              {{ isUpdateTeamsLoading ? 'Updating...' : 'Update' }}
             </button>
           </div>
 
-          <!-- Toggleable Available Seasons Status List -->
-          <button (click)="toggleSeasonsStatusList()" class="modal-action-btn" style="margin-bottom: 10px;">
-            {{ showSeasonsStatusList ? 'Hide' : 'Show' }} Season Status
-          </button>
-          <div *ngIf="showSeasonsStatusList && selectedLeague" class="modal-seasons-status-list">
+          <!-- Available Seasons Status List -->
+          <div *ngIf="selectedLeague" class="modal-seasons-status-list">
             <div class="season-status-header">
               <span class="season-status-year">Season</span>
               <div class="season-status-details">

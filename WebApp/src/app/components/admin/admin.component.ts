@@ -25,10 +25,10 @@ export class AdminComponent {
   showSettingsModal: boolean = false;
   selectedLeague: LeaguesSettings | null = null;
   selectedSeason: number | null = null;
-  selectedFullUpdateSeason: number | null = null;
+  selectedMatchesUpdateSeason: number | null = null;
+  selectedTeamsUpdateSeason: number | null = null;
   isUpdateSeasonLoading: boolean = false;
-  isFullUpdateLoading: boolean = false;
-  showSeasonsStatusList: boolean = false;
+  isMatchesUpdateLoading: boolean = false;
   showGeneralModal: boolean = false;
   isUpdateLeaguesLoading: boolean = false;
   isCheckSeasonsLoading: boolean = false;
@@ -94,7 +94,8 @@ export class AdminComponent {
   openSettingsModal(league: LeaguesSettings): void {
     this.selectedLeague = league;
     this.selectedSeason = league.season;
-    this.selectedFullUpdateSeason = league.season;
+    this.selectedMatchesUpdateSeason = league.season;
+    this.selectedTeamsUpdateSeason = league.season;
     this.showSettingsModal = true;
   }
 
@@ -133,12 +134,12 @@ export class AdminComponent {
     });
   }
 
-  triggerFullUpdate(): void {
-    if (!this.selectedLeague || this.selectedFullUpdateSeason === null) return;
-    this.isFullUpdateLoading = true;
-    this.updater.updateMatches(this.selectedLeague.league_id, this.selectedFullUpdateSeason).subscribe({
-      next: () => { this.isFullUpdateLoading = false; },
-      error: () => { this.isFullUpdateLoading = false; }
+  triggerMatchesUpdate(): void {
+    if (!this.selectedLeague || this.selectedMatchesUpdateSeason === null) return;
+    this.isMatchesUpdateLoading = true;
+    this.updater.updateMatches(this.selectedLeague.league_id, this.selectedMatchesUpdateSeason).subscribe({
+      next: () => { this.isMatchesUpdateLoading = false; },
+      error: () => { this.isMatchesUpdateLoading = false; }
     });
   }
 
@@ -153,10 +154,6 @@ export class AdminComponent {
   get availableSeasonsDetails(): any[] {
     if (!this.selectedLeague || !this.selectedLeague.available_seasons) return [];
     return this.selectedLeague.available_seasons;
-  }
-
-  toggleSeasonsStatusList(): void {
-    this.showSeasonsStatusList = !this.showSeasonsStatusList;
   }
 
   openGeneralModal(): void {
@@ -187,10 +184,10 @@ export class AdminComponent {
     });
   }
 
-  triggerUpdateTeams(): void {
-    if (!this.selectedLeague || this.selectedFullUpdateSeason === null) return;
+  triggerTeamsUpdate(): void {
+    if (!this.selectedLeague || this.selectedTeamsUpdateSeason === null) return;
     this.isUpdateTeamsLoading = true;
-    this.updater.updateTeams(this.selectedLeague.league_id, this.selectedFullUpdateSeason).subscribe({
+    this.updater.updateTeams(this.selectedLeague.league_id, this.selectedTeamsUpdateSeason).subscribe({
       next: () => { 
         this.isUpdateTeamsLoading = false;
         // Refresh the leagues settings to show updated teams count
@@ -198,11 +195,6 @@ export class AdminComponent {
       },
       error: () => { this.isUpdateTeamsLoading = false; }
     });
-  }
-
-  onFullUpdateSelectorChange(): void {
-    // This method is called when the full update season selector changes
-    // Currently no additional logic needed, but can be extended if needed
   }
 
 }

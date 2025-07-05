@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
@@ -21,7 +21,7 @@ async def validate_admin(request: Request):
     """Validate admin permissions from megaauth service"""
     # Skip validation in development mode
     if os.getenv('NODE_ENV') == 'development':
-        return
+        return request
     
     # Get the access token from cookies
     access_token = request.cookies.get('access_token')
@@ -47,12 +47,15 @@ async def validate_admin(request: Request):
     except httpx.RequestError as e:
         raise HTTPException(status_code=401, detail=f"Authentication server request failed: {str(e)}")
 
+    return request
+
 class UpdateRequest(BaseModel):
     league_id: int
     season: int
 
 @app.post("/update_matches/")
-async def update_matches(req: UpdateRequest, request: Request = Depends(validate_admin)):
+async def update_matches(req: UpdateRequest, request: Request):
+    await validate_admin(request)
     updater = MatchUpdater()
     try:
         updater.update_league_matches(req.league_id, req.season)
@@ -61,7 +64,8 @@ async def update_matches(req: UpdateRequest, request: Request = Depends(validate
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/update_league_current_season/")
-async def update_league_season(req: UpdateRequest, request: Request = Depends(validate_admin)):
+async def update_league_season(req: UpdateRequest, request: Request):
+    await validate_admin(request)
     updater = MatchUpdater()
     try:
         modified = updater.update_league_season(req.league_id, req.season)
@@ -73,7 +77,8 @@ async def update_league_season(req: UpdateRequest, request: Request = Depends(va
         raise HTTPException(status_code=500, detail=str(e)) 
 
 @app.post("/update_leagues/")
-async def update_leagues(request: Request = Depends(validate_admin)):
+async def update_leagues(request: Request):
+    await validate_admin(request)
     updater = MatchUpdater()
     try:
         updater.add_leagues()
@@ -82,7 +87,8 @@ async def update_leagues(request: Request = Depends(validate_admin)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/check_available_seasons/")
-async def check_available_seasons(request: Request = Depends(validate_admin)):
+async def check_available_seasons(request: Request):
+    await validate_admin(request)
     updater = MatchUpdater()
     try:
         updater.check_and_update_available_seasons()
@@ -91,7 +97,8 @@ async def check_available_seasons(request: Request = Depends(validate_admin)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/update_teams/")
-async def update_teams(req: UpdateRequest, request: Request = Depends(validate_admin)):
+async def update_teams(req: UpdateRequest, request: Request):
+    await validate_admin(request)
     updater = MatchUpdater()
     try:
         updater.update_teams_by_league_and_season(req.league_id, req.season)
