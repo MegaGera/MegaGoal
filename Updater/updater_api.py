@@ -3,13 +3,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import httpx
+import logging
 from utils import MatchUpdater
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+# Debug logging
+logger.info(f"Starting FastAPI app with NODE_ENV: {os.getenv('NODE_ENV')}")
+
 # CORS configuration - matching the Node.js server approach
 if os.getenv('NODE_ENV') == 'production':
-    print("Production mode - cors")
+    logger.info("Production mode - cors")
+    logger.info("Setting up CORS for megagera.com domains")
     
     app.add_middleware(
         CORSMiddleware,
@@ -20,6 +29,8 @@ if os.getenv('NODE_ENV') == 'production':
         max_age=86400,  # Cache preflight for 24 hours
     )
 else:
+    logger.info("Development mode - cors")
+    logger.info("Setting up CORS for all origins")
     # Normal use in development
     app.add_middleware(
         CORSMiddleware,
@@ -28,6 +39,8 @@ else:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+logger.info("CORS middleware configured successfully")
 
 # Admin validation middleware
 async def validate_admin(request: Request):
@@ -66,6 +79,22 @@ class UpdateRequest(BaseModel):
     league_id: int
     season: int
 
+@app.get("/health/")
+async def health_check():
+    """Health check endpoint for debugging"""
+    logger.info("Health check endpoint called")
+    return {
+        "status": "healthy", 
+        "node_env": os.getenv('NODE_ENV'),
+        "cors_configured": True
+    }
+
+@app.options("/check_available_seasons/")
+async def check_available_seasons_options():
+    """Handle OPTIONS preflight for check_available_seasons"""
+    logger.info("OPTIONS preflight request received for check_available_seasons")
+    return {"status": "ok"}
+
 @app.post("/update_matches/")
 async def update_matches(req: UpdateRequest, request: Request):
     await validate_admin(request)
@@ -101,12 +130,14 @@ async def update_leagues(request: Request):
 
 @app.post("/check_available_seasons/")
 async def check_available_seasons(request: Request):
+    logger.info("POST request received for check_available_seasons")
     await validate_admin(request)
     updater = MatchUpdater()
     try:
         updater.check_and_update_available_seasons()
         return {"status": "success", "message": "Available seasons checked and updated for all leagues"}
     except Exception as e:
+        logger.error(f"Error in check_available_seasons: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/update_teams/")
