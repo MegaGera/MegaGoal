@@ -22,6 +22,9 @@ class CustomAuthenticationMiddleware:
 
     # Make a request to the authentication server
     auth_server_url = os.getenv('VALIDATE_URI')
+    if not auth_server_url:
+      return HttpResponseForbidden('VALIDATE_URI not configured')
+    
     headers = {
       'Cookie': f'access_token={cookie_value}'
     }
