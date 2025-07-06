@@ -11,7 +11,8 @@ export class UpdaterService {
   options = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json'
-    })
+    }),
+    withCredentials: environment.production ? true : false
   };
 
   constructor(private http: HttpClient) { }
