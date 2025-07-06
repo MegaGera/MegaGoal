@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  megagoal_updater:
+    image: megagoal_updater
+    container_name: megagoal_updater
+    build: .
+    env_file:
+      - .env
+    networks:
+      - megagera_network
+    volumes:
+      - ./logs:/var/log
+    ports:
+      - "8100:8100"
+
+networks:
+  megagera_network:
+    external: true
+
+volumes:
+  logs:

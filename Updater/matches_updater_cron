@@ -1,0 +1,3 @@
+# cronjob file
+0 0 * * * /usr/local/bin/python /app/matches_updater_full.py >> /var/log/cron_matches_updater_full.log 2>&1
+*/28 * * * * /usr/local/bin/python /app/matches_updater_daily.py >> /var/log/cron_matches_updater_daily.log 2>&1

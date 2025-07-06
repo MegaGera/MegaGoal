@@ -1,10 +1,16 @@
 <div class="admin-container">
   <section class="fade-in">
-    <h1 class="section-title">League Automation Management</h1>
+    <div class="admin-header-row">
+      <h1 class="section-title">League Automation Management</h1>
+      <button class="modal-action-btn settings-btn" (click)="openGeneralModal()">
+        Settings
+        <ng-icon name="jamSettingsAlt" size="20"></ng-icon>
+      </button>
+    </div>
     <p class="section-description">Configure automatic match updates for each league</p>
     
     <div class="leagues-list">
-      @for (leaguesSetting of leaguesSettings; track $index) {
+          @for (leaguesSetting of leaguesSettings; track $index) {
         <div class="league-row" [ngClass]="{
           'league-inactive': !leaguesSetting.is_active,
           'league-daily-update': leaguesSetting.is_active && leaguesSetting.daily_update
@@ -20,7 +26,7 @@
                 <span class="league-id">#{{leaguesSetting.league_id}}</span>
               </div>
             </div>
-          </div>
+                </div>
           
           <div class="league-controls">
             <div class="control-group">
@@ -31,8 +37,8 @@
                          [(ngModel)]="leaguesSetting.is_active"
                          (change)="changeIsActive(leaguesSetting.league_id, leaguesSetting.is_active)">
                   <span class="toggle-slider"></span>
-                </label>
-              </div>
+                  </label>
+                </div>
             </div>
 
             <div class="control-group">
@@ -46,8 +52,8 @@
                          [disabled]="!leaguesSetting.is_active"
                          (change)="changeUpdateFrequency(leaguesSetting.league_id, freq)">
                   <span class="frequency-label">{{freq}}d</span>
-                </label>
-              </div>
+                  </label>
+                </div>
             </div>
 
             <div class="control-group">
@@ -59,24 +65,33 @@
                          [disabled]="!leaguesSetting.is_active"
                          (change)="changeDailyUpdate(leaguesSetting.league_id, leaguesSetting.daily_update)">
                   <span class="toggle-slider"></span>
-                </label>
-              </div>
+                  </label>
+                </div>
             </div>
           </div>
 
           <div class="league-dates">
             <div class="date-item">
               <span class="date-label">Last Update</span>
-              <span class="date-value">{{leaguesSetting.last_update | date:'dd/MM/yyyy'}}</span>
+              <span class="date-value">{{leaguesSetting.last_update ? (leaguesSetting.last_update | date:'dd/MM/yyyy HH:mm') : '-'}}</span>
             </div>
             <div class="date-item">
               <span class="date-label">Next Match</span>
-              <span class="date-value">{{leaguesSetting.next_match | date:'dd/MM/yyyy'}}</span>
+              <span class="date-value">{{leaguesSetting.next_match ? (leaguesSetting.next_match | date:'dd/MM/yyyy HH:mm') : '-'}}</span>
             </div>
             <div class="date-item">
               <span class="date-label">Last Daily</span>
-              <span class="date-value">{{leaguesSetting.last_daily_update ? (leaguesSetting.last_daily_update | date:'dd/MM HH:mm') : '-'}}</span>
+              <span class="date-value">{{leaguesSetting.last_daily_update ? (leaguesSetting.last_daily_update | date:'dd/MM/yyyy HH:mm') : '-'}}</span>
             </div>
+          </div>
+
+          <div class="league-actions">
+            <button 
+              class="settings-button" 
+              (click)="openSettingsModal(leaguesSetting)"
+              [attr.aria-label]="'Settings for ' + leaguesSetting.league_name">
+              <ng-icon name="jamSettingsAlt" size="20"></ng-icon>
+            </button>
           </div>
         </div>
       }
@@ -88,4 +103,117 @@
       <p class="empty-state-description">Leagues will appear here once they are added to the system.</p>
     </div>
   </section>
+
+  <!-- Settings Modal -->
+  @if (showSettingsModal) {
+    <div class="modal-overlay" (click)="closeSettingsModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title">League Settings</h2>
+            <div *ngIf="selectedLeague" class="modal-league-name">{{selectedLeague.league_name}}</div>
+          </div>
+          <button class="modal-close" (click)="closeSettingsModal()">
+            <ng-icon name="jamClose" size="24"></ng-icon>
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Update Season Section -->
+          <div class="modal-section">
+            <label for="season-selector">Current Season</label>
+            <select id="season-selector" [(ngModel)]="selectedSeason">
+              <option *ngFor="let s of shortSeasonsList" [value]="s">{{s}}</option>
+            </select>
+            <button 
+              (click)="triggerUpdateSeason()"
+              [disabled]="selectedSeason === selectedLeague?.season || isUpdateSeasonLoading"
+              class="modal-action-btn">
+              {{ isUpdateSeasonLoading ? 'Updating...' : 'Update' }}
+            </button>
+          </div>
+
+          <!-- Matches Update Section -->
+          <div class="modal-section">
+            <label for="full-update-selector">Matches Update</label>
+            <select id="full-update-selector" [(ngModel)]="selectedMatchesUpdateSeason">
+              <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
+            </select>
+            <button 
+              (click)="triggerMatchesUpdate()"
+              [disabled]="isMatchesUpdateLoading"
+              class="modal-action-btn">
+              {{ isMatchesUpdateLoading ? 'Updating...' : 'Update' }}
+            </button>
+          </div>
+
+          <!-- Teams Update Section -->
+          <div class="modal-section">
+            <label for="teams-update-selector">Teams Update</label>
+            <select id="teams-update-selector" [(ngModel)]="selectedTeamsUpdateSeason">
+              <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
+            </select>
+            <button 
+              (click)="triggerTeamsUpdate()"
+              [disabled]="isUpdateTeamsLoading"
+              class="modal-action-btn">
+              {{ isUpdateTeamsLoading ? 'Updating...' : 'Update' }}
+            </button>
+          </div>
+
+          <!-- Available Seasons Status List -->
+          <div *ngIf="selectedLeague" class="modal-seasons-status-list">
+            <div class="season-status-header">
+              <span class="season-status-year">Season</span>
+              <div class="season-status-details">
+                <span class="season-status-matches">Matches</span>
+                <span class="season-status-teams">Teams</span>
+              </div>
+            </div>
+            <div *ngFor="let seasonDetail of availableSeasonsDetails.slice().reverse()" class="season-status-row">
+              <span class="season-status-year">{{ seasonDetail.season }}</span>
+              <div class="season-status-details">
+                <span class="season-status-matches" [ngClass]="{'no-data': seasonDetail.real_matches === null}">
+                  {{ seasonDetail.real_matches !== null ? seasonDetail.real_matches : 'No data' }}
+                </span>
+                <span class="season-status-teams" [ngClass]="{'no-data': seasonDetail.teams === null}">
+                  {{ seasonDetail.teams !== null ? seasonDetail.teams : 'No data' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- General Modal for All Leagues Updates -->
+  @if (showGeneralModal) {
+    <div class="modal-overlay" (click)="closeGeneralModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">All Leagues Update</h2>
+          <button class="modal-close" (click)="closeGeneralModal()">
+            <ng-icon name="jamClose" size="24"></ng-icon>
+          </button>
+        </div>
+        <div class="modal-body">
+          <button 
+            class="modal-action-btn"
+            (click)="triggerUpdateLeagues()"
+            [disabled]="isUpdateLeaguesLoading">
+            {{ isUpdateLeaguesLoading ? 'Updating...' : 'Update All Leagues' }}
+          </button>
+          
+          <button 
+            class="modal-action-btn"
+            (click)="triggerCheckAvailableSeasons()"
+            [disabled]="isCheckSeasonsLoading">
+            {{ isCheckSeasonsLoading ? 'Checking...' : 'Check Matches by League and Season' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>
