@@ -31,18 +31,7 @@ import { Location } from '../../models/location';
 export class TeamComponent {
 
   /* Seasons */
-  seasons: SeasonInfo[] =
-    [{ id: 2024, text: "2024-2025" },
-    { id: 2023, text: "2023-2024" },
-    { id: 2022, text: "2022-2023" },
-    { id: 2021, text: "2021-2022" },
-    { id: 2020, text: "2020-2021" },
-    { id: 2019, text: "2019-2020" },
-    { id: 2018, text: "2018-2019" },
-    { id: 2017, text: "2017-2018" },
-    { id: 2016, text: "2016-2017" },
-    { id: 2015, text: "2015-2016" },
-    { id: 2014, text: "2014-2015" }]
+  seasons: SeasonInfo[] = [];
   selectedSeason!: SeasonInfo;
 
   leagues: string[] = [];
@@ -77,6 +66,7 @@ export class TeamComponent {
     this.megagoal.getTeamById(this.queryTeamId).subscribe(result => {
       if (result != undefined) {
         this.team = result;
+        this.initializeSeasons();
         this.getRealMatches();
         this.getMatches();
         this.getLocations();
@@ -87,6 +77,31 @@ export class TeamComponent {
       this.router.navigate(["/leagues"]);
     })
 
+  }
+
+  /*
+    Initialize seasons dynamically from team's seasons array
+  */
+  initializeSeasons(): void {
+    // Convert team's SeasonTeam[] to SeasonInfo[]
+    const uniqueSeasons = new Set<string>();
+    
+    this.team.seasons.forEach(seasonTeam => {
+      uniqueSeasons.add(seasonTeam.season);
+    });
+    
+    this.seasons = Array.from(uniqueSeasons)
+      .map(seasonStr => {
+        const seasonId = parseInt(seasonStr);
+        return {
+          id: seasonId,
+          text: `${seasonId}-${seasonId + 1}`
+        };
+      })
+      .sort((a, b) => b.id - a.id); // Sort in descending order (newest first)
+    
+    // Set default selected season
+    this.selectedSeason = this.seasons.find(season => season.id == this.querySeasonId) || this.seasons[0];
   }
 
   /*
