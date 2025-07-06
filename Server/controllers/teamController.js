@@ -1,4 +1,5 @@
 import { getDB } from '../config/db.js';
+import { getTopLeaguesInQuery, getTopLeaguesString, TOP_LEAGUES_IDS } from '../config/topLeagues.js';
 
 // Get teams
 const getTeams = async (req, res) => {
@@ -72,4 +73,34 @@ const deletePreviousImage = async (req, res) => {
   }
 }
 
-export { getTeams, getTeamByTeamId, setPreviousImage, deletePreviousImage };
+// Get teams by top leagues
+const getTeamsByTopLeagues = async (req, res) => {
+  const db = getDB();
+  try {
+    // Convert top league IDs to strings since they're stored as strings in the database
+    const topLeaguesAsStrings = TOP_LEAGUES_IDS.map(id => id.toString());
+    
+    // Create query to find teams that have at least one of the top league IDs in their seasons array
+    const query = {
+      "seasons": {
+        "$elemMatch": {
+          "league": { "$in": topLeaguesAsStrings }
+        }
+      }
+    };
+    
+    const result = await db.collection('teams').find(query, {
+      projection: {
+        "name": "$team.name",
+        "id": "$team.id",
+        "_id": 0
+      }
+    }).toArray();
+    console.log(`Teams found for top leagues: ${result.length} teams`);
+    res.send(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export { getTeams, getTeamByTeamId, setPreviousImage, deletePreviousImage, getTeamsByTopLeagues };

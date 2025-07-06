@@ -6,6 +6,11 @@
 */
 import { SeasonTeam } from "./season"
 
+export interface shortTeam {
+    name: string,
+    id: number
+}
+
 export interface Team {
     team: team,
     venue: venue,

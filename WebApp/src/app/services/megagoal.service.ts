@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { League } from '../models/league';
 import { Match } from '../models/match';
-import { Team } from '../models/team';
+import { Team, shortTeam } from '../models/team';
 import { Location } from '../models/location';
 import { Observable } from 'rxjs';
 import { RealMatch } from '../models/realMatch';
@@ -81,6 +81,13 @@ export class MegaGoalService {
   }
 
   /*
+    Method to get all the Teams by multiple league IDs from the API
+  */
+  getTeamsByTopLeague(): Observable<shortTeam[]> {
+    return this.http.get<shortTeam[]>(this.url + '/team/top_leagues', { ...this.options });
+  }
+
+  /*
     Method to get a Teams by its id from the API
   */
     getTeamById(team_id: number): Observable<Team> {
@@ -106,7 +113,31 @@ export class MegaGoalService {
     Method to get Real Matches by league and season from the API
   */
   getRealMatchesByLeagueIDAndSeason(league_id: number, season: number): Observable<RealMatch[]> {
-    let params = new HttpParams().set('league_id', league_id).set('season', season); 
+    let params = new HttpParams().set('league_id', league_id).set('season', season);
+    return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
+  }
+
+  /*
+    Method to get Real Matches by flexible parameters from the API
+  */
+  getRealMatchesByParameters(parameters: { [key: string]: any }): Observable<RealMatch[]> {
+    let params = new HttpParams();
+    
+    // Add each parameter to the query string
+    Object.keys(parameters).forEach(key => {
+      if (parameters[key] !== null && parameters[key] !== undefined) {
+        params = params.set(key, parameters[key].toString());
+      }
+    });
+    
+    return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
+  }
+
+  /*
+    Method to get Real Matches by league and season from the API
+  */
+  getRealMatchesFinishedByLeagueIDAndSeason(league_id: number, season: number): Observable<RealMatch[]> {
+    let params = new HttpParams().set('league_id', league_id).set('season', season).set('finished', 'true');
     return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
   }
 
@@ -130,6 +161,21 @@ export class MegaGoalService {
   getMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<Match[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 
     return this.http.get<Match[]>(this.url + '/match', { ...this.options, params: params });
+  }
+
+  /*
+    Method to get all the Matches by location id from the API
+  */
+  getMatchesByLocationID(location_id: string): Observable<Match[]> {
+    let params = new HttpParams().set('location', location_id); 
+    return this.http.get<Match[]>(this.url + '/match', { ...this.options, params: params });
+  }
+
+  /*
+    Method to get all the Matches by location id from the API
+  */
+  getMatches(): Observable<Match[]> {
+    return this.http.get<Match[]>(this.url + '/match', { ...this.options });
   }
   
   /*

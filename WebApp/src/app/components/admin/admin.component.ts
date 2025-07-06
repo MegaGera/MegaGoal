@@ -34,7 +34,6 @@ export class AdminComponent {
   isCheckSeasonsLoading: boolean = false;
   isUpdateTeamsLoading: boolean = false;
 
-  seasonsList: number[] = [2020, 2021, 2022, 2023, 2024, 2025];
   shortSeasonsList: number[] = [2024, 2025];
 
   constructor(

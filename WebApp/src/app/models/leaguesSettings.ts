@@ -8,5 +8,9 @@ export interface LeaguesSettings {
     last_daily_update: Date,
     daily_update: boolean,
     season: number,
-    available_seasons?: number[]
+    available_seasons?: {
+        season: number,
+        real_matches: number,
+        teams: number
+    }[]
 }
