@@ -7,5 +7,6 @@ export interface Location {
     private: boolean,
     stadium: boolean,
     official: boolean,
-    matchCount: number
+    matchCount: number,
+    venue_id?: number
 }

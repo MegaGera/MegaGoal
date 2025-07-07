@@ -1,167 +1,141 @@
 <div class="container-fluid">
-  <div class="row">
-    <!-- Left Column - Locations -->
-    <div class="col-3">
-      <div class="row m-2">
-        <form class="d-flex align-items-center" [formGroup]="newLocationForm" (ngSubmit)="addLocation()">
-          <div class="form-group flex-grow-1 me-2">
-            <label for="location" class="form-label">New Location</label>
+  <!-- Top Section - Location Management -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-2">
+          <label class="form-label mb-0">Location:</label>
+          <select class="form-select form-select-sm" style="width: 200px;" [(ngModel)]="selectedLocation" (change)="onLocationChange()">
+            <option [ngValue]="null">Select a location</option>
+            @for (location of locations; track location.id) {
+              <option [ngValue]="location">
+                @if (location.stadium) {
+                  🏟️ 
+                }
+                {{location.name}} ({{location.matchCount}})
+              </option>
+            }
+          </select>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" (click)="showAddLocationForm = !showAddLocationForm">
+          + Add Location
+        </button>
+      </div>
+      
+      @if (showAddLocationForm) {
+        <div class="mt-2">
+          <form class="d-flex align-items-center gap-2" [formGroup]="newLocationForm" (ngSubmit)="addLocation()">
             <input
               type="text"
-              class="form-control"
-              id="location"
+              class="form-control form-control-sm"
+              placeholder="New location name"
               formControlName="name"
+              style="width: 200px;"
             />
-          </div>
-          <button class="btn btn-primary align-self-end" type="submit">Add</button>
-        </form>
-      </div>
-      <table class="table tableLocations">
-        <thead>
-          <tr>
-            <th scope="col" style="width: 5%;">#</th>
-            <th scope="col" style="width: 5%;"></th>
-            <th scope="col" style="width: 70%;">Name</th>
-            <th scope="col" style="width: 10%;">
-              <ng-icon name="jamEyeF"></ng-icon>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (location of locations; track $index) {
-            <tr 
-              [class.table-active]="selectedLocation?.name === location.name"
-              (click)="selectLocation(location)"
-              style="cursor: pointer;"
-            >
-              <th scope="row">{{$index + 1}}</th>
-              <td>
-                @if (location.stadium) {
-                  <ng-icon name="jamShieldF"></ng-icon>
-                }
-              </td>
-              <td>{{location.name}}</td>
-              <td>{{location.matchCount}}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+            <button class="btn btn-sm btn-primary" type="submit">Add</button>
+            <button class="btn btn-sm btn-outline-secondary" type="button" (click)="showAddLocationForm = false">Cancel</button>
+          </form>
+        </div>
+      }
     </div>
+  </div>
 
-    <!-- Middle Column - Available Matches -->
-    <div class="col-5">
+  <div class="row">
+    <!-- Left Column - Available Matches -->
+    <div class="col-6">
       <div class="card">
         <div class="card-header">
-          @if (selectedLocation) {
-            <h5 class="mb-0">Available Matches - {{selectedLocation.name}}</h5>
-          } @else {
-            <h5 class="mb-0">Available Matches</h5>
-          }
+          <h6 class="mb-0">Available Matches</h6>
         </div>
         <div class="card-body">
           <!-- Filters -->
-          <div class="row mb-3">
-            <div class="col-12">
-              <div class="d-flex align-items-center mb-2">
-                <ng-icon name="jamFilter" class="me-2"></ng-icon>
-                <strong>Filters:</strong>
-                <button class="btn btn-sm btn-outline-secondary ms-auto" (click)="clearFilters()">Clear</button>
+          <div class="mb-3">
+            <div class="d-flex align-items-center mb-2">
+              <ng-icon name="jamFilter" class="me-2"></ng-icon>
+              <strong>Filters:</strong>
+              <button class="btn btn-sm btn-outline-secondary ms-auto" (click)="clearFilters()">Clear</button>
+            </div>
+            <div class="row g-2">
+              <div class="col-6">
+                <select class="form-select form-select-sm" [(ngModel)]="selectedLeague" (change)="applyFilters()">
+                  <option [ngValue]="null">All Leagues</option>
+                  @for (league of leagues; track league.league_id) {
+                    <option [ngValue]="league">{{league.league_name}}</option>
+                  }
+                </select>
               </div>
-              <div class="row g-2">
-                <div class="col-6">
-                  <select class="form-select form-select-sm" [(ngModel)]="selectedLeague" (change)="applyFilters()">
-                    <option [ngValue]="null">All Leagues</option>
-                    @for (league of leagues; track league.league_id) {
-                      <option [ngValue]="league">{{league.league_name}}</option>
-                    }
-                  </select>
-                </div>
-                <div class="col-6">
+                              <div class="col-6">
                   <select class="form-select form-select-sm" [(ngModel)]="selectedTeam_1" (change)="applyFilters()">
                     <option [ngValue]="null">All Teams</option>
-                    @for (team of teams; track team.id) {
+                    @for (team of filteredTeams; track team.id) {
                       <option [ngValue]="team">{{team.name}}</option>
                     }
                   </select>
                 </div>
-                <div class="col-6">
-                  <select class="form-select form-select-sm" [(ngModel)]="selectedSeason" (change)="applyFilters()">
-                    @for (season of seasons; track season.id) {
-                      <option [ngValue]="season">{{season.text}}</option>
-                    }
-                  </select>
-                </div>
-                <div class="col-6">
+              <div class="col-6">
+                <select class="form-select form-select-sm" [(ngModel)]="selectedSeason" (change)="applyFilters()">
+                  @for (season of seasons; track season.id) {
+                    <option [ngValue]="season">{{season.text}}</option>
+                  }
+                </select>
+              </div>
+                              <div class="col-6">
                   <select class="form-select form-select-sm" [(ngModel)]="selectedTeam_2" (change)="applyFilters()">
                     <option [ngValue]="null">All Teams</option>
-                    @for (team of teams; track team.id) {
+                    @for (team of filteredTeams; track team.id) {
                       <option [ngValue]="team">{{team.name}}</option>
                     }
                   </select>
                 </div>
-              </div>
             </div>
           </div>
 
           <!-- Available Matches List -->
           @if (loadingAvailableRealMatches) {
             <div class="text-center">
-              <div class="spinner-border" role="status">
+              <div class="spinner-border spinner-border-sm" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
             </div>
           } @else {
-            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-              <table class="table table-sm">
-                <thead class="sticky-top bg-light">
-                  <tr>
-                    <th>Teams</th>
-                    <th>League</th>
-                    <th>Date</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (match of availableRealMatches; track match.fixture.id) {
-                    <tr [class.table-warning]="isMatchAlreadyViewed(match)" [class.table-success]="isMatchViewedAtSelectedLocation(match)">
-                      <td>
-                        <small>
-                          <strong>{{match.teams.home.name}}</strong> vs <strong>{{match.teams.away.name}}</strong>
-                        </small>
-                      </td>
-                      <td>
-                        <small>{{match.league.name}}</small>
-                      </td>
-                      <td>
-                        <small>{{match.fixture.date | date:'shortDate'}}</small>
-                      </td>
-                      <td>
-                        @if (selectedLocation) {
-                          <button 
-                            class="btn btn-sm btn-success" 
-                            (click)="addMatchToLocation(match)"
-                            title="Add to {{selectedLocation.name}}"
-                            [disabled]="isMatchViewedAtSelectedLocation(match)"
-                          >
-                            <ng-icon name="jamPlus"></ng-icon>
-                          </button>
-                        }
-                      </td>
-                    </tr>
+            <div class="matches-container">
+              @for (match of filteredRealMatches; track match.fixture.id) {
+                <div class="match-row" [class.match-warning]="isMatchAlreadyViewed(match)" [class.match-success]="isMatchViewedAtSelectedLocation(match)">
+                  <div class="stadium-column">
+                    @if (isRealMatchViewedAtStadiumLocation(match)) {
+                      <span class="stadium-badge">🏟️</span>
+                    }
+                  </div>
+                  <div class="match-content">
+                    <img [src]="getTeamImageUrl(match.teams.home.id)" [alt]="match.teams.home.name" class="team-icon">
+                    <span class="team-name" [title]="match.teams.home.name">{{match.teams.home.name}}</span>
+                    <span class="match-result">{{getMatchResult(match)}}</span>
+                    <span class="team-name" [title]="match.teams.away.name">{{match.teams.away.name}}</span>
+                    <img [src]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon">
+                    <span class="league-info">{{match.league.name}}</span>
+                    <span class="match-info">• {{match.fixture.date | date:'dd/MM/yyyy'}}</span>
+                  </div>
+                  @if (selectedLocation) {
+                    <button 
+                      class="btn btn-sm btn-success match-action" 
+                      (click)="addMatchToLocation(match)"
+                      title="Add to {{selectedLocation.name}}"
+                      [disabled]="isMatchViewedAtSelectedLocation(match)"
+                    >
+                      <ng-icon name="jamPlus"></ng-icon>
+                    </button>
                   }
-                  @if (availableRealMatches.length === 0) {
-                    <tr>
-                      <td colspan="4" class="text-center text-muted">
-                        @if (getSelectedFilters().length < 2) {
-                          Select more filters
-                        } @else {
-                          No matches available
-                        }
-                      </td>
-                    </tr>
+                </div>
+              }
+              @if (filteredRealMatches.length === 0) {
+                <div class="text-center text-muted py-3">
+                  @if (getSelectedFilters().length < 2) {
+                    Select more filters
+                  } @else {
+                    No matches available
                   }
-                </tbody>
-              </table>
+                </div>
+              }
             </div>
           }
         </div>
@@ -169,69 +143,57 @@
     </div>
 
     <!-- Right Column - Viewed Matches -->
-    <div class="col-4">
+    <div class="col-6">
       <div class="card">
         <div class="card-header">
-          @if (selectedLocation) {
-            <h5 class="mb-0">Viewed Matches - {{selectedLocation.name}}</h5>
-          } @else {
-            <h5 class="mb-0">Viewed Matches</h5>
-          }
+          <h6 class="mb-0">
+            @if (selectedLocation) {
+              Viewed Matches - {{selectedLocation.name}} ({{filteredViewedMatches.length}})
+            } @else {
+              Viewed Matches ({{filteredViewedMatches.length}})
+            }
+          </h6>
         </div>
         <div class="card-body">
           @if (loadingViewedMatches) {
             <div class="text-center">
-              <div class="spinner-border" role="status">
+              <div class="spinner-border spinner-border-sm" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
             </div>
           } @else {
-            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-              <table class="table table-sm">
-                <thead class="sticky-top bg-light">
-                  <tr>
-                    <th>Teams</th>
-                    <th>League</th>
-                    <th>Date</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (match of filteredViewedMatches; track match._id) {
-                    <tr>
-                      <td>
-                        <small>
-                          <strong>{{match.teams.home.name}}</strong> vs <strong>{{match.teams.away.name}}</strong>
-                        </small>
-                      </td>
-                      <td>
-                        <small>{{match.league.name}}</small>
-                      </td>
-                      <td>
-                        <small>{{match.fixture.timestamp * 1000 | date:'shortDate'}}</small>
-                      </td>
-                      <td>
-                        @if (selectedLocation) {
-                        <button 
-                          class="btn btn-sm btn-danger" 
-                          (click)="removeMatchFromLocation(match)"
-                          title="Remove from {{selectedLocation.name}}"
-                          >
-                            <ng-icon name="jamMinus"></ng-icon>
-                          </button>
-                        }
-                      </td>
-                    </tr>
+            <div class="matches-container">
+              @for (match of filteredViewedMatches; track match._id) {
+                <div class="match-row">
+                  <div class="stadium-column">
+                    @if (isMatchViewedAtStadiumLocation(match)) {
+                      <span class="stadium-badge">🏟️</span>
+                    }
+                  </div>
+                  <div class="match-content">
+                    <img [src]="getTeamImageUrl(match.teams.home.id)" [alt]="match.teams.home.name" class="team-icon">
+                    <span class="team-name" [title]="match.teams.home.name">{{match.teams.home.name}}</span>
+                    <span class="match-result">{{getMatchResultFromMatch(match)}}</span>
+                    <span class="team-name" [title]="match.teams.away.name">{{match.teams.away.name}}</span>
+                    <img [src]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon">
+                    <span class="league-info">{{match.league.name}}</span>
+                    <span class="match-info">• {{match.fixture.timestamp * 1000 | date:'dd/MM/yyyy'}}</span>                  </div>
+                  @if (selectedLocation) {
+                    <button 
+                      class="btn btn-sm btn-danger match-action" 
+                      (click)="removeMatchFromLocation(match)"
+                      title="Remove from {{selectedLocation.name}}"
+                    >
+                      <ng-icon name="jamMinus"></ng-icon>
+                    </button>
                   }
-                  @if (viewedMatches.length === 0) {
-                    <tr>
-                      <td colspan="4" class="text-center text-muted">
-                        No matches viewed at this location
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+                </div>
+              }
+              @if (filteredViewedMatches.length === 0) {
+                <div class="text-center text-muted py-3">
+                  No matches viewed at this location
+                </div>
+              }
             </div>
           }
         </div>

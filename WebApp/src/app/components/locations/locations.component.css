@@ -22,11 +22,17 @@ th, td {
 .card {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   border: 1px solid #e0e0e0;
+  height: 100%;
 }
 
 .card-header {
   background-color: #f8f9fa;
   border-bottom: 1px solid #e0e0e0;
+  padding: 0.75rem 1rem;
+}
+
+.card-body {
+  padding: 1rem;
 }
 
 .table-responsive {
@@ -47,25 +53,56 @@ th, td {
   font-size: 0.875rem;
 }
 
+.form-control-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Top section spacing */
+.row.mb-3 {
+  margin-top: 1rem;
+}
+
+.d-flex.align-items-center.gap-3 {
+  padding: 0.5rem 0;
+}
+
+/* Card header titles */
+.card-header h6 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-  .col-4 {
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
-  
-  .col-4:last-child {
+  .col-6 {
     flex: 0 0 100%;
     max-width: 100%;
-    margin-top: 1rem;
+    margin-bottom: 1rem;
   }
 }
 
 @media (max-width: 768px) {
-  .col-4 {
-    flex: 0 0 100%;
-    max-width: 100%;
-    margin-bottom: 1rem;
+  .match-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .match-info {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .league-info {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 120px;
+  }
+  
+  .team-name {
+    max-width: 120px;
   }
 }
 
@@ -73,6 +110,11 @@ th, td {
 .spinner-border {
   width: 2rem;
   height: 2rem;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
 }
 
 /* Table improvements */
@@ -87,10 +129,10 @@ th, td {
 
 /* Filter section styling */
 .filter-section {
-    background-color: #f8f9fa;
-    border-radius: 0.375rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
 /* Match status styling */
@@ -108,4 +150,184 @@ th, td {
 .btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* Team icon styling */
+.team-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    border-radius: 2px;
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.team-icon:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+/* Team name and result container styling */
+.team-match-row {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.team-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+    font-size: 0.875rem;
+}
+
+.team-name.away {
+    text-align: right;
+}
+
+.match-result {
+    font-weight: bold;
+    color: #0d6efd;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    margin: 0 0.25rem;
+}
+
+/* Fixed column widths for the tables */
+.teams-column {
+    width: 320px;
+    min-width: 320px;
+    max-width: 320px;
+}
+
+.league-column {
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+}
+
+.date-column {
+    width: 100px;
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.action-column {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+}
+
+/* Matches container */
+.matches-container {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* Match row styling */
+.match-row {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  min-height: 40px;
+  transition: background-color 0.2s ease;
+}
+
+.match-row:hover {
+  background-color: #f8f9fa;
+}
+
+.match-row:last-child {
+  border-bottom: none;
+}
+
+.match-content {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 0.5rem;
+}
+
+/* Stadium column styling */
+.stadium-column {
+  width: 24px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+}
+
+/* Match info styling */
+.league-info {
+  color: #6c757d;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.match-info {
+  color: #6c757d;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  margin-right: 0.5rem;
+}
+
+/* Match action button */
+.match-action {
+  flex-shrink: 0;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.7rem;
+  min-width: 28px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Stadium badge styling */
+.stadium-badge {
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+/* Match status styling */
+.match-warning {
+  background-color: #fff3cd;
+  border-left: 3px solid #ffc107;
+}
+
+.match-success {
+  background-color: #d1edff;
+  border-left: 3px solid #0d6efd;
+}
+
+/* Scrollbar styling */
+.matches-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.matches-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.matches-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.matches-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }

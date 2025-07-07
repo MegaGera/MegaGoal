@@ -8,7 +8,8 @@ import { SeasonTeam } from "./season"
 
 export interface shortTeam {
     name: string,
-    id: number
+    id: number,
+    seasons: SeasonTeam[]
 }
 
 export interface Team {

@@ -93,6 +93,7 @@ const getTeamsByTopLeagues = async (req, res) => {
       projection: {
         "name": "$team.name",
         "id": "$team.id",
+        "seasons": 1,
         "_id": 0
       }
     }).toArray();
