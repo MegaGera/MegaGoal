@@ -90,6 +90,20 @@
             </div>
           </div>
 
+          <!-- Legend -->
+          @if (filteredRealMatches.length > 0) {
+            <div class="legend-container mb-3">
+              <div class="legend-item">
+                <div class="legend-color match-success"></div>
+                <span class="legend-text">Matches viewed in this location</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color match-warning"></div>
+                <span class="legend-text">Matches viewed in other location</span>
+              </div>
+            </div>
+          }
+
           <!-- Available Matches List -->
           @if (loadingAvailableRealMatches) {
             <div class="text-center">
