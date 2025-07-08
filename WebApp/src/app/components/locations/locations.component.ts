@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter } from '@ng-icons/jam-icons';
+import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamChevronDown } from '@ng-icons/jam-icons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -24,7 +24,7 @@ import { MatchParserService } from '../../services/match-parser.service';
   styleUrl: './locations.component.css',
   providers: [provideNgIconsConfig({
     size: '1.5em',
-  }), provideIcons({ jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter })]
+  }), provideIcons({ jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamChevronDown })]
 })
 export class LocationsComponent {
 
@@ -54,6 +54,10 @@ export class LocationsComponent {
   // Loading states
   loadingAvailableRealMatches = false;
   loadingViewedMatches = false;
+  
+  // Collapsible states
+  showAvailableMatches = true;
+  showViewedMatches = true;
   
   constructor(
     private megagoal: MegaGoalService, 
@@ -339,6 +343,22 @@ export class LocationsComponent {
     this.selectedSeason = this.seasons[0];
     this.filteredTeams = [...this.teams];
     this.applyFilters();
+  }
+
+  toggleAvailableMatches() {
+    this.showAvailableMatches = !this.showAvailableMatches;
+    // Force virtual scroll to recalculate after a short delay
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 100);
+  }
+
+  toggleViewedMatches() {
+    this.showViewedMatches = !this.showViewedMatches;
+    // Force virtual scroll to recalculate after a short delay
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 100);
   }
 
   isMatchAlreadyViewed(realMatch: RealMatch): boolean {

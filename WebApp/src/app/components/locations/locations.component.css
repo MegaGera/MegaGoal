@@ -23,6 +23,11 @@ th, td {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   border: 1px solid #e0e0e0;
   height: 100%;
+  transition: height 0.3s ease;
+}
+
+.card.collapsed {
+  height: auto;
 }
 
 .card-header {
@@ -31,8 +36,41 @@ th, td {
   padding: 0.75rem 1rem;
 }
 
+.clickable-header {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.2s ease;
+}
+
+.clickable-header:hover {
+  background-color: #e9ecef;
+}
+
+.collapse-icon {
+  transition: transform 0.3s ease;
+}
+
+.collapse-icon.rotated {
+  transform: rotate(-90deg);
+}
+
 .card-body {
   padding: 1rem;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.card-body.collapsed {
+  padding: 0;
+  max-height: 0;
+  opacity: 0;
+}
+
+.card-body.collapsed cdk-virtual-scroll-viewport {
+  height: 0 !important;
+  min-height: 0 !important;
 }
 
 .table-responsive {
@@ -74,9 +112,13 @@ th, td {
   margin: 0;
 }
 
+.match-buttons {
+  display: contents;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-  .col-6 {
+  .col-6.main-column {
     flex: 0 0 100%;
     max-width: 100%;
     margin-bottom: 1rem;
@@ -84,25 +126,83 @@ th, td {
 }
 
 @media (max-width: 768px) {
-  .match-content {
+  .match-row {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    padding: 0.25rem 0.5rem;
+    min-height: auto;
     gap: 0.25rem;
   }
-  
-  .match-info {
-    margin-left: 0;
-    margin-right: 0;
+
+  .match-content {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+    order: 1;
+  }
+
+  .stadium-column {
+    width: 24px;
+    min-width: 24px;
+    margin-right: 0.25rem;
+    order: 1;
+  }
+
+  .match-details {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    order: 2;
+    flex: 1;
   }
 
   .league-info {
     margin-left: 0;
     margin-right: 0;
-    max-width: 120px;
+    max-width: none;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  
+
+  .match-info {
+    margin-left: 0;
+    margin-right: 0;
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .match-action {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.65rem;
+    min-width: 24px;
+    height: 20px;
+    flex-shrink: 0;
+    order: 3;
+    margin-left: auto;
+  }
+
   .team-name {
-    max-width: 120px;
+    max-width: 80px;
+    font-size: 0.8rem;
+  }
+
+  .match-result {
+    font-size: 0.8rem;
+  }
+
+  .team-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .match-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    order: 3;
+    flex: 1;
   }
 }
 
@@ -234,8 +334,19 @@ th, td {
 
 /* Virtual scroll viewport styling */
 cdk-virtual-scroll-viewport {
-  height: 500px;
+  min-height: 500px !important;
   width: 100%;
+}
+
+@media (max-width: 768px) {
+  cdk-virtual-scroll-viewport {
+    min-height: 500px !important;
+  }
+}
+
+/* Fix virtual scroll content wrapper width */
+cdk-virtual-scroll-viewport ::ng-deep .cdk-virtual-scroll-content-wrapper {
+  width: 100% !important;
 }
 
 /* Match row styling */
@@ -243,7 +354,7 @@ cdk-virtual-scroll-viewport {
   display: flex;
   align-items: center;
   padding: 0.5rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #d0d0d0;
   min-height: 40px;
   transition: background-color 0.2s ease;
 }

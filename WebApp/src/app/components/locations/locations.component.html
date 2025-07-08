@@ -42,12 +42,13 @@
 
   <div class="row">
     <!-- Left Column - Available Matches -->
-    <div class="col-6">
-      <div class="card">
-        <div class="card-header">
+    <div class="col-6 main-column">
+      <div class="card" [class.collapsed]="!showAvailableMatches">
+        <div class="card-header clickable-header" (click)="toggleAvailableMatches()">
           <h6 class="mb-0">Available Matches</h6>
+          <ng-icon name="jamChevronDown" class="collapse-icon" [class.rotated]="!showAvailableMatches"></ng-icon>
         </div>
-        <div class="card-body">
+        <div class="card-body" [class.collapsed]="!showAvailableMatches">
           <!-- Filters -->
           <div class="mb-3">
             <div class="d-flex align-items-center mb-2">
@@ -64,14 +65,14 @@
                   }
                 </select>
               </div>
-                              <div class="col-6">
-                  <select class="form-select form-select-sm" [(ngModel)]="selectedTeam_1" (change)="applyFilters()">
-                    <option [ngValue]="null">All Teams</option>
-                    @for (team of filteredTeams; track team.id) {
-                      <option [ngValue]="team">{{team.name}}</option>
-                    }
-                  </select>
-                </div>
+              <div class="col-6">
+                <select class="form-select form-select-sm" [(ngModel)]="selectedTeam_1" (change)="applyFilters()">
+                  <option [ngValue]="null">All Teams</option>
+                  @for (team of filteredTeams; track team.id) {
+                    <option [ngValue]="team">{{team.name}}</option>
+                  }
+                </select>
+              </div>
               <div class="col-6">
                 <select class="form-select form-select-sm" [(ngModel)]="selectedSeason" (change)="applyFilters()">
                   @for (season of seasons; track season.id) {
@@ -79,14 +80,14 @@
                   }
                 </select>
               </div>
-                              <div class="col-6">
-                  <select class="form-select form-select-sm" [(ngModel)]="selectedTeam_2" (change)="applyFilters()">
-                    <option [ngValue]="null">All Teams</option>
-                    @for (team of filteredTeams; track team.id) {
-                      <option [ngValue]="team">{{team.name}}</option>
-                    }
-                  </select>
-                </div>
+              <div class="col-6">
+                <select class="form-select form-select-sm" [(ngModel)]="selectedTeam_2" (change)="applyFilters()">
+                  <option [ngValue]="null">All Teams</option>
+                  @for (team of filteredTeams; track team.id) {
+                    <option [ngValue]="team">{{team.name}}</option>
+                  }
+                </select>
+              </div>
             </div>
           </div>
 
@@ -129,29 +130,34 @@
                     <span class="match-result">{{getMatchResult(match)}}</span>
                     <span class="team-name" [title]="match.teams.away.name">{{match.teams.away.name}}</span>
                     <img [src]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon" loading="lazy">
+                  </div>
+                  <div class="match-details">
                     <span class="league-info">{{match.league.name}}</span>
                     <span class="match-info">• {{match.fixture.date | date:'dd/MM/yyyy'}}</span>
                   </div>
-                  @if (match.fixture.venue.id) {
-                    <button 
-                        class="btn btn-sm btn-primary match-action venue-action" 
-                        (click)="addMatchWithLocation(match, match.fixture.venue.id)"
-                        title="Add to {{match.fixture.venue.name}}"
-                        [disabled]="isRealMatchViewedAtStadiumLocation(match)"
+
+                  <div class="match-buttons">
+                    @if (match.fixture.venue.id) {
+                      <button 
+                          class="btn btn-sm btn-primary match-action venue-action" 
+                          (click)="addMatchWithLocation(match, match.fixture.venue.id)"
+                          title="Add to {{match.fixture.venue.name}}"
+                          [disabled]="isRealMatchViewedAtStadiumLocation(match)"
+                        >
+                        🏟️
+                      </button>
+                    }
+                    @if (selectedLocation) {
+                      <button 
+                        class="btn btn-sm btn-success match-action" 
+                        (click)="addMatchWithLocation(match, selectedLocation.id)"
+                        title="Add to {{selectedLocation.name}}"
+                        [disabled]="isMatchViewedAtSelectedLocation(match)"
                       >
-                      🏟️
-                    </button>
-                  }
-                  @if (selectedLocation) {
-                    <button 
-                      class="btn btn-sm btn-success match-action" 
-                      (click)="addMatchWithLocation(match, selectedLocation.id)"
-                      title="Add to {{selectedLocation.name}}"
-                      [disabled]="isMatchViewedAtSelectedLocation(match)"
-                    >
-                      <ng-icon name="jamPlus"></ng-icon>
-                    </button>
-                  }
+                        <ng-icon name="jamPlus"></ng-icon>
+                      </button>
+                    }
+                  </div>
                 </div>
               }
               @if (filteredRealMatches.length === 0) {
@@ -170,9 +176,9 @@
     </div>
 
     <!-- Right Column - Viewed Matches -->
-    <div class="col-6">
-      <div class="card">
-        <div class="card-header">
+    <div class="col-6 main-column">
+      <div class="card" [class.collapsed]="!showViewedMatches">
+        <div class="card-header clickable-header" (click)="toggleViewedMatches()">
           <h6 class="mb-0">
             @if (selectedLocation) {
               Viewed Matches - {{selectedLocation.name}} ({{filteredViewedMatches.length}})
@@ -180,8 +186,9 @@
               Viewed Matches ({{filteredViewedMatches.length}})
             }
           </h6>
+          <ng-icon name="jamChevronDown" class="collapse-icon" [class.rotated]="!showViewedMatches"></ng-icon>
         </div>
-        <div class="card-body">
+        <div class="card-body" [class.collapsed]="!showViewedMatches">
           @if (loadingViewedMatches) {
             <div class="text-center">
               <div class="spinner-border spinner-border-sm" role="status">
@@ -203,8 +210,10 @@
                     <span class="match-result">{{getMatchResultFromMatch(match)}}</span>
                     <span class="team-name" [title]="match.teams.away.name">{{match.teams.away.name}}</span>
                     <img [src]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon" loading="lazy">
+                  </div>
+                  <div class="match-details">
                     <span class="league-info">{{match.league.name}}</span>
-                    <span class="match-info">• {{match.fixture.timestamp * 1000 | date:'dd/MM/yyyy'}}</span>                  
+                    <span class="match-info">• {{match.fixture.timestamp * 1000 | date:'dd/MM/yyyy'}}</span>
                   </div>
                   <button 
                     class="btn btn-sm btn-danger match-action" 
