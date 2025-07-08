@@ -125,11 +125,11 @@
                     }
                   </div>
                   <div class="match-content">
-                    <img [src]="getTeamImageUrl(match.teams.home.id)" [alt]="match.teams.home.name" class="team-icon" loading="lazy">
+                    <img [ngSrc]="getTeamImageUrl(match.teams.home.id)" [alt]="match.teams.home.name" class="team-icon" width="24" height="24" priority="false">
                     <span class="team-name" [title]="match.teams.home.name">{{match.teams.home.name}}</span>
                     <span class="match-result">{{getMatchResult(match)}}</span>
                     <span class="team-name" [title]="match.teams.away.name">{{match.teams.away.name}}</span>
-                    <img [src]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon" loading="lazy">
+                    <img [ngSrc]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon" width="24" height="24" priority="false">
                   </div>
                   <div class="match-details">
                     <span class="league-info">{{match.league.name}}</span>
@@ -205,11 +205,11 @@
                     }
                   </div>
                   <div class="match-content">
-                    <img [src]="getTeamImageUrl(match.teams.home.id)" [alt]="match.teams.home.name" class="team-icon" loading="lazy">
+                    <img [ngSrc]="getTeamImageUrl(match.teams.home.id)" [alt]="match.teams.home.name" class="team-icon" width="24" height="24" priority="false">
                     <span class="team-name" [title]="match.teams.home.name">{{match.teams.home.name}}</span>
                     <span class="match-result">{{getMatchResultFromMatch(match)}}</span>
                     <span class="team-name" [title]="match.teams.away.name">{{match.teams.away.name}}</span>
-                    <img [src]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon" loading="lazy">
+                    <img [ngSrc]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon" width="24" height="24" priority="false">
                   </div>
                   <div class="match-details">
                     <span class="league-info">{{match.league.name}}</span>

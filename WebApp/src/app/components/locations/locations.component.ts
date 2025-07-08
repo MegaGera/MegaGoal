@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule, FormBuilder, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { NgOptimizedImage } from '@angular/common';
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamChevronDown } from '@ng-icons/jam-icons';
@@ -19,7 +20,7 @@ import { MatchParserService } from '../../services/match-parser.service';
 @Component({
   selector: 'app-locations',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, NgIconComponent, CommonModule, ScrollingModule],
+  imports: [FormsModule, ReactiveFormsModule, NgIconComponent, CommonModule, ScrollingModule, NgOptimizedImage],
   templateUrl: './locations.component.html',
   styleUrl: './locations.component.css',
   providers: [provideNgIconsConfig({
@@ -405,7 +406,8 @@ export class LocationsComponent {
 
   // Helper method to get team image URL
   getTeamImageUrl(teamId: number): string {
-    return this.imagesService.getRouteImageTeam(teamId);
+    const baseUrl = this.imagesService.getRouteImageTeam(teamId);
+    return `${baseUrl}?size=24x24`;
   }
 
   // Helper method to format match result for RealMatch

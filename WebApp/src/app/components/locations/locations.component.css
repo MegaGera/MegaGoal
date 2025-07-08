@@ -193,8 +193,8 @@ th, td {
   }
 
   .team-icon {
-    width: 20px;
-    height: 20px;
+    width: 20px !important;
+    height: 20px !important;
   }
 
   .match-buttons {
@@ -254,8 +254,6 @@ th, td {
 
 /* Team icon styling */
 .team-icon {
-    width: 24px;
-    height: 24px;
     object-fit: contain;
     border-radius: 2px;
     background-color: white;
