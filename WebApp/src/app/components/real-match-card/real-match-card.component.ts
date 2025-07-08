@@ -47,7 +47,7 @@ export class RealMatchCardComponent {
       this.megaGoal.createMatch(this.matchParser.matchToMatchRequest(this.match)).subscribe(result => { })
     } else {
       this.watched = false;
-      this.megaGoal.deleteMatch(this.match._id).subscribe(result => { });
+      this.megaGoal.deleteMatch(this.match.fixture.id).subscribe(result => { });
     }
   }
 
@@ -95,7 +95,11 @@ export class RealMatchCardComponent {
   }
 
   setLocation(fixtureId: number, location: string) {
-    this.megaGoal.setLocation(fixtureId, location).subscribe(result => { });
+    const existingLocation = this.locations.find(loc => loc.venue_id === parseInt(location));
+    if (existingLocation) {
+      location = existingLocation.id;
+    }
+    this.megaGoal.setLocation(fixtureId, location, this.match.venue).subscribe(result => { });
   }
 
   getDefaultLeagueImg(event: any) {

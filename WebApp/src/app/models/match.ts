@@ -28,5 +28,9 @@ export interface Match {
         away: number
     },
     location: string,
-    status: string
+    status: string,
+    venue?: {
+        id: number,
+        name: string
+    },
 }

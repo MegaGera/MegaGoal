@@ -38,7 +38,8 @@ export class MatchParserService {
         away: realMatch.goals.away
       },
       location: match ? match.location : '',
-      status: realMatch.fixture.status.short
+      status: realMatch.fixture.status.short,
+      venue: {id: realMatch.fixture.venue.id, name: realMatch.fixture.venue.name}
     }
     return matchModel;
   }

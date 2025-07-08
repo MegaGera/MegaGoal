@@ -149,10 +149,10 @@ export class MegaGoalService {
   }
 
   /*
-    Method to delete a match by the _id
+    Method to delete a match by the fixtureId
   */
-  deleteMatch(_id: string): Observable<string> {
-    return this.http.delete<string>(this.url + '/match/' + _id, this.options);
+  deleteMatch(fixtureId: number): Observable<string> {
+    return this.http.delete<string>(this.url + '/match/' + fixtureId, this.options);
   }
     
   /*
@@ -181,10 +181,11 @@ export class MegaGoalService {
   /*
     Method to set a Location for a Match
   */
-  setLocation(fixtureId: number, location: string): Observable<number> {
+  setLocation(fixtureId: number, location: string, venue?: any): Observable<number> {
     let body = {
       fixtureId: fixtureId,
-      location: location
+      location: location,
+      venue: venue
     }
     return this.http.post<number>(this.url + '/match/set_location', body, this.options);
   }

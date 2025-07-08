@@ -98,27 +98,40 @@
               </div>
             </div>
           } @else {
-            <div class="matches-container">
+            <cdk-virtual-scroll-viewport itemSize="40" class="matches-container">
               @for (match of filteredRealMatches; track match.fixture.id) {
-                <div class="match-row" [class.match-warning]="isMatchAlreadyViewed(match)" [class.match-success]="isMatchViewedAtSelectedLocation(match)">
+                <div class="match-row" 
+                     [class.match-warning]="isMatchAlreadyViewed(match)" 
+                     [class.match-success]="isMatchViewedAtSelectedLocation(match)"
+                     [title]="getMatchLocationTooltip(match)">
                   <div class="stadium-column">
                     @if (isRealMatchViewedAtStadiumLocation(match)) {
                       <span class="stadium-badge">🏟️</span>
                     }
                   </div>
                   <div class="match-content">
-                    <img [src]="getTeamImageUrl(match.teams.home.id)" [alt]="match.teams.home.name" class="team-icon">
+                    <img [src]="getTeamImageUrl(match.teams.home.id)" [alt]="match.teams.home.name" class="team-icon" loading="lazy">
                     <span class="team-name" [title]="match.teams.home.name">{{match.teams.home.name}}</span>
                     <span class="match-result">{{getMatchResult(match)}}</span>
                     <span class="team-name" [title]="match.teams.away.name">{{match.teams.away.name}}</span>
-                    <img [src]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon">
+                    <img [src]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon" loading="lazy">
                     <span class="league-info">{{match.league.name}}</span>
                     <span class="match-info">• {{match.fixture.date | date:'dd/MM/yyyy'}}</span>
                   </div>
+                  @if (match.fixture.venue.id) {
+                    <button 
+                        class="btn btn-sm btn-primary match-action venue-action" 
+                        (click)="addMatchWithLocation(match, match.fixture.venue.id)"
+                        title="Add to {{match.fixture.venue.name}}"
+                        [disabled]="isRealMatchViewedAtStadiumLocation(match)"
+                      >
+                      🏟️
+                    </button>
+                  }
                   @if (selectedLocation) {
                     <button 
                       class="btn btn-sm btn-success match-action" 
-                      (click)="addMatchToLocation(match)"
+                      (click)="addMatchWithLocation(match, selectedLocation.id)"
                       title="Add to {{selectedLocation.name}}"
                       [disabled]="isMatchViewedAtSelectedLocation(match)"
                     >
@@ -136,7 +149,7 @@
                   }
                 </div>
               }
-            </div>
+            </cdk-virtual-scroll-viewport>
           }
         </div>
       </div>
@@ -162,31 +175,30 @@
               </div>
             </div>
           } @else {
-            <div class="matches-container">
+            <cdk-virtual-scroll-viewport itemSize="40" class="matches-container-viewed">
               @for (match of filteredViewedMatches; track match._id) {
-                <div class="match-row">
+                <div class="match-row" [title]="getViewedMatchLocationTooltip(match)">
                   <div class="stadium-column">
                     @if (isMatchViewedAtStadiumLocation(match)) {
                       <span class="stadium-badge">🏟️</span>
                     }
                   </div>
                   <div class="match-content">
-                    <img [src]="getTeamImageUrl(match.teams.home.id)" [alt]="match.teams.home.name" class="team-icon">
+                    <img [src]="getTeamImageUrl(match.teams.home.id)" [alt]="match.teams.home.name" class="team-icon" loading="lazy">
                     <span class="team-name" [title]="match.teams.home.name">{{match.teams.home.name}}</span>
                     <span class="match-result">{{getMatchResultFromMatch(match)}}</span>
                     <span class="team-name" [title]="match.teams.away.name">{{match.teams.away.name}}</span>
-                    <img [src]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon">
+                    <img [src]="getTeamImageUrl(match.teams.away.id)" [alt]="match.teams.away.name" class="team-icon" loading="lazy">
                     <span class="league-info">{{match.league.name}}</span>
-                    <span class="match-info">• {{match.fixture.timestamp * 1000 | date:'dd/MM/yyyy'}}</span>                  </div>
-                  @if (selectedLocation) {
-                    <button 
-                      class="btn btn-sm btn-danger match-action" 
-                      (click)="removeMatchFromLocation(match)"
-                      title="Remove from {{selectedLocation.name}}"
-                    >
-                      <ng-icon name="jamMinus"></ng-icon>
-                    </button>
-                  }
+                    <span class="match-info">• {{match.fixture.timestamp * 1000 | date:'dd/MM/yyyy'}}</span>                  
+                  </div>
+                  <button 
+                    class="btn btn-sm btn-danger match-action" 
+                    (click)="deleteMatch(match)"
+                    title="Delete"
+                  >
+                    <ng-icon name="jamMinus"></ng-icon>
+                  </button>
                 </div>
               }
               @if (filteredViewedMatches.length === 0) {
@@ -194,7 +206,7 @@
                   No matches viewed at this location
                 </div>
               }
-            </div>
+            </cdk-virtual-scroll-viewport>
           }
         </div>
       </div>

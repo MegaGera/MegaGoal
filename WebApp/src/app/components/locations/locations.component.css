@@ -154,18 +154,17 @@ th, td {
 
 /* Team icon styling */
 .team-icon {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
     border-radius: 2px;
     background-color: white;
     border: 1px solid #e0e0e0;
     flex-shrink: 0;
-}
-
-.team-icon:hover {
-    transform: scale(1.1);
-    transition: transform 0.2s ease;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 /* Team name and result container styling */
@@ -224,8 +223,19 @@ th, td {
 
 /* Matches container */
 .matches-container {
-  max-height: 500px;
   overflow-y: auto;
+}
+
+/* Matches container */
+.matches-container-viewed {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Virtual scroll viewport styling */
+cdk-virtual-scroll-viewport {
+  height: 500px;
+  width: 100%;
 }
 
 /* Match row styling */
@@ -294,6 +304,24 @@ th, td {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: 0.25rem;
+}
+
+.match-action:first-child {
+  margin-left: 0;
+}
+
+/* Venue action button styling */
+.venue-action {
+  background-color: #f8f9fa;
+  border-color: #0d6efd;
+  color: #0d6efd;
+}
+
+.venue-action:hover {
+  background-color: #e9ecef;
+  border-color: #0b5ed7;
+  color: #0b5ed7;
 }
 
 /* Stadium badge styling */

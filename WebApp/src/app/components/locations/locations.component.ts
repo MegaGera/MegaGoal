@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule, FormBuilder, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter } from '@ng-icons/jam-icons';
@@ -18,7 +19,7 @@ import { MatchParserService } from '../../services/match-parser.service';
 @Component({
   selector: 'app-locations',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, NgIconComponent, CommonModule],
+  imports: [FormsModule, ReactiveFormsModule, NgIconComponent, CommonModule, ScrollingModule],
   templateUrl: './locations.component.html',
   styleUrl: './locations.component.css',
   providers: [provideNgIconsConfig({
@@ -32,7 +33,7 @@ export class LocationsComponent {
   newLocationForm: any;
   showAddLocationForm = false;
   
-  // Middle column - Available matches
+  // Left column - Available matches
   availableRealMatches: RealMatch[] = [];
   filteredRealMatches: RealMatch[] = [];
   leagues: LeaguesSettings[] = [];
@@ -68,16 +69,22 @@ export class LocationsComponent {
       name: ['', Validators.required]
     });
     this.locations = [];
-    this.getLocationsCounts();
+    this.loadViewedMatches();
+    this.getLocationsCounts(true);
     this.loadLeagues();
     this.loadTeams();
-    this.loadViewedMatches();
   }
 
-  getLocationsCounts() {
+  getLocationsCounts(refresh: boolean = false) {
     this.megagoal.getLocationsCounts().subscribe(result => {
       this.locations = <Location[]>result;
       this.locations.sort((a, b) => a.matchCount > b.matchCount ? -1 : 1);
+      if (this.selectedLocation) {
+        this.selectedLocation = this.locations.find(loc => loc.id === this.selectedLocation!.id) || null;
+        if (refresh) {
+          this.onLocationChange();
+        }
+      }
     })
   }
 
@@ -93,10 +100,14 @@ export class LocationsComponent {
 
   checkRealMatchesByLocation() {
     if (this.selectedLocation?.venue_id) {
-      console.log('Filtering real matches by venue id:', this.selectedLocation?.venue_id);
       this.filteredRealMatches = this.availableRealMatches.filter(match => match.fixture.venue.id === this.selectedLocation?.venue_id);
     } else {
       this.filteredRealMatches = [...this.availableRealMatches];
+    }
+    
+    // Limit items for performance (virtual scrolling will handle the rest)
+    if (this.filteredRealMatches.length > 1000) {
+      this.filteredRealMatches = this.filteredRealMatches.slice(0, 1000);
     }
   }
 
@@ -105,6 +116,7 @@ export class LocationsComponent {
       this.checkRealMatchesByLocation();
       this.filteredViewedMatches = this.viewedMatches.filter(match => match.location === this.selectedLocation!.id);
     } else {
+      this.checkRealMatchesByLocation();
       this.filteredViewedMatches = [...this.viewedMatches];
     }
   }
@@ -113,7 +125,6 @@ export class LocationsComponent {
     this.megagoal.getTeamsByTopLeague().subscribe(teams => {
       this.teams = teams.sort((a, b) => a.name.localeCompare(b.name));
       this.filteredTeams = [...this.teams];
-      // console.log(this.teams);
     });
   }
 
@@ -164,8 +175,6 @@ export class LocationsComponent {
     // Add finished parameter to get only completed matches
     parameters['finished'] = 'true';
     
-    // console.log('Calling API with parameters:', parameters);
-    
     this.megagoal.getRealMatchesByParameters(parameters).subscribe({
       next: (matches: RealMatch[]) => {
         // Sort matches by date (most recent first)
@@ -173,7 +182,6 @@ export class LocationsComponent {
           new Date(b.fixture.date).getTime() - new Date(a.fixture.date).getTime()
         );
         this.loadingAvailableRealMatches = false;
-        // console.log(`Loaded ${matches.length} matches`);
         this.checkRealMatchesByLocation();
       },
       error: (error: any) => {
@@ -191,8 +199,9 @@ export class LocationsComponent {
       this.viewedMatches = matches.sort((a, b) => 
         (b.fixture.timestamp * 1000) - (a.fixture.timestamp * 1000)
       );
-      this.filteredViewedMatches = [...this.viewedMatches];
       this.loadingViewedMatches = false;
+      this.filteredViewedMatches = [...this.viewedMatches];
+      this.onLocationChange();
     });
   }
 
@@ -214,11 +223,6 @@ export class LocationsComponent {
     
     // Call loadAvailableRealMatches if at least 2 filters are selected
     if (selectedFilters.length >= 2) {
-      // console.log('Selected filters:', selectedFilters.length);
-      // console.log('League:', this.selectedLeague?.league_id);
-      // console.log('Season:', this.selectedSeason?.id);
-      // console.log('Team 1:', this.selectedTeam_1?.id);
-      // console.log('Team 2:', this.selectedTeam_2?.id);
       
       this.loadAvailableRealMatches(
         this.selectedLeague?.league_id || undefined,
@@ -263,69 +267,69 @@ export class LocationsComponent {
     }
   }
 
-  addMatchToLocation(realMatch: RealMatch) {
-    if (!this.selectedLocation) return;
-    
+  addMatchWithLocation(realMatch: RealMatch, locationId: string | number) {
+    if (!locationId) return;
+
+    if (this.viewedMatches.find(match => match.fixture.id === realMatch.fixture.id)) {
+      this.setLocation(realMatch.fixture.id, locationId);
+      return;
+    }
+
+    let refresh = true;
+
+    const alreadyLocation = this.locations.find(loc => loc.id === locationId || loc.venue_id === locationId);
+    if (alreadyLocation) {
+      locationId = alreadyLocation.id;
+      refresh = false;
+    }
+
     const matchRequest = this.matchParser.realMatchToMatch(realMatch);
-    matchRequest.location = this.selectedLocation.name;
+    matchRequest.location = locationId.toString();
     
-    this.megagoal.createMatch(matchRequest).subscribe(() => {
-      // Remove from available matches
-      this.availableRealMatches = this.availableRealMatches.filter(m => m.fixture.id !== realMatch.fixture.id);
-      this.applyFilters();
-      
-      // Add to viewed matches
-      const newMatch = this.matchParser.realMatchToMatch(realMatch);
-      newMatch.location = this.selectedLocation!.name;
-      this.viewedMatches.push(newMatch);
-      
-      // Update location count
-      this.getLocationsCounts();
+    this.viewedMatches.push(matchRequest);
+    this.viewedMatches = this.viewedMatches.sort((a, b) => 
+      (b.fixture.timestamp * 1000) - (a.fixture.timestamp * 1000)
+    );
+    this.filteredViewedMatches = this.viewedMatches.filter(match => 
+      !this.selectedLocation || match.location === this.selectedLocation.id
+    );
+    
+    this.megagoal.createMatch(this.matchParser.matchToMatchRequest(matchRequest)).subscribe(() => {
+      if (refresh) {
+        this.loadViewedMatches();
+      }
+      this.getLocationsCounts(refresh);
     });
   }
 
-  removeMatchFromLocation(match: Match) {
-    if (!this.selectedLocation) return;
+  deleteMatch(match: Match) {
+    this.viewedMatches = this.viewedMatches.filter(m => m.fixture.id !== match.fixture.id);
+    this.filteredViewedMatches = this.viewedMatches.filter(match => 
+      !this.selectedLocation || match.location === this.selectedLocation.id
+    );
     
-    this.megagoal.deleteMatch(match._id).subscribe(() => {
-      // Remove from viewed matches
-      this.viewedMatches = this.viewedMatches.filter(m => m._id !== match._id);
-      
-      // Reconstruct RealMatch and add back to available matches
-      const realMatch: RealMatch = {
-        fixture: {
-          id: match.fixture.id,
-          referee: '',
-          timezone: '',
-          date: new Date(match.fixture.timestamp * 1000).toISOString(),
-          timestamp: match.fixture.timestamp,
-          periods: { first: 0, second: 0 },
-          venue: { id: 0, name: '', city: '' },
-          status: { long: '', short: match.status, elapsed: 0 }
-        },
-        league: {
-          id: match.league.id,
-          name: match.league.name,
-          country: '',
-          logo: '',
-          flag: '',
-          season: match.league.season,
-          round: match.league.round
-        },
-        teams: {
-          home: { id: match.teams.home.id, name: match.teams.home.name, logo: '', winner: false },
-          away: { id: match.teams.away.id, name: match.teams.away.name, logo: '', winner: false }
-        },
-        goals: match.goals,
-        score: { halftime: match.goals, fulltime: match.goals, extratime: match.goals, penalty: match.goals }
-      };
-      
-      this.availableRealMatches.push(realMatch);
-      this.applyFilters();
-      
-      // Update location count
-      this.getLocationsCounts();
+    this.megagoal.deleteMatch(match.fixture.id).subscribe(() => {
+      this.getLocationsCounts(false);
     });
+  }
+
+  setLocation(fixtureId: number, location: string | number) {
+    const alreadyLocation = this.locations.find(loc => loc.id === location || loc.venue_id === location);
+    if (alreadyLocation) {
+      location = alreadyLocation.id;
+    }
+    this.viewedMatches.forEach(match => {
+      if (match.fixture.id === fixtureId) {
+        match.location = location.toString();
+        this.filteredViewedMatches = this.viewedMatches.filter(match => 
+          !this.selectedLocation || match.location === this.selectedLocation.id
+        );
+      }
+    });
+    
+    this.megagoal.setLocation(fixtureId, location.toString()).subscribe(() => {
+      this.getLocationsCounts(false);
+     });
   }
 
   clearFilters() {
@@ -386,7 +390,7 @@ export class LocationsComponent {
 
   // Helper method to format match result for RealMatch
   getMatchResult(realMatch: RealMatch): string {
-    if (realMatch.score && realMatch.score.fulltime) {
+    if (realMatch.score && realMatch.score.fulltime && realMatch.score.fulltime.home !== null && realMatch.score.fulltime.away !== null) {
       return `${realMatch.score.fulltime.home} - ${realMatch.score.fulltime.away}`;
     }
     return 'TBD';
@@ -394,9 +398,37 @@ export class LocationsComponent {
 
   // Helper method to format match result for Match
   getMatchResultFromMatch(match: Match): string {
-    if (match.goals) {
+    if (match.goals && match.goals.home !== null && match.goals.away !== null) {
       return `${match.goals.home} - ${match.goals.away}`;
     }
     return 'TBD';
+  }
+
+  // Helper method to get tooltip for real matches
+  getMatchLocationTooltip(realMatch: RealMatch): string {
+    const match = this.viewedMatches.find(viewedMatch => 
+      viewedMatch.fixture.id === realMatch.fixture.id
+    );
+
+    if (!match) {
+      return '';
+    }
+
+    const location = this.locations.find(loc => loc.id === match.location);
+    if (location) {
+      return `Viewed at: ${location.name}`;
+    }
+
+    return `Viewed at: Empty`;
+  }
+
+  // Helper method to get tooltip for viewed matches
+  getViewedMatchLocationTooltip(match: Match): string {
+    const location = this.locations.find(loc => loc.id === match.location);
+    if (location) {
+      return `Viewed at: ${location.name}`;
+    }
+
+    return `Viewed at: Empty`;
   }
 }
