@@ -148,4 +148,14 @@ export class RealMatchCardComponent {
     return round;
   }
 
+
+  getLocationList() {
+    return this.locations
+      .filter(loc => !loc.stadium)
+      .map(loc => ({ id: loc.id, name: loc.name }));
+  }
+
+  getLocationIdFromVenueId(venueId: number) {
+    return this.locations.find(loc => loc.venue_id === venueId)?.id ?? venueId;
+  }
 }
