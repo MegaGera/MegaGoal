@@ -1,42 +1,73 @@
 <div class="container-fluid">
   <!-- Top Section - Location Management -->
-  <div class="row mb-3">
+  <div class="row mb-3 main-top-row">
     <div class="col-12">
       <div class="d-flex align-items-center gap-3">
-        <div class="d-flex align-items-center gap-2">
-          <label class="form-label mb-0">Location:</label>
-          <select class="form-select form-select-sm" style="width: 200px;" [(ngModel)]="selectedLocation" (change)="onLocationChange()">
-            <option [ngValue]="null">Select a location</option>
-            @for (location of locations; track location.id) {
-              <option [ngValue]="location">
-                @if (location.stadium) {
-                  🏟️ 
+        <div class="row w-100">
+
+          <div class="col-12 col-lg-8">
+            <mat-form-field appearance="outline" class="small-form-field">
+              <mat-label>Select Location</mat-label>
+              <mat-select 
+                [(ngModel)]="selectedLocation" 
+                (selectionChange)="onLocationChange()"
+                aria-label="Select location">
+                <mat-option [value]="null">Select Location</mat-option>
+                @for (location of locations; track location.id) {
+                  <mat-option [value]="location">
+                    @if (location.stadium) {
+                      🏟️ 
+                    }
+                    {{location.name}} ({{location.matchCount}})
+                  </mat-option>
                 }
-                {{location.name}} ({{location.matchCount}})
-              </option>
-            }
-          </select>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+
+          @if (!showAddLocationForm) {
+            <div class="col-12 col-lg-4 m-auto">
+              <button class="btn btn-sm btn-add-location btn-outline-primary" (click)="showAddLocationForm = !showAddLocationForm">
+                <span class="m-auto">+ Add new location</span>
+              </button>
+            </div>
+            <!-- <div class="col-lg-6"></div> -->
+          }
+
+          @if (showAddLocationForm) {
+            <div class="w-100">
+              <hr>
+            </div>
+            <div class="w-100">
+              <form class="d-flex align-items-center" [formGroup]="newLocationForm" (ngSubmit)="addLocation()">
+                <div class="row w-100 m-auto">
+                  <div class="col-12 col-lg-8 p-0">
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      placeholder="New location name"
+                      formControlName="name"
+                    />
+                  </div>
+                  <div class="col-6 col-lg-">
+                    <button class="btn btn-sm btn-primary w-100 btn-add-location-form" type="submit">
+                      <span class="m-auto">Add</span>
+                    </button>
+                  </div>
+                  <div class="col-6 col-lg-2">
+                    <button class="btn btn-sm btn-outline-secondary w-100 btn-add-location-form" type="button" (click)="showAddLocationForm = false">
+                      <span class="m-auto">Cancel</span>
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          }
+          
         </div>
-        <button class="btn btn-sm btn-outline-primary" (click)="showAddLocationForm = !showAddLocationForm">
-          + Add Location
-        </button>
       </div>
       
-      @if (showAddLocationForm) {
-        <div class="mt-2">
-          <form class="d-flex align-items-center gap-2" [formGroup]="newLocationForm" (ngSubmit)="addLocation()">
-            <input
-              type="text"
-              class="form-control form-control-sm"
-              placeholder="New location name"
-              formControlName="name"
-              style="width: 200px;"
-            />
-            <button class="btn btn-sm btn-primary" type="submit">Add</button>
-            <button class="btn btn-sm btn-outline-secondary" type="button" (click)="showAddLocationForm = false">Cancel</button>
-          </form>
-        </div>
-      }
     </div>
   </div>
 
@@ -133,13 +164,13 @@
                   </div>
                   <div class="match-details">
                     <span class="league-info">{{match.league.name}}</span>
-                    <span class="match-info">• {{match.fixture.date | date:'dd/MM/yyyy'}}</span>
+                    <span class="match-info"> • {{match.fixture.date | date:'dd/MM/yyyy'}}</span>
                   </div>
 
                   <div class="match-buttons">
                     @if (match.fixture.venue.id) {
                       <button 
-                          class="btn btn-sm btn-primary match-action venue-action" 
+                          class="btn btn-sm btn-primary match-action" 
                           (click)="addMatchWithLocation(match, match.fixture.venue.id)"
                           title="Add to {{match.fixture.venue.name}}"
                           [disabled]="isRealMatchViewedAtStadiumLocation(match)"
@@ -213,7 +244,7 @@
                   </div>
                   <div class="match-details">
                     <span class="league-info">{{match.league.name}}</span>
-                    <span class="match-info">• {{match.fixture.timestamp * 1000 | date:'dd/MM/yyyy'}}</span>
+                    <span class="match-info"> • {{match.fixture.timestamp * 1000 | date:'dd/MM/yyyy'}}</span>
                   </div>
                   <button 
                     class="btn btn-sm btn-danger match-action" 

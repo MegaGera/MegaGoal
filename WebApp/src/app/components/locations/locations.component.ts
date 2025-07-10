@@ -4,6 +4,9 @@ import { CommonModule } from '@angular/common';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { NgOptimizedImage } from '@angular/common';
 
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamChevronDown } from '@ng-icons/jam-icons';
 
@@ -20,7 +23,7 @@ import { MatchParserService } from '../../services/match-parser.service';
 @Component({
   selector: 'app-locations',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, NgIconComponent, CommonModule, ScrollingModule, NgOptimizedImage],
+  imports: [FormsModule, ReactiveFormsModule, NgIconComponent, CommonModule, ScrollingModule, NgOptimizedImage, MatFormFieldModule, MatSelectModule],
   templateUrl: './locations.component.html',
   styleUrl: './locations.component.css',
   providers: [provideNgIconsConfig({
