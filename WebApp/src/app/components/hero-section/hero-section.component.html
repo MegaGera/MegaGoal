@@ -1,0 +1,35 @@
+<!-- Hero Section -->
+<div class="hero-section">
+  <div class="hero-container">
+    
+    <!-- Left: Quick Stats -->
+    <app-quick-stats [userStats]="userStats" [userStatsLoaded]="userStatsLoaded"></app-quick-stats>
+    
+    <!-- Center: Welcome -->
+    <div class="hero-welcome">
+      <h2 class="welcome-title">Welcome back!</h2>
+      <p class="welcome-subtitle">You've watched {{userStats?.monthlyActivity?.[0]?.matches || 0}} matches this month. Keep it up!</p>
+    </div>
+    
+    <!-- Right: Quick Actions -->
+    <div class="hero-actions">
+      <button class="hero-btn hero-btn-primary">
+        <span class="btn-text">Add Match</span>
+        <ng-icon name="jamPlus" class="btn-icon"></ng-icon>
+      </button>
+      <button class="hero-btn hero-btn-secondary">
+        <!-- Live Indicator - not for now -->
+        <!-- <div class="live-indicator-btn">
+          <div class="circle-btn"></div>
+        </div> -->
+        <span class="btn-text">Live Matches</span>
+        <ng-icon name="jamArrowRight" class="btn-icon"></ng-icon>
+      </button>
+      <button class="hero-btn hero-btn-tertiary">
+        <span class="btn-text">Your Stats</span>
+        <ng-icon name="jamArrowRight" class="btn-icon"></ng-icon>
+      </button>
+    </div>
+    
+  </div>
+</div> 

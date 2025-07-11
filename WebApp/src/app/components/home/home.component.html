@@ -1,5 +1,8 @@
 <div class="container">
 
+  <!-- Hero Section -->
+  <app-hero-section [userStats]="userStats" [userStatsLoaded]="userStatsLoaded"></app-hero-section>
+
   <nav class="nav-class">
     <div class="nav nav-tabs d-md-none" id="nav-tab" role="tablist">
       <button class="nav-link" id="nav-stats-tab" data-bs-toggle="tab" data-bs-target="#nav-stats" type="button" role="tab" aria-controls="nav-stats" aria-selected="true">Stats</button>
@@ -38,7 +41,7 @@
 
         <!-- Pagination -->
         <div class="paginationDiv">
-          <app-pagination [elements]="this.matches" [elementsPerPage]="20" [(elementsFiltered)]="this.matchesFiltered" />
+          <app-pagination [elements]="this.matches" [elementsPerPage]="10" [(elementsFiltered)]="this.matchesFiltered" />
         </div>
       } @else if (this.matchesLoaded && this.matches.length == 0) {
         <div class="noMatches">
@@ -89,25 +92,25 @@
           <div class="col-3 p-1">
             <div class="leagueFilterSelectorDiv" (click)="changeFilterLeagueSelected(39)"
               [ngClass]="{'leagueFilterSelectorDivSelected': filterLeagueSelected.includes(39)}">
-              <img class="img-fluid p-1 imgTeamIcon" [src]="images.getRouteImageLeague(39)">
+              <img class="img-fluid p-1 imgTeamIcon" [ngSrc]="images.getRouteImageLeague(39)" alt="Premier League" width="40" height="40" priority="false">
             </div>
           </div>
           <div class="col-3 p-1">
             <div class="leagueFilterSelectorDiv" (click)="changeFilterLeagueSelected(140)"
               [ngClass]="{'leagueFilterSelectorDivSelected': filterLeagueSelected.includes(140)}">
-              <img class="img-fluid p-1 imgTeamIcon" [src]="images.getRouteImageLeague(140)">
+              <img class="img-fluid p-1 imgTeamIcon" [ngSrc]="images.getRouteImageLeague(140)" alt="La Liga" width="40" height="40" priority="false">
             </div>
           </div>
           <div class="col-3 p-1">
             <div class="leagueFilterSelectorDiv" (click)="changeFilterLeagueSelected(141)"
               [ngClass]="{'leagueFilterSelectorDivSelected': filterLeagueSelected.includes(141)}">
-              <img class="img-fluid p-1 imgTeamIcon" [src]="images.getRouteImageLeague(141)">
+              <img class="img-fluid p-1 imgTeamIcon" [ngSrc]="images.getRouteImageLeague(141)" alt="La Liga 2" width="40" height="40" priority="false">
             </div>
           </div>
           <div class="col-3 p-1">
             <div class="leagueFilterSelectorDiv" (click)="changeFilterLeagueSelected(2)"
               [ngClass]="{'leagueFilterSelectorDivSelected': filterLeagueSelected.includes(2)}">
-              <img class="img-fluid p-1 imgTeamIcon" [src]="images.getRouteImageLeague(2)">
+              <img class="img-fluid p-1 imgTeamIcon" [ngSrc]="images.getRouteImageLeague(2)" alt="Champions League" width="40" height="40" priority="false">
             </div>
           </div>
         </div>

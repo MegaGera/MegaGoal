@@ -1,0 +1,25 @@
+<div class="stat-card">
+  <div class="stat-content">
+    <!-- Stat Number Row (with optional team/league image) -->
+    <div class="stat-number-row">
+      <!-- Team Image (if teamId is provided) -->
+      <div class="team-image-container" *ngIf="card.teamId">
+        <img class="team-image" [ngSrc]="images.getRouteImageTeam(card.teamId)" [alt]="card.label" width="25" height="25" priority="false">
+      </div>
+      
+      <!-- League Image (if leagueId is provided) -->
+      <div class="league-image-container" *ngIf="card.leagueId">
+        <img class="league-image" [ngSrc]="images.getRouteImageLeagueSm(card.leagueId)" [alt]="card.label" width="25" height="25" priority="false">
+      </div>
+      
+      <!-- Stat Number -->
+      <div class="stat-number">{{card.value}}</div>
+    </div>
+    
+    <!-- Main Label -->
+    <div class="stat-label">{{card.label}}</div>
+    
+    <!-- Optional Subtitle -->
+    <div class="stat-subtitle" *ngIf="card.subtitle">{{card.subtitle}}</div>
+  </div>
+</div> 

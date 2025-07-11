@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
-import { CommonModule, NgClass } from '@angular/common';
+import { CommonModule, NgClass, NgOptimizedImage } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
@@ -15,16 +15,18 @@ import { ImagesService } from '../../services/images.service';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
 import { SeasonInfo } from '../../models/season';
+import { UserStats } from '../../models/userStats';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { TeamStatsListComponent } from '../stats/team-stats-list/team-stats-list.component';
+import { HeroSectionComponent } from '../hero-section/hero-section.component';
 import { StatsService } from '../../services/stats.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [FormsModule, NgIconComponent, CommonModule, RealMatchCardComponent, PaginationComponent, MatProgressSpinnerModule, 
-    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent],
+  imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, RealMatchCardComponent, PaginationComponent, MatProgressSpinnerModule, 
+    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   providers: [ImagesService, provideNgIconsConfig({
@@ -46,6 +48,11 @@ export class HomeComponent implements OnInit {
   locations: Location[] = [];
   stats: { teamsViewed: any[] } = { teamsViewed: []};
   statsLoaded: boolean = false;
+  
+  /* User Stats for Hero Section */
+  userStats: UserStats | null = null;
+  userStatsLoaded: boolean = false;
+  
   filterPanelChipSelected: number = 1; // 0 All, 1 Watched, 2 Not Watched
   filterLeagueSelected: number[] = []; // 40: Premier League, 140: La Liga, 141: La Liga 2, 2: Champions League
 
@@ -73,6 +80,7 @@ export class HomeComponent implements OnInit {
     this.filterSeasonSelected = this.seasons[0];
     this.getAllMatches();
     this.getLocations();
+    this.getUserStats();
   }
 
   /* 
@@ -100,6 +108,20 @@ export class HomeComponent implements OnInit {
     this.statsService.getTeamsViewed(this.filterPanelChipSelected, this.filterLeagueSelected, this.filterSeasonSelected.id).subscribe(result => {
       this.stats.teamsViewed = result;
       this.statsLoaded = true;
+    })
+  }
+
+  getUserGeneralStats() {
+    this.statsService.getUserGeneralStats().subscribe(result => {
+      console.log(result);
+    })
+  }
+
+  getUserStats() {
+    this.statsService.getUserGeneralStats().subscribe(result => {
+      console.log(result);
+      this.userStats = result;
+      this.userStatsLoaded = true;
     })
   }
 

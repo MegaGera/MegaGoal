@@ -1,0 +1,39 @@
+/* Stats Carousel Container */
+.stats-carousel-container {
+  width: 300px;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Stats Carousel */
+.stats-carousel {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: auto; /* Remove smooth scrolling for instant transitions */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  padding: 5px 0;
+  cursor: grab; /* Show grab cursor on desktop */
+  user-select: none; /* Prevent text selection during drag */
+}
+
+/* Show grabbing cursor when dragging */
+.stats-carousel:active {
+  cursor: grabbing;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.stats-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .stats-carousel-container {
+    width: 100%;
+    max-width: 350px;
+  }
+}

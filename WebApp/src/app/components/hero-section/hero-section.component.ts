@@ -1,0 +1,21 @@
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
+import { jamArrowRight, jamPlus } from '@ng-icons/jam-icons';
+import { UserStats } from '../../models/userStats';
+import { QuickStatsComponent } from '../stats/quick-stats/quick-stats.component';
+
+@Component({
+  selector: 'app-hero-section',
+  standalone: true,
+  imports: [CommonModule, NgIconComponent, QuickStatsComponent],
+  templateUrl: './hero-section.component.html',
+  styleUrl: './hero-section.component.css',
+  providers: [provideNgIconsConfig({
+    size: '1.2rem',
+  }), provideIcons({ jamArrowRight, jamPlus })]
+})
+export class HeroSectionComponent {
+  @Input() userStats: UserStats | null = null;
+  @Input() userStatsLoaded: boolean = false;
+} 
