@@ -639,7 +639,7 @@ cdk-virtual-scroll-viewport ::ng-deep .cdk-virtual-scroll-content-wrapper {
     min-width: 32px;
     height: 32px;
     order: 3;
-    margin-left: auto;
+    margin: auto;
   }
   
   .team-name {
