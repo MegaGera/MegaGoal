@@ -31,9 +31,9 @@ class UserGeneralStatsAPIView(APIView):
                 'totalMatches': 0,
                 'matchesBySeason': [],
                 'goalsPerMatch': 0,
-                'favoriteTeams': [],
+                'favouriteTeams': [],
                 'monthlyActivity': [],
-                'favoriteLeagues': [],
+                'favouriteLeagues': [],
                 'topGoalsTeams': [],
                 'totalGoals': 0,
                 'lastMatchDate': None
@@ -53,11 +53,11 @@ class UserGeneralStatsAPIView(APIView):
         # Calculate monthly activity (last 12 months)
         monthly_activity = self._calculate_monthly_activity(df)
         
-        # Find top 5 favorite teams
-        favorite_teams = self._find_favorite_teams(df)
+        # Find top 5 favourite teams
+        favourite_teams = self._find_favourite_teams(df)
         
-        # Find top 5 favorite leagues
-        favorite_leagues = self._find_favorite_leagues(df)
+        # Find top 5 favourite leagues
+        favourite_leagues = self._find_favourite_leagues(df)
         
         # Find top 5 teams with most goals scored
         top_goals_teams = self._find_top_goals_teams(df)
@@ -69,9 +69,9 @@ class UserGeneralStatsAPIView(APIView):
             'totalMatches': total_matches,
             'matchesBySeason': matches_by_season,
             'goalsPerMatch': goals_per_match,
-            'favoriteTeams': favorite_teams,
+            'favouriteTeams': favourite_teams,
             'monthlyActivity': monthly_activity,
-            'favoriteLeagues': favorite_leagues,
+            'favouriteLeagues': favourite_leagues,
             'topGoalsTeams': top_goals_teams,
             'totalGoals': total_goals,
             'lastMatchDate': last_match_date
@@ -127,8 +127,8 @@ class UserGeneralStatsAPIView(APIView):
         
         return monthly_activity
     
-    def _find_favorite_teams(self, df):
-        """Find top 5 favorite teams"""
+    def _find_favourite_teams(self, df):
+        """Find top 5 favourite teams"""
         if df.empty:
             return []
         
@@ -149,18 +149,18 @@ class UserGeneralStatsAPIView(APIView):
         top_teams = team_counts.most_common(5)
         
         # Convert to list of objects
-        favorite_teams = []
+        favourite_teams = []
         for (team_id, team_name), count in top_teams:
-            favorite_teams.append({
+            favourite_teams.append({
                 'id': team_id,
                 'name': team_name,
                 'matches': count
             })
         
-        return favorite_teams
+        return favourite_teams
     
-    def _find_favorite_leagues(self, df):
-        """Find top 5 favorite leagues"""
+    def _find_favourite_leagues(self, df):
+        """Find top 5 favourite leagues"""
         if df.empty:
             return []
         
@@ -177,15 +177,15 @@ class UserGeneralStatsAPIView(APIView):
         top_leagues = league_counts.most_common(5)
         
         # Convert to list of objects
-        favorite_leagues = []
+        favourite_leagues = []
         for (league_id, league_name), count in top_leagues:
-            favorite_leagues.append({
+            favourite_leagues.append({
                 'id': league_id,
                 'name': league_name,
                 'matches': count
             })
         
-        return favorite_leagues
+        return favourite_leagues
     
     def _find_top_goals_teams(self, df):
         """Find top 5 teams with most goals scored"""

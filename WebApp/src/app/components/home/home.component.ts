@@ -21,12 +21,14 @@ import { PaginationComponent } from '../pagination/pagination.component';
 import { TeamStatsListComponent } from '../stats/team-stats-list/team-stats-list.component';
 import { HeroSectionComponent } from '../hero-section/hero-section.component';
 import { StatsService } from '../../services/stats.service';
+import { FavouriteTeamCardComponent } from '../stats/favourite-team-card/favourite-team-card.component';
+import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, RealMatchCardComponent, PaginationComponent, MatProgressSpinnerModule, 
-    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent],
+    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   providers: [ImagesService, provideNgIconsConfig({
@@ -48,6 +50,8 @@ export class HomeComponent implements OnInit {
   locations: Location[] = [];
   stats: { teamsViewed: any[] } = { teamsViewed: []};
   statsLoaded: boolean = false;
+  favouriteTeamStats: FavouriteTeamStats | null = null;
+  favouriteTeamLoaded: boolean = false;
   
   /* User Stats for Hero Section */
   userStats: UserStats | null = null;
@@ -108,6 +112,7 @@ export class HomeComponent implements OnInit {
     this.statsService.getTeamsViewed(this.filterPanelChipSelected, this.filterLeagueSelected, this.filterSeasonSelected.id).subscribe(result => {
       this.stats.teamsViewed = result;
       this.statsLoaded = true;
+      this.getFavouriteTeamStats();
     })
   }
 
@@ -123,6 +128,26 @@ export class HomeComponent implements OnInit {
       this.userStats = result;
       this.userStatsLoaded = true;
     })
+  }
+
+  getFavouriteTeamStats() {
+    this.favouriteTeamLoaded = false;
+    
+    this.statsService.getFavouriteTeamStats(
+      this.stats.teamsViewed[0].team_id,
+      this.filterLeagueSelected,
+      this.filterSeasonSelected.id
+    ).subscribe({
+      next: (stats: FavouriteTeamStats) => {
+        this.favouriteTeamStats = stats;
+        this.favouriteTeamLoaded = true;
+      },
+      error: (error: any) => {
+        console.error('Error fetching favourite team stats:', error);
+        this.favouriteTeamLoaded = true;
+        this.favouriteTeamStats = null;
+      }
+    });
   }
 
   filterMatches() {

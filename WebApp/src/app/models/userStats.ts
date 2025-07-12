@@ -5,9 +5,9 @@ export interface UserStats {
     totalMatches: number;
     matchesBySeason: SeasonStats[];
     goalsPerMatch: number;
-    favoriteTeams: TeamStats[];
+    favouriteTeams: TeamStats[];
     monthlyActivity: MonthlyStats[];
-    favoriteLeagues: LeagueStats[];
+    favouriteLeagues: LeagueStats[];
     topGoalsTeams: TopGoalsTeamStats[];
     totalGoals: number;
     lastMatchDate: string | null;

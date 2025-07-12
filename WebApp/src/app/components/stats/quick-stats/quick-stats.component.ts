@@ -96,10 +96,10 @@ export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
     // Generate monthly activity stats for all available months
     const monthlyStats = this.generateMonthlyStats();
 
-    // Generate team stats for all favorite teams
+    // Generate team stats for all favourite teams
     const teamStats = this.generateTeamStats();
 
-    // Generate league stats for all favorite leagues
+    // Generate league stats for all favourite leagues
     const leagueStats = this.generateLeagueStats();
 
     // Generate top goals teams stats
@@ -110,15 +110,15 @@ export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Auto-generates stat cards for all teams in favoriteTeams
+   * Auto-generates stat cards for all teams in favouriteTeams
    * @returns Array of StatCard objects for each team
    */
   private generateTeamStats(): StatCard[] {
-    if (!this.userStats?.favoriteTeams || this.userStats.favoriteTeams.length === 0) {
+    if (!this.userStats?.favouriteTeams || this.userStats.favouriteTeams.length === 0) {
       return [];
     }
 
-    return this.userStats.favoriteTeams.map((team, index) => {
+    return this.userStats.favouriteTeams.map((team, index) => {
       const position = index + 1;
       const positionText = position === 1 ? 'Top Matches' :
                           `${position}º Matches`;
@@ -133,15 +133,15 @@ export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Auto-generates stat cards for all leagues in favoriteLeagues
+   * Auto-generates stat cards for all leagues in favouriteLeagues
    * @returns Array of StatCard objects for each league
    */
   private generateLeagueStats(): StatCard[] {
-    if (!this.userStats?.favoriteLeagues || this.userStats.favoriteLeagues.length === 0) {
+    if (!this.userStats?.favouriteLeagues || this.userStats.favouriteLeagues.length === 0) {
       return [];
     }
 
-    return this.userStats.favoriteLeagues.map((league, index) => {
+    return this.userStats.favouriteLeagues.map((league, index) => {
       const position = index + 1;
       const positionText = position === 1 ? 'Top League' :
                           `${position}º League`;

@@ -3,6 +3,7 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { UserStats } from '../models/userStats';
+import { FavouriteTeamStats } from '../models/favouriteTeamStats';
 
 @Injectable({
   providedIn: 'root'
@@ -46,6 +47,22 @@ export class StatsService {
   */
   getUserGeneralStats(): Observable<UserStats> {
     return this.http.get<UserStats>(this.url + '/user-general-stats/', this.options);
+  }
+
+  /*
+    Method to get favourite team statistics based on current filters
+  */
+  getFavouriteTeamStats(
+    team_id: number,
+    filterLeagueSelected: number[],
+    filterSeasonSelected: number
+  ): Observable<FavouriteTeamStats> {
+    let params = new HttpParams()
+      .set('team_id', team_id.toString())
+      .set('leagues', filterLeagueSelected.join(','))
+      .set('season', filterSeasonSelected.toString());
+    
+    return this.http.get<FavouriteTeamStats>(this.url + '/favourite-team-stats/', { ...this.options, params: params });
   }
 
 }

@@ -1,0 +1,131 @@
+@if (isLoading) {
+  <div class="favourite-team-card loading">
+    <div class="loading-skeleton">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-stats">
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+      </div>
+    </div>
+  </div>
+} @else if (teamStats) {
+  <div class="favourite-team-card">
+    <!-- Header Section -->
+    <div class="card-header">
+      <div class="team-info">
+        <div class="team-logo-container">
+          <img 
+            [ngSrc]="images.getRouteImageTeam(teamStats.team_id)" 
+            [alt]="teamStats.team_name"
+            width="40" 
+            height="40" 
+            class="team-logo"
+            priority="true">
+        </div>
+        <div class="team-details">
+          <div class="team-name-row">
+            <h3 class="team-name">{{ teamStats.team_name }}</h3>
+            <div class="top-viewed-badge">
+              <ng-icon name="jamTrophy" class="star-icon"></ng-icon>
+              <span>Top Viewed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <!-- Views -->
+      <div class="stat-item">
+        <ng-icon name="jamEyeF" class="stat-icon"></ng-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ teamStats.views_count }}</span>
+          <span class="stat-label">Views</span>
+        </div>
+      </div>
+
+      <!-- Win Rate -->
+      <div class="stat-item">
+        <ng-icon name="jamTarget" class="stat-icon" [style.color]="getWinRateColor(teamStats.win_rate)"></ng-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ teamStats.win_rate }}%</span>
+          <span class="stat-label">Win Rate</span>
+        </div>
+      </div>
+
+      <!-- Goals Scored -->
+      <div class="stat-item">
+        <ng-icon name="ionFootball" class="stat-icon goals-scored"></ng-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ teamStats.goals_scored }}</span>
+          <span class="stat-label">Scored</span>
+        </div>
+      </div>
+
+      <!-- Goals Conceded -->
+      <div class="stat-item">
+        <ng-icon name="ionFootball" class="stat-icon goals-conceded"></ng-icon>
+        <div class="stat-content">
+          <span class="stat-value">{{ teamStats.goals_conceded }}</span>
+          <span class="stat-label">Conceded</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Form -->
+    <div class="recent-form">
+      <span class="form-label">Form:</span>
+      <div class="form-indicators">
+        @for (result of teamStats.recent_form; track $index) {
+          <div class="form-indicator" 
+               [style.background-color]="getFormColor(result)"
+               [title]="result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'">
+            {{ result }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Additional Stats -->
+    <div class="additional-stats">
+      <!-- Crazy Match -->
+      @if (teamStats.crazy_match) {
+        <div class="stat-highlight crazy-match">
+          <div class="stat-highlight-icon">🔥</div>
+          <div class="stat-highlight-content">
+            <span class="stat-highlight-label">Crazy Match</span>
+            <span class="stat-highlight-value">
+              {{ teamStats.crazy_match.teams.home.name }} {{ teamStats.crazy_match.goals.home }}-{{ teamStats.crazy_match.goals.away }} {{ teamStats.crazy_match.teams.away.name }}
+            </span>
+          </div>
+        </div>
+      }
+
+      <!-- Biggest Rival -->
+      @if (teamStats.biggest_rival) {
+        <div class="stat-highlight biggest-rival">
+          <div class="stat-highlight-icon">⚔️</div>
+          <div class="stat-highlight-content">
+            <span class="stat-highlight-label">Biggest Rival</span>
+            <span class="stat-highlight-value">{{ teamStats.biggest_rival.team_name }} - {{ teamStats.biggest_rival.matches_played }} matches</span>
+          </div>
+        </div>
+      }
+
+
+    </div>
+  </div>
+} @else {
+  <div class="favourite-team-card empty">
+    <div class="empty-state">
+      <ng-icon name="jamTrophy" class="empty-icon"></ng-icon>
+      <h4>No Favourite Team</h4>
+      <p>Set your favourite team to see personalized stats here</p>
+      <button class="action-btn primary">
+        <span>Set Favourite Team</span>
+      </button>
+    </div>
+  </div>
+} 
