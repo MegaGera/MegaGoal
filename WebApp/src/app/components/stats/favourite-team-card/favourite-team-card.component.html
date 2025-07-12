@@ -74,20 +74,6 @@
       </div>
     </div>
 
-    <!-- Recent Form -->
-    <div class="recent-form">
-      <span class="form-label">Form:</span>
-      <div class="form-indicators">
-        @for (result of teamStats.recent_form; track $index) {
-          <div class="form-indicator" 
-               [style.background-color]="getFormColor(result)"
-               [title]="result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'">
-            {{ result }}
-          </div>
-        }
-      </div>
-    </div>
-
     <!-- Additional Stats -->
     <div class="additional-stats">
       <!-- Crazy Match -->

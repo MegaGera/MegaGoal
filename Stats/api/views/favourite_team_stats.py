@@ -147,9 +147,6 @@ class FavouriteTeamStatsAPIView(APIView):
         total_matches = wins + draws + losses
         win_rate = round((wins / total_matches) * 100) if total_matches > 0 else 0
 
-        # Get recent form (last 5 matches)
-        recent_form = ''.join(recent_results[-5:]) if recent_results else ''
-
         # Find crazy match (highest total goals)
         matches_df['total_goals'] = matches_df.apply(lambda x: x['goals']['home'] + x['goals']['away'], axis=1)
         crazy_match_row = matches_df.loc[matches_df['total_goals'].idxmax()]
@@ -169,7 +166,6 @@ class FavouriteTeamStatsAPIView(APIView):
             'goals_conceded': int(goals_conceded),
             'matches_watched': int(total_matches),
             'win_rate': int(win_rate),
-            'recent_form': recent_form,
             'crazy_match': crazy_match,
             'biggest_rival': rival_stats
         }

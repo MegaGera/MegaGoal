@@ -13,7 +13,6 @@ export interface FavouriteTeamStats {
   goals_conceded: number;
   matches_watched: number;
   win_rate: number;
-  recent_form: string; // e.g., "WWDLW"
   crazy_match?: Match; // Match with most goals
   biggest_rival?: {
     team_id: number;
