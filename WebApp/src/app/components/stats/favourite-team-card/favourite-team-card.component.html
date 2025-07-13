@@ -78,29 +78,58 @@
     <div class="additional-stats">
       <!-- Crazy Match -->
       @if (teamStats.crazy_match) {
-        <div class="stat-highlight crazy-match">
-          <div class="stat-highlight-icon">🔥</div>
-          <div class="stat-highlight-content">
-            <span class="stat-highlight-label">Crazy Match</span>
-            <span class="stat-highlight-value">
-              {{ teamStats.crazy_match.teams.home.name }} {{ teamStats.crazy_match.goals.home }}-{{ teamStats.crazy_match.goals.away }} {{ teamStats.crazy_match.teams.away.name }}
-            </span>
-          </div>
-        </div>
+        <app-mini-stat-card
+          type="crazy-match"
+          label="Crazy Match"
+          [value]="teamStats.crazy_match.teams.home.name + ' ' + teamStats.crazy_match.goals.home + '-' + teamStats.crazy_match.goals.away + ' ' + teamStats.crazy_match.teams.away.name">
+        </app-mini-stat-card>
       }
 
       <!-- Biggest Rival -->
-      @if (teamStats.biggest_rival) {
-        <div class="stat-highlight biggest-rival">
-          <div class="stat-highlight-icon">⚔️</div>
-          <div class="stat-highlight-content">
-            <span class="stat-highlight-label">Biggest Rival</span>
-            <span class="stat-highlight-value">{{ teamStats.biggest_rival.team_name }} - {{ teamStats.biggest_rival.matches_played }} matches</span>
-          </div>
-        </div>
+      @if (teamStats.biggest_rival && teamStats.biggest_rival.matches_played > 1) {
+        <app-mini-stat-card
+          type="biggest-rival"
+          label="Biggest Rival"
+          [value]="teamStats.biggest_rival.team_name + ' - ' + teamStats.biggest_rival.matches_played + ' matches'"
+          [team_id]="teamStats.biggest_rival.team_id">
+        </app-mini-stat-card>
       }
 
+      <!-- Most Viewed Location -->
+      @if (teamStats.most_viewed_location) {
+        <app-mini-stat-card
+          type="most-viewed-location"
+          label="Most Viewed Location"
+          [value]="teamStats.most_viewed_location.location_name + ' - ' + teamStats.most_viewed_location.views_count + ' matches'">
+        </app-mini-stat-card>
+      }
 
+      <!-- Home Stadium Times -->
+      @if (teamStats.home_stadium_times) {
+        <app-mini-stat-card
+          type="home-stadium"
+          label="Home Stadium"
+          [value]="teamStats.home_stadium_times.location_name + ' - ' + teamStats.home_stadium_times.views_count + ' matches'">
+        </app-mini-stat-card>
+      }
+
+      <!-- Total Away Stadium Visits -->
+      @if (teamStats.total_away_stadium_visits !== undefined && teamStats.total_away_stadium_visits > 0) {
+        <app-mini-stat-card
+          type="total-away-visits"
+          label="Away Stadium Support"
+          [value]="teamStats.total_away_stadium_visits + ' stadium visits'">
+        </app-mini-stat-card>
+      }
+
+      <!-- Away Stadium Support -->
+      @if (teamStats.away_stadium_support && teamStats.away_stadium_support.views_count > 1) {
+        <app-mini-stat-card
+          type="away-support"
+          label="Most Visited Away Stadium"
+          [value]="teamStats.away_stadium_support.location_name + ' - ' + teamStats.away_stadium_support.views_count + ' matches'">
+        </app-mini-stat-card>
+      }
     </div>
   </div>
 } @else {

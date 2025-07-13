@@ -24,4 +24,18 @@ export interface FavouriteTeamStats {
     total_goals: number;
   };
   last_match?: Match; // Most recent match
+  // Location-based stats
+  most_viewed_location?: {
+    location_name: string;
+    views_count: number;
+  };
+  home_stadium_times?: {
+    location_name: string;
+    views_count: number;
+  };
+  away_stadium_support?: {
+    location_name: string;
+    views_count: number;
+  };
+  total_away_stadium_visits?: number;
 } 

@@ -1,0 +1,84 @@
+.mini-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.mini-stat-card:hover {
+  background: #e9ecef;
+  transform: translateX(2px);
+}
+
+.stat-highlight-icon {
+  font-size: 16px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-badge {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+.stat-highlight-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.stat-highlight-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-highlight-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Type-specific styles */
+.mini-stat-card.crazy-match {
+  border-left-color: #dc3545;
+}
+
+.mini-stat-card.biggest-rival {
+  border-left-color: #6f42c1;
+}
+
+.mini-stat-card.most-viewed-location {
+  border-left-color: #fd7e14;
+}
+
+.mini-stat-card.home-stadium {
+  border-left-color: #28a745;
+}
+
+.mini-stat-card.away-support {
+  border-left-color: #17a2b8;
+}
+
+.mini-stat-card.total-away-visits {
+  border-left-color: #007bff;
+} 

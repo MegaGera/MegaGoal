@@ -61,17 +61,19 @@ class FavouriteTeamStatsAPIView(APIView):
 
         # Use the MongoDB connection from settings
         collection_matches = settings.MONGO_DB['matches']
+        collection_locations = settings.MONGO_DB['locations']
         favourite_team_matches = pd.DataFrame(list(collection_matches.find(query)))
+        locations = pd.DataFrame(list(collection_locations.find({'user.username': username})))
 
         if len(favourite_team_matches) == 0:
             return Response(None, status=status.HTTP_200_OK)
 
         # Calculate stats for favourite team
-        favourite_team_stats = self._calculate_favourite_team_stats(favourite_team_matches, team_id)
+        favourite_team_stats = self._calculate_favourite_team_stats(favourite_team_matches, team_id, locations)
         
         return Response(favourite_team_stats, status=status.HTTP_200_OK)
 
-    def _calculate_favourite_team_stats(self, matches_df, team_id):
+    def _calculate_favourite_team_stats(self, matches_df, team_id, locations_df):
         """Calculate comprehensive stats for the favourite team"""
         
         # Basic stats
@@ -117,6 +119,9 @@ class FavouriteTeamStatsAPIView(APIView):
         # Find biggest rival (team played against most)
         rival_stats = self._find_biggest_rival(matches_df, team_id)
 
+        # Calculate location-based stats
+        location_stats = self._calculate_location_stats(matches_df, team_id, locations_df)
+
         # Get team name
         team_name = matches_df.iloc[0]['teams']['home']['name'] if matches_df.iloc[0]['teams']['home']['id'] == int(team_id) else matches_df.iloc[0]['teams']['away']['name']
 
@@ -129,8 +134,79 @@ class FavouriteTeamStatsAPIView(APIView):
             'matches_watched': int(total_matches),
             'win_rate': int(win_rate),
             'crazy_match': crazy_match,
-            'biggest_rival': rival_stats
+            'biggest_rival': rival_stats,
+            'most_viewed_location': location_stats.get('most_viewed_location'),
+            'home_stadium_times': location_stats.get('home_stadium_times'),
+            'away_stadium_support': location_stats.get('away_stadium_support'),
+            'total_away_stadium_visits': location_stats.get('total_away_stadium_visits')
         }
+
+    def _calculate_location_stats(self, matches_df, team_id, locations_df):
+        """Calculate location-based statistics"""
+        location_stats = {}
+        
+        if len(matches_df) == 0 or len(locations_df) == 0:
+            return location_stats
+
+        # Create a mapping of location IDs to location names
+        location_map = {}
+        for _, location in locations_df.iterrows():
+            location_map[location['id']] = location['name']
+
+        # Count location views
+        location_counts = {}
+        home_stadium_counts = {}
+        away_stadium_counts = {}
+        total_away_stadium_visits = 0
+
+        for _, match in matches_df.iterrows():
+            location_id = match.get('location', '')
+            if location_id and location_id in location_map:
+                location_name = location_map[location_id]
+                
+                # Count general location views
+                location_counts[location_name] = location_counts.get(location_name, 0) + 1
+                
+                # Check if team is home or away
+                is_home = match['teams']['home']['id'] == int(team_id)
+                
+                # Check if location is a stadium
+                location_row = locations_df[locations_df['id'] == location_id]
+                if len(location_row) > 0 and location_row.iloc[0].get('stadium', False):
+                    if is_home:
+                        home_stadium_counts[location_name] = home_stadium_counts.get(location_name, 0) + 1
+                    else:
+                        away_stadium_counts[location_name] = away_stadium_counts.get(location_name, 0) + 1
+                        total_away_stadium_visits += 1
+
+        # Find most viewed location
+        if location_counts:
+            most_viewed_location_name = max(location_counts, key=location_counts.get)
+            location_stats['most_viewed_location'] = {
+                'location_name': most_viewed_location_name,
+                'views_count': location_counts[most_viewed_location_name]
+            }
+
+        # Find most viewed home stadium
+        if home_stadium_counts:
+            most_viewed_home_stadium = max(home_stadium_counts, key=home_stadium_counts.get)
+            location_stats['home_stadium_times'] = {
+                'location_name': most_viewed_home_stadium,
+                'views_count': home_stadium_counts[most_viewed_home_stadium]
+            }
+
+        # Find most viewed away stadium
+        if away_stadium_counts:
+            most_viewed_away_stadium = max(away_stadium_counts, key=away_stadium_counts.get)
+            location_stats['away_stadium_support'] = {
+                'location_name': most_viewed_away_stadium,
+                'views_count': away_stadium_counts[most_viewed_away_stadium]
+            }
+
+        # Add total away stadium visits count
+        location_stats['total_away_stadium_visits'] = total_away_stadium_visits
+
+        return location_stats
 
     def _format_match_for_response(self, match_row):
         """Format a match row for API response"""
