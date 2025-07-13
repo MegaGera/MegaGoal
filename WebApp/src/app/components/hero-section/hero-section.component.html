@@ -9,7 +9,7 @@
     <div class="hero-welcome">
       <h2 class="welcome-title">Welcome back!</h2>
       @if (userStatsLoaded) {
-        <p class="welcome-subtitle">You've watched {{userStats?.monthlyActivity?.[0]?.matches || 0}} matches this month. Keep it up!</p>
+        <p class="welcome-subtitle">You've watched {{userStats?.monthlyActivity?.[-1]?.matches || 0}} matches this month. Keep it up!</p>
       }
     </div>
     

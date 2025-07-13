@@ -11,7 +11,7 @@ export const TOP_LEAGUES_IDS: number[] = [
   140, // La Liga
   143, // Copa del Rey
   45,  // FA Cup
-  141, // Copa del Rey
+  141, // La Liga 2
   135, // Serie A
   78,  // Bundesliga
   61,  // Ligue 1
@@ -20,7 +20,7 @@ export const TOP_LEAGUES_IDS: number[] = [
   848, // Eredivisie
   4,   // UEFA Europa Conference League
   1,   // World Cup
-  9,   // Copa Libertadores
+  9,   // Copa America
   40,  // Championship
   41,  // League One
   42,  // League Two

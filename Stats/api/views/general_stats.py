@@ -29,11 +29,11 @@ class GeneralStatsAPIView(APIView):
         filters = []
         if team_selection == '1':
             filters.append({
-                'league.id': {'$nin': [10, 1, 4, 9]}
+                'league.id': {'$nin': [10, 1, 4, 9, 5]}
             })
         elif team_selection == '2':
             filters.append({
-                'league.id': {'$in': [10, 1, 4, 9]}
+                'league.id': {'$in': [10, 1, 4, 9, 5]}
             })
         
         # League filter
