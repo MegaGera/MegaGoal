@@ -1,11 +1,23 @@
 <!-- Quick Stats Carousel -->
-<div class="stats-carousel-container" 
-     (mouseenter)="onMouseEnter()" 
-     (mouseleave)="onMouseLeave()">
-  <div class="stats-carousel">
-    <!-- First set of cards -->
-    <app-quick-stat-card class="m-auto" *ngFor="let card of statCards; trackBy: trackByIndex" [card]="card"></app-quick-stat-card>
-    <!-- Duplicate set for infinite loop -->
-    <app-quick-stat-card class="m-auto" *ngFor="let card of statCards; trackBy: trackByIndex" [card]="card"></app-quick-stat-card>
+@if (!userStatsLoaded) {
+  <div class="stats-carousel-container">
+    <div class="stats-carousel">
+      <div class="quick-stat-skeleton-card" *ngFor="let i of [0,1]">
+        <div class="skeleton-icon"></div>
+        <div class="skeleton-label"></div>
+        <div class="skeleton-subtitle"></div>
+      </div>
+    </div>
   </div>
-</div> 
+} @else {
+  <div class="stats-carousel-container" 
+       (mouseenter)="onMouseEnter()" 
+       (mouseleave)="onMouseLeave()">
+    <div class="stats-carousel">
+      <!-- First set of cards -->
+      <app-quick-stat-card class="m-auto" *ngFor="let card of statCards; trackBy: trackByIndex" [card]="card"></app-quick-stat-card>
+      <!-- Duplicate set for infinite loop -->
+      <app-quick-stat-card class="m-auto" *ngFor="let card of statCards; trackBy: trackByIndex" [card]="card"></app-quick-stat-card>
+    </div>
+  </div>
+} 

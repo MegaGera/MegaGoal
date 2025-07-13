@@ -1,0 +1,102 @@
+@if (!generalStatsLoaded) {
+  <div class="general-stats-section loading">
+    <div class="loading-skeleton">
+      <div class="skeleton-title"></div>
+      <div class="skeleton-stats">
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+      </div>
+    </div>
+  </div>
+} @else if (generalStatsLoaded && generalStats) {
+  <div class="general-stats-section">
+    <h4 class="section-title">General Stats</h4>
+    
+    <!-- King of Draws -->
+    @if (generalStats.king_of_draws) {
+      <app-mini-stat-card
+        type="king-of-draws"
+        label="King of Draws"
+        [value]="generalStats.king_of_draws.team_name + ' - ' + generalStats.king_of_draws.draw_percentage + '%'"
+        [subValue]="generalStats.king_of_draws.draws_count + ' draws in ' + generalStats.king_of_draws.total_matches + ' matches'"
+        [team_id]="generalStats.king_of_draws.team_id">
+      </app-mini-stat-card>
+    }
+
+    <!-- Crazy Match -->
+    @if (generalStats.crazy_match) {
+      <app-mini-stat-card
+        type="crazy-match"
+        label="Crazy Match"
+        [value]="generalStats.crazy_match.teams.home.name + ' ' + generalStats.crazy_match.goals.home + '-' + generalStats.crazy_match.goals.away + ' ' + generalStats.crazy_match.teams.away.name"
+        [subValue]="getMatchSubvalueForCard(generalStats.crazy_match)">
+      </app-mini-stat-card>
+    }
+
+    <!-- Biggest Win Percentage -->
+    @if (generalStats.biggest_win_percentage) {
+      <app-mini-stat-card
+        type="biggest-win-percentage"
+        label="Biggest Win %"
+        [value]="generalStats.biggest_win_percentage.team_name + ' - ' + generalStats.biggest_win_percentage.win_percentage + '%'"
+        [subValue]="generalStats.biggest_win_percentage.wins + ' wins in ' + generalStats.biggest_win_percentage.total_matches + ' matches'"
+        [team_id]="generalStats.biggest_win_percentage.team_id">
+      </app-mini-stat-card>
+    }
+
+    <!-- Biggest Lose Percentage -->
+    @if (generalStats.biggest_lose_percentage) {
+      <app-mini-stat-card
+        type="biggest-lose-percentage"
+        label="Biggest Lose %"
+        [value]="generalStats.biggest_lose_percentage.team_name + ' - ' + generalStats.biggest_lose_percentage.loss_percentage + '%'"
+        [subValue]="generalStats.biggest_lose_percentage.losses + ' losses in ' + generalStats.biggest_lose_percentage.total_matches + ' matches'"
+        [team_id]="generalStats.biggest_lose_percentage.team_id">
+      </app-mini-stat-card>
+    }
+
+    <!-- Most Boring Team -->
+    @if (generalStats.most_boring_team) {
+      <app-mini-stat-card
+        type="most-boring-team"
+        label="Most Boring Team"
+        [value]="generalStats.most_boring_team.team_name + ' - ' + generalStats.most_boring_team.avg_goals_per_match + ' goals/match'"
+        [subValue]="generalStats.most_boring_team.total_goals + ' total goals in ' + generalStats.most_boring_team.matches + ' matches'"
+        [team_id]="generalStats.most_boring_team.team_id">
+      </app-mini-stat-card>
+    }
+
+    <!-- Most Crazy Team -->
+    @if (generalStats.most_crazy_team) {
+      <app-mini-stat-card
+        type="most-crazy-team"
+        label="Most Crazy Team"
+        [value]="generalStats.most_crazy_team.team_name + ' - ' + generalStats.most_crazy_team.avg_goals_per_match + ' goals/match'"
+        [subValue]="generalStats.most_crazy_team.total_goals + ' total goals in ' + generalStats.most_crazy_team.matches + ' matches'"
+        [team_id]="generalStats.most_crazy_team.team_id">
+      </app-mini-stat-card>
+    }
+
+    <!-- Most Watched Location -->
+    @if (generalStats.most_watched_location) {
+      <app-mini-stat-card
+        type="most-viewed-location"
+        label="Most Watched Location"
+        [value]="generalStats.most_watched_location.location_name + ' - ' + generalStats.most_watched_location.views_count + ' times'">
+      </app-mini-stat-card>
+    }
+
+    <!-- Most Watched Stadium -->
+    @if (generalStats.most_watched_stadium) {
+      <app-mini-stat-card
+        type="most-watched-stadium"
+        label="Most Watched Stadium"
+        [value]="generalStats.most_watched_stadium.location_name + ' - ' + generalStats.most_watched_stadium.views_count + ' times'">
+      </app-mini-stat-card>
+    }
+  </div>
+} 

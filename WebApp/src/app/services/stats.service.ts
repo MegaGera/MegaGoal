@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { UserStats } from '../models/userStats';
 import { FavouriteTeamStats } from '../models/favouriteTeamStats';
+import { GeneralStats } from '../models/generalStats';
 
 @Injectable({
   providedIn: 'root'
@@ -63,6 +64,20 @@ export class StatsService {
       .set('season', filterSeasonSelected.toString());
     
     return this.http.get<FavouriteTeamStats>(this.url + '/favourite-team-stats/', { ...this.options, params: params });
+  }
+
+  /*
+    Method to get general statistics based on current filters
+  */
+  getGeneralStats(
+    filterLeagueSelected: number[],
+    filterSeasonSelected: number
+  ): Observable<GeneralStats> {
+    let params = new HttpParams()
+      .set('leagues', filterLeagueSelected.join(','))
+      .set('season', filterSeasonSelected.toString());
+    
+    return this.http.get<GeneralStats>(this.url + '/general-stats/', { ...this.options, params: params });
   }
 
 }

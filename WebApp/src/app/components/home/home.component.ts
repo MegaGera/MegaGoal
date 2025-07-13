@@ -16,6 +16,7 @@ import { Match } from '../../models/match';
 import { Location } from '../../models/location';
 import { SeasonInfo } from '../../models/season';
 import { UserStats } from '../../models/userStats';
+import { GeneralStats } from '../../models/generalStats';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { TeamStatsListComponent } from '../stats/team-stats-list/team-stats-list.component';
@@ -23,12 +24,13 @@ import { HeroSectionComponent } from '../hero-section/hero-section.component';
 import { StatsService } from '../../services/stats.service';
 import { FavouriteTeamCardComponent } from '../stats/favourite-team-card/favourite-team-card.component';
 import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
+import { GeneralStatsComponent } from '../stats/general-stats/general-stats.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, RealMatchCardComponent, PaginationComponent, MatProgressSpinnerModule, 
-    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent],
+    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   providers: [ImagesService, provideNgIconsConfig({
@@ -56,6 +58,10 @@ export class HomeComponent implements OnInit {
   /* User Stats for Hero Section */
   userStats: UserStats | null = null;
   userStatsLoaded: boolean = false;
+  
+  /* General Stats */
+  generalStats: GeneralStats | null = null;
+  generalStatsLoaded: boolean = false;
   
   filterPanelChipSelected: number = 1; // 0 All, 1 Watched, 2 Not Watched
   filterLeagueSelected: number[] = []; // 40: Premier League, 140: La Liga, 141: La Liga 2, 2: Champions League
@@ -113,6 +119,7 @@ export class HomeComponent implements OnInit {
       this.stats.teamsViewed = result;
       this.statsLoaded = true;
       this.getFavouriteTeamStats();
+      this.getGeneralStats();
     })
   }
 
@@ -146,6 +153,25 @@ export class HomeComponent implements OnInit {
         console.error('Error fetching favourite team stats:', error);
         this.favouriteTeamLoaded = true;
         this.favouriteTeamStats = null;
+      }
+    });
+  }
+
+  getGeneralStats() {
+    this.generalStatsLoaded = false;
+    
+    this.statsService.getGeneralStats(
+      this.filterLeagueSelected,
+      this.filterSeasonSelected.id
+    ).subscribe({
+      next: (stats: GeneralStats) => {
+        this.generalStats = stats;
+        this.generalStatsLoaded = true;
+      },
+      error: (error: any) => {
+        console.error('Error fetching general stats:', error);
+        this.generalStatsLoaded = true;
+        this.generalStats = null;
       }
     });
   }
@@ -195,6 +221,13 @@ export class HomeComponent implements OnInit {
   changeFilterSeasonSelected(season: SeasonInfo) {
     this.filterSeasonSelected = season;
     this.filterMatches();
+  }
+
+  getMatchSubvalueForCard(match: Match) {
+    const locationName = this.locations.find(location => location.id === match.location)?.name || 'Unknown location';
+    const date = new Date(match.fixture.timestamp * 1000); // assuming timestamp is in seconds
+    const formattedDate = date.toLocaleDateString('en-GB'); // dd/mm/yyyy
+    return `Viewed at ${locationName} on ${formattedDate}`;
   }
 
 }

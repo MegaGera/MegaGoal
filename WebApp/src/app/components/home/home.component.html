@@ -20,19 +20,11 @@
         [isLoading]="!favouriteTeamLoaded">
       </app-favourite-team-card>
 
-      <div class="statsColumn">
-        <!-- Team Stats List -->
-        @if (this.statsLoaded && stats.teamsViewed.length > 0) {
-          <div class="text-center">
-            <app-team-stats-list [teams]="stats.teamsViewed" />
-            <br>
-          </div>
-        } @else if (!this.statsLoaded) {
-          <div class="spinner">
-            <mat-spinner />
-          </div>
-        }
-      </div>
+      <!-- General Stats Component -->
+      <app-general-stats 
+        [generalStats]="generalStats" 
+        [generalStatsLoaded]="generalStatsLoaded">
+      </app-general-stats>
 
     </div>
     <div class="tab-pane fade show active col-md-6 col-12" id="nav-matches" role="tabpanel" aria-labelledby="nav-profile-tab">

@@ -1,11 +1,11 @@
 .favourite-team-card {
-  background: white;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe4e4 50%, #ffd1d1 100%);
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 16px;
   margin-bottom: 16px;
   transition: all 0.3s ease;
-  border: 2px solid #e5e7eb;
+  border: 2px solid #ffb3b3;
   position: relative;
   overflow: hidden;
   width: 100%;
@@ -26,7 +26,6 @@
 .favourite-team-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
-  border-color: #dc143c;
 }
 
 .favourite-team-card:hover::before {
@@ -122,6 +121,10 @@
 
 .stat-item:hover {
   background: #e9ecef;
+}
+
+.stat-item:nth-child(-n+4) {
+  border: 1px solid rgba(220, 20, 60, 0.3);
 }
 
 .stat-icon {

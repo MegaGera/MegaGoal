@@ -15,5 +15,8 @@
   <div class="stat-highlight-content">
     <span class="stat-highlight-label">{{ label }}</span>
     <span class="stat-highlight-value">{{ value }}</span>
+    @if (subValue) {
+      <span class="stat-highlight-sub-value">{{ subValue }}</span>
+    }
   </div>
 </div> 
