@@ -1,36 +1,3 @@
-.favourite-team-card {
-  background: linear-gradient(135deg, #fff5f5 0%, #ffe4e4 50%, #ffd1d1 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  padding: 16px;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-  border: 2px solid #ffb3b3;
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-}
-
-.favourite-team-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, #dc143c, #ff6b6b);
-  transform: scaleY(0);
-  transition: transform 0.3s ease;
-}
-
-.favourite-team-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
-}
-
-.favourite-team-card:hover::before {
-  transform: scaleY(1);
-}
 
 /* Header Section */
 .card-header {
@@ -212,13 +179,6 @@
   gap: 4px;
 }
 
-/* Quick Actions - Removed for compact design */
-
-/* Loading State */
-.favourite-team-card.loading {
-  pointer-events: none;
-}
-
 .loading-skeleton {
   display: flex;
   flex-direction: column;
@@ -253,10 +213,6 @@
 }
 
 /* Empty State */
-.favourite-team-card.empty {
-  text-align: center;
-  padding: 40px 20px;
-}
 
 .empty-state {
   display: flex;
@@ -285,10 +241,6 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .favourite-team-card {
-    padding: 12px;
-    margin-bottom: 12px;
-  }
 
   .team-logo-container {
     width: 36px;

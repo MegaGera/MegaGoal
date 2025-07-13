@@ -1,5 +1,5 @@
 @if (isLoading) {
-  <div class="favourite-team-card loading">
+  <app-general-card [loading]="true">
     <div class="loading-skeleton">
       <div class="skeleton-header"></div>
       <div class="skeleton-stats">
@@ -8,9 +8,9 @@
         <div class="skeleton-stat"></div>
       </div>
     </div>
-  </div>
+  </app-general-card>
 } @else if (teamStats) {
-  <div class="favourite-team-card">
+  <app-general-card>
     <!-- Header Section -->
     <div class="card-header">
       <div class="team-info">
@@ -131,9 +131,9 @@
         </app-mini-stat-card>
       }
     </div>
-  </div>
+  </app-general-card>
 } @else {
-  <div class="favourite-team-card empty">
+  <app-general-card [empty]="true">
     <div class="empty-state">
       <ng-icon name="jamTrophy" class="empty-icon"></ng-icon>
       <h4>No Favourite Team</h4>
@@ -142,5 +142,5 @@
         <span>Set Favourite Team</span>
       </button>
     </div>
-  </div>
+  </app-general-card>
 } 

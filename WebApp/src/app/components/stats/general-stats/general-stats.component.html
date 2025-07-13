@@ -1,5 +1,5 @@
 @if (!generalStatsLoaded) {
-  <div class="general-stats-section loading">
+  <app-general-card [loading]="true">
     <div class="loading-skeleton">
       <div class="skeleton-title"></div>
       <div class="skeleton-stats">
@@ -11,9 +11,9 @@
         <div class="skeleton-stat"></div>
       </div>
     </div>
-  </div>
+  </app-general-card>
 } @else if (generalStatsLoaded && generalStats) {
-  <div class="general-stats-section">
+  <app-general-card>
     <h4 class="section-title">General Stats</h4>
     
     <!-- King of Draws -->
@@ -98,5 +98,5 @@
         [value]="generalStats.most_watched_stadium.location_name + ' - ' + generalStats.most_watched_stadium.views_count + ' times'">
       </app-mini-stat-card>
     }
-  </div>
+  </app-general-card>
 } 

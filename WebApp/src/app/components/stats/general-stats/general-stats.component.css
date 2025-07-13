@@ -1,36 +1,4 @@
-/* General Stats Section */
-.general-stats-section {
-  margin-bottom: 20px;
-  padding: 16px;
-  background: linear-gradient(135deg, #fff5f5 0%, #ffe4e4 50%, #ffd1d1 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border: 2px solid #ffb3b3;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.general-stats-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, #dc143c, #ff6b6b);
-  transform: scaleY(0);
-  transition: transform 0.3s ease;
-}
-
-.general-stats-section:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
-}
-
-.general-stats-section:hover::before {
-  transform: scaleY(1);
-}
+/* Card styling is now handled by app-general-card component */
 
 .section-title {
   font-size: 16px;
@@ -40,10 +8,7 @@
   text-align: center;
 }
 
-/* Loading State */
-.general-stats-section.loading {
-  pointer-events: none;
-}
+/* Loading State - now handled by app-general-card component */
 
 .loading-skeleton {
   display: flex;

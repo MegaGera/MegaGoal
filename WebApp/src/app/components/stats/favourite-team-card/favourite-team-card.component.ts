@@ -6,11 +6,12 @@ import { ionFootball } from '@ng-icons/ionicons';
 import { FavouriteTeamStats } from '../../../models/favouriteTeamStats';
 import { ImagesService } from '../../../services/images.service';
 import { MiniStatCardComponent } from '../mini-stat-card/mini-stat-card.component';
+import { GeneralCardComponent } from '../../general-card/general-card.component';
 
 @Component({
   selector: 'app-favourite-team-card',
   standalone: true,
-  imports: [CommonModule, NgOptimizedImage, NgIconComponent, MiniStatCardComponent],
+  imports: [CommonModule, NgOptimizedImage, NgIconComponent, MiniStatCardComponent, GeneralCardComponent],
   templateUrl: './favourite-team-card.component.html',
   styleUrls: ['./favourite-team-card.component.css'],
   providers: [ImagesService, provideIcons({ jamEyeF, jamTrophy, jamTarget, ionFootball })]
