@@ -20,17 +20,6 @@ export class FavouriteTeamCardComponent {
 
   constructor(public images: ImagesService) {}
 
-  getFormColor(form: string): string {
-    if (!form) return '#6c757d';
-    const lastResult = form.charAt(form.length - 1);
-    switch (lastResult) {
-      case 'W': return '#28a745';
-      case 'D': return '#ffc107';
-      case 'L': return '#dc3545';
-      default: return '#6c757d';
-    }
-  }
-
   getWinRateColor(rate: number): string {
     if (rate >= 70) return '#28a745';
     if (rate >= 50) return '#ffc107';
