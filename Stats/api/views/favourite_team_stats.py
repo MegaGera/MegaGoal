@@ -63,37 +63,6 @@ class FavouriteTeamStatsAPIView(APIView):
         collection_matches = settings.MONGO_DB['matches']
         favourite_team_matches = pd.DataFrame(list(collection_matches.find(query)))
 
-        # if len(df) == 0:
-        #     return Response(None, status=status.HTTP_200_OK)
-
-        # # Get the most viewed team
-        # home_teams = df.apply(lambda x: (x['teams']['home']['id'], x['teams']['home']['name'], x['goals']['home']), axis=1)
-        # away_teams = df.apply(lambda x: (x['teams']['away']['id'], x['teams']['away']['name'], x['goals']['away']), axis=1)
-        
-        # all_teams = pd.concat([home_teams, away_teams], ignore_index=True)
-        # all_teams_df = pd.DataFrame(all_teams.tolist(), columns=['team_id', 'team_name', 'goals'])
-        
-        # team_stats_df = all_teams_df.groupby(['team_id', 'team_name']).agg({
-        #     'team_id': 'count', 
-        #     'goals': 'sum'
-        # }).rename(columns={'team_id': 'count'}).reset_index()
-        
-        # team_stats_df = team_stats_df.sort_values(by='count', ascending=False)
-        
-        # if len(team_stats_df) == 0:
-        #     return Response(None, status=status.HTTP_200_OK)
-
-        # # Get the most viewed team
-        # favourite_team = team_stats_df.iloc[0]
-        # favourite_team_id = favourite_team['team_id']
-        # # favourite_team_name = favourite_team['team_name']
-
-        # # Filter matches for the favourite team
-        # favourite_team_matches = df[
-        #     (df.apply(lambda x: x['teams']['home']['id'], axis=1) == int(favourite_team_id)) | 
-        #     (df.apply(lambda x: x['teams']['away']['id'], axis=1) == int(favourite_team_id))
-        # ].copy()
-
         if len(favourite_team_matches) == 0:
             return Response(None, status=status.HTTP_200_OK)
 
@@ -112,36 +81,29 @@ class FavouriteTeamStatsAPIView(APIView):
         wins = 0
         draws = 0
         losses = 0
-        recent_results = []
 
         # Calculate goals and results
         for _, match in matches_df.iterrows():
-            is_home = match['teams']['home']['id'] == team_id
+            is_home = match['teams']['home']['id'] == int(team_id)
             
             if is_home:
                 goals_scored += match['goals']['home']
                 goals_conceded += match['goals']['away']
                 if match['goals']['home'] > match['goals']['away']:
                     wins += 1
-                    recent_results.append('W')
                 elif match['goals']['home'] < match['goals']['away']:
                     losses += 1
-                    recent_results.append('L')
                 else:
                     draws += 1
-                    recent_results.append('D')
             else:
                 goals_scored += match['goals']['away']
                 goals_conceded += match['goals']['home']
                 if match['goals']['away'] > match['goals']['home']:
                     wins += 1
-                    recent_results.append('W')
                 elif match['goals']['away'] < match['goals']['home']:
                     losses += 1
-                    recent_results.append('L')
                 else:
                     draws += 1
-                    recent_results.append('D')
 
         # Calculate win rate
         total_matches = wins + draws + losses
@@ -156,7 +118,7 @@ class FavouriteTeamStatsAPIView(APIView):
         rival_stats = self._find_biggest_rival(matches_df, team_id)
 
         # Get team name
-        team_name = matches_df.iloc[0]['teams']['home']['name'] if matches_df.iloc[0]['teams']['home']['id'] == team_id else matches_df.iloc[0]['teams']['away']['name']
+        team_name = matches_df.iloc[0]['teams']['home']['name'] if matches_df.iloc[0]['teams']['home']['id'] == int(team_id) else matches_df.iloc[0]['teams']['away']['name']
 
         return {
             'team_id': int(team_id),
@@ -207,7 +169,7 @@ class FavouriteTeamStatsAPIView(APIView):
         rival_matches = []
         
         for _, match in matches_df.iterrows():
-            if match['teams']['home']['id'] == team_id:
+            if match['teams']['home']['id'] == int(team_id):
                 rival_matches.append(match['teams']['away']['id'])
             else:
                 rival_matches.append(match['teams']['home']['id'])
