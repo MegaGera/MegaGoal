@@ -161,6 +161,7 @@ export class HomeComponent implements OnInit {
     this.generalStatsLoaded = false;
     
     this.statsService.getGeneralStats(
+      this.filterPanelChipSelected,
       this.filterLeagueSelected,
       this.filterSeasonSelected.id
     ).subscribe({

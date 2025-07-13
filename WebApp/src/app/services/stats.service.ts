@@ -70,10 +70,12 @@ export class StatsService {
     Method to get general statistics based on current filters
   */
   getGeneralStats(
+    teamSelection: number,
     filterLeagueSelected: number[],
     filterSeasonSelected: number
   ): Observable<GeneralStats> {
     let params = new HttpParams()
+      .set('team_selection', teamSelection)
       .set('leagues', filterLeagueSelected.join(','))
       .set('season', filterSeasonSelected.toString());
     

@@ -17,6 +17,7 @@ class GeneralStatsAPIView(APIView):
 
         leagues = request.query_params.get('leagues', '')
         season = request.query_params.get('season', '0')
+        team_selection = request.query_params.get('team_selection', None)
 
         if username is None:
             return Response({"error": "Username parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -26,9 +27,17 @@ class GeneralStatsAPIView(APIView):
 
         # Build filters
         filters = []
+        if team_selection == '1':
+            filters.append({
+                'league.id': {'$nin': [10, 1, 4, 9]}
+            })
+        elif team_selection == '2':
+            filters.append({
+                'league.id': {'$in': [10, 1, 4, 9]}
+            })
         
         # League filter
-        if leagues_array:
+        if leagues_array and team_selection != '2' and len(leagues_array) > 0:
             filters.append({
                 'league.id': {'$in': leagues_array}
             })
