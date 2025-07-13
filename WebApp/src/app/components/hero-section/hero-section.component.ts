@@ -18,4 +18,12 @@ import { QuickStatsComponent } from '../stats/quick-stats/quick-stats.component'
 export class HeroSectionComponent {
   @Input() userStats: UserStats | null = null;
   @Input() userStatsLoaded: boolean = false;
+
+  getMonthlyMatches(): number {
+    if (!this.userStats?.monthlyActivity || this.userStats.monthlyActivity.length === 0) {
+      return 0;
+    }
+    const lastMonth = this.userStats.monthlyActivity[this.userStats.monthlyActivity.length - 1];
+    return lastMonth?.matches ?? 0;
+  }
 } 
