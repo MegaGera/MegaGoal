@@ -215,7 +215,7 @@ export class MegaGoalService {
     Method to get the Leagues Settings from the API for Admin page
   */
   getLeaguesSettings(): Observable<LeaguesSettings[]> {
-    return this.http.get<LeaguesSettings[]>(this.url + '/admin/leagues_settings/', this.options);
+    return this.http.get<LeaguesSettings[]>(this.url + '/league/settings/', this.options);
   }
 
   /*
