@@ -3,10 +3,17 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 import pandas as pd
+import os
 
 class LeaguesViewedAPIView(APIView):
   def get(self, request, *args, **kwargs):
-    username = request.query_params.get('username', None)
+    
+    # Access the validation data added by the middleware
+    validate_data = getattr(request, 'validateData', None)
+    if validate_data:
+      username = validate_data.get('data').get('username')
+    else:
+      username = os.getenv('USERNAME_DEV')
 
     if username is None:
       return Response({"error": "username parameter is required"}, status=status.HTTP_400_BAD_REQUEST)

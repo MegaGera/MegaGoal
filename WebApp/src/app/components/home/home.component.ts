@@ -17,6 +17,7 @@ import { Location } from '../../models/location';
 import { SeasonInfo } from '../../models/season';
 import { UserStats } from '../../models/userStats';
 import { GeneralStats } from '../../models/generalStats';
+import { LeagueStats } from '../../models/league';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { TeamStatsListComponent } from '../stats/team-stats-list/team-stats-list.component';
@@ -25,12 +26,14 @@ import { StatsService } from '../../services/stats.service';
 import { FavouriteTeamCardComponent } from '../stats/favourite-team-card/favourite-team-card.component';
 import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { GeneralStatsComponent } from '../stats/general-stats/general-stats.component';
+import { FiltersHomeComponent } from '../filters-home/filters-home.component';
+import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, RealMatchCardComponent, PaginationComponent, MatProgressSpinnerModule, 
-    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent],
+    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent, FiltersHomeComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   providers: [ImagesService, provideNgIconsConfig({
@@ -49,6 +52,7 @@ export class HomeComponent implements OnInit {
   matchesLoaded: boolean = false;
   matchesPerPage: number = 20;
   matchesFiltered: Match[] = [];
+  leaguesViewed: LeagueStats[] = [];
   locations: Location[] = [];
   stats: { teamsViewed: any[] } = { teamsViewed: []};
   statsLoaded: boolean = false;
@@ -63,8 +67,9 @@ export class HomeComponent implements OnInit {
   generalStats: GeneralStats | null = null;
   generalStatsLoaded: boolean = false;
   
-  filterPanelChipSelected: number = 1; // 0 All, 1 Watched, 2 Not Watched
+  filterPanelChipSelected: number = 0; // 0 All, 1 Watched, 2 Not Watched
   filterLeagueSelected: number[] = []; // 40: Premier League, 140: La Liga, 141: La Liga 2, 2: Champions League
+  filterLocationSelected: string = ''; // Location filter
 
   /* Seasons */
   seasons: SeasonInfo[] = 
@@ -91,6 +96,7 @@ export class HomeComponent implements OnInit {
     this.getAllMatches();
     this.getLocations();
     this.getUserStats();
+    this.getLeaguesStats();
   }
 
   /* 
@@ -115,7 +121,7 @@ export class HomeComponent implements OnInit {
   }
 
   getStats() {
-    this.statsService.getTeamsViewed(this.filterPanelChipSelected, this.filterLeagueSelected, this.filterSeasonSelected.id).subscribe(result => {
+    this.statsService.getTeamsViewed(this.filterPanelChipSelected, this.filterLeagueSelected, this.filterSeasonSelected.id, this.filterLocationSelected).subscribe(result => {
       this.stats.teamsViewed = result;
       this.statsLoaded = true;
       this.getFavouriteTeamStats();
@@ -123,15 +129,15 @@ export class HomeComponent implements OnInit {
     })
   }
 
-  getUserGeneralStats() {
-    this.statsService.getUserGeneralStats().subscribe(result => {
-      console.log(result);
+  getLeaguesStats() {
+    this.statsService.getLeaguesViewed().subscribe(result => {
+      this.leaguesViewed = result;
     })
   }
 
+
   getUserStats() {
     this.statsService.getUserGeneralStats().subscribe(result => {
-      console.log(result);
       this.userStats = result;
       this.userStatsLoaded = true;
     })
@@ -143,7 +149,8 @@ export class HomeComponent implements OnInit {
     this.statsService.getFavouriteTeamStats(
       this.stats.teamsViewed[0].team_id,
       this.filterLeagueSelected,
-      this.filterSeasonSelected.id
+      this.filterSeasonSelected.id,
+      this.filterLocationSelected
     ).subscribe({
       next: (stats: FavouriteTeamStats) => {
         this.favouriteTeamStats = stats;
@@ -163,7 +170,8 @@ export class HomeComponent implements OnInit {
     this.statsService.getGeneralStats(
       this.filterPanelChipSelected,
       this.filterLeagueSelected,
-      this.filterSeasonSelected.id
+      this.filterSeasonSelected.id,
+      this.filterLocationSelected
     ).subscribe({
       next: (stats: GeneralStats) => {
         this.generalStats = stats;
@@ -185,9 +193,11 @@ export class HomeComponent implements OnInit {
 
     // Filter by team selection
     if (this.filterPanelChipSelected == 1) {
-      this.matches = this.matches.filter(match => match.league.id != 10 && match.league.id != 1 && match.league.id != 4 && match.league.id != 9 && match.league.id != 5);
+      // Show only club leagues (exclude national leagues)
+      this.matches = this.matches.filter(match => !NATIONS_LEAGUE_IDS.includes(match.league.id));
     } else if (this.filterPanelChipSelected == 2) {
-      this.matches = this.matches.filter(match => match.league.id == 10 || match.league.id == 1 || match.league.id == 4 || match.league.id == 9 || match.league.id == 5);
+      // Show only national leagues
+      this.matches = this.matches.filter(match => NATIONS_LEAGUE_IDS.includes(match.league.id));
     }
 
     // Filter by league selection
@@ -200,6 +210,11 @@ export class HomeComponent implements OnInit {
       this.matches = this.matches.filter(match => match.league.season == this.filterSeasonSelected.id);
     }
 
+    // Filter by location
+    if (this.filterLocationSelected) {
+      this.matches = this.matches.filter(match => match.location === this.filterLocationSelected);
+    }
+
     this.changeDetectorRef.detectChanges();
     this.matchesLoaded = true;
     this.getStats();
@@ -210,12 +225,8 @@ export class HomeComponent implements OnInit {
     this.filterMatches();
   }
 
-  changeFilterLeagueSelected(league: number) {
-    if (this.filterLeagueSelected.includes(league)) {
-      this.filterLeagueSelected = this.filterLeagueSelected.filter(item => item !== league);
-    } else {
-      this.filterLeagueSelected.push(league);
-    }
+  changeFilterLeagueSelected(leagues: number[]) {
+    this.filterLeagueSelected = leagues;
     this.filterMatches();
   }
 
@@ -224,11 +235,24 @@ export class HomeComponent implements OnInit {
     this.filterMatches();
   }
 
+  changeFilterLocationSelected(location: string) {
+    this.filterLocationSelected = location;
+    this.filterMatches();
+  }
+
   getMatchSubvalueForCard(match: Match) {
     const locationName = this.locations.find(location => location.id === match.location)?.name || 'Unknown location';
     const date = new Date(match.fixture.timestamp * 1000); // assuming timestamp is in seconds
     const formattedDate = date.toLocaleDateString('en-GB'); // dd/mm/yyyy
     return `Viewed at ${locationName} on ${formattedDate}`;
+  }
+
+  resetFilters() {
+    this.filterPanelChipSelected = 0; // All
+    this.filterLeagueSelected = []; // No leagues selected
+    this.filterSeasonSelected = this.seasons[0]; // All time
+    this.filterLocationSelected = ''; // All locations
+    this.filterMatches();
   }
 
 }

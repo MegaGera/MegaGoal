@@ -7,6 +7,12 @@
   .nav-tabs {
       display: none;
   }
+
+  /* Add top margin for left and right columns */
+  .tab-content > .tab-pane:first-child,
+  .tab-content > .tab-pane:last-child {
+      margin-top: 20px;
+  }
 }
 
 @media only screen and (max-width: 768px) {
@@ -16,6 +22,33 @@
 
   .nav-class {
     margin-top: 3% !important;
+  }
+
+  /* Add top margin for mobile view due to column selector */
+  .tab-content > .tab-pane {
+    margin-top: 20px;
+  }
+
+  .no-matches-card {
+    padding: 24px;
+    margin: 20px;
+  }
+
+  .no-matches-title {
+    font-size: 20px;
+  }
+
+  .no-matches-description {
+    font-size: 14px;
+  }
+
+  .matches-header {
+    padding: 6px 50px;
+    margin-bottom: 12px;
+  }
+
+  .matches-title {
+    font-size: 16px;
   }
 }
 
@@ -35,12 +68,112 @@
   width: 90%;
 }
 
+/* Matches Header */
+.matches-header {
+  background: linear-gradient(135deg, #dc143c, #ff6b6b);
+  border-radius: 12px;
+  padding: 8px 50px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #dc143c;
+  text-align: center;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.matches-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 .paginationDiv {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
 
+/* Modern No Matches Warning */
+.no-matches-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 20px;
+}
+
+.no-matches-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(220, 20, 60, 0.1);
+  max-width: 500px;
+  width: 100%;
+}
+
+.no-matches-icon {
+  margin-bottom: 24px;
+}
+
+.football-icon {
+  color: #dc143c;
+  opacity: 0.8;
+}
+
+.no-matches-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.no-matches-description {
+  font-size: 16px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 32px 0;
+}
+
+.no-matches-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.reset-filters-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #dc143c, #ff6b6b);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+}
+
+.reset-filters-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220, 20, 60, 0.4);
+}
+
+.reset-filters-btn:active {
+  transform: translateY(0);
+}
+
+.reset-filters-btn ng-icon {
+  --ng-icon__size: 1rem;
+}
+
+/* Legacy class for backward compatibility */
 .noMatches {
   text-align: center;
   margin-top: 4%;

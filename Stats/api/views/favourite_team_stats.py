@@ -18,6 +18,7 @@ class FavouriteTeamStatsAPIView(APIView):
         team_id = request.query_params.get('team_id', None)
         leagues = request.query_params.get('leagues', '')
         season = request.query_params.get('season', '0')
+        location = request.query_params.get('location', '')
 
         if username is None:
             return Response({"error": "Username parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -49,6 +50,10 @@ class FavouriteTeamStatsAPIView(APIView):
         # Season filter
         if season != '0':
             filters.append({'league.season': int(season)})
+
+        # Location filter
+        if location != '':
+            filters.append({'location': location})
 
         # User filter
         filters.append({'user.username': username})

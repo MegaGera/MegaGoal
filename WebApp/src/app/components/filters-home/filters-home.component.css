@@ -1,0 +1,297 @@
+/* Filter Header */
+.filter-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
+}
+
+.filter-icon {
+  color: #dc143c;
+  --ng-icon__size: 1.5rem;
+}
+
+.filter-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* Filter Sections */
+.filter-section {
+  margin-bottom: 24px;
+}
+
+.filter-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.toggle-button:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.toggle-button ng-icon {
+  --ng-icon__size: 0.875rem;
+}
+
+/* Filter Chips */
+.filter-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  background: #f8f9fa !important;
+  border: 1px solid #e5e7eb !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+.filter-chip:hover {
+  background: #e9ecef !important;
+  border-color: #dc143c !important;
+  color: #dc143c !important;
+}
+
+.filter-chip-selected {
+  background: linear-gradient(135deg, #ff8e8e, #ffb3b3) !important;
+  border-color: #ff8e8e !important;
+  color: white !important;
+}
+
+/* League Grid */
+.league-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.league-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: #f8f9fa;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  aspect-ratio: 1;
+  position: relative;
+}
+
+.league-item:hover {
+  background: #e9ecef;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(255, 107, 107, 0.15);
+}
+
+.league-item-selected {
+  background: linear-gradient(135deg, #fff5f5, #ffe4e4);
+  border-color: #ff6b6b;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
+  transform: scale(1.05);
+}
+
+.league-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+/* Tooltip for league names */
+.league-item::before {
+  content: attr(data-league-name);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.league-item::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.league-item:hover::before,
+.league-item:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Season Section */
+.season-select {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  background: #f8fafc;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1e293b;
+  transition: border 0.2s, box-shadow 0.2s;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.04);
+  min-width: 150px;
+  width: 100%;
+}
+
+
+
+.season-select:focus {
+  border-color: #dc143c;
+  box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.15);
+}
+
+.season-select:hover {
+  border-color: #dc143c;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .filter-header {
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+  }
+
+  .filter-title {
+    font-size: 16px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    padding-left: 8px;
+  }
+
+  .filter-header {
+    padding-left: 8px;
+  }
+
+  .filter-chips {
+    padding-left: 8px;
+  }
+
+  .filter-section {
+    margin-bottom: 20px;
+  }
+
+  .league-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .league-item {
+    padding: 4px;
+  }
+
+  .league-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+
+
+  .season-select {
+    min-width: 120px;
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    padding-left: 8px;
+  }
+
+  .filter-header {
+    padding-left: 8px;
+  }
+
+  .filter-chips {
+    padding-left: 8px;
+  }
+
+  .filter-chips {
+    gap: 6px;
+  }
+
+  .league-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .league-item {
+    padding: 3px;
+  }
+
+  .league-icon {
+    width: 48px;
+    height: 48px;
+  }
+} 

@@ -30,6 +30,17 @@ export const TOP_LEAGUES_IDS: number[] = [
 ];
 
 /*
+  League IDs for national competitions
+*/
+export const NATIONS_LEAGUE_IDS: number[] = [
+  1,   // World Cup
+  4,   // UEFA Europa Conference League
+  5,   // UEFA Nations League
+  9,   // Copa America
+  10   // Other national competitions
+];
+
+/*
   Helper function to check if a league ID is in top leagues
 */
 export const isTopLeague = (leagueId: number): boolean => {

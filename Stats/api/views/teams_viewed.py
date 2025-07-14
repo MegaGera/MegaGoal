@@ -19,6 +19,7 @@ class TeamsViewedAPIView(APIView):
 
     leagues = request.query_params.get('leagues', None)
     season = request.query_params.get('season', None)
+    location = request.query_params.get('location', None)
 
     if username is None:
       return Response({"error": "Username parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -44,6 +45,9 @@ class TeamsViewedAPIView(APIView):
     
     if season != None and season != '0':
       filters.append({ 'league.season': int(season) })
+
+    if location != None and location != '':
+      filters.append({ 'location': location })
 
     filters.append({ 'user.username': username });
 

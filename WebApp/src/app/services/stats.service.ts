@@ -27,20 +27,24 @@ export class StatsService {
   /*
     Method to get stats of the teams viewed from the API
   */
-  getTeamsViewed(teamSelection: number, leagues: number[], season: number): Observable<any[]> {
+  getTeamsViewed(teamSelection: number, leagues: number[], season: number, location: string = ''): Observable<any[]> {
     let params = new HttpParams()
     .set('team_selection', teamSelection)
     .set('leagues', leagues.toString())
     .set('season', season);
+    
+    if (location) {
+      params = params.set('location', location);
+    }
+    
     return this.http.get<any[]>(this.url + '/teams-viewed/', { ...this.options, params: params });
   }
 
   /*
     Method to get stats of the leagues viewed from the API
   */
-  getLeaguesViewed(username: string): Observable<any[]> {
-    let params = new HttpParams().set('username', username); 
-    return this.http.get<any[]>(this.url + '/leagues-viewed/', { ...this.options, params: params });
+  getLeaguesViewed(): Observable<any[]> {
+    return this.http.get<any[]>(this.url + '/leagues-viewed/', { ...this.options });
   }
 
   /*
@@ -56,12 +60,17 @@ export class StatsService {
   getFavouriteTeamStats(
     team_id: number,
     filterLeagueSelected: number[],
-    filterSeasonSelected: number
+    filterSeasonSelected: number,
+    location: string = ''
   ): Observable<FavouriteTeamStats> {
     let params = new HttpParams()
       .set('team_id', team_id.toString())
       .set('leagues', filterLeagueSelected.join(','))
       .set('season', filterSeasonSelected.toString());
+    
+    if (location) {
+      params = params.set('location', location);
+    }
     
     return this.http.get<FavouriteTeamStats>(this.url + '/favourite-team-stats/', { ...this.options, params: params });
   }
@@ -72,12 +81,17 @@ export class StatsService {
   getGeneralStats(
     teamSelection: number,
     filterLeagueSelected: number[],
-    filterSeasonSelected: number
+    filterSeasonSelected: number,
+    location: string = ''
   ): Observable<GeneralStats> {
     let params = new HttpParams()
       .set('team_selection', teamSelection)
       .set('leagues', filterLeagueSelected.join(','))
       .set('season', filterSeasonSelected.toString());
+    
+    if (location) {
+      params = params.set('location', location);
+    }
     
     return this.http.get<GeneralStats>(this.url + '/general-stats/', { ...this.options, params: params });
   }

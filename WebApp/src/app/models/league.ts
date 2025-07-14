@@ -44,3 +44,9 @@ interface seasons {
         odds: boolean
     }
 }
+
+export interface LeagueStats {
+    league_id: number,
+    league_name: string,
+    count: number
+}

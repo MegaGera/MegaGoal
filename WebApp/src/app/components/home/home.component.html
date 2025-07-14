@@ -14,23 +14,30 @@
     <div class="tab-pane fade show col-md-3 col-12" id="nav-stats" role="tabpanel" aria-labelledby="nav-home-tab">
       
       <!-- Left column: Stats information column -->
-      <!-- Favourite Team Card -->
-      <app-favourite-team-card 
-        [teamStats]="favouriteTeamStats" 
-        [isLoading]="!favouriteTeamLoaded">
-      </app-favourite-team-card>
+      @if (this.matchesLoaded && this.matches.length > 0) {
+        <!-- Favourite Team Card -->
+        <app-favourite-team-card 
+          [teamStats]="favouriteTeamStats" 
+          [isLoading]="!favouriteTeamLoaded">
+        </app-favourite-team-card>
 
-      <!-- General Stats Component -->
-      <app-general-stats 
-        [generalStats]="generalStats" 
-        [generalStatsLoaded]="generalStatsLoaded">
-      </app-general-stats>
+        <!-- General Stats Component -->
+        <app-general-stats 
+          [generalStats]="generalStats" 
+          [generalStatsLoaded]="generalStatsLoaded">
+        </app-general-stats>
+      }
 
     </div>
     <div class="tab-pane fade show active col-md-6 col-12" id="nav-matches" role="tabpanel" aria-labelledby="nav-profile-tab">
       
       <!-- Center column: Matches -->
       @if (this.matchesLoaded && this.matches.length > 0) {
+                  <!-- Matches Header -->
+          <div class="matches-header">
+            <h3 class="matches-title">{{ matches.length }} matches</h3>
+          </div>
+
         <!-- Iterate the matches filtered array -->
         @for (match of matchesFiltered; track $index) {
           <div class="matchCardAdapter">
@@ -43,8 +50,22 @@
           <app-pagination [elements]="this.matches" [elementsPerPage]="10" [(elementsFiltered)]="this.matchesFiltered" />
         </div>
       } @else if (this.matchesLoaded && this.matches.length == 0) {
-        <div class="noMatches">
-          <h1>No matches found</h1>
+        <div class="no-matches-container">
+          <div class="no-matches-card">
+            <div class="no-matches-icon">
+              <ng-icon name="ionFootball" size="4rem" class="football-icon"></ng-icon>
+            </div>
+            <h2 class="no-matches-title">No matches found</h2>
+            <p class="no-matches-description">
+              Try adjusting your filters or add more matches!
+            </p>
+            <div class="no-matches-actions">
+              <button class="reset-filters-btn" (click)="resetFilters()">
+                <ng-icon name="jamFilterF"></ng-icon>
+                Reset Filters
+              </button>
+            </div>
+          </div>
         </div>
       } @else if (!this.matchesLoaded) {
         <div class="spinner">
@@ -55,102 +76,20 @@
     </div>
     <div class="tab-pane fade show col-md-3 col-12" id="nav-filters" role="tabpanel" aria-labelledby="nav-contact-tab">
       
-      <!-- Right column: -->
-      <div class="filterBadge">
-        <ng-icon name="jamFilterF"></ng-icon>
-      </div>
-
-
-      <!-- Right column: Filter panel -->
-      <div class="filterPanel">
-
-        <!-- Filter team selection row -->
-        <div class="row">
-          <div class="d-contents">
-            <mat-chip class="filterPanelChip" [ngClass]="{'filterPanelChipSelected': filterPanelChipSelected == 0}"
-              (click)="changeFilterPanelChipSelected(0)">
-              All
-            </mat-chip>
-          </div>
-          <div class="d-contents">
-            <mat-chip class="filterPanelChip" [ngClass]="{'filterPanelChipSelected': filterPanelChipSelected == 1}"
-              (click)="changeFilterPanelChipSelected(1)">
-              Clubs
-            </mat-chip>
-          </div>
-          <div class="d-contents">
-            <mat-chip class="filterPanelChip" [ngClass]="{'filterPanelChipSelected': filterPanelChipSelected == 2}"
-              (click)="changeFilterPanelChipSelected(2)">
-              Nations
-            </mat-chip>
-          </div>
-        </div>
-
-        <!-- Filter league selection row -->
-        <div class="row mt-4">
-          <div class="col-3 p-1">
-            <div class="leagueFilterSelectorDiv" (click)="changeFilterLeagueSelected(39)"
-              [ngClass]="{'leagueFilterSelectorDivSelected': filterLeagueSelected.includes(39)}">
-              <img class="img-fluid p-1 imgTeamIcon" [ngSrc]="images.getRouteImageLeague(39)" alt="Premier League" width="40" height="40" priority="false">
-            </div>
-          </div>
-          <div class="col-3 p-1">
-            <div class="leagueFilterSelectorDiv" (click)="changeFilterLeagueSelected(140)"
-              [ngClass]="{'leagueFilterSelectorDivSelected': filterLeagueSelected.includes(140)}">
-              <img class="img-fluid p-1 imgTeamIcon" [ngSrc]="images.getRouteImageLeague(140)" alt="La Liga" width="40" height="40" priority="false">
-            </div>
-          </div>
-          <div class="col-3 p-1">
-            <div class="leagueFilterSelectorDiv" (click)="changeFilterLeagueSelected(141)"
-              [ngClass]="{'leagueFilterSelectorDivSelected': filterLeagueSelected.includes(141)}">
-              <img class="img-fluid p-1 imgTeamIcon" [ngSrc]="images.getRouteImageLeague(141)" alt="La Liga 2" width="40" height="40" priority="false">
-            </div>
-          </div>
-          <div class="col-3 p-1">
-            <div class="leagueFilterSelectorDiv" (click)="changeFilterLeagueSelected(2)"
-              [ngClass]="{'leagueFilterSelectorDivSelected': filterLeagueSelected.includes(2)}">
-              <img class="img-fluid p-1 imgTeamIcon" [ngSrc]="images.getRouteImageLeague(2)" alt="Champions League" width="40" height="40" priority="false">
-            </div>
-          </div>
-        </div>
-
-        <div class="row mt-4">
-
-          <!-- Season select form in Top Leagues view -->
-          <form class="formLeagues">
-            <mat-form-field class="w-100">
-              <mat-label>Season</mat-label>
-              <mat-select name="seasonSelect" [(ngModel)]="filterSeasonSelected" (selectionChange)="changeFilterSeasonSelected(filterSeasonSelected)">
-                @for (season of seasons; track $index) {
-                  <mat-option [value]="season">{{season.text}}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </form>
-
-        </div>
-
-      </div>
-
-
-      <!-- Ready to implement the filter panel with expansion hover
-
-          <mat-expansion-panel 
-            #panel
-            hideToggle="true"
-            (opened)="panelOpenState.set(true)"
-            (closed)="panelOpenState.set(false)"
-            (mouseenter)="panel.open()"
-            (mouseleave)="panel.close()"
-            class="filterPanelExpanded"
-          >
-            <mat-expansion-panel-header>
-              <mat-panel-title>                   
-                <ng-icon name="jamFilterF"></ng-icon>
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-            <p>I'm visible because I am open</p>
-          </mat-expansion-panel> -->
+      <!-- Filters Component -->
+      <app-filters-home
+        [filterPanelChipSelected]="filterPanelChipSelected"
+        [filterLeagueSelected]="filterLeagueSelected"
+        [filterSeasonSelected]="filterSeasonSelected"
+        [filterLocationSelected]="filterLocationSelected"
+        [seasons]="seasons"
+        [locations]="locations"
+        [leaguesViewed]="leaguesViewed"
+        (filterPanelChipSelectedChange)="changeFilterPanelChipSelected($event)"
+        (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"
+        (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
+        (filterLocationSelectedChange)="changeFilterLocationSelected($event)">
+      </app-filters-home>
 
     </div>
   </div>
