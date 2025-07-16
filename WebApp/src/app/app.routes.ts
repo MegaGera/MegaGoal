@@ -6,12 +6,14 @@ import { HomeComponent } from './components/home/home.component';
 import { LocationsComponent } from './components/locations/locations.component';
 import { AdminComponent } from './components/admin/admin.component';
 
+import { adminGuard } from './guards/admin.guard';
+
 export const routes: Routes = [
     { path: 'home', component: HomeComponent },
     { path: 'leagues', component: LeagueSelectorComponent },
     { path: 'leagues/:id', component: LeagueDetailComponent },
     { path: 'team', component: TeamComponent },
     { path: 'locations', component: LocationsComponent },
-    { path: 'admin', component: AdminComponent },
+    { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
     { path: '**', redirectTo: '/home' }
 ];

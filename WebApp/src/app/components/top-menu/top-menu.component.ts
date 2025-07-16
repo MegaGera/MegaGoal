@@ -1,7 +1,8 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { jamUserCircle, jamEyeF } from '@ng-icons/jam-icons';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-top-menu',
@@ -13,8 +14,17 @@ import { jamUserCircle, jamEyeF } from '@ng-icons/jam-icons';
     size: '2.5em',
   }), provideIcons({ jamUserCircle, jamEyeF })]
 })
-export class TopMenuComponent {
+export class TopMenuComponent implements OnInit {
   isUserMenuOpen = false;
+  isAdmin = false;
+
+  constructor(private authService: AuthService) {}
+
+  ngOnInit() {
+    this.authService.isAdmin().subscribe(isAdmin => {
+      this.isAdmin = isAdmin;
+    });
+  }
 
   toggleUserMenu(): void {
     this.isUserMenuOpen = !this.isUserMenuOpen;

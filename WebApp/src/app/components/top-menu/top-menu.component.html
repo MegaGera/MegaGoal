@@ -28,9 +28,11 @@
                 <a class="user-panel-link" routerLink="/locations" routerLinkActive="active">
                     <span class="user-panel-text">Locations</span>
                 </a>
-                <a class="user-panel-link" routerLink="/admin" routerLinkActive="active">
-                    <span class="user-panel-text">Admin</span>
-                </a>
+                @if (isAdmin) {
+                    <a class="user-panel-link" routerLink="/admin" routerLinkActive="active">
+                        <span class="user-panel-text">Admin</span>
+                    </a>
+                }
             </div>
         </div>
     </div>
