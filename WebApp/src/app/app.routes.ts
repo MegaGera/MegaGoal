@@ -5,6 +5,7 @@ import { TeamComponent } from './components/team/team.component';
 import { HomeComponent } from './components/home/home.component';
 import { LocationsComponent } from './components/locations/locations.component';
 import { AdminComponent } from './components/admin/admin.component';
+import { FeedbackComponent } from './components/feedback/feedback.component';
 
 import { adminGuard } from './guards/admin.guard';
 
@@ -15,5 +16,6 @@ export const routes: Routes = [
     { path: 'team', component: TeamComponent },
     { path: 'locations', component: LocationsComponent },
     { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
+    { path: 'feedback', component: FeedbackComponent },
     { path: '**', redirectTo: '/home' }
 ];

@@ -13,6 +13,7 @@ import { RealMatch } from '../models/realMatch';
 import { environment } from '../../environments/environment';
 import { LeaguesSettings } from '../models/leaguesSettings';
 import { MatchRequest } from '../models/matchRequest';
+import { UserFeedback } from '../models/user_feedback';
 
 @Injectable({
   providedIn: 'root'
@@ -250,5 +251,12 @@ export class MegaGoalService {
       daily_update: daily_update
     }
     return this.http.patch<number>(this.url + '/admin/leagues_settings/daily_update', body, this.options);
+  }
+
+  /*
+    Method to submit user feedback
+  */
+  submitFeedback(feedback: UserFeedback): Observable<UserFeedback> {
+    return this.http.post<UserFeedback>(this.url + '/feedback/', feedback, this.options);
   }
 }

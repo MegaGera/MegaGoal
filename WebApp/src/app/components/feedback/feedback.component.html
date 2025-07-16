@@ -1,0 +1,45 @@
+<div class="feedback-container fade-in">
+  <h1 class="section-title">Feedback & Suggestions</h1>
+  <p class="section-description">
+    Help us improve MegaGoal! Report bugs, vote for new features, or share your ideas below. Your feedback is valuable during the testing phase.
+  </p>
+
+  <form [formGroup]="feedbackForm" (ngSubmit)="submit()" *ngIf="!submitted" class="feedback-form">
+    <!-- Bug Report -->
+    <div class="card feedback-section">
+      <h2 class="section-title">🐞 Bug Report</h2>
+      <textarea class="form-control" formControlName="bug" rows="3" placeholder="Describe any bug or issue you've found..."></textarea>
+    </div>
+
+    <!-- Vote Next Features -->
+    <div class="card feedback-section">
+      <h2 class="section-title">🗳️ Vote Next Functionalities</h2>
+      <div class="feature-options">
+        <label *ngFor="let option of featureOptions" class="feature-option">
+          <input type="checkbox" [checked]="feedbackForm.value.voted.includes(option)" (change)="onVoteChange(option, $event)">
+          {{ option }}
+        </label>
+      </div>
+    </div>
+
+    <!-- Propose New Feature -->
+    <div class="card feedback-section">
+      <h2 class="section-title">💡 Propose a New Feature</h2>
+      <textarea class="form-control" formControlName="proposal" rows="2" placeholder="Suggest a new feature or improvement..."></textarea>
+    </div>
+
+    <!-- General Feedback -->
+    <div class="card feedback-section">
+      <h2 class="section-title">📝 General Feedback</h2>
+      <textarea class="form-control" formControlName="general" rows="2" placeholder="Any other comments or feedback?"></textarea>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Submit Feedback</button>
+  </form>
+
+  <div *ngIf="submitted" class="thank-you-message card">
+    <h2 class="section-title">Thank you for your feedback! 🙏</h2>
+    <p class="section-description">We appreciate your help in making MegaGoal better. Your input will be reviewed by our team.</p>
+    <button class="btn btn-outline-primary" (click)="submitted = false">Send More Feedback</button>
+  </div>
+</div> 

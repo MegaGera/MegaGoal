@@ -1,0 +1,157 @@
+/* Feedback Page Styling - Consistent with Locations/Admin */
+
+.feedback-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 16px 64px 16px;
+  min-height: 100vh;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a202c;
+  margin-bottom: 12px;
+  margin-top: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-description {
+  font-size: 18px;
+  color: #4a5568;
+  margin-bottom: 32px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.card.feedback-section {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #e5e7eb;
+  padding: 24px 20px 20px 20px;
+  margin-bottom: 0;
+  transition: all 0.3s ease;
+}
+
+.card.feedback-section:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+  border-color: #dc143c;
+}
+
+.form-control {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1f2937;
+  background: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  margin-top: 8px;
+  margin-bottom: 0;
+  resize: vertical;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #dc143c;
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+.feature-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.feature-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #374151;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 8px 16px;
+  border: 1.5px solid #e5e7eb;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.feature-option input[type="checkbox"] {
+  accent-color: #dc143c;
+  width: 18px;
+  height: 18px;
+}
+
+.feature-option:hover {
+  border-color: #dc143c;
+}
+
+.btn {
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 16px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #dc143c, #ff6b6b);
+  color: white;
+  border-color: #dc143c;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #b91c3c, #e53e3e);
+  border-color: #b91c3c;
+}
+
+.btn-outline-primary {
+  background: transparent;
+  color: #dc143c;
+  border-color: #dc143c;
+}
+
+.btn-outline-primary:hover {
+  background: #dc143c;
+  color: white;
+}
+
+.thank-you-message {
+  background: #f9fafb;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+  border: 2px solid #e5e7eb;
+  padding: 32px 24px;
+  text-align: center;
+  margin-top: 48px;
+} 
