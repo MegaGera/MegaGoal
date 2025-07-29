@@ -77,20 +77,21 @@
     <div class="tab-pane fade show col-md-3 col-12" id="nav-filters" role="tabpanel" aria-labelledby="nav-contact-tab">
       
       <!-- Filters Component -->
-      <app-filters-home
-        [filterPanelChipSelected]="filterPanelChipSelected"
-        [filterLeagueSelected]="filterLeagueSelected"
-        [filterSeasonSelected]="filterSeasonSelected"
-        [filterLocationSelected]="filterLocationSelected"
-        [seasons]="seasons"
-        [locations]="locations"
-        [leaguesViewed]="leaguesViewed"
-        (filterPanelChipSelectedChange)="changeFilterPanelChipSelected($event)"
-        (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"
-        (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
-        (filterLocationSelectedChange)="changeFilterLocationSelected($event)">
-      </app-filters-home>
-
+      @if (this.matchesLoaded && this.matches.length > 0) {
+        <app-filters-home
+          [filterPanelChipSelected]="filterPanelChipSelected"
+          [filterLeagueSelected]="filterLeagueSelected"
+          [filterSeasonSelected]="filterSeasonSelected"
+          [filterLocationSelected]="filterLocationSelected"
+          [seasons]="seasons"
+          [locations]="locations"
+          [leaguesViewed]="leaguesViewed"
+          (filterPanelChipSelectedChange)="changeFilterPanelChipSelected($event)"
+          (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"
+          (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
+          (filterLocationSelectedChange)="changeFilterLocationSelected($event)">
+        </app-filters-home>
+      }
     </div>
   </div>
 

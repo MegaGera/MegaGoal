@@ -22,6 +22,14 @@ class LeaguesViewedAPIView(APIView):
     collection_matches = settings.MONGO_DB['matches']
     df = pd.DataFrame(list(collection_matches.find( { "user.username": username } )))
     
+    # Check if DataFrame is empty (no matches found)
+    if df.empty:
+        return Response([], status=status.HTTP_200_OK)
+    
+    # Check if 'league' column exists
+    if 'league' not in df.columns:
+        return Response([], status=status.HTTP_200_OK)
+    
     # Extract the league ID and name
     leagues = df['league'].apply(lambda x: (x['id'], x['name']))
 
