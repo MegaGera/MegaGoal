@@ -88,6 +88,40 @@
   box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
 }
 
+/* Disabled form controls styling */
+.form-select:disabled, .form-control:disabled {
+  background-color: #f8f9fa;
+  border-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+.form-select:disabled:focus, .form-control:disabled:focus {
+  border-color: #e9ecef;
+  box-shadow: none;
+}
+
+/* Active filter styling - when filters are selected (not "All" options) */
+.form-select.filter-active {
+  background: linear-gradient(135deg, #fff5f5, #fed7d7);
+  border-color: #dc143c;
+  box-shadow: 0 2px 4px rgba(220, 20, 60, 0.15);
+}
+
+.form-select.filter-active:focus {
+  border-color: #dc143c;
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.2);
+}
+
+/* Hover effect for active filters */
+.form-select.filter-active:hover {
+  background: linear-gradient(135deg, #fed7d7, #feb2b2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 20, 60, 0.2);
+}
+
 .form-select-sm, .form-control-sm {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;

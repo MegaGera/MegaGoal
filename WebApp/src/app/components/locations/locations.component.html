@@ -84,12 +84,15 @@
           <div class="mb-3">
             <div class="d-flex align-items-center mb-2">
               <ng-icon name="jamFilter" class="me-2"></ng-icon>
-              <strong>Filters:</strong>
+              <strong>Filters (select 2 or more filters):</strong>
               <button class="btn btn-sm btn-outline-secondary ms-auto" (click)="clearFilters()">Clear</button>
             </div>
             <div class="row g-2">
               <div class="col-6">
-                <select class="form-select form-select-sm" [(ngModel)]="selectedLeague" (change)="applyFilters()">
+                <select class="form-select form-select-sm" 
+                        [class.filter-active]="selectedLeague !== null"
+                        [(ngModel)]="selectedLeague" 
+                        (change)="applyFilters()">
                   <option [ngValue]="null">All Leagues</option>
                   @for (league of leagues; track league.league_id) {
                     <option [ngValue]="league">{{league.league_name}}</option>
@@ -97,7 +100,10 @@
                 </select>
               </div>
               <div class="col-6">
-                <select class="form-select form-select-sm" [(ngModel)]="selectedTeam_1" (change)="applyFilters()">
+                <select class="form-select form-select-sm" 
+                        [class.filter-active]="selectedTeam_1 !== null"
+                        [(ngModel)]="selectedTeam_1" 
+                        (change)="applyFilters()">
                   <option [ngValue]="null">All Teams</option>
                   @for (team of filteredTeams; track team.id) {
                     <option [ngValue]="team">{{team.name}}</option>
@@ -105,15 +111,23 @@
                 </select>
               </div>
               <div class="col-6">
-                <select class="form-select form-select-sm" [(ngModel)]="selectedSeason" (change)="applyFilters()">
+                <select class="form-select form-select-sm" 
+                        [class.filter-active]="selectedSeason !== null"
+                        [(ngModel)]="selectedSeason" 
+                        (change)="applyFilters()">
+                  <option [ngValue]="null">All Seasons</option>
                   @for (season of seasons; track season.id) {
                     <option [ngValue]="season">{{season.text}}</option>
                   }
                 </select>
               </div>
               <div class="col-6">
-                <select class="form-select form-select-sm" [(ngModel)]="selectedTeam_2" (change)="applyFilters()">
-                  <option [ngValue]="null">All Teams</option>
+                <select class="form-select form-select-sm" 
+                        [class.filter-active]="selectedTeam_2 !== null"
+                        [(ngModel)]="selectedTeam_2" 
+                        (change)="applyFilters()" 
+                        [disabled]="!selectedTeam_1">
+                  <option [ngValue]="null">{{selectedTeam_1 ? 'Rival Team' : 'Select Team First'}}</option>
                   @for (team of filteredTeams; track team.id) {
                     <option [ngValue]="team">{{team.name}}</option>
                   }

@@ -166,7 +166,7 @@ export class LocationsComponent {
         text: `${year}-${year + 1}`
       }));
 
-    this.selectedSeason = this.seasons[0];
+    //this.selectedSeason = this.seasons[0];
   }
 
   loadAvailableRealMatches(league_id?: number, season?: number, team_1_id?: number, team_2_id?: number) {    
@@ -240,13 +240,14 @@ export class LocationsComponent {
       );
     } else {
       this.availableRealMatches = [];
+      this.filteredRealMatches = [];
       this.loadingAvailableRealMatches = false;
     }
   }
 
   filterTeamsByLeagueAndSeason() {
-    if (!this.selectedLeague || !this.selectedSeason) {
-      // If no league or season selected, show all teams
+    if (!this.selectedLeague && !this.selectedSeason) {
+      // If no league and no season selected, show all teams
       this.filteredTeams = [...this.teams];
       return;
     }
@@ -258,11 +259,24 @@ export class LocationsComponent {
         return false;
       }
 
-      // Check if the team has played in the selected league and season
+      // Check if the team matches the selected filters
       return team.seasons.some(season => {
-        const seasonMatches = season.league === this.selectedLeague!.league_id.toString() && 
-                             season.season === this.selectedSeason!.id.toString();
-        return seasonMatches;
+        let leagueMatches = true;
+        let seasonMatches = true;
+
+        // Check league filter if selected
+        if (this.selectedLeague) {
+          leagueMatches = season.league === this.selectedLeague.league_id.toString();
+        }
+
+        // Check season filter if selected
+        if (this.selectedSeason) {
+          seasonMatches = season.season === this.selectedSeason.id.toString();
+        }
+
+        // Return true if both conditions are met (when both filters are applied)
+        // or if the single filter condition is met (when only one filter is applied)
+        return leagueMatches && seasonMatches;
       });
     });
 
@@ -271,6 +285,11 @@ export class LocationsComponent {
       this.selectedTeam_1 = null;
     }
     if (this.selectedTeam_2 && !this.filteredTeams.find(t => t.id === this.selectedTeam_2!.id)) {
+      this.selectedTeam_2 = null;
+    }
+    
+    // Reset rival team if main team is unselected
+    if (!this.selectedTeam_1) {
       this.selectedTeam_2 = null;
     }
   }
@@ -344,7 +363,7 @@ export class LocationsComponent {
     this.selectedLeague = null;
     this.selectedTeam_1 = null;
     this.selectedTeam_2 = null;
-    this.selectedSeason = this.seasons[0];
+    this.selectedSeason = null;
     this.filteredTeams = [...this.teams];
     this.applyFilters();
   }
