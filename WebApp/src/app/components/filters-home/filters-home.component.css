@@ -294,4 +294,37 @@
     width: 48px;
     height: 48px;
   }
+}
+
+/* Reset Filters Button */
+.reset-filters-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: linear-gradient(135deg, #dc143c, #ff6b6b);
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.2);
+}
+
+.reset-filters-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+  background: linear-gradient(135deg, #c41230, #ff5252);
+}
+
+.reset-filters-btn:active {
+  transform: translateY(0);
+}
+
+.reset-filters-btn ng-icon {
+  --ng-icon__size: 1rem;
 } 

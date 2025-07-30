@@ -54,6 +54,7 @@ export class HomeComponent implements OnInit {
   matchesFiltered: Match[] = [];
   leaguesViewed: LeagueStats[] = [];
   locations: Location[] = [];
+  locationsFiltered: Location[] = [];
   stats: { teamsViewed: any[] } = { teamsViewed: []};
   statsLoaded: boolean = false;
   favouriteTeamStats: FavouriteTeamStats | null = null;
@@ -72,27 +73,17 @@ export class HomeComponent implements OnInit {
   filterLocationSelected: string = ''; // Location filter
 
   /* Seasons */
-  seasons: SeasonInfo[] = 
-    [{id: 0, text: "All time"}, 
-    {id: 2024, text: "2024-2025"}, 
-    {id: 2023, text: "2023-2024"}, 
-    {id: 2022, text: "2022-2023"}, 
-    {id: 2021 ,text: "2021-2022"}, 
-    {id: 2020, text: "2020-2021"}, 
-    {id: 2019, text: "2019-2020"}, 
-    {id: 2018, text: "2018-2019"}, 
-    {id: 2017, text: "2017-2018"}, 
-    {id: 2016, text: "2016-2017"}, 
-    {id: 2015, text: "2015-2016"}, 
-    {id: 2014, text: "2014-2015"}]
+  seasons: SeasonInfo[] = [{id: 0, text: "All time"}];
   seasonsFiltered: SeasonInfo[] = [];
   filterSeasonSelected!: SeasonInfo;
+  
+  /* Dynamic Filter Arrays */
+  leaguesFiltered: LeagueStats[] = [];
 
   constructor(private megagoal: MegaGoalService, public images: ImagesService, private changeDetectorRef: ChangeDetectorRef,
     private statsService: StatsService) { }
 
   ngOnInit(): void {
-    this.filterSeasonSelected = this.seasons[0];
     this.getAllMatches();
     this.getLocations();
     this.getUserStats();
@@ -108,15 +99,173 @@ export class HomeComponent implements OnInit {
       this.matchesOriginal.sort(function(x, y){
         return y.fixture.timestamp - x.fixture.timestamp;
       })
+      this.populateSeasonsFromMatches();
       this.changeDetectorRef.detectChanges();
       this.matchesLoaded = true;
       this.filterMatches();
     })
   }
 
+  /*
+    Populate seasons array dynamically based on actual seasons in matches
+  */
+  private populateSeasonsFromMatches() {
+    // Get unique seasons from matches
+    const uniqueSeasons = [...new Set(this.matchesOriginal.map(match => match.league.season))];
+    
+    // Sort seasons in descending order (newest first)
+    uniqueSeasons.sort((a, b) => b - a);
+    
+    // Create season objects with proper text formatting
+    const seasonObjects: SeasonInfo[] = uniqueSeasons.map(season => ({
+      id: season,
+      text: `${season}-${season + 1}`
+    }));
+    
+    // Update seasons array with "All time" option first, then the actual seasons
+    this.seasons = [
+      {id: 0, text: "All time"},
+      ...seasonObjects
+    ];
+    
+    // Set the initial selected season to "All time" (first option)
+    this.filterSeasonSelected = this.seasons[0];
+    
+    // Initialize seasonsFiltered with all seasons
+    this.seasonsFiltered = [...this.seasons];
+  }
+
+  /*
+    Update filtered arrays based on current filter selections
+  */
+  private updateFilteredArrays() {
+    // Start with all matches
+    let filteredMatches = this.matchesOriginal;
+
+    // Apply chip filter (All/Club/National)
+    if (this.filterPanelChipSelected == 1) {
+      // Show only club leagues (exclude national leagues)
+      filteredMatches = filteredMatches.filter(match => !NATIONS_LEAGUE_IDS.includes(match.league.id));
+    } else if (this.filterPanelChipSelected == 2) {
+      // Show only national leagues
+      filteredMatches = filteredMatches.filter(match => NATIONS_LEAGUE_IDS.includes(match.league.id));
+    }
+
+    // For seasons: show all seasons available with current league/location selections (excluding current season filter)
+    let seasonsFilteredMatches = this.matchesOriginal;
+    if (this.filterPanelChipSelected == 1) {
+      seasonsFilteredMatches = seasonsFilteredMatches.filter(match => !NATIONS_LEAGUE_IDS.includes(match.league.id));
+    } else if (this.filterPanelChipSelected == 2) {
+      seasonsFilteredMatches = seasonsFilteredMatches.filter(match => NATIONS_LEAGUE_IDS.includes(match.league.id));
+    }
+    
+    // Apply league filter for seasons (but not season filter)
+    if (this.filterLeagueSelected.length > 0) {
+      seasonsFilteredMatches = seasonsFilteredMatches.filter(match => 
+        this.filterLeagueSelected.includes(match.league.id)
+      );
+    }
+    
+    // Apply location filter for seasons (but not season filter)
+    if (this.filterLocationSelected) {
+      seasonsFilteredMatches = seasonsFilteredMatches.filter(match => 
+        match.location === this.filterLocationSelected
+      );
+    }
+    
+    // Update seasons filtered array
+    const availableSeasonIds = [...new Set(seasonsFilteredMatches.map(match => match.league.season))];
+    this.seasonsFiltered = this.seasons.filter(season => 
+      season.id === 0 || availableSeasonIds.includes(season.id)
+    );
+
+    // For leagues: show all leagues available with current season/location selections
+    let leaguesFilteredMatches = this.matchesOriginal;
+    if (this.filterPanelChipSelected == 1) {
+      leaguesFilteredMatches = leaguesFilteredMatches.filter(match => !NATIONS_LEAGUE_IDS.includes(match.league.id));
+    } else if (this.filterPanelChipSelected == 2) {
+      leaguesFilteredMatches = leaguesFilteredMatches.filter(match => NATIONS_LEAGUE_IDS.includes(match.league.id));
+    }
+    
+    // Apply season filter for leagues
+    if (this.filterSeasonSelected && this.filterSeasonSelected.id != 0) {
+      leaguesFilteredMatches = leaguesFilteredMatches.filter(match => 
+        match.league.season == this.filterSeasonSelected.id
+      );
+    }
+    
+    // Apply location filter for leagues
+    if (this.filterLocationSelected) {
+      leaguesFilteredMatches = leaguesFilteredMatches.filter(match => 
+        match.location === this.filterLocationSelected
+      );
+    }
+    
+    // Update leagues filtered array
+    const availableLeagueIds = [...new Set(leaguesFilteredMatches.map(match => match.league.id))];
+    this.leaguesFiltered = this.leaguesViewed.filter(league => 
+      availableLeagueIds.includes(league.league_id)
+    );
+
+    // For locations: show all locations available with current season/league selections
+    let locationsFilteredMatches = this.matchesOriginal;
+    if (this.filterPanelChipSelected == 1) {
+      locationsFilteredMatches = locationsFilteredMatches.filter(match => !NATIONS_LEAGUE_IDS.includes(match.league.id));
+    } else if (this.filterPanelChipSelected == 2) {
+      locationsFilteredMatches = locationsFilteredMatches.filter(match => NATIONS_LEAGUE_IDS.includes(match.league.id));
+    }
+    
+    // Apply season filter for locations
+    if (this.filterSeasonSelected && this.filterSeasonSelected.id != 0) {
+      locationsFilteredMatches = locationsFilteredMatches.filter(match => 
+        match.league.season == this.filterSeasonSelected.id
+      );
+    }
+    
+    // Apply league filter for locations
+    if (this.filterLeagueSelected.length > 0) {
+      locationsFilteredMatches = locationsFilteredMatches.filter(match => 
+        this.filterLeagueSelected.includes(match.league.id)
+      );
+    }
+    
+    // Update locations filtered array
+    const availableLocationIds = [...new Set(locationsFilteredMatches.map(match => match.location))];
+    this.locationsFiltered = this.locations.filter(location => 
+      availableLocationIds.includes(location.id)
+    );
+
+    // Clean up invalid selections
+    this.cleanupInvalidSelections();
+  }
+
+  /*
+    Remove invalid selections that are no longer available
+  */
+  private cleanupInvalidSelections() {
+    // Clean up invalid league selections
+    const availableLeagueIds = this.leaguesFiltered.map(league => league.league_id);
+    this.filterLeagueSelected = this.filterLeagueSelected.filter(leagueId => 
+      availableLeagueIds.includes(leagueId)
+    );
+
+    // Clean up invalid location selection
+    const availableLocationIds = this.locationsFiltered.map(location => location.id);
+    if (this.filterLocationSelected && !availableLocationIds.includes(this.filterLocationSelected)) {
+      this.filterLocationSelected = '';
+    }
+
+    // Clean up invalid season selection
+    const availableSeasonIds = this.seasonsFiltered.map(season => season.id);
+    if (this.filterSeasonSelected && !availableSeasonIds.includes(this.filterSeasonSelected.id)) {
+      this.filterSeasonSelected = this.seasonsFiltered[0] || this.seasons[0];
+    }
+  }
+
   getLocations() {
     this.megagoal.getLocationsCounts().subscribe(result => {
       this.locations = <Location[]>result;
+      this.updateFilteredArrays();
     })
   }
 
@@ -132,6 +281,7 @@ export class HomeComponent implements OnInit {
   getLeaguesStats() {
     this.statsService.getLeaguesViewed().subscribe(result => {
       this.leaguesViewed = result;
+      this.updateFilteredArrays();
     })
   }
 
@@ -222,21 +372,25 @@ export class HomeComponent implements OnInit {
 
   changeFilterPanelChipSelected(chip: number) {
     this.filterPanelChipSelected = chip;
+    this.updateFilteredArrays();
     this.filterMatches();
   }
 
   changeFilterLeagueSelected(leagues: number[]) {
     this.filterLeagueSelected = leagues;
+    this.updateFilteredArrays();
     this.filterMatches();
   }
 
   changeFilterSeasonSelected(season: SeasonInfo) {
     this.filterSeasonSelected = season;
+    this.updateFilteredArrays();
     this.filterMatches();
   }
 
   changeFilterLocationSelected(location: string) {
     this.filterLocationSelected = location;
+    this.updateFilteredArrays();
     this.filterMatches();
   }
 
@@ -252,6 +406,7 @@ export class HomeComponent implements OnInit {
     this.filterLeagueSelected = []; // No leagues selected
     this.filterSeasonSelected = this.seasons[0]; // All time
     this.filterLocationSelected = ''; // All locations
+    this.updateFilteredArrays();
     this.filterMatches();
   }
 

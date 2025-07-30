@@ -173,6 +173,49 @@
   --ng-icon__size: 1rem;
 }
 
+/* No Stats Available Message */
+.no-stats-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  padding: 20px;
+}
+
+.no-stats-card {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(220, 20, 60, 0.1);
+  max-width: 400px;
+  width: 100%;
+}
+
+.no-stats-icon {
+  margin-bottom: 20px;
+}
+
+.filter-icon {
+  color: #dc143c;
+  opacity: 0.7;
+}
+
+.no-stats-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 12px 0;
+}
+
+.no-stats-description {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* Legacy class for backward compatibility */
 .noMatches {
   text-align: center;

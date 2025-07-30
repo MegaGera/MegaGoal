@@ -40,29 +40,17 @@ export class FiltersHomeComponent {
   @Output() filterLeagueSelectedChange = new EventEmitter<number[]>();
   @Output() filterSeasonSelectedChange = new EventEmitter<SeasonInfo>();
   @Output() filterLocationSelectedChange = new EventEmitter<string>();
+  @Output() resetFiltersChange = new EventEmitter<void>();
 
   showAllLeagues = false;
 
   constructor(public images: ImagesService) {}
 
-  // Computed property to filter leagues based on selected chip and reorder by selection
+  // Computed property to reorder leagues by selection (leagues are already filtered by parent)
   get filteredLeagues(): LeagueStats[] {
-    let filteredLeagues: LeagueStats[] = [];
-    
-    if (this.filterPanelChipSelected === 0) {
-      // Show all leagues
-      filteredLeagues = this.leaguesViewed;
-    } else if (this.filterPanelChipSelected === 1) {
-      // Show only club leagues (exclude national leagues)
-      filteredLeagues = this.leaguesViewed.filter(league => !NATIONS_LEAGUE_IDS.includes(league.league_id));
-    } else if (this.filterPanelChipSelected === 2) {
-      // Show only national leagues
-      filteredLeagues = this.leaguesViewed.filter(league => NATIONS_LEAGUE_IDS.includes(league.league_id));
-    }
-    
     // Reorder: selected leagues first, then non-selected leagues
-    const selectedLeagues = filteredLeagues.filter(league => this.filterLeagueSelected.includes(league.league_id));
-    const nonSelectedLeagues = filteredLeagues.filter(league => !this.filterLeagueSelected.includes(league.league_id));
+    const selectedLeagues = this.leaguesViewed.filter(league => this.filterLeagueSelected.includes(league.league_id));
+    const nonSelectedLeagues = this.leaguesViewed.filter(league => !this.filterLeagueSelected.includes(league.league_id));
     
     const reorderedLeagues = [...selectedLeagues, ...nonSelectedLeagues];
     
@@ -98,5 +86,9 @@ export class FiltersHomeComponent {
 
   toggleLeaguesVisibility() {
     this.showAllLeagues = !this.showAllLeagues;
+  }
+
+  resetFilters() {
+    this.resetFiltersChange.emit();
   }
 } 

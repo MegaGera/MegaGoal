@@ -14,18 +14,33 @@
     <div class="tab-pane fade show col-md-3 col-12" id="nav-stats" role="tabpanel" aria-labelledby="nav-home-tab">
       
       <!-- Left column: Stats information column -->
-      @if (this.matchesLoaded && this.matches.length > 0) {
-        <!-- Favourite Team Card -->
-        <app-favourite-team-card 
-          [teamStats]="favouriteTeamStats" 
-          [isLoading]="!favouriteTeamLoaded">
-        </app-favourite-team-card>
+      @if (this.matchesLoaded && this.matchesOriginal.length > 0) {
+        @if (this.matches.length > 0) {
+          <!-- Favourite Team Card -->
+          <app-favourite-team-card 
+            [teamStats]="favouriteTeamStats" 
+            [isLoading]="!favouriteTeamLoaded">
+          </app-favourite-team-card>
 
-        <!-- General Stats Component -->
-        <app-general-stats 
-          [generalStats]="generalStats" 
-          [generalStatsLoaded]="generalStatsLoaded">
-        </app-general-stats>
+          <!-- General Stats Component -->
+          <app-general-stats 
+            [generalStats]="generalStats" 
+            [generalStatsLoaded]="generalStatsLoaded">
+          </app-general-stats>
+        } @else {
+          <!-- No results message for stats column -->
+          <div class="no-stats-container">
+            <div class="no-stats-card">
+              <div class="no-stats-icon">
+                <ng-icon name="jamFilterF" size="3rem" class="filter-icon"></ng-icon>
+              </div>
+              <h3 class="no-stats-title">No stats available</h3>
+              <p class="no-stats-description">
+                No matches found with current filters. Try adjusting your selection to see statistics.
+              </p>
+            </div>
+          </div>
+        }
       }
 
     </div>
@@ -77,19 +92,20 @@
     <div class="tab-pane fade show col-md-3 col-12" id="nav-filters" role="tabpanel" aria-labelledby="nav-contact-tab">
       
       <!-- Filters Component -->
-      @if (this.matchesLoaded && this.matches.length > 0) {
+      @if (this.matchesLoaded && this.matchesOriginal.length > 0) {
         <app-filters-home
           [filterPanelChipSelected]="filterPanelChipSelected"
           [filterLeagueSelected]="filterLeagueSelected"
           [filterSeasonSelected]="filterSeasonSelected"
           [filterLocationSelected]="filterLocationSelected"
-          [seasons]="seasons"
-          [locations]="locations"
-          [leaguesViewed]="leaguesViewed"
+          [seasons]="seasonsFiltered"
+          [locations]="locationsFiltered"
+          [leaguesViewed]="leaguesFiltered"
           (filterPanelChipSelectedChange)="changeFilterPanelChipSelected($event)"
           (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"
           (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
-          (filterLocationSelectedChange)="changeFilterLocationSelected($event)">
+          (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
+          (resetFiltersChange)="resetFilters()">
         </app-filters-home>
       }
     </div>
