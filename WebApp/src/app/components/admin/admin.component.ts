@@ -36,6 +36,11 @@ export class AdminComponent {
 
   shortSeasonsList: number[] = [2024, 2025];
 
+  // Add new league properties
+  selectedNewLeague: League | null = null;
+  isCreatingLeagueSetting: boolean = false;
+  leagueSearchText: string = '';
+
   constructor(
     private megagoal: MegaGoalService,
     public images: ImagesService,
@@ -95,12 +100,16 @@ export class AdminComponent {
     this.selectedSeason = league.season;
     this.selectedMatchesUpdateSeason = league.season;
     this.selectedTeamsUpdateSeason = league.season;
+    this.selectedNewLeague = null;
+    this.leagueSearchText = '';
     this.showSettingsModal = true;
   }
 
   closeSettingsModal(): void {
     this.showSettingsModal = false;
     this.selectedLeague = null;
+    this.selectedNewLeague = null;
+    this.leagueSearchText = '';
   }
 
   changeIsActive(league_id: number, is_active: boolean) {
@@ -155,8 +164,38 @@ export class AdminComponent {
     return this.selectedLeague.available_seasons;
   }
 
+  get availableLeaguesForAdding(): League[] {
+    // Filter out leagues that already have settings
+    const existingLeagueIds = this.leaguesSettings.map(ls => ls.league_id);
+    const available = this.leagues.filter(league => !existingLeagueIds.includes(league.league.id));
+    console.log('Available leagues for adding:', available.length, 'Total leagues:', this.leagues.length, 'Existing settings:', this.leaguesSettings.length);
+    return available;
+  }
+
+  get filteredLeaguesForAdding(): League[] {
+    if (!this.leagueSearchText.trim()) {
+      console.log('No search text, returning all available leagues:', this.availableLeaguesForAdding.length);
+      return this.availableLeaguesForAdding;
+    }
+    
+    const searchText = this.leagueSearchText.toLowerCase().trim();
+    const filtered = this.availableLeaguesForAdding.filter(league => 
+      league.league.id.toString().includes(searchText) ||
+      league.league.name.toLowerCase().includes(searchText) ||
+      league.country.name.toLowerCase().includes(searchText)
+    );
+    console.log('Filtered leagues:', filtered.length, 'for search:', searchText);
+    return filtered;
+  }
+
   openGeneralModal(): void {
     this.showGeneralModal = true;
+    // Ensure leagues are loaded for the dropdown
+    if (this.leagues.length === 0) {
+      this.getLeagues();
+    }
+    // Reset search text to show all leagues
+    this.leagueSearchText = '';
   }
 
   closeGeneralModal(): void {
@@ -194,6 +233,53 @@ export class AdminComponent {
       },
       error: () => { this.isUpdateTeamsLoading = false; }
     });
+  }
+
+  // Add new league methods
+  createLeagueSetting(): void {
+    console.log('Creating league setting for:', this.selectedNewLeague);
+    if (!this.selectedNewLeague) return;
+    
+    // Ensure we have a valid league object with the required properties
+    if (!this.selectedNewLeague.league || !this.selectedNewLeague.league.id || !this.selectedNewLeague.league.name) {
+      console.error('Invalid league object:', this.selectedNewLeague);
+      return;
+    }
+    
+    this.isCreatingLeagueSetting = true;
+    this.megagoal.createLeagueSetting(
+      this.selectedNewLeague.league.id, 
+      this.selectedNewLeague.league.name
+    ).subscribe({
+      next: () => {
+        this.isCreatingLeagueSetting = false;
+        this.selectedNewLeague = null;
+        this.leagueSearchText = '';
+        // Refresh the leagues settings to show the new one
+        this.getLeaguesSettings();
+      },
+      error: () => {
+        this.isCreatingLeagueSetting = false;
+      }
+    });
+  }
+
+  filterLeagues(): void {
+    // Reset selection if the current selection is no longer in filtered results
+    if (this.selectedNewLeague && !this.filteredLeaguesForAdding.includes(this.selectedNewLeague)) {
+      this.selectedNewLeague = null;
+    }
+  }
+
+  onLeagueSelectionChange(): void {
+    // This method is called when a league is selected from the dropdown
+    // The selectedNewLeague is automatically set by ngModel
+    console.log('Selected league:', this.selectedNewLeague);
+    if (this.selectedNewLeague) {
+      console.log('League ID:', this.selectedNewLeague.league?.id);
+      console.log('League Name:', this.selectedNewLeague.league?.name);
+      console.log('Country:', this.selectedNewLeague.country?.name);
+    }
   }
 
 }

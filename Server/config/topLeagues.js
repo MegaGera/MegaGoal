@@ -25,7 +25,9 @@ export const TOP_LEAGUES_IDS = [
   42,  // League Two
   48,  // EFL Cup
   5,   // UEFA Nations League
-  15   // FIFA Club World Cup
+  15,  // FIFA Club World Cup
+  10,  // Friendlies
+  667, // Friendlies Clubs
 ];
 
 /*

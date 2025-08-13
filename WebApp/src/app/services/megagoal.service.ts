@@ -259,4 +259,15 @@ export class MegaGoalService {
   submitFeedback(feedback: UserFeedback): Observable<UserFeedback> {
     return this.http.post<UserFeedback>(this.url + '/feedback/', feedback, this.options);
   }
+
+  /*
+    Method to create a new league setting
+  */
+  createLeagueSetting(league_id: number, league_name: string): Observable<any> {
+    let body = {
+      league_id: league_id,
+      league_name: league_name
+    }
+    return this.http.post<any>(this.url + '/admin/leagues_settings/create', body, this.options);
+  }
 }

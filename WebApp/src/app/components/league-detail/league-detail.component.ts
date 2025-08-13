@@ -56,6 +56,11 @@ export class LeagueDetailComponent implements OnInit {
   teams: Team[] = [];
   showTeams: Team[] = [];
 
+  /* Matches pagination */
+  showMatches: RealMatch[] = [];
+  matchesPerPage: number = 50;
+  currentMatchesPage: number = 1;
+
   /* UI State */
   isLoading: boolean = false;
 
@@ -239,6 +244,16 @@ export class LeagueDetailComponent implements OnInit {
             break;
         }
     }
+
+    // Initialize showMatches with first 50 matches of selected round
+    if (this.groupedRealMatches.length > 0 && this.selectedRound < this.groupedRealMatches.length) {
+        const allMatchesInRound = this.groupedRealMatches[this.selectedRound];
+        this.showMatches = allMatchesInRound.slice(0, this.matchesPerPage);
+        this.currentMatchesPage = 1;
+    } else {
+        this.showMatches = [];
+        this.currentMatchesPage = 1;
+    }
   }
 
   /*
@@ -248,6 +263,15 @@ export class LeagueDetailComponent implements OnInit {
     this.getMatches();
     if (this.selectedRound + n >= 0 && this.selectedRound + n < this.groupedRealMatches.length) {
       this.selectedRound = this.selectedRound + n;
+      
+      // Reset pagination and update showMatches
+      this.currentMatchesPage = 1;
+      if (this.groupedRealMatches.length > 0 && this.selectedRound < this.groupedRealMatches.length) {
+        const allMatchesInRound = this.groupedRealMatches[this.selectedRound];
+        this.showMatches = allMatchesInRound.slice(0, this.matchesPerPage);
+      } else {
+        this.showMatches = [];
+      }
       
       // Update URL with new round parameter
       this.router.navigate([], {
@@ -266,6 +290,15 @@ export class LeagueDetailComponent implements OnInit {
   */
   onRoundChange(roundIndex: number) {
     this.selectedRound = roundIndex;
+    
+    // Reset pagination and update showMatches
+    this.currentMatchesPage = 1;
+    if (this.groupedRealMatches.length > 0 && this.selectedRound < this.groupedRealMatches.length) {
+      const allMatchesInRound = this.groupedRealMatches[this.selectedRound];
+      this.showMatches = allMatchesInRound.slice(0, this.matchesPerPage);
+    } else {
+      this.showMatches = [];
+    }
     
     // Update URL with new round parameter
     this.router.navigate([], {
@@ -312,6 +345,9 @@ export class LeagueDetailComponent implements OnInit {
     this.getRealMatches();
     this.getMatches();
     
+    // Reset match pagination
+    this.currentMatchesPage = 1;
+    
     // Update URL with new season parameter
     this.router.navigate([], {
       relativeTo: this.route,
@@ -346,6 +382,32 @@ export class LeagueDetailComponent implements OnInit {
   */
   showAllTeams(): void {
     this.showTeams = this.teams;
+  }
+
+  /*
+    This method show more matches (50 more)
+  */
+  showMoreMatches(): void {
+    const nextPage = this.currentMatchesPage + 1;
+    const startIndex = 0;
+    const endIndex = nextPage * this.matchesPerPage;
+    
+    if (this.groupedRealMatches.length > 0 && this.selectedRound < this.groupedRealMatches.length) {
+      const allMatchesInRound = this.groupedRealMatches[this.selectedRound];
+      this.showMatches = allMatchesInRound.slice(startIndex, endIndex);
+      this.currentMatchesPage = nextPage;
+    }
+  }
+
+  /*
+    Check if there are more matches to show
+  */
+  hasMoreMatches(): boolean {
+    if (this.groupedRealMatches.length === 0 || this.selectedRound >= this.groupedRealMatches.length) {
+      return false;
+    }
+    const allMatchesInRound = this.groupedRealMatches[this.selectedRound];
+    return allMatchesInRound.length > this.matchesPerPage && this.showMatches.length < allMatchesInRound.length;
   }
 
   /*

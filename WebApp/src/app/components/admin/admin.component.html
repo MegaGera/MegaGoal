@@ -212,6 +212,38 @@
             [disabled]="isCheckSeasonsLoading">
             {{ isCheckSeasonsLoading ? 'Checking...' : 'Check Matches by League and Season' }}
           </button>
+
+          <!-- Add New League Section -->
+          <div class="modal-section">
+            <label for="add-league-selector">Add New League</label>
+            <input 
+              type="text" 
+              id="league-search" 
+              placeholder="Search leagues by ID, name, or country..."
+              [(ngModel)]="leagueSearchText"
+              (input)="filterLeagues()"
+              class="league-search-input">
+            <select 
+              id="add-league-selector" 
+              [(ngModel)]="selectedNewLeague"
+              (change)="onLeagueSelectionChange()"
+              class="league-select-dropdown">
+              <option [ngValue]="null">Choose a league...</option>
+              <option *ngFor="let league of filteredLeaguesForAdding" [ngValue]="league">
+                #{{league.league.id}} - {{league.league.name}} ({{league.country.name}})
+              </option>
+            </select>
+            <div class="league-count-hint" *ngIf="filteredLeaguesForAdding.length > 0">
+              {{ filteredLeaguesForAdding.length }} league{{ filteredLeaguesForAdding.length !== 1 ? 's' : '' }} available
+            </div>
+            <button 
+              (click)="createLeagueSetting()"
+              [disabled]="!selectedNewLeague || isCreatingLeagueSetting"
+              class="modal-action-btn">
+              {{ isCreatingLeagueSetting ? 'Creating...' : 'Add League' }}
+            </button>
+          </div>
+
         </div>
       </div>
     </div>

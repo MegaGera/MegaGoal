@@ -56,3 +56,33 @@ export const changeDailyUpdate = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 }
+
+// Create a new league setting
+export const createLeagueSetting = async (req, res) => {
+  const db = getDB();
+  try {
+    let {league_id, league_name} = req.body;
+    
+    // Check if league setting already exists
+    const existingSetting = await db.collection('league_settings').findOne({ "league_id": +league_id });
+    if (existingSetting) {
+      return res.status(400).json({ message: "League setting already exists" });
+    }
+    
+    const newLeagueSetting = {
+      league_id: +league_id,
+      league_name: league_name,
+      update_frequency: 1,
+      is_active: false,
+      daily_update: false,
+      season: 2025,
+      available_seasons: []
+    };
+    
+    let result = await db.collection('league_settings').insertOne(newLeagueSetting);
+    console.log("Created new league setting for league " + league_id + " - " + league_name);
+    res.status(201).json(result.acknowledged);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}

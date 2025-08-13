@@ -116,7 +116,7 @@
 
             <!-- Matches grid -->
             <div class="matches-grid">
-              @for (match of groupedRealMatches[selectedRound]; track match.fixture.id) {
+              @for (match of showMatches; track match.fixture.id) {
                 <div class="match-card-wrapper">
                   <app-real-match-card 
                     [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
@@ -127,6 +127,17 @@
                 </div>
               }
             </div>
+
+            <!-- Show more matches button -->
+            @if (hasMoreMatches()) {
+              <button 
+                class="show-all-btn"
+                (click)="showMoreMatches()"
+                aria-label="Show more matches">
+                <ng-icon name="jamPlus"></ng-icon>
+                Show More Matches ({{ groupedRealMatches[selectedRound].length - showMatches.length }} remaining)
+              </button>
+            }
           </div>
         }
       </div>
