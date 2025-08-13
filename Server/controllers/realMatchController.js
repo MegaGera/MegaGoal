@@ -4,14 +4,14 @@ import { getDB } from '../config/db.js';
 const getRealMatches = async (req, res) => {
   const db = getDB();
   try {
-    let { league_id, team_id, team_2_id, season, finished } = req.query;
+    let { league_id, team_id, team_2_id, season, finished, date } = req.query;
 
-    // Count non-finished parameters to ensure minimum 2
-    const nonFinishedParams = [league_id, team_id, team_2_id, season].filter(param => param !== undefined && param !== null);
+    // Count non-finished parameters to ensure minimum 2 (unless date is provided)
+    const nonFinishedParams = [league_id, team_id, team_2_id, season, date].filter(param => param !== undefined && param !== null);
     
-    if (nonFinishedParams.length < 2) {
-      console.log("Real Matches - Invalid query: minimum 2 parameters required");
-      return res.status(400).json({ message: "Minimum 2 parameters required (excluding finished)" });
+    if (nonFinishedParams.length < 2 && !date) {
+      console.log("Real Matches - Invalid query: minimum 2 parameters required (or date)");
+      return res.status(400).json({ message: "Minimum 2 parameters required (excluding finished) or provide a date" });
     }
 
     const filters = [];
@@ -60,6 +60,20 @@ const getRealMatches = async (req, res) => {
           { "teams.home.id": +team_2_id },
           { "teams.away.id": +team_2_id }
         ]
+      });
+    }
+
+    // Add date filter
+    if (date) {
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+      
+      filters.push({
+        'fixture.timestamp': {
+          $gte: Math.floor(startDate.getTime() / 1000),
+          $lt: Math.floor(endDate.getTime() / 1000)
+        }
       });
     }
 

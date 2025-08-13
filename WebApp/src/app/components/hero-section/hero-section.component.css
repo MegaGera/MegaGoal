@@ -110,6 +110,8 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 220px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .hero-btn:hover {
@@ -208,7 +210,7 @@
   
   .hero-actions {
     margin: 0;
-    width: 100%;
+    width: 80%;
     max-width: none;
     flex-direction: row;
     justify-content: space-between;
@@ -251,6 +253,7 @@
   
   .hero-actions {
     margin: 0;
+    width: 80%;
     max-width: none;
     flex-direction: row;
     justify-content: space-between;
