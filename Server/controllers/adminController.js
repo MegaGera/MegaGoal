@@ -69,6 +69,18 @@ export const createLeagueSetting = async (req, res) => {
       return res.status(400).json({ message: "League setting already exists" });
     }
     
+    // Get the highest position from existing league settings
+    let nextPosition = 0;
+    const highestPositionLeague = await db.collection('league_settings')
+      .find({})
+      .sort({ "position": -1 })
+      .limit(1)
+      .toArray();
+    
+    if (highestPositionLeague.length > 0 && highestPositionLeague[0].position) {
+      nextPosition = highestPositionLeague[0].position + 1;
+    }
+    
     const newLeagueSetting = {
       league_id: +league_id,
       league_name: league_name,
@@ -76,11 +88,11 @@ export const createLeagueSetting = async (req, res) => {
       is_active: false,
       daily_update: false,
       season: 2025,
-      available_seasons: []
+      position: nextPosition
     };
     
     let result = await db.collection('league_settings').insertOne(newLeagueSetting);
-    console.log("Created new league setting for league " + league_id + " - " + league_name);
+    console.log("Created new league setting for league " + league_id + " - " + league_name + " with position " + nextPosition);
     res.status(201).json(result.acknowledged);
   } catch (error) {
     res.status(400).json({ message: error.message });

@@ -10,7 +10,7 @@ class MatchUpdater:
         self.db = Config.get_database()
         self.collection_real_matches = self.db['real_matches']
         self.collection_matches = self.db['matches']
-        self.collection_settings = self.db['settings']
+        self.collection_settings = self.db['league_settings']
         self.collection_leagues = self.db['leagues']
         self.collection_teams = self.db['teams']
         self.headers = Config.get_api_headers()
@@ -353,3 +353,122 @@ class MatchUpdater:
             {"league_id": int(league_id)},
             {"$set": {"available_seasons": available_seasons}}
         )
+
+    def move_league_position(self, league_id: int, direction: str) -> bool:
+        """Move a league's position up or down in the settings collection"""
+        # Get all leagues ordered by position
+        all_leagues = list(self.collection_settings.find({}).sort("position", 1))
+        
+        if not all_leagues:
+            return False
+        
+        # Find the current league index
+        current_index = None
+        for i, league in enumerate(all_leagues):
+            if league["league_id"] == league_id:
+                current_index = i
+                break
+        
+        if current_index is None:
+            return False
+        
+        # Determine target index based on direction
+        if direction == "up" and current_index > 0:
+            target_index = current_index - 1
+        elif direction == "down" and current_index < len(all_leagues) - 1:
+            target_index = current_index + 1
+        else:
+            return False  # Cannot move in that direction
+        
+        # Get the leagues to swap
+        current_league = all_leagues[current_index]
+        target_league = all_leagues[target_index]
+        
+        # Get current positions
+        current_position = current_league.get("position", current_index + 1)
+        target_position = target_league.get("position", target_index + 1)
+        
+        # Swap positions
+        self.collection_settings.update_one(
+            {"league_id": league_id},
+            {"$set": {"position": target_position}}
+        )
+        
+        self.collection_settings.update_one(
+            {"league_id": target_league["league_id"]},
+            {"$set": {"position": current_position}}
+        )
+        
+        return True
+
+    def change_league_position(self, league_id: int, new_position: int) -> bool:
+        """Change a league's position to a specific position and adjust other leagues accordingly"""
+        # Get all leagues ordered by position
+        all_leagues = list(self.collection_settings.find({}).sort("position", 1))
+        
+        if not all_leagues:
+            return False
+        
+        # Find the current league
+        current_league = None
+        current_position = None
+        for league in all_leagues:
+            if league["league_id"] == league_id:
+                current_league = league
+                current_position = league.get("position", 1)
+                break
+        
+        if not current_league:
+            return False
+        
+        # If new position is bigger than total leagues, put it at the end
+        if new_position > len(all_leagues):
+            new_position = len(all_leagues)
+        
+        # Validate new position
+        if new_position < 1:
+            return False
+        
+        # If the new position is the same as current, no change needed
+        if new_position == current_position:
+            return True
+
+        # Check if the target position is already occupied by another league
+        target_position_occupied = False
+        for league in all_leagues:
+            if league["league_id"] != league_id and league.get("position") == new_position:
+                target_position_occupied = True
+                break
+        
+        # Update the target league to the new position
+        self.collection_settings.update_one(
+            {"league_id": league_id},
+            {"$set": {"position": new_position}}
+        )
+
+        if not target_position_occupied:
+            return True
+
+        # Adjust positions of other leagues (only if there are conflicts)
+        if new_position > current_position:
+            # Moving down: shift leagues between current and new position up by 1
+            for league in all_leagues:
+                if league["league_id"] != league_id:
+                    pos = league.get("position", 1)
+                    if current_position < pos <= new_position:
+                        self.collection_settings.update_one(
+                            {"league_id": league["league_id"]},
+                            {"$set": {"position": pos - 1}}
+                        )
+        else:
+            # Moving up: shift leagues between new and current position down by 1
+            for league in all_leagues:
+                if league["league_id"] != league_id:
+                    pos = league.get("position", 1)
+                    if new_position <= pos < current_position:
+                        self.collection_settings.update_one(
+                            {"league_id": league["league_id"]},
+                            {"$set": {"position": pos + 1}}
+                        )
+        
+        return True

@@ -2,7 +2,7 @@ import { Component, NgModule } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { jamSettingsAlt, jamClose } from '@ng-icons/jam-icons';
+import { jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid } from '@ng-icons/jam-icons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -14,7 +14,7 @@ import { League } from '../../models/league';
   selector: 'app-admin',
   standalone: true,
   imports: [CommonModule, FormsModule, NgClass, NgIconComponent],
-  providers: [provideIcons({ jamSettingsAlt, jamClose })],
+  providers: [provideIcons({ jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid })],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
@@ -40,6 +40,13 @@ export class AdminComponent {
   selectedNewLeague: League | null = null;
   isCreatingLeagueSetting: boolean = false;
   leagueSearchText: string = '';
+  
+  // Position management properties
+  isMovingLeague: boolean = false;
+  positionChanges: Map<number, number> = new Map(); // league_id -> new_position
+  
+  // Order mode properties
+  isPositionOrder: boolean = false;
 
   constructor(
     private megagoal: MegaGoalService,
@@ -168,13 +175,11 @@ export class AdminComponent {
     // Filter out leagues that already have settings
     const existingLeagueIds = this.leaguesSettings.map(ls => ls.league_id);
     const available = this.leagues.filter(league => !existingLeagueIds.includes(league.league.id));
-    console.log('Available leagues for adding:', available.length, 'Total leagues:', this.leagues.length, 'Existing settings:', this.leaguesSettings.length);
     return available;
   }
 
   get filteredLeaguesForAdding(): League[] {
     if (!this.leagueSearchText.trim()) {
-      console.log('No search text, returning all available leagues:', this.availableLeaguesForAdding.length);
       return this.availableLeaguesForAdding;
     }
     
@@ -184,8 +189,19 @@ export class AdminComponent {
       league.league.name.toLowerCase().includes(searchText) ||
       league.country.name.toLowerCase().includes(searchText)
     );
-    console.log('Filtered leagues:', filtered.length, 'for search:', searchText);
     return filtered;
+  }
+
+  get sortedLeaguesByPosition(): LeaguesSettings[] {
+    if (!this.leaguesSettings || this.leaguesSettings.length === 0) {
+      return [];
+    }
+    
+    return [...this.leaguesSettings].filter(league => league && league.league_id).sort((a, b) => {
+      const posA = a.position || Number.MAX_SAFE_INTEGER;
+      const posB = b.position || Number.MAX_SAFE_INTEGER;
+      return posA - posB;
+    });
   }
 
   openGeneralModal(): void {
@@ -237,7 +253,6 @@ export class AdminComponent {
 
   // Add new league methods
   createLeagueSetting(): void {
-    console.log('Creating league setting for:', this.selectedNewLeague);
     if (!this.selectedNewLeague) return;
     
     // Ensure we have a valid league object with the required properties
@@ -274,12 +289,67 @@ export class AdminComponent {
   onLeagueSelectionChange(): void {
     // This method is called when a league is selected from the dropdown
     // The selectedNewLeague is automatically set by ngModel
-    console.log('Selected league:', this.selectedNewLeague);
-    if (this.selectedNewLeague) {
-      console.log('League ID:', this.selectedNewLeague.league?.id);
-      console.log('League Name:', this.selectedNewLeague.league?.name);
-      console.log('Country:', this.selectedNewLeague.country?.name);
+  }
+
+  moveLeagueUp(leagueId: number): void {
+    this.isMovingLeague = true;
+    this.updater.moveLeaguePosition(leagueId, 'up').subscribe({
+      next: () => {
+        this.isMovingLeague = false;
+        this.getLeaguesSettings(); // Refresh the data
+      },
+      error: () => {
+        this.isMovingLeague = false;
+      }
+    });
+  }
+
+  moveLeagueDown(leagueId: number): void {
+    this.isMovingLeague = true;
+    this.updater.moveLeaguePosition(leagueId, 'down').subscribe({
+      next: () => {
+        this.isMovingLeague = false;
+        this.getLeaguesSettings(); // Refresh the data
+      },
+      error: () => {
+        this.isMovingLeague = false;
+      }
+    });
+  }
+
+  onPositionInputChange(leagueId: number, event: any): void {
+    const newPosition = parseInt(event.target.value);
+    if (newPosition && newPosition > 0) {
+      // Allow any positive number - backend will handle if it's bigger than total leagues
+      this.positionChanges.set(leagueId, newPosition);
+    } else {
+      this.positionChanges.delete(leagueId);
     }
+  }
+
+  hasPositionChanged(leagueId: number): boolean {
+    return this.positionChanges.has(leagueId);
+  }
+
+  applyPositionChange(leagueId: number): void {
+    const newPosition = this.positionChanges.get(leagueId);
+    if (!newPosition) return;
+
+    this.isMovingLeague = true;
+    this.updater.changeLeaguePosition(leagueId, newPosition).subscribe({
+      next: () => {
+        this.isMovingLeague = false;
+        this.positionChanges.delete(leagueId);
+        this.getLeaguesSettings(); // Refresh the data
+      },
+      error: () => {
+        this.isMovingLeague = false;
+      }
+    });
+  }
+
+  toggleOrderMode(): void {
+    this.isPositionOrder = !this.isPositionOrder;
   }
 
 }

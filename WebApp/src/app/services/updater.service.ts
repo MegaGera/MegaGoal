@@ -71,4 +71,26 @@ export class UpdaterService {
       this.options
     );
   }
+
+  /**
+   * Move league position up or down
+   */
+  moveLeaguePosition(league_id: number, direction: 'up' | 'down'): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/move_league_position/',
+      { league_id, direction },
+      this.options
+    );
+  }
+
+  /**
+   * Change league to a specific position
+   */
+  changeLeaguePosition(league_id: number, new_position: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/change_league_position/',
+      { league_id, new_position },
+      this.options
+    );
+  }
 } 

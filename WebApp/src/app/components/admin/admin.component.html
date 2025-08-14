@@ -2,15 +2,21 @@
   <section class="fade-in">
     <div class="admin-header-row">
       <h1 class="section-title">League Automation Management</h1>
-      <button class="modal-action-btn settings-btn" (click)="openGeneralModal()">
-        Settings
-        <ng-icon name="jamSettingsAlt" size="20"></ng-icon>
-      </button>
+      <div class="header-buttons">
+        <button class="modal-action-btn order-btn" (click)="toggleOrderMode()">
+          {{ isPositionOrder ? 'Active Order' : 'Position Order' }}
+          <ng-icon name="jamGrid" size="20"></ng-icon>
+        </button>
+        <button class="modal-action-btn settings-btn" (click)="openGeneralModal()">
+          Settings
+          <ng-icon name="jamSettingsAlt" size="20"></ng-icon>
+        </button>
+      </div>
     </div>
     <p class="section-description">Configure automatic match updates for each league</p>
     
     <div class="leagues-list">
-          @for (leaguesSetting of leaguesSettings; track $index) {
+          @for (leaguesSetting of (isPositionOrder ? sortedLeaguesByPosition : leaguesSettings); track $index) {
         <div class="league-row" [ngClass]="{
           'league-inactive': !leaguesSetting.is_active,
           'league-daily-update': leaguesSetting.is_active && leaguesSetting.daily_update
@@ -199,23 +205,28 @@
           </button>
         </div>
         <div class="modal-body">
-          <button 
-            class="modal-action-btn"
-            (click)="triggerUpdateLeagues()"
-            [disabled]="isUpdateLeaguesLoading">
-            {{ isUpdateLeaguesLoading ? 'Updating...' : 'Update All Leagues' }}
-          </button>
-          
-          <button 
-            class="modal-action-btn"
-            (click)="triggerCheckAvailableSeasons()"
-            [disabled]="isCheckSeasonsLoading">
-            {{ isCheckSeasonsLoading ? 'Checking...' : 'Check Matches by League and Season' }}
-          </button>
+          <div class="top-buttons-container">
+            <button 
+              class="modal-action-btn"
+              (click)="triggerUpdateLeagues()"
+              [disabled]="isUpdateLeaguesLoading">
+              {{ isUpdateLeaguesLoading ? 'Updating...' : 'Update All Leagues' }}
+            </button>
+            
+            <button 
+              class="modal-action-btn"
+              (click)="triggerCheckAvailableSeasons()"
+              [disabled]="isCheckSeasonsLoading">
+              {{ isCheckSeasonsLoading ? 'Checking...' : 'Check Matches by League and Season' }}
+            </button>
+          </div>
+
+          <!-- Separator -->
+          <div class="modal-separator"></div>
 
           <!-- Add New League Section -->
-          <div class="modal-section">
-            <label for="add-league-selector">Add New League</label>
+          <div class="modal-section centered">
+            <label for="add-league-selector" class="centered-label">Add New League</label>
             <input 
               type="text" 
               id="league-search" 
@@ -233,15 +244,87 @@
                 #{{league.league.id}} - {{league.league.name}} ({{league.country.name}})
               </option>
             </select>
-            <div class="league-count-hint" *ngIf="filteredLeaguesForAdding.length > 0">
-              {{ filteredLeaguesForAdding.length }} league{{ filteredLeaguesForAdding.length !== 1 ? 's' : '' }} available
+            <div class="league-action-group">
+              <div class="league-count-hint">
+                {{ filteredLeaguesForAdding.length }} league{{ filteredLeaguesForAdding.length !== 1 ? 's' : '' }} available
+              </div>
+              <button 
+                (click)="createLeagueSetting()"
+                [disabled]="!selectedNewLeague || isCreatingLeagueSetting"
+                class="modal-action-btn">
+                {{ isCreatingLeagueSetting ? 'Creating...' : 'Add League' }}
+              </button>
             </div>
-            <button 
-              (click)="createLeagueSetting()"
-              [disabled]="!selectedNewLeague || isCreatingLeagueSetting"
-              class="modal-action-btn">
-              {{ isCreatingLeagueSetting ? 'Creating...' : 'Add League' }}
-            </button>
+          </div>
+
+          <!-- Separator -->
+          <div class="modal-separator"></div>
+
+          <!-- Leagues Position Management Section -->
+          <div class="modal-section">
+            <label class="centered-label">Leagues Position Management ({{leaguesSettings.length}} leagues)</label>
+            
+            <div class="leagues-position-table" *ngIf="sortedLeaguesByPosition.length > 0">
+              <table class="position-table">
+                <thead>
+                  <tr>
+                    <th>Position</th>
+                    <th>League</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let league of sortedLeaguesByPosition; track league?.league_id || i; let i = index">
+                    <td class="position-cell">{{league?.position || "--"}}</td>
+                    <td class="league-cell">
+                      <div class="league-info-row">
+                        <img 
+                          class="league-logo-small" 
+                          [src]="images.getRouteImageLeagueSm(league?.league_id || 0)"
+                          [alt]="(league?.league_name || 'League') + ' logo'">
+                        <span class="league-name-small">{{league?.league_name || 'Unknown League'}}</span>
+                      </div>
+                    </td>
+                    <td class="actions-cell">
+                      <div class="position-actions">
+                        <div class="arrow-buttons">
+                          <button 
+                            class="position-btn up-btn"
+                            (click)="moveLeagueUp(league?.league_id || 0)"
+                            [disabled]="i === 0 || isMovingLeague || !league?.league_id">
+                            <ng-icon name="jamChevronUp" size="16"></ng-icon>
+                          </button>
+                          <button 
+                            class="position-btn down-btn"
+                            (click)="moveLeagueDown(league?.league_id || 0)"
+                            [disabled]="i === sortedLeaguesByPosition.length - 1 || isMovingLeague || !league?.league_id">
+                            <ng-icon name="jamChevronDown" size="16"></ng-icon>
+                          </button>
+                        </div>
+                        <div class="position-input-group">
+                          <input 
+                            type="number" 
+                            class="position-input"
+                            [value]="league?.position || (i + 1)"
+                            (input)="onPositionInputChange(league?.league_id || 0, $event)"
+                            min="1"
+                            [placeholder]="'1-' + sortedLeaguesByPosition.length"
+                            [title]="'Enter position 1-' + sortedLeaguesByPosition.length + '. Higher values will be set to last position.'"
+                            [disabled]="isMovingLeague">
+                          <button 
+                            class="position-btn apply-btn"
+                            (click)="applyPositionChange(league?.league_id || 0)"
+                            [disabled]="isMovingLeague || !league?.league_id || !hasPositionChanged(league?.league_id || 0)"
+                            title="Apply position change">
+                            <ng-icon name="jamArrowRight" size="16"></ng-icon>
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </div>

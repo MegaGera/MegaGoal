@@ -6,7 +6,8 @@
 export interface League {
     league: league,
     country: country,
-    seasons: seasons[]
+    seasons: seasons[],
+    position?: number
 }
 
 interface league {
