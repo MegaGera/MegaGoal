@@ -30,7 +30,12 @@ export class LeagueSelectorComponent {
     this.setLoading(true);
     this.megagoal.getTopLeagues().subscribe({
       next: (result: League[]) => {
-        this.leagues = result;
+        // Sort leagues by position, with leagues without positions at the end
+        this.leagues = result.sort((a, b) => {
+          const posA = a.position || Number.MAX_SAFE_INTEGER;
+          const posB = b.position || Number.MAX_SAFE_INTEGER;
+          return posA - posB;
+        });
         this.setLoading(false);
       },
       error: (error: any) => {

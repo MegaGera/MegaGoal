@@ -79,6 +79,14 @@ class UpdateRequest(BaseModel):
     league_id: int
     season: int
 
+class MovePositionRequest(BaseModel):
+    league_id: int
+    direction: str
+
+class ChangePositionRequest(BaseModel):
+    league_id: int
+    new_position: int
+
 @app.get("/health/")
 async def health_check():
     """Health check endpoint for debugging"""
@@ -147,5 +155,31 @@ async def update_teams(req: UpdateRequest, request: Request):
     try:
         updater.update_teams_by_league_and_season(req.league_id, req.season)
         return {"status": "success", "message": f"Updated teams for league {req.league_id} in season {req.season}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/move_league_position/")
+async def move_league_position(req: MovePositionRequest, request: Request):
+    await validate_admin(request)
+    updater = MatchUpdater()
+    try:
+        success = updater.move_league_position(req.league_id, req.direction)
+        if success:
+            return {"status": "success", "message": f"Moved league {req.league_id} {req.direction}"}
+        else:
+            return {"status": "error", "message": f"Cannot move league {req.league_id} {req.direction}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/change_league_position/")
+async def change_league_position(req: ChangePositionRequest, request: Request):
+    await validate_admin(request)
+    updater = MatchUpdater()
+    try:
+        success = updater.change_league_position(req.league_id, req.new_position)
+        if success:
+            return {"status": "success", "message": f"Changed league {req.league_id} to position {req.new_position}"}
+        else:
+            return {"status": "error", "message": f"Cannot change league {req.league_id} to position {req.new_position}"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

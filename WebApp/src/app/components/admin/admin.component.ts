@@ -2,7 +2,7 @@ import { Component, NgModule } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { jamSettingsAlt, jamClose } from '@ng-icons/jam-icons';
+import { jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid } from '@ng-icons/jam-icons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -14,7 +14,7 @@ import { League } from '../../models/league';
   selector: 'app-admin',
   standalone: true,
   imports: [CommonModule, FormsModule, NgClass, NgIconComponent],
-  providers: [provideIcons({ jamSettingsAlt, jamClose })],
+  providers: [provideIcons({ jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid })],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
@@ -35,6 +35,18 @@ export class AdminComponent {
   isUpdateTeamsLoading: boolean = false;
 
   shortSeasonsList: number[] = [2024, 2025];
+
+  // Add new league properties
+  selectedNewLeague: League | null = null;
+  isCreatingLeagueSetting: boolean = false;
+  leagueSearchText: string = '';
+  
+  // Position management properties
+  isMovingLeague: boolean = false;
+  positionChanges: Map<number, number> = new Map(); // league_id -> new_position
+  
+  // Order mode properties
+  isPositionOrder: boolean = false;
 
   constructor(
     private megagoal: MegaGoalService,
@@ -95,12 +107,16 @@ export class AdminComponent {
     this.selectedSeason = league.season;
     this.selectedMatchesUpdateSeason = league.season;
     this.selectedTeamsUpdateSeason = league.season;
+    this.selectedNewLeague = null;
+    this.leagueSearchText = '';
     this.showSettingsModal = true;
   }
 
   closeSettingsModal(): void {
     this.showSettingsModal = false;
     this.selectedLeague = null;
+    this.selectedNewLeague = null;
+    this.leagueSearchText = '';
   }
 
   changeIsActive(league_id: number, is_active: boolean) {
@@ -155,8 +171,47 @@ export class AdminComponent {
     return this.selectedLeague.available_seasons;
   }
 
+  get availableLeaguesForAdding(): League[] {
+    // Filter out leagues that already have settings
+    const existingLeagueIds = this.leaguesSettings.map(ls => ls.league_id);
+    const available = this.leagues.filter(league => !existingLeagueIds.includes(league.league.id));
+    return available;
+  }
+
+  get filteredLeaguesForAdding(): League[] {
+    if (!this.leagueSearchText.trim()) {
+      return this.availableLeaguesForAdding;
+    }
+    
+    const searchText = this.leagueSearchText.toLowerCase().trim();
+    const filtered = this.availableLeaguesForAdding.filter(league => 
+      league.league.id.toString().includes(searchText) ||
+      league.league.name.toLowerCase().includes(searchText) ||
+      league.country.name.toLowerCase().includes(searchText)
+    );
+    return filtered;
+  }
+
+  get sortedLeaguesByPosition(): LeaguesSettings[] {
+    if (!this.leaguesSettings || this.leaguesSettings.length === 0) {
+      return [];
+    }
+    
+    return [...this.leaguesSettings].filter(league => league && league.league_id).sort((a, b) => {
+      const posA = a.position || Number.MAX_SAFE_INTEGER;
+      const posB = b.position || Number.MAX_SAFE_INTEGER;
+      return posA - posB;
+    });
+  }
+
   openGeneralModal(): void {
     this.showGeneralModal = true;
+    // Ensure leagues are loaded for the dropdown
+    if (this.leagues.length === 0) {
+      this.getLeagues();
+    }
+    // Reset search text to show all leagues
+    this.leagueSearchText = '';
   }
 
   closeGeneralModal(): void {
@@ -194,6 +249,107 @@ export class AdminComponent {
       },
       error: () => { this.isUpdateTeamsLoading = false; }
     });
+  }
+
+  // Add new league methods
+  createLeagueSetting(): void {
+    if (!this.selectedNewLeague) return;
+    
+    // Ensure we have a valid league object with the required properties
+    if (!this.selectedNewLeague.league || !this.selectedNewLeague.league.id || !this.selectedNewLeague.league.name) {
+      console.error('Invalid league object:', this.selectedNewLeague);
+      return;
+    }
+    
+    this.isCreatingLeagueSetting = true;
+    this.megagoal.createLeagueSetting(
+      this.selectedNewLeague.league.id, 
+      this.selectedNewLeague.league.name
+    ).subscribe({
+      next: () => {
+        this.isCreatingLeagueSetting = false;
+        this.selectedNewLeague = null;
+        this.leagueSearchText = '';
+        // Refresh the leagues settings to show the new one
+        this.getLeaguesSettings();
+      },
+      error: () => {
+        this.isCreatingLeagueSetting = false;
+      }
+    });
+  }
+
+  filterLeagues(): void {
+    // Reset selection if the current selection is no longer in filtered results
+    if (this.selectedNewLeague && !this.filteredLeaguesForAdding.includes(this.selectedNewLeague)) {
+      this.selectedNewLeague = null;
+    }
+  }
+
+  onLeagueSelectionChange(): void {
+    // This method is called when a league is selected from the dropdown
+    // The selectedNewLeague is automatically set by ngModel
+  }
+
+  moveLeagueUp(leagueId: number): void {
+    this.isMovingLeague = true;
+    this.updater.moveLeaguePosition(leagueId, 'up').subscribe({
+      next: () => {
+        this.isMovingLeague = false;
+        this.getLeaguesSettings(); // Refresh the data
+      },
+      error: () => {
+        this.isMovingLeague = false;
+      }
+    });
+  }
+
+  moveLeagueDown(leagueId: number): void {
+    this.isMovingLeague = true;
+    this.updater.moveLeaguePosition(leagueId, 'down').subscribe({
+      next: () => {
+        this.isMovingLeague = false;
+        this.getLeaguesSettings(); // Refresh the data
+      },
+      error: () => {
+        this.isMovingLeague = false;
+      }
+    });
+  }
+
+  onPositionInputChange(leagueId: number, event: any): void {
+    const newPosition = parseInt(event.target.value);
+    if (newPosition && newPosition > 0) {
+      // Allow any positive number - backend will handle if it's bigger than total leagues
+      this.positionChanges.set(leagueId, newPosition);
+    } else {
+      this.positionChanges.delete(leagueId);
+    }
+  }
+
+  hasPositionChanged(leagueId: number): boolean {
+    return this.positionChanges.has(leagueId);
+  }
+
+  applyPositionChange(leagueId: number): void {
+    const newPosition = this.positionChanges.get(leagueId);
+    if (!newPosition) return;
+
+    this.isMovingLeague = true;
+    this.updater.changeLeaguePosition(leagueId, newPosition).subscribe({
+      next: () => {
+        this.isMovingLeague = false;
+        this.positionChanges.delete(leagueId);
+        this.getLeaguesSettings(); // Refresh the data
+      },
+      error: () => {
+        this.isMovingLeague = false;
+      }
+    });
+  }
+
+  toggleOrderMode(): void {
+    this.isPositionOrder = !this.isPositionOrder;
   }
 
 }

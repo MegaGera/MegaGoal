@@ -13,6 +13,7 @@ import { MatchParserService } from '../../services/match-parser.service';
 import { RealMatch } from '../../models/realMatch';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
+import { League } from '../../models/league';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
 
 @Component({
@@ -33,7 +34,7 @@ import { RealMatchCardComponent } from '../real-match-card/real-match-card.compo
 export class MatchesComponent implements OnInit {
   isLoading = false;
   selectedDate: string = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD for native input
-  maxDate: string = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  // maxDate: string = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
   matches: RealMatch[] = [];
   groupedMatches: { [key: string]: RealMatch[] } = {};
   leagueOrder: string[] = [];
@@ -46,6 +47,13 @@ export class MatchesComponent implements OnInit {
   
   // Live matches filter
   showLiveMatches = false;
+  
+  // Top leagues for ordering
+  topLeagues: League[] = [];
+  
+  // Store original data for live matches toggle
+  originalGroupedMatches: { [key: string]: RealMatch[] } = {};
+  originalLeagueOrder: string[] = [];
 
   constructor(
     private megaGoalService: MegaGoalService,
@@ -58,6 +66,7 @@ export class MatchesComponent implements OnInit {
   ngOnInit(): void {
     this.loadLocations();
     this.loadWatchedMatches();
+    this.loadTopLeagues();
     this.checkUrlParameters();
     this.getMatchesForDate();
   }
@@ -68,9 +77,9 @@ export class MatchesComponent implements OnInit {
       // Check if 'live' parameter is present in URL
       if (params['live'] === 'true') {
         this.showLiveMatches = true;
-        // Only apply live filter if today's date is selected
-        if (this.isToday()) {
-          this.applyLiveMatchesFilter();
+        // If live matches are requested but no date specified, go to today
+        if (!params['date']) {
+          this.selectedDate = new Date().toISOString().split('T')[0];
         }
       }
       
@@ -152,19 +161,34 @@ export class MatchesComponent implements OnInit {
     const now = Math.floor(Date.now() / 1000); // Current timestamp in seconds
     const finishedStatuses = ["FT", "AET", "PEN", "PST", "CANC"];
     
-    // Filter matches that are live (not finished and timestamp is in the past)
-    this.leagueOrder.forEach(leagueKey => {
-      const liveMatches = this.groupedMatches[leagueKey].filter(match => {
+    // Create a new league order that only includes leagues with live matches
+    const liveLeagueOrder: string[] = [];
+    const liveGroupedMatches: { [key: string]: RealMatch[] } = {};
+    
+    this.originalLeagueOrder.forEach(leagueKey => {
+      const liveMatches = this.originalGroupedMatches[leagueKey].filter(match => {
         const isNotFinished = !finishedStatuses.includes(match.fixture.status.short);
         const isInPast = match.fixture.timestamp <= now;
         return isNotFinished && isInPast;
       });
       
-      this.displayedMatches[leagueKey] = liveMatches.slice(0, this.matchesPerPage);
+      // Only include leagues that have live matches
+      if (liveMatches.length > 0) {
+        liveLeagueOrder.push(leagueKey);
+        liveGroupedMatches[leagueKey] = liveMatches;
+        this.displayedMatches[leagueKey] = liveMatches.slice(0, this.matchesPerPage);
+      }
     });
+    
+    // Update the league order and grouped matches for live mode
+    this.leagueOrder = liveLeagueOrder;
+    this.groupedMatches = liveGroupedMatches;
   }
 
   resetToAllMatches(): void {
+    // Restore original matches and league order
+    this.groupedMatches = { ...this.originalGroupedMatches };
+    this.leagueOrder = [...this.originalLeagueOrder];
     this.initializeDisplayedMatches();
   }
 
@@ -175,6 +199,12 @@ export class MatchesComponent implements OnInit {
       next: (matches: RealMatch[]) => {
         this.matches = matches;
         this.groupMatchesByLeague();
+        
+        // Apply live matches filter if URL parameter indicates it should be active
+        if (this.showLiveMatches) {
+          this.applyLiveMatchesFilter();
+        }
+        
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -200,20 +230,29 @@ export class MatchesComponent implements OnInit {
       this.groupedMatches[leagueKey].push(match);
     });
 
-    // Sort leagues by name, but put Friendlies at the bottom
+    console.log('Top leagues:', this.topLeagues);
+
+    // Sort leagues by position from topLeagues, with leagues not in topLeagues at the end
     this.leagueOrder.sort((a, b) => {
       const leagueA = this.groupedMatches[a][0].league;
       const leagueB = this.groupedMatches[b][0].league;
       
-      // Check if leagues are Friendlies (ID 10 or 667)
-      const isFriendliesA = leagueA.id === 10 || leagueA.id === 667;
-      const isFriendliesB = leagueB.id === 10 || leagueB.id === 667;
+      // Find leagues in topLeagues to get their positions
+      const topLeagueA = this.topLeagues.find(tl => tl.league.id === leagueA.id);
+      const topLeagueB = this.topLeagues.find(tl => tl.league.id === leagueB.id);
       
-      // If one is Friendlies and the other isn't, put Friendlies at the bottom
-      if (isFriendliesA && !isFriendliesB) return 1;
-      if (!isFriendliesA && isFriendliesB) return -1;
+      // If both leagues are in topLeagues, sort by position
+      if (topLeagueA && topLeagueB) {
+        const posA = topLeagueA.position || Number.MAX_SAFE_INTEGER;
+        const posB = topLeagueB.position || Number.MAX_SAFE_INTEGER;
+        return posA - posB;
+      }
       
-      // If both are Friendlies or both are not, sort alphabetically
+      // If only one league is in topLeagues, put the one not in topLeagues at the end
+      if (topLeagueA && !topLeagueB) return -1;
+      if (!topLeagueA && topLeagueB) return 1;
+      
+      // If neither league is in topLeagues, sort alphabetically
       return leagueA.name.localeCompare(leagueB.name);
     });
 
@@ -221,6 +260,10 @@ export class MatchesComponent implements OnInit {
     this.leagueOrder.forEach(leagueKey => {
       this.groupedMatches[leagueKey].sort((a, b) => a.fixture.timestamp - b.fixture.timestamp);
     });
+    
+    // Store original data for live matches toggle
+    this.originalGroupedMatches = { ...this.groupedMatches };
+    this.originalLeagueOrder = [...this.leagueOrder];
     
     // Initialize displayed matches for pagination
     this.initializeDisplayedMatches();
@@ -267,6 +310,17 @@ export class MatchesComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading locations:', error);
+      }
+    });
+  }
+
+  loadTopLeagues(): void {
+    this.megaGoalService.getTopLeagues().subscribe({
+      next: (leagues: League[]) => {
+        this.topLeagues = leagues;
+      },
+      error: (error) => {
+        console.error('Error loading top leagues:', error);
       }
     });
   }
