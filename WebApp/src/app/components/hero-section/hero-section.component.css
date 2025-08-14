@@ -110,6 +110,8 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 220px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .hero-btn:hover {
@@ -145,13 +147,13 @@
 
 /* Secondary Button - Blue (Today's Matches) */
 .hero-btn-secondary {
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  background: linear-gradient(135deg, #28a745, #20c997);
   color: white;
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .hero-btn-secondary:hover {
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  background: linear-gradient(135deg, #218838, #1ea085);
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
 }
 
@@ -208,7 +210,7 @@
   
   .hero-actions {
     margin: 0;
-    width: 100%;
+    width: 80%;
     max-width: none;
     flex-direction: row;
     justify-content: space-between;
@@ -251,6 +253,7 @@
   
   .hero-actions {
     margin: 0;
+    width: 80%;
     max-width: none;
     flex-direction: row;
     justify-content: space-between;

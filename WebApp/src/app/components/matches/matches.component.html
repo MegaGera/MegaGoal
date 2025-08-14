@@ -1,0 +1,152 @@
+<!-- Loading overlay -->
+@if (isLoading) {
+  <div class="loading-overlay">
+    <div class="loading-spinner"></div>
+  </div>
+}
+
+<div class="container">
+  <section class="fade-in">
+    <!-- Header section -->
+    <div class="header-section">
+      <div class="header-row">
+        <div class="header-left">
+          <h1 class="section-title">Matches</h1>
+          <p class="section-description">View all matches for a specific date</p>
+        </div>
+        
+        <div class="header-center">
+          <!-- Date selector -->
+                  <div class="date-selector">
+          <!-- Button Row for Mobile -->
+          <div class="button-row">
+            <!-- Live Matches Button -->
+            @if (isToday()) {
+              <button 
+                class="btn btn-sm live-matches-btn"
+                [class.active]="showLiveMatches"
+                (click)="toggleLiveMatches()"
+                aria-label="Toggle live matches">
+                Live Matches
+              </button>
+            }
+            
+            <button 
+              class="btn btn-sm today-btn"
+              (click)="goToToday()"
+              aria-label="Go to today">
+              Today
+            </button>
+          </div>
+          
+          <div class="date-input-wrapper">
+            <label for="date-input" class="date-label">Select Date</label>
+            <input 
+              type="date"
+              id="date-input"
+              class="date-input"
+              [(ngModel)]="selectedDate"
+              (change)="onDateChange()"
+              [max]="maxDate"
+              aria-label="Select date for matches">
+          </div>
+        </div>
+        </div>
+
+        <!-- Quick stats -->
+        @if (matches.length > 0) {
+          <div class="header-right">
+            <div class="quick-stats">
+              <div class="stat-item">
+                <span class="stat-value">{{ getTotalMatches() }}</span>
+                <span class="stat-label">Matches</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ getTotalLeagues() }}</span>
+                <span class="stat-label">Leagues</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Matches by league -->
+    @if (leagueOrder.length > 0) {
+      <div class="leagues-container">
+        @for (leagueKey of leagueOrder; track leagueKey) {
+          @if (groupedMatches[leagueKey].length > 0) {
+            <div class="league-section">
+              <div class="league-header">
+                <div class="league-info">
+                  <img 
+                    class="league-logo clickable-league-logo" 
+                    [src]="getLeagueLogo(groupedMatches[leagueKey][0].league.id)"
+                    [alt]="groupedMatches[leagueKey][0].league.name + ' logo'"
+                    (click)="goToLeague(groupedMatches[leagueKey][0].league.id)"
+                    tabindex="0"
+                    role="button"
+                    [attr.aria-label]="'Go to ' + groupedMatches[leagueKey][0].league.name + ' league details'">
+                  <div class="league-details">
+                    <h2 class="league-name">{{ groupedMatches[leagueKey][0].league.name }}</h2>
+                    <div class="league-meta">
+                      <span class="season">{{ groupedMatches[leagueKey][0].league.season }}</span>
+                      @if (groupedMatches[leagueKey][0].league.country) {
+                        <span class="country">{{ groupedMatches[leagueKey][0].league.country }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+                <div class="match-count">
+                  {{ groupedMatches[leagueKey].length }} match{{ groupedMatches[leagueKey].length !== 1 ? 'es' : '' }}
+                </div>
+              </div>
+
+              <div class="matches-grid">
+                @for (match of displayedMatches[leagueKey]; track match.fixture.id) {
+                  <div class="match-card-wrapper">
+                    <app-real-match-card 
+                      [match]="matchParser.realMatchToMatch(match, findWatchedMatch(match.fixture.id))"
+                      [watched]="isMatchWatched(match.fixture.id)"
+                      [locations]="locations"
+                      [size]="'md'">
+                    </app-real-match-card>
+                  </div>
+                }
+              </div>
+              
+              <!-- Show more matches button -->
+              @if (canShowMoreMatches(leagueKey)) {
+                <div class="show-more-matches-container">
+                  <button 
+                    class="show-more-matches-btn"
+                    (click)="showMoreMatches(leagueKey)"
+                    aria-label="Show more matches">
+                    <ng-icon name="jamPlus"></ng-icon>
+                    Show More Matches ({{ getRemainingMatchesCount(leagueKey) }})
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <!-- Empty state -->
+    @if (matches.length === 0 && !isLoading) {
+      <div class="empty-state">
+        <div class="empty-state-icon">⚽</div>
+        <h2 class="empty-state-title">No Matches Found</h2>
+        <p class="empty-state-description">
+          There are no matches scheduled for {{ formatDisplayDate(selectedDate) }}.
+        </p>
+        <button 
+          class="btn btn-sm btn-outline-primary try-different-date-btn"
+          (click)="goToToday()">
+          Try Today
+        </button>
+      </div>
+    }
+  </section>
+</div> 

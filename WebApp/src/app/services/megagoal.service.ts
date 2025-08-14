@@ -135,6 +135,14 @@ export class MegaGoalService {
   }
 
   /*
+    Method to get Real Matches by date from the API
+  */
+  getRealMatchesByDate(date: string): Observable<RealMatch[]> {
+    let params = new HttpParams().set('date', date);
+    return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
+  }
+
+  /*
     Method to get Real Matches by league and season from the API
   */
   getRealMatchesFinishedByLeagueIDAndSeason(league_id: number, season: number): Observable<RealMatch[]> {

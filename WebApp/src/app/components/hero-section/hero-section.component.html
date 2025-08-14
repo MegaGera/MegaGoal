@@ -17,22 +17,22 @@
     
     <!-- Right: Quick Actions -->
     <div class="hero-actions">
-      <button class="hero-btn hero-btn-primary">
+      <a routerLink="/matches" class="hero-btn hero-btn-primary">
         <span class="btn-text">Add Match</span>
         <ng-icon name="jamPlus" class="btn-icon"></ng-icon>
-      </button>
-      <button class="hero-btn hero-btn-secondary">
+      </a>
+      <a [routerLink]="['/matches']" [queryParams]="{live: 'true'}" class="hero-btn hero-btn-secondary">
         <!-- Live Indicator - not for now -->
         <!-- <div class="live-indicator-btn">
           <div class="circle-btn"></div>
         </div> -->
         <span class="btn-text">Live Matches</span>
         <ng-icon name="jamArrowRight" class="btn-icon"></ng-icon>
-      </button>
-      <button class="hero-btn hero-btn-tertiary">
+      </a>
+      <!-- <button class="hero-btn hero-btn-tertiary">
         <span class="btn-text">Your Stats</span>
         <ng-icon name="jamArrowRight" class="btn-icon"></ng-icon>
-      </button>
+      </button> -->
     </div>
     
   </div>
