@@ -39,18 +39,27 @@
       </button>
     </div>
     <div class="league-grid">
-      @for (league of filteredLeagues; track league.league_id) {
-        <div class="league-item" 
-             (click)="changeFilterLeagueSelected(league.league_id)"
-             [ngClass]="{'league-item-selected': filterLeagueSelected.includes(league.league_id)}"
-             [attr.data-league-name]="league.league_name">
-          <img class="league-icon" 
-               [ngSrc]="images.getRouteImageLeagueSm(league.league_id)" 
-               [alt]="league.league_name" 
-               width="40" 
-               height="40" 
-               priority="false">
-        </div>
+      @if (!leaguesLoaded) {
+        <div class="league-item-skeleton" aria-hidden="true"></div>
+        <div class="league-item-skeleton" aria-hidden="true"></div>
+        <div class="league-item-skeleton" aria-hidden="true"></div>
+        <div class="league-item-skeleton" aria-hidden="true"></div>
+      } @else {
+        @for (league of filteredLeagues; track league.league_id) {
+          <div class="league-item" 
+               (click)="changeFilterLeagueSelected(league.league_id)"
+               [ngClass]="{'league-item-selected': filterLeagueSelected.includes(league.league_id)}"
+               [attr.data-league-name]="league.league_name">
+            <img class="league-icon" 
+                 [ngSrc]="images.getRouteImageLeagueSm(league.league_id)" 
+                 [alt]="league.league_name" 
+                 width="40" 
+                 height="40" 
+                 priority="false">
+          </div>
+        } @empty {
+          <div class="league-item-skeleton" aria-hidden="true"></div>
+        }
       }
     </div>
   </div>

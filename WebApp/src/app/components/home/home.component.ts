@@ -59,6 +59,7 @@ export class HomeComponent implements OnInit {
   statsLoaded: boolean = false;
   favouriteTeamStats: FavouriteTeamStats | null = null;
   favouriteTeamLoaded: boolean = false;
+  leaguesLoaded: boolean = false;
   
   /* User Stats for Hero Section */
   userStats: UserStats | null = null;
@@ -100,6 +101,7 @@ export class HomeComponent implements OnInit {
         return y.fixture.timestamp - x.fixture.timestamp;
       })
       this.populateSeasonsFromMatches();
+      this.updateFilteredArrays();
       this.changeDetectorRef.detectChanges();
       this.matchesLoaded = true;
       this.filterMatches();
@@ -279,9 +281,19 @@ export class HomeComponent implements OnInit {
   }
 
   getLeaguesStats() {
-    this.statsService.getLeaguesViewed().subscribe(result => {
-      this.leaguesViewed = result;
-      this.updateFilteredArrays();
+    this.leaguesLoaded = false;
+    this.statsService.getLeaguesViewed().subscribe({
+      next: (result) => {
+        this.leaguesViewed = result;
+        this.updateFilteredArrays();
+        this.leaguesLoaded = true;
+        this.changeDetectorRef.detectChanges();
+      },
+      error: () => {
+        this.leaguesViewed = [];
+        this.leaguesLoaded = true;
+        this.changeDetectorRef.detectChanges();
+      }
     })
   }
 
