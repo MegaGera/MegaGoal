@@ -9,6 +9,7 @@ def fetch_leagues_to_update(updater):
     leagues_to_update = updater.collection_settings.find({
         "is_active": True,
         "$or": [
+            {"update_frequency": 1},
             {"$expr": {
                 "$lte": [
                     {"$add": ["$last_update", {"$multiply": ["$update_frequency", 86400000]}]},  # Convert days to milliseconds

@@ -5,7 +5,7 @@ The MegaGoal Updater Service is responsible for keeping the football database sy
 ### Daily Updates (`matches_updater_daily.py`)
 
 - **Purpose**: Updates ongoing matches and recent results
-- **Frequency**: Runs every 28 minutes during active hours
+- **Frequency**: Runs every 20 minutes during active hours
 - **What it does**:
   - Fetches matches from leagues that have active games today
   - Updates live scores, match status, and goals for ongoing matches
@@ -99,4 +99,4 @@ uvicorn updater_api:app --host 0.0.0.0 --port 8000 --reload
 ### Cron Schedule
 
 - **Full Update:** Runs daily at midnight (0 0 * * *)
-- **Daily Update:** Runs every 28 minutes (*/30 * * * *)
+- **Daily Update:** Runs at minutes 10, 30 and 50 every hour (10,30,50 * * * *)

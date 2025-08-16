@@ -11,7 +11,10 @@ def fetch_leagues_to_update_daily(updater):
         "is_active": True,
         "daily_update": True,
         "next_match": {"$lte": today + datetime.timedelta(days=1), "$gte": today},
-        "last_daily_update": {"$lte": now - datetime.timedelta(minutes=25)}
+        "$or": [
+            {"last_daily_update": {"$lte": now - datetime.timedelta(minutes=10)}},
+            {"last_daily_update": {"$exists": False}}
+        ]
     })
 
     leagues = [league for league in leagues_to_update]
