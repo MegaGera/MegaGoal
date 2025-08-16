@@ -18,28 +18,36 @@
             </a>
         </div>
         
-        <!-- User dropdown -->
-        <div class="user-dropdown">
-            <button class="user-button" (click)="toggleUserMenu()" [class.active]="isUserMenuOpen">
-                <ng-icon class="user-icon" name="jamUserCircle"></ng-icon>
-            </button>
+        <div class="right-section">
             
-            <div class="user-panel" [class.open]="isUserMenuOpen">
-                <a class="user-panel-link" href="https://megaauth.megagera.com" target="_blank">
-                    <span class="user-panel-text">Profile</span>
-                </a>
-                <a class="user-panel-link" routerLink="/feedback" routerLinkActive="active">
-                    <span class="user-panel-text">Feedback</span>
-                </a>
-                <a class="user-panel-link" routerLink="/locations" routerLinkActive="active">
-                    <span class="user-panel-text">Locations</span>
-                </a>
-                @if (isAdmin) {
-                    <a class="user-panel-link" routerLink="/admin" routerLinkActive="active">
-                        <span class="user-panel-text">Admin</span>
+            <!-- User dropdown -->
+            <div class="user-dropdown">
+                <button class="user-button" (click)="toggleUserMenu()" [class.active]="isUserMenuOpen">
+                    <ng-icon class="user-icon" name="jamUserCircle"></ng-icon>
+                </button>
+                
+                <div class="user-panel" [class.open]="isUserMenuOpen">
+                    <a class="user-panel-link" href="https://megaauth.megagera.com" target="_blank">
+                        <span class="user-panel-text">Profile</span>
                     </a>
-                }
+                    <a class="user-panel-link" routerLink="/feedback" routerLinkActive="active">
+                        <span class="user-panel-text">Feedback</span>
+                    </a>
+                    <a class="user-panel-link" routerLink="/locations" routerLinkActive="active">
+                        <span class="user-panel-text">Locations</span>
+                    </a>
+                    @if (isAdmin) {
+                        <a class="user-panel-link" routerLink="/admin" routerLinkActive="active">
+                            <span class="user-panel-text">Admin</span>
+                        </a>
+                    }
+                </div>
             </div>
+
+            <!-- GitHub button -->
+            <a class="github-button" href="https://github.com/MegaGera/MegaGoal" target="_blank" title="View on GitHub">
+                <ng-icon class="github-icon" name="jamGithub"></ng-icon>
+            </a>
         </div>
     </div>
 </nav>
