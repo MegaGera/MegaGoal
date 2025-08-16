@@ -4,6 +4,16 @@
 
 *MegaGoal* web application allows you to get information of football teams, save your matches and get stats about your data.
 
+[![Demo](WebApp/src/assets/img/screenshots/main.gif)](WebApp/src/assets/img/screenshots/main.mp4)
+
+**🚀 Try MegaGoal now at [https://megagoal.megagera.com](https://megagoal.megagera.com)**
+
+The application is **live and ready to use**! You can:
+- **Register for free** to create your own account and start tracking your football matches
+- **Use test users** available directly on the login page to explore all features without registration
+- Start marking your viewed matches, get personalized stats, and explore 20+ football competitions immediately
+
+
 ## Table of Contents
 
 - [Service Description](#service-description)
@@ -78,8 +88,6 @@ The user can **add personal locations** where watch the matches and then assign 
 #### Updater and Admin
 
 The admin users can change the periodicity of the updates of the leagues and matches with real data.
-
-![admin-page](WebApp/src/assets/img/screenshots/admin-page.png)
 
 ## Part of Mega
 
