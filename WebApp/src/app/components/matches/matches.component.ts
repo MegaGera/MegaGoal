@@ -304,7 +304,7 @@ export class MatchesComponent implements OnInit {
   }
 
   loadLocations(): void {
-    this.megaGoalService.getLocations().subscribe({
+    this.megaGoalService.getLocationsCounts().subscribe({
       next: (locations) => {
         this.locations = locations;
       },
