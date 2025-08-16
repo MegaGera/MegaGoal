@@ -101,12 +101,16 @@
         <span class="text">{{parseRoundName(match.league.round)}}</span>
       </div>
 
-      <div class="col-4 match-info" [ngClass]="{'match-info-md': size === 'md'}">
+      <div class="col-3 match-info" [ngClass]="{'match-info-md': size === 'md'}">
         <span class="text">{{match.league.season}}/{{match.league.season + 1}}</span>
       </div>
 
-      <div class="col-4 match-info" [ngClass]="{'match-info-md': size === 'md'}">
+      <div class="col-3 match-info" [ngClass]="{'match-info-md': size === 'md'}">
         <span class="text">{{getDate(match.fixture.timestamp)}}</span>
+      </div>
+
+      <div class="col-2 match-info" [ngClass]="{'match-info-md': size === 'md'}">
+        <span class="text">{{getTime(match.fixture.timestamp)}}</span>
       </div>
 
     </div>

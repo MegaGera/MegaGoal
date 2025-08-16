@@ -41,6 +41,11 @@ export class RealMatchCardComponent {
     return new Date(timestamp * 1000).toLocaleDateString("en-GB");
   }
 
+  getTime(timestamp: number) {
+    let date = new Date((timestamp * 1000));
+    return date.toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit' });
+  }
+
   createMatch() {
     if (!this.watched) {
       this.watched = true;
