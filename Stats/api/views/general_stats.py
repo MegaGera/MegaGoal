@@ -53,7 +53,11 @@ class GeneralStatsAPIView(APIView):
 
         # User filter
         filters.append({'user.username': username})
-
+        
+        # Exclude matches with null or missing goals
+        filters.append({'goals.home': {'$exists': True, '$ne': None}})
+        filters.append({'goals.away': {'$exists': True, '$ne': None}})
+        
         # Build query
         if len(filters) > 0:
             query = {'$and': filters}

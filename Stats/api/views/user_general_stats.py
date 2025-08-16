@@ -23,7 +23,13 @@ class UserGeneralStatsAPIView(APIView):
         collection_matches = settings.MONGO_DB['matches']
         
         # Get all matches for the user
-        query = {'user.username': username}
+        query = {
+            '$and': [
+                { 'user.username': username },
+                { 'goals.home': { '$exists': True, '$ne': None } },
+                { 'goals.away': { '$exists': True, '$ne': None } }
+            ]
+        }
         matches = list(collection_matches.find(query))
         
         if not matches:

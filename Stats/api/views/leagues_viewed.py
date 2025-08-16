@@ -20,7 +20,13 @@ class LeaguesViewedAPIView(APIView):
 
     # Use the MongoDB connection from settings
     collection_matches = settings.MONGO_DB['matches']
-    df = pd.DataFrame(list(collection_matches.find( { "user.username": username } )))
+    df = pd.DataFrame(list(collection_matches.find({
+      '$and': [
+        { 'user.username': username },
+        { 'goals.home': { '$exists': True, '$ne': None } },
+        { 'goals.away': { '$exists': True, '$ne': None } }
+      ]
+    })))
     
     # Check if DataFrame is empty (no matches found)
     if df.empty:
