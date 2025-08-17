@@ -7,10 +7,10 @@
     
     <!-- Center: Welcome -->
     <div class="hero-welcome">
-      <h2 class="welcome-title">Welcome back!</h2>
+      <h2 class="welcome-title">MegaGoal</h2>
       @if (userStatsLoaded) {
         <p class="welcome-subtitle">
-          You've watched {{ getMonthlyMatches() }} matches this month. Keep it up!
+          {{ this.getWelcomeMessage() }}
         </p>
       }
     </div>
