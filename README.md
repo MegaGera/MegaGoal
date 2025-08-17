@@ -2,9 +2,11 @@
 
 **MegaGoal** is a service within [**Mega microservices architecture**](https://github.com/MegaGera/Mega).
 
-*MegaGoal* web application allows you to get information of football teams, save your matches and get stats about your data.
+**MegaGoal** web application allows you to get information of football teams, save your matches and get stats about your data.
 
 [![Demo](WebApp/src/assets/img/screenshots/main.gif)](WebApp/src/assets/img/screenshots/main.mp4)
+
+*Click the preview to watch the complete video!*
 
 **🚀 Try MegaGoal now at [https://megagoal.megagera.com](https://megagoal.megagera.com)**
 
@@ -12,7 +14,7 @@ The application is **live and ready to use**! You can:
 - **Register for free** to create your own account and start tracking your football matches
 - **Use test users** available directly on the login page to explore all features without registration
 - Start marking your viewed matches, get personalized stats, and explore 20+ football competitions immediately
-
+- Fully responsive to use on mobile!
 
 ## Table of Contents
 
@@ -29,15 +31,13 @@ The application is **live and ready to use**! You can:
 
 *MegaGoal* offers a web application to save your historical data of viewed football matches of different competitions and then receive statistics of your favourite teams.
 
-You can navigate through the data of more than 20 different competitions such as the Champions League, LaLiga, Premier League and more, follow live matches as its database is updated daily and then mark your favourites. You can filter the stats and see how many goals each team scored in the matches you watched. And much more is coming soon!
+You can navigate through the data of more than 20 different competitions such as the Champions League, LaLiga, Premier League and more, follow live matches as its database is updated daily and then mark your favourites. You can filter the stats and see how many goals each team scored in the matches you watched, most watched teams and crazy results, most stadiums visited... And much more is coming soon!
 
 UI responsive design. The design is adapted to be opened with big screens and mobile screens.
 
-The application is deployed and you can use it. Contact me with me and I will create you an account and you could use it as you want! 
-
 This service is composed of different microservices developed with Angular, Node.js, Python, and more technologies. The [Architecture](#architecture) section provides a detailed explanation.
 
-Web Application: [https://megagoal.megagera.com](https://megagoal.megagera.com/)
+Link to web Application: [https://megagoal.megagera.com](https://megagoal.megagera.com/)
 
 ### Features
 
@@ -49,21 +49,29 @@ In the Dashboard / Home page, the right column are the **filters** to do a searc
 
 Desktop view:
 
-![!dashboard-desktop](WebApp/src/assets/img/screenshots/dashboard-desktop.gif)
+![!dashboard-desktop](WebApp/src/assets/img/screenshots/main.gif)
 
 Mobile view:
 
-<img style="width:50%" src="WebApp/src/assets/img/screenshots/live-matches-mobile.gif" alt="live-matches-mobile"/>
+![!live-matches-mobile](WebApp/src/assets/img/screenshots/main_mobile.gif)
 
-#### League Matches
+#### Matches
+
+The user can **view the matches of a particular day**
+
+The viewed matches are highlited with the colors of the league.
+
+![!matches_desktop](WebApp/src/assets/img/screenshots/matches_desktop.gif)
+
+#### Leagues
 
 The user can **navigate trhough the different leagues** and search for actual matches or from previous years.
 
 The viewed matches are highlited with the colors of the league.
 
-![!leagues-desktop](WebApp/src/assets/img/screenshots/leagues-desktop.gif)
+![!leagues_desktop](WebApp/src/assets/img/screenshots/leagues_desktop.gif)
 
-#### Team Matches and Information
+#### Team page
 
 The user can see the **information of a team** and their actual matches or from previous years.
 
@@ -75,19 +83,25 @@ The matches can be updated in the database to be live follow in the WebApp. A li
 
 Desktop view:
 
-<img  src="WebApp/src/assets/img/screenshots/live-matches-desktop.gif" alt="live-matches-desktop"/>
+![!live_desktop](WebApp/src/assets/img/screenshots/live_desktop.gif)
   
 Mobile view:
 
-<img style="width:50%" src="WebApp/src/assets/img/screenshots/live-matches-mobile.gif" alt="live-matches-mobile"/>
+![!live_mobile](WebApp/src/assets/img/screenshots/live_mobile.gif)
 
 #### Locations
 
 The user can **add personal locations** where watch the matches and then assign them individually.
 
+The user also can add "bulk" matches by just selecting a location and filtering matches by league, season and teams.
+
+The stadium icon marks an location as Official Stadium and only the matches played there can be assigned to this type of locations.
+
+![!locations_desktop](WebApp/src/assets/img/screenshots/locations_desktop.gif)
+
 #### Updater and Admin
 
-The admin users can change the periodicity of the updates of the leagues and matches with real data.
+The admin users can change the periodicity of the updates of the leagues and matches with real data, and add more leagues to the system.
 
 ## Part of Mega
 
@@ -113,11 +127,18 @@ You can run directly the `WebApp` application to have access to the user interfa
 
 The information to run `WebApp`, `Server` and `Stats` applications is under their folders of this repository. All of them are deployed with Docker and you can find the proccess of build and deploy in the `Dockerfile` and `docker-compose.yml` files of each folder.
 
-Don't forget is everything already deployed and you can use it! It's directly available in: [https://megagoal.megagera.com](https://megagoal.megagera.com) but you will need to contact me first to create you an account.
+Don't forget is everything already deployed and you can use it! It's directly available in: [https://megagoal.megagera.com](https://megagoal.megagera.com).
 
 ## Next features
 
-I will add here aaaall the ideas that I have for this application.
+- Add players stats
+- Add events of the matches (goals, cards, etc.)
+- Dedicated stats page
+- Rate matches and teams and get recommended matches based on your votes and the ones of other users
+- Map of where the users watch the matches and get insights (e.g. pub in Liverpool where users watch Real Madrid)
+- Translations
+
+And much more ideas!
 
 ## License
 
