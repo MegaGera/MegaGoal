@@ -18,9 +18,7 @@ export class PaginationComponent implements OnChanges {
   constructor() { }
   
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['elementsPerPage'])
-
-    if (changes['elements']) {
+    if (changes['elementsPerPage'] || changes['elements']) {
       this.pages = Math.ceil(this.elements.length / this.elementsPerPage);
       this.changePageSelected(1);
     }
