@@ -1,4 +1,5 @@
 import { getDB } from '../config/db.js';
+import { logFeedbackSubmitted } from './logController.js';
 
 // Submit user feedback
 export const submitFeedback = async (req, res) => {
@@ -12,6 +13,10 @@ export const submitFeedback = async (req, res) => {
     
     const result = await db.collection('user_feedback').insertOne(feedbackData);
     console.log("Feedback submitted by user: " + feedbackData.username);
+    
+    // Log feedback submission to RabbitMQ
+    await logFeedbackSubmitted(feedbackData.username, { ...feedbackData, _id: result.insertedId }, req);
+    
     res.status(201).json({ 
       id: result.insertedId,
       message: 'Feedback submitted successfully' 

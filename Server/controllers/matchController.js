@@ -1,6 +1,7 @@
 import { getDB } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
+import { logMatchCreated, logMatchDeleted, logMatchUpdateLocation } from './logController.js';
 
 // Get matches
 const getMatches = async (req, res) => {
@@ -57,6 +58,10 @@ const createMatch = async (req, res) => {
 
     let result = await db.collection('matches').insertOne(match);
     console.log("Match inserted for fixture " + match.fixture.id);
+    
+    // Log the match creation to RabbitMQ
+    await logMatchCreated(username, { ...match, _id: result.insertedId }, req);
+    
     res.status(201).json(result.insertedId);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -87,6 +92,10 @@ const deleteMatch = async (req, res) => {
 
     await db.collection('matches').deleteOne(filter);
     console.log("Match deleted with id " + fixtureId + " and username " + username);
+    
+    // Log the match deletion to RabbitMQ
+    await logMatchDeleted(username, result, req);
+    
     res.status(200).json({ message: "Match deleted successfully" });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -116,6 +125,9 @@ const changeLocation = async (req, res) => {
     const update = { $set: { "location": location} };
     let result = await db.collection('matches').updateOne(filter, update);
     console.log("Location updated for fixture " + fixtureId + " to " + location);
+
+    await logMatchUpdateLocation(username, { fixtureId: fixtureId, location: location }, req);
+
     res.status(201).json(result.acknowledged);
   } catch (error) {
     res.status(400).json({ message: error.message });

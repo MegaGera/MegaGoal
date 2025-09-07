@@ -4,6 +4,7 @@
 */
 import './config/loadEnv.js';
 import { connectDB } from './config/db.js';
+import { connectRabbitMQ } from './config/rabbitmq.js';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -21,6 +22,9 @@ const app = express();
 
 // Connect to database
 connectDB();
+
+// Connect to RabbitMQ for logging
+connectRabbitMQ();
 
 // Parses incoming requests with JSON payloads 
 app.use(express.json())

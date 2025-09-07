@@ -1,4 +1,5 @@
 import { getDB } from '../config/db.js';
+import { logAdminAction } from './logController.js';
 
 // Get leagues settings
 export const getLeaguesSettings = async (req, res) => {
@@ -21,6 +22,9 @@ export const changeIsActive = async (req, res) => {
     const update = is_active ? { $set: { "is_active": is_active } } : { $set: { "is_active": is_active, "daily_update": false } };
     let result = await db.collection('league_settings').updateOne(filter, update);
     console.log("Update is_active for league " + league_id + " to " + is_active);
+
+    await logAdminAction(req.validateData.username, 'CHANGE_IS_ACTIVE', { league_id: league_id, is_active: is_active }, req);
+    
     res.status(201).json(result.acknowledged);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -36,6 +40,9 @@ export const changeUpdateFrequency = async (req, res) => {
     const update = { $set: { "update_frequency": update_frequency } };
     let result = await db.collection('league_settings').updateOne(filter, update);
     console.log("Update frequency updated for league " + league_id + " to " + update_frequency);
+
+    await logAdminAction(req.validateData.username, 'CHANGE_UPDATE_FREQUENCY', { league_id: league_id, update_frequency: update_frequency }, req);
+
     res.status(201).json(result.acknowledged);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -51,6 +58,9 @@ export const changeDailyUpdate = async (req, res) => {
     const update = { $set: { "daily_update": daily_update } };
     let result = await db.collection('league_settings').updateOne(filter, update);
     console.log("Update daily_update for league " + league_id + " to " + daily_update);
+
+    await logAdminAction(req.validateData.username, 'CHANGE_DAILY_UPDATE', { league_id: league_id, daily_update: daily_update }, req);
+
     res.status(201).json(result.acknowledged);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -93,6 +103,9 @@ export const createLeagueSetting = async (req, res) => {
     
     let result = await db.collection('league_settings').insertOne(newLeagueSetting);
     console.log("Created new league setting for league " + league_id + " - " + league_name + " with position " + nextPosition);
+    
+    await logAdminAction(req.validateData.username, 'CREATE_LEAGUE_SETTING', newLeagueSetting, req);
+
     res.status(201).json(result.acknowledged);
   } catch (error) {
     res.status(400).json({ message: error.message });
