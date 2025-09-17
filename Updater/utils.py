@@ -154,6 +154,7 @@ class MatchUpdater:
     
     def update_league_matches(self, league_id, season):
         """Fetch matches from API and update DB for a given league and season, and update available_seasons"""
+        season = int(season)
         matches = self.get_matches_from_api(league_id, season)
         self.add_real_matches(matches)
         self.update_league_last_update(league_id)
