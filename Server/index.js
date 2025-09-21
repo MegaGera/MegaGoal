@@ -115,7 +115,10 @@ const validateAdmin = async (req, res, next) => {
   }
 };
 
-// Routes
+// Public routes (no authentication required)
+app.use('/public/match', matchRoutes);
+
+// Protected routes (authentication required)
 app.use('/match', matchRoutes);
 app.use('/league', leagueRoutes);
 app.use('/team', teamRoutes);
