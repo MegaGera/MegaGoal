@@ -71,10 +71,10 @@ export class TeamComponent {
         this.getMatches();
         this.getLocations();
       } else {
-        this.router.navigate(["/leagues"]);
+        this.router.navigate(["/app/leagues"]);
       }
     }, error => {
-      this.router.navigate(["/leagues"]);
+      this.router.navigate(["/app/leagues"]);
     })
 
   }
