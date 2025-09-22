@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { 
   jamArrowRight, 
@@ -130,13 +131,44 @@ export class LandingPageComponent implements OnInit {
     private landingService: LandingService,
     private statsService: StatsService,
     public images: ImagesService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private meta: Meta,
+    private title: Title
   ) { }
 
   ngOnInit(): void {
+    this.setMetaTags();
     this.loadLandingPageInfo();
     this.loadTeamStats();
     this.subscribeToTheme();
+  }
+
+  setMetaTags(): void {
+    // Set page title
+    this.title.setTitle('MegaGoal - Track Every Football Match You Watch | Football Analytics Platform');
+    
+    // Set meta description
+    this.meta.updateTag({ 
+      name: 'description', 
+      content: 'MegaGoal is the ultimate platform for football fans to track matches, analyze statistics, and discover viewing patterns. Join thousands of passionate fans who never miss a detail.' 
+    });
+    
+    // Set keywords
+    this.meta.updateTag({ 
+      name: 'keywords', 
+      content: 'football analytics, match tracking, sports statistics, football fans, match analysis, football data, sports analytics, football platform' 
+    });
+    
+    // Set Open Graph tags
+    this.meta.updateTag({ property: 'og:title', content: 'MegaGoal - Track Every Football Match You Watch' });
+    this.meta.updateTag({ property: 'og:description', content: 'MegaGoal is the ultimate platform for football fans to track matches, analyze statistics, and discover viewing patterns.' });
+    this.meta.updateTag({ property: 'og:type', content: 'website' });
+    this.meta.updateTag({ property: 'og:url', content: 'https://megagoal.com/' });
+    
+    // Set Twitter Card tags
+    this.meta.updateTag({ property: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ property: 'twitter:title', content: 'MegaGoal - Track Every Football Match You Watch' });
+    this.meta.updateTag({ property: 'twitter:description', content: 'MegaGoal is the ultimate platform for football fans to track matches, analyze statistics, and discover viewing patterns.' });
   }
 
   subscribeToTheme(): void {
