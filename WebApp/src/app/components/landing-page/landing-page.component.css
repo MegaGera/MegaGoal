@@ -110,6 +110,17 @@
   overflow: hidden;
 }
 
+/* Ensure icons in buttons are properly aligned */
+.btn-primary ng-icon,
+.btn-secondary ng-icon,
+.btn-outline ng-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 .btn-primary {
   color: white;
   transform: translateY(-2px);
@@ -124,6 +135,7 @@
   color: white;
   border: 2px solid rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(10px);
+  transform: translateY(-2px);
 }
 
 .btn-secondary:hover {

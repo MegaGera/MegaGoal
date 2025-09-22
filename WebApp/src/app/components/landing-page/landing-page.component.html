@@ -139,7 +139,7 @@
   <section id="features" class="features-section">
     <div class="container">
       <div class="section-header">
-        <h2 class="section-title">Why Choose MegaGoal?</h2>
+        <h2 class="section-title">Why Use MegaGoal?</h2>
         <p class="section-subtitle">
           Everything you need to become the ultimate football fan
         </p>
@@ -224,7 +224,7 @@
   </section>
 
   <!-- Testimonials Section -->
-  <section class="testimonials-section">
+  <!-- <section class="testimonials-section">
     <div class="container">
       <div class="section-header">
         <h2 class="section-title">What Our Users Say</h2>
@@ -250,7 +250,7 @@
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
 
   <!-- CTA Section -->
   <section class="cta-section">
@@ -264,9 +264,6 @@
           <button class="btn-primary btn-large" (click)="goToApp()">
             <span>Get Started Free</span>
             <ng-icon name="jamArrowRight"></ng-icon>
-          </button>
-          <button class="btn-outline" (click)="scrollToSection('features')">
-            <span>Learn More</span>
           </button>
         </div>
       </div>
@@ -285,37 +282,17 @@
         </div>
         <div class="footer-links">
           <div class="footer-column">
-            <h4 class="footer-column-title">Product</h4>
-            <a href="/app" class="footer-link">Features</a>
-            <a href="/app" class="footer-link">Pricing</a>
-            <a href="/app" class="footer-link">Demo</a>
-          </div>
-          <div class="footer-column">
-            <h4 class="footer-column-title">Support</h4>
-            <a href="/app/feedback" class="footer-link">Feedback</a>
-            <a href="/app" class="footer-link">Help Center</a>
-            <a href="/app" class="footer-link">Contact</a>
-          </div>
-          <div class="footer-column">
             <h4 class="footer-column-title">Social</h4>
             <a href="https://github.com/MegaGera/MegaGoal" target="_blank" class="footer-link">
               <ng-icon name="jamGithub"></ng-icon>
               GitHub
-            </a>
-            <a href="#" class="footer-link">
-              <ng-icon name="jamTwitter"></ng-icon>
-              Twitter
-            </a>
-            <a href="#" class="footer-link">
-              <ng-icon name="jamLinkedin"></ng-icon>
-              LinkedIn
             </a>
           </div>
         </div>
       </div>
       <div class="footer-bottom">
         <div class="footer-bottom-content">
-          <p class="footer-copyright">© 2025 MegaGera. All rights reserved.</p>
+          <p class="footer-copyright">© 2025 MegaGera</p>
           <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="'Switch to ' + (currentTheme === 'blue' ? 'red' : 'blue') + ' theme'">
             <ng-icon [name]="currentTheme === 'blue' ? 'jamSun' : 'jamMoon'" class="theme-icon"></ng-icon>
             <span class="theme-text">{{ currentTheme === 'blue' ? 'Red Theme' : 'Blue Theme' }}</span>

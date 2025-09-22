@@ -82,13 +82,13 @@ export class LandingPageComponent implements OnInit {
     {
       icon: 'ionStatsChart',
       title: 'Advanced Analytics',
-      description: 'Get comprehensive insights into your viewing habits and favorite teams.',
+      description: 'Get stats into your viewing habits and favorite teams.',
       color: '#2196F3'
     },
     {
       icon: 'ionLocation',
       title: 'Location Tracking',
-      description: 'Remember where you watched each match and discover viewing patterns.',
+      description: 'Remember where you watched each match.',
       color: '#FF9800'
     },
     {
@@ -97,24 +97,11 @@ export class LandingPageComponent implements OnInit {
       description: 'Follow multiple leagues and competitions with personalized statistics.',
       color: '#9C27B0'
     },
-    {
-      icon: 'ionEye',
-      title: 'Visual Experience',
-      description: 'Beautiful, modern interface designed for the ultimate football fan experience.',
-      color: '#F44336'
-    },
-    {
-      icon: 'ionPeople',
-      title: 'Community Features',
-      description: 'Share your passion with other football enthusiasts and compare stats.',
-      color: '#00BCD4'
-    }
   ];
 
   stats = [
-    { number: '10K+', label: 'Matches Tracked' },
-    { number: '500+', label: 'Active Users' },
-    { number: '50+', label: 'Leagues Supported' },
+    { number: '65K+', label: 'Matches' },
+    { number: '6k+', label: 'Teams' },
     { number: '99%', label: 'User Satisfaction' }
   ];
 
