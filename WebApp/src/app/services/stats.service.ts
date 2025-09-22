@@ -96,4 +96,11 @@ export class StatsService {
     return this.http.get<GeneralStats>(this.url + '/general-stats/', { ...this.options, params: params });
   }
 
+  /*
+    Method to get landing page team statistics (demo data for team 541)
+  */
+  getLandingPageTeamStats(): Observable<FavouriteTeamStats> {
+    return this.http.get<FavouriteTeamStats>(this.url + '/landing-page-team-stats/', this.options);
+  }
+
 }

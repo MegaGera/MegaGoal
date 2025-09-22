@@ -19,15 +19,18 @@ import {
 } from '@ng-icons/jam-icons';
 import { ionFootball, ionTrophy, ionStatsChart, ionLocation, ionEye, ionPeople } from '@ng-icons/ionicons';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
+import { FavouriteTeamCardComponent } from '../stats/favourite-team-card/favourite-team-card.component';
 import { LandingService, LandingPageInfo } from '../../services/landing.service';
 import { Match } from '../../models/match';
+import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { ImagesService } from '../../services/images.service';
+import { StatsService } from '../../services/stats.service';
 import { ThemeService, Theme } from '../../services/theme.service';
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [CommonModule, RouterModule, NgIconComponent, RealMatchCardComponent],
+  imports: [CommonModule, RouterModule, NgIconComponent, RealMatchCardComponent, FavouriteTeamCardComponent],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.css',
   providers: [provideNgIconsConfig({
@@ -52,7 +55,7 @@ import { ThemeService, Theme } from '../../services/theme.service';
     ionLocation,
     ionEye,
     ionPeople
-  }), LandingService, ImagesService, ThemeService]
+  }), LandingService, ImagesService, StatsService, ThemeService]
 })
 export class LandingPageComponent implements OnInit {
   
@@ -60,6 +63,11 @@ export class LandingPageComponent implements OnInit {
   demoMatches: Match[] = [];
   matchLoaded: boolean = false;
   matchError: boolean = false;
+  
+  // Team stats data for landing page
+  teamStats: FavouriteTeamStats | null = null;
+  teamStatsLoaded: boolean = false;
+  teamStatsError: boolean = false;
   
   // Theme management
   currentTheme: Theme = 'blue';
@@ -133,12 +141,14 @@ export class LandingPageComponent implements OnInit {
 
   constructor(
     private landingService: LandingService,
+    private statsService: StatsService,
     public images: ImagesService,
     private themeService: ThemeService
   ) { }
 
   ngOnInit(): void {
     this.loadLandingPageInfo();
+    this.loadTeamStats();
     this.subscribeToTheme();
   }
 
@@ -162,6 +172,24 @@ export class LandingPageComponent implements OnInit {
         console.error('Error loading landing page info:', error);
         this.matchError = true;
         this.matchLoaded = true;
+      }
+    });
+  }
+
+  loadTeamStats(): void {
+    this.teamStatsLoaded = false;
+    this.teamStatsError = false;
+    
+    this.statsService.getLandingPageTeamStats().subscribe({
+      next: (data: FavouriteTeamStats) => {
+        this.teamStats = data;
+        this.teamStatsLoaded = true;
+        this.teamStatsError = false;
+      },
+      error: (error) => {
+        console.error('Error loading team stats:', error);
+        this.teamStatsError = true;
+        this.teamStatsLoaded = true;
       }
     });
   }

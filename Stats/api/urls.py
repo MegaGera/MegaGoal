@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import TeamsViewedAPIView, LeaguesViewedAPIView, UserGeneralStatsAPIView, FavouriteTeamStatsAPIView, GeneralStatsAPIView
+from .views import TeamsViewedAPIView, LeaguesViewedAPIView, UserGeneralStatsAPIView, FavouriteTeamStatsAPIView, GeneralStatsAPIView, LandingPageTeamStatsAPIView
 
 urlpatterns = [
     path('teams-viewed/', TeamsViewedAPIView.as_view(), name='match-stats'),
@@ -7,4 +7,5 @@ urlpatterns = [
     path('user-general-stats/', UserGeneralStatsAPIView.as_view(), name='user-general-stats'),
     path('favourite-team-stats/', FavouriteTeamStatsAPIView.as_view(), name='favourite-team-stats'),
     path('general-stats/', GeneralStatsAPIView.as_view(), name='general-stats'),
+    path('landing-page-team-stats/', LandingPageTeamStatsAPIView.as_view(), name='landing-page-team-stats'),
 ]

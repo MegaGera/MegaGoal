@@ -241,12 +241,59 @@
   animation-delay: 4s;
 }
 
-/* Stats card positioned far right */
-.demo-card-stats {
-  width: 200px;
+/* Team card positioned far right */
+.demo-card-team {
+  width: 280px;
   animation-delay: 6s;
   position: relative;
   flex-shrink: 0;
+}
+
+/* Make favourite-team-card wider in landing page */
+app-favourite-team-card {
+  width: 350px;
+  flex-shrink: 0;
+}
+
+/* Team card error and loading states */
+.team-error, .team-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  width: 350px;
+}
+
+.team-error .error-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.6;
+}
+
+.team-error .error-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+}
+
+.team-loading .loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 0.5rem;
+}
+
+.team-loading .loading-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
 }
 
 .card-header {
@@ -852,10 +899,10 @@
     margin-bottom: 1rem;
   }
   
-  .demo-card-1, .demo-card-2, .demo-card-3, .demo-card-stats {
+  .demo-card-1, .demo-card-2, .demo-card-3 {
     position: static;
     width: 100%;
-    max-width: 400px;
+    max-width: 300px;
     margin: 0 auto 1rem;
     transform: none;
     left: auto;
@@ -864,10 +911,26 @@
     bottom: auto;
   }
   
-  .demo-card-stats {
-    position: static;
+  app-favourite-team-card {
     width: 100%;
-    max-width: 250px;
+    max-width: 300px;
+    margin: 0 auto 2rem;
+  }
+  
+  .team-error, .team-loading {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto 2rem;
+  }
+  
+  /* Ensure proper height for hero section on tablet */
+  .hero-section {
+    min-height: 110vh;
+  }
+  
+  .hero-cards {
+    height: auto;
+    min-height: 450px;
   }
 }
 
@@ -883,6 +946,34 @@
   .btn-primary, .btn-secondary, .btn-outline {
     padding: 0.875rem 1.5rem;
     font-size: 1rem;
+  }
+  
+  /* Make cards smaller on very small screens */
+  .demo-card-1, .demo-card-2, .demo-card-3 {
+    max-width: 280px;
+    margin: 0 auto 0.75rem;
+  }
+  
+  app-favourite-team-card {
+    max-width: 280px;
+    margin: 0 auto 1.5rem;
+  }
+  
+  .team-error, .team-loading {
+    max-width: 280px;
+    margin: 0 auto 1.5rem;
+  }
+  
+  /* Ensure proper spacing and height for hero section on mobile */
+  .hero-section {
+    padding-bottom: 3rem;
+    min-height: 120vh;
+  }
+  
+  /* Make hero cards container taller on mobile */
+  .hero-cards {
+    height: auto;
+    min-height: 500px;
   }
 }
 

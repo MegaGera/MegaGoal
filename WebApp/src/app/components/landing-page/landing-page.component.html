@@ -98,23 +98,25 @@
               </div>
             </div>
             
-            <!-- Stats Card - Far Right -->
-            <div class="demo-card demo-card-stats">
-              <div class="stats-grid">
-                <div class="stat-item">
-                  <div class="stat-number">127</div>
-                  <div class="stat-label">Matches</div>
-                </div>
-                <div class="stat-item">
-                  <div class="stat-number">15</div>
-                  <div class="stat-label">Leagues</div>
-                </div>
-                <div class="stat-item">
-                  <div class="stat-number">8</div>
-                  <div class="stat-label">Venues</div>
-                </div>
+            <!-- Favourite Team Card - Far Right -->
+            @if (teamStatsLoaded && teamStats && !teamStatsError) {
+              <app-favourite-team-card 
+                [teamStats]="teamStats" 
+                [isLoading]="false"
+                [teams]="[]"
+                [selectedTeamId]="null">
+              </app-favourite-team-card>
+            } @else if (teamStatsLoaded && teamStatsError) {
+              <div class="team-error">
+                <div class="error-icon">⚽</div>
+                <div class="error-text">Team stats unavailable</div>
               </div>
-            </div>
+            } @else {
+              <div class="team-loading">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Loading team stats...</div>
+              </div>
+            }
           </div>
         </div>
       </div>
