@@ -58,6 +58,9 @@ if (process.env.NODE_ENV === 'production') {
   // }));
 }
 
+// Public routes (no authentication required) - must be defined before middleware
+app.use('/public/match', matchRoutes);
+
 // Validate Api Key
 if (process.env.NODE_ENV === 'production') {
   const validateApiKey = async (req, res, next) => {
@@ -114,9 +117,6 @@ const validateAdmin = async (req, res, next) => {
     next();
   }
 };
-
-// Public routes (no authentication required)
-app.use('/public/match', matchRoutes);
 
 // Protected routes (authentication required)
 app.use('/match', matchRoutes);
