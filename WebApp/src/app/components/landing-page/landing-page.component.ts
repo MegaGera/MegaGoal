@@ -164,11 +164,55 @@ export class LandingPageComponent implements OnInit {
     this.meta.updateTag({ property: 'og:description', content: 'MegaGoal is the ultimate platform for football fans to track matches, analyze statistics, and discover viewing patterns.' });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:url', content: 'https://megagoal.com/' });
+    this.meta.updateTag({ property: 'og:image', content: 'https://server.megamedia.megagera.com/megagera/MG_logo.png' });
     
     // Set Twitter Card tags
     this.meta.updateTag({ property: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ property: 'twitter:title', content: 'MegaGoal - Track Every Football Match You Watch' });
     this.meta.updateTag({ property: 'twitter:description', content: 'MegaGoal is the ultimate platform for football fans to track matches, analyze statistics, and discover viewing patterns.' });
+    this.meta.updateTag({ property: 'twitter:image', content: 'https://server.megamedia.megagera.com/megagera/MG_logo.png' });
+    
+    // Add JSON-LD structured data for SEO
+    this.addStructuredData();
+  }
+
+  private addStructuredData(): void {
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "MegaGoal",
+      "alternateName": "MegaGoal Football Analytics Platform",
+      "description": "MegaGoal is the ultimate platform for football fans to track matches, analyze statistics, and discover viewing patterns.",
+      "url": "https://megagoal.com",
+      "applicationCategory": "SportsApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "logo": "https://server.megamedia.megagera.com/megagera/MG_logo.png",
+      "screenshot": "https://server.megamedia.megagera.com/megagera/MG_logo.png",
+      "featureList": [
+        "Match Tracking",
+        "Advanced Analytics", 
+        "Location Tracking",
+        "League Management"
+      ],
+      "keywords": "football analytics, match tracking, sports statistics, football fans, match analysis, football data, sports analytics, football platform"
+    };
+
+    // Remove existing structured data if any
+    const existingScript = document.querySelector('script[type="application/ld+json"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    // Add new structured data
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(structuredData);
+    document.head.appendChild(script);
   }
 
   subscribeToTheme(): void {

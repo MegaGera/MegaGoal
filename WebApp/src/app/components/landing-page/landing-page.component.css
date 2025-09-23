@@ -73,38 +73,58 @@
   text-align: left;
 }
 
-.mega-goal-title {
-  font-size: 4rem;
-  font-weight: 900;
+/* SEO-friendly hidden h1 for search engines */
+.mega-goal-title-seo {
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 1px !important;
+  line-height: 1px !important;
+  white-space: nowrap !important;
+}
+
+.mega-goal-logo {
+  height: 8rem;
+  width: auto;
+  max-width: 100%;
   margin: 0;
-  background: linear-gradient(45deg, #ff6b6b, #ffd700, #4ecdc4, #45b7d1);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradientShift 3s ease-in-out infinite, titleGlow 2s ease-in-out infinite alternate;
-  text-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  padding-bottom: 0.2rem;
+  filter: drop-shadow(0 0 30px rgba(255, 107, 107, 0.3));
+  animation: logoGlow 2s ease-in-out infinite alternate;
+  transition: all 0.3s ease;
 }
 
-/* Animations for MegaGoal title */
-@keyframes gradientShift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
+.mega-goal-logo:hover {
+  filter: drop-shadow(0 0 40px rgba(255, 107, 107, 0.6)) drop-shadow(0 0 60px rgba(255, 215, 0, 0.3));
+  transform: scale(1.05);
+}
+
+/* Mobile responsive styling for logo */
+@media (max-width: 768px) {
+  .mega-goal-logo {
+    padding-top: 2rem;
   }
 }
 
-@keyframes titleGlow {
+@media (max-width: 480px) {
+  .mega-goal-logo {
+    padding-top: 3rem;
+  }
+}
+
+/* Animations for MegaGoal logo */
+@keyframes logoGlow {
   0% {
-    text-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
+    filter: drop-shadow(0 0 30px rgba(255, 107, 107, 0.3));
   }
   100% {
-    text-shadow: 0 0 40px rgba(255, 107, 107, 0.6), 0 0 60px rgba(255, 215, 0, 0.3);
+    filter: drop-shadow(0 0 40px rgba(255, 107, 107, 0.6)) drop-shadow(0 0 60px rgba(255, 215, 0, 0.3));
   }
 }
 
