@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { NgIconComponent } from '@ng-icons/core';
+import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
+import { jamChevronLeft, jamChevronRight, jamPlus } from '@ng-icons/jam-icons';
 
 
 import { MegaGoalService } from '../../services/megagoal.service';
@@ -29,7 +30,13 @@ import { RealMatchCardComponent } from '../real-match-card/real-match-card.compo
     RealMatchCardComponent
   ],
   templateUrl: './matches.component.html',
-  styleUrl: './matches.component.css'
+  styleUrl: './matches.component.css',
+  providers: [
+    provideNgIconsConfig({
+      size: '1.2rem',
+    }),
+    provideIcons({ jamChevronLeft, jamChevronRight, jamPlus })
+  ]
 })
 export class MatchesComponent implements OnInit {
   isLoading = false;
@@ -115,6 +122,22 @@ export class MatchesComponent implements OnInit {
 
   goToToday(): void {
     this.selectedDate = new Date().toISOString().split('T')[0];
+    this.updateDateUrlParameter();
+    this.getMatchesForDate();
+  }
+
+  goToPreviousDay(): void {
+    const currentDate = new Date(this.selectedDate);
+    currentDate.setDate(currentDate.getDate() - 1);
+    this.selectedDate = currentDate.toISOString().split('T')[0];
+    this.updateDateUrlParameter();
+    this.getMatchesForDate();
+  }
+
+  goToNextDay(): void {
+    const currentDate = new Date(this.selectedDate);
+    currentDate.setDate(currentDate.getDate() + 1);
+    this.selectedDate = currentDate.toISOString().split('T')[0];
     this.updateDateUrlParameter();
     this.getMatchesForDate();
   }
@@ -285,6 +308,7 @@ export class MatchesComponent implements OnInit {
       day: 'numeric' 
     });
   }
+
 
   formatTime(timestamp: number): string {
     const date = new Date(timestamp * 1000);

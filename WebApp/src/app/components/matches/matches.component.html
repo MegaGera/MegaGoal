@@ -41,13 +41,29 @@
           
           <div class="date-input-wrapper">
             <label for="date-input" class="date-label">Select Date</label>
-            <input 
-              type="date"
-              id="date-input"
-              class="date-input"
-              [(ngModel)]="selectedDate"
-              (change)="onDateChange()"
-              aria-label="Select date for matches">
+            <div class="date-navigation">
+              <button 
+                class="date-nav-btn prev-day-btn"
+                (click)="goToPreviousDay()"
+                aria-label="Go to previous day"
+                title="Previous day">
+                <ng-icon name="jamChevronLeft"></ng-icon>
+              </button>
+              <input 
+                type="date"
+                id="date-input"
+                class="date-input"
+                [(ngModel)]="selectedDate"
+                (change)="onDateChange()"
+                aria-label="Select date for matches">
+              <button 
+                class="date-nav-btn next-day-btn"
+                (click)="goToNextDay()"
+                aria-label="Go to next day"
+                title="Next day">
+                <ng-icon name="jamChevronRight"></ng-icon>
+              </button>
+            </div>
           </div>
         </div>
         </div>

@@ -111,6 +111,7 @@
   font-weight: 600;
   color: #374151;
   margin-bottom: 8px;
+  text-align: center;
 }
 
 .date-input {
@@ -134,6 +135,70 @@
 
 .date-input:hover {
   border-color: #d1d5db;
+}
+
+/* Date navigation */
+.date-navigation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.date-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.date-nav-btn:hover {
+  border-color: #dc143c;
+  color: #dc143c;
+  background: #fef2f2;
+}
+
+.date-nav-btn:active {
+  transform: scale(0.95);
+}
+
+.date-nav-btn ng-icon {
+  font-size: 16px;
+}
+
+
+.date-navigation .date-input {
+  flex: 1;
+  margin: 0;
+}
+
+
+/* Additional styling for better visibility */
+.date-nav-btn {
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.date-nav-btn:disabled:hover {
+  border-color: #e5e7eb;
+  color: #6b7280;
+  background: white;
 }
 
 .today-btn {
