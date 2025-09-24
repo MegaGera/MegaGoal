@@ -1,5 +1,5 @@
 <!-- Landing Page -->
-<div class="landing-page" [ngClass]="'theme-' + currentTheme">
+<div class="landing-page theme-blue">
   
   <!-- Hero Section -->
   <section class="hero-section">
@@ -300,10 +300,6 @@
       <div class="footer-bottom">
         <div class="footer-bottom-content">
           <p class="footer-copyright">© 2025 MegaGera</p>
-          <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="'Switch to ' + (currentTheme === 'blue' ? 'red' : 'blue') + ' theme'">
-            <ng-icon [name]="currentTheme === 'blue' ? 'jamSun' : 'jamMoon'" class="theme-icon"></ng-icon>
-            <span class="theme-text">{{ currentTheme === 'blue' ? 'Red Theme' : 'Blue Theme' }}</span>
-          </button>
         </div>
       </div>
     </div>

@@ -14,9 +14,7 @@ import {
   jamPlay,
   jamGithub,
   jamTwitter,
-  jamLinkedin,
-  jamSun,
-  jamMoon
+  jamLinkedin
 } from '@ng-icons/jam-icons';
 import { ionFootball, ionTrophy, ionStatsChart, ionLocation, ionEye, ionPeople } from '@ng-icons/ionicons';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
@@ -26,7 +24,6 @@ import { Match } from '../../models/match';
 import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { ImagesService } from '../../services/images.service';
 import { StatsService } from '../../services/stats.service';
-import { ThemeService, Theme } from '../../services/theme.service';
 
 @Component({
   selector: 'app-landing-page',
@@ -48,15 +45,13 @@ import { ThemeService, Theme } from '../../services/theme.service';
     jamGithub,
     jamTwitter,
     jamLinkedin,
-    jamSun,
-    jamMoon,
     ionFootball,
     ionTrophy,
     ionStatsChart,
     ionLocation,
     ionEye,
     ionPeople
-  }), LandingService, ImagesService, StatsService, ThemeService]
+  }), LandingService, ImagesService, StatsService]
 })
 export class LandingPageComponent implements OnInit {
   
@@ -70,8 +65,6 @@ export class LandingPageComponent implements OnInit {
   teamStatsLoaded: boolean = false;
   teamStatsError: boolean = false;
   
-  // Theme management
-  currentTheme: Theme = 'blue';
   
   features = [
     {
@@ -131,7 +124,6 @@ export class LandingPageComponent implements OnInit {
     private landingService: LandingService,
     private statsService: StatsService,
     public images: ImagesService,
-    private themeService: ThemeService,
     private meta: Meta,
     private title: Title
   ) { }
@@ -140,7 +132,6 @@ export class LandingPageComponent implements OnInit {
     this.setMetaTags();
     this.loadLandingPageInfo();
     this.loadTeamStats();
-    this.subscribeToTheme();
   }
 
   setMetaTags(): void {
@@ -215,11 +206,6 @@ export class LandingPageComponent implements OnInit {
     document.head.appendChild(script);
   }
 
-  subscribeToTheme(): void {
-    this.themeService.theme$.subscribe(theme => {
-      this.currentTheme = theme;
-    });
-  }
 
   loadLandingPageInfo(): void {
     this.matchLoaded = false;
@@ -269,7 +255,4 @@ export class LandingPageComponent implements OnInit {
     window.location.href = '/app';
   }
 
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
-  }
 }

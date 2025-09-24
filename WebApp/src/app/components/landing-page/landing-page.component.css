@@ -17,13 +17,9 @@
 
 /* Blue Theme (Default) */
 .theme-blue .hero-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #A18CFF 0%, #F1E4FF 100%);
 }
 
-/* Red Theme */
-.theme-red .hero-section {
-  background: linear-gradient(135deg, #e53e3e 0%, #c53030 50%, #9b2c2c 100%);
-}
 
 .hero-background {
   position: absolute;
@@ -137,7 +133,7 @@
 }
 
 .gradient-text {
-  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+  background: linear-gradient(45deg, #E33434, #e24d4d);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -147,6 +143,7 @@
   font-size: 1.25rem;
   margin-bottom: 2.5rem;
   opacity: 0.9;
+  color: #FFFFFF;
   animation: slideInLeft 1s ease-out 0.2s both;
 }
 
@@ -186,23 +183,27 @@
 .btn-primary {
   color: white;
   transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 60, 60, 0.4);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: #E0E0E0;
+  color: #333333;
+  border: 2px solid #E0E0E0;
   backdrop-filter: blur(10px);
   transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  background: #D0D0D0;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 .btn-outline {
@@ -233,7 +234,7 @@
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: #666;
+  color: #2C2C2C;
 }
 
 .loading-spinner {
@@ -253,7 +254,7 @@
 
 .loading-text, .error-text {
   font-size: 0.9rem;
-  color: #666;
+  color: #2C2C2C;
 }
 
 .error-icon {
@@ -396,7 +397,7 @@ app-favourite-team-card {
 
 .vs {
   font-weight: bold;
-  color: #666;
+  color: #2C2C2C;
   font-size: 0.9rem;
 }
 
@@ -407,7 +408,7 @@ app-favourite-team-card {
 }
 
 .league-badge {
-  background: #e53e3e;
+  background: #FF3C3C;
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
@@ -424,7 +425,7 @@ app-favourite-team-card {
 }
 
 .location-info {
-  color: #666;
+  color: #2C2C2C;
   font-size: 0.9rem;
 }
 
@@ -441,12 +442,12 @@ app-favourite-team-card {
 .stat-number {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #e53e3e;
+  color: #FF3C3C;
 }
 
 .stat-label {
   font-size: 0.8rem;
-  color: #666;
+  color: #2C2C2C;
 }
 
 .chart-placeholder {
@@ -458,7 +459,7 @@ app-favourite-team-card {
 }
 
 .chart-bar {
-  background: linear-gradient(45deg, #e53e3e, #c53030);
+  background: linear-gradient(45deg, #FF3C3C, #FF7B54);
   width: 20px;
   border-radius: 10px 10px 0 0;
   animation: growUp 2s ease-out;
@@ -467,7 +468,7 @@ app-favourite-team-card {
 .chart-label {
   text-align: center;
   font-size: 0.9rem;
-  color: #666;
+  color: #2C2C2C;
   font-weight: 600;
 }
 
@@ -509,7 +510,7 @@ app-favourite-team-card {
 
 .stat-label {
   font-size: 1.1rem;
-  color: #666;
+  color: #2C2C2C;
   font-weight: 600;
 }
 
@@ -533,7 +534,7 @@ app-favourite-team-card {
 
 .section-subtitle {
   font-size: 1.2rem;
-  color: #666;
+  color: #2C2C2C;
   max-width: 600px;
   margin: 0 auto;
 }
@@ -582,7 +583,7 @@ app-favourite-team-card {
 }
 
 .feature-description {
-  color: #666;
+  color: #2C2C2C;
   line-height: 1.6;
 }
 
@@ -608,7 +609,7 @@ app-favourite-team-card {
 
 .demo-subtitle {
   font-size: 1.2rem;
-  color: #666;
+  color: #2C2C2C;
   margin-bottom: 2rem;
 }
 
@@ -654,7 +655,7 @@ app-favourite-team-card {
 }
 
 .phone-header {
-  background: #e53e3e;
+  background: #FF3C3C;
   color: white;
   padding: 1rem;
   display: flex;
@@ -693,17 +694,15 @@ app-favourite-team-card {
 .phone-stat-number {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #e53e3e;
+  color: #FF3C3C;
 }
 
 .phone-stat-label {
   font-size: 0.9rem;
-  color: #666;
+  color: #2C2C2C;
 }
 
-.phone-matches {
-  /* space-y utility handled by margin-bottom on individual items */
-}
+/* space-y utility handled by margin-bottom on individual items */
 
 .phone-match {
   display: flex;
@@ -722,7 +721,7 @@ app-favourite-team-card {
 
 .phone-score {
   font-weight: bold;
-  color: #e53e3e;
+  color: #FF3C3C;
 }
 
 /* Testimonials Section */
@@ -790,14 +789,14 @@ app-favourite-team-card {
 }
 
 .author-role {
-  color: #666;
+  color: #2C2C2C;
   font-size: 0.9rem;
 }
 
 /* CTA Section */
 .cta-section {
   padding: 6rem 0;
-  background: linear-gradient(135deg, #e53e3e 0%, #c53030 50%, #9b2c2c 100%);
+  background: linear-gradient(135deg, #A18CFF 0%, #F1E4FF 100%);
   color: white;
   text-align: center;
 }
@@ -843,7 +842,7 @@ app-favourite-team-card {
   font-size: 1.8rem;
   font-weight: bold;
   margin-bottom: 1rem;
-  color: #e53e3e;
+  color: #FF3C3C;
 }
 
 .footer-description {
@@ -879,7 +878,7 @@ app-favourite-team-card {
 }
 
 .footer-link:hover {
-  color: #e53e3e;
+  color: #FF3C3C;
 }
 
 .footer-bottom {
@@ -1110,20 +1109,21 @@ app-favourite-team-card {
 /* Theme-specific styles */
 /* Blue Theme Colors */
 .theme-blue .gradient-text {
-  background: linear-gradient(45deg, #ffd700, #ff6b6b);
+  background: linear-gradient(45deg, #FF3C3C, #FF7B54);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .theme-blue .btn-primary {
-  background: linear-gradient(45deg, #ff6b6b, #ffd700);
+  background: linear-gradient(45deg, #FF3C3C, #FF7B54);
   color: white;
-  box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .theme-blue .btn-primary:hover {
-  box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 60, 60, 0.4);
 }
 
 .theme-blue .btn-outline {
@@ -1137,152 +1137,47 @@ app-favourite-team-card {
 }
 
 .theme-blue .stat-number {
-  color: #667eea;
+  color: #FF3C3C;
 }
 
 .theme-blue .league-badge {
-  background: #667eea;
+  background: #FF3C3C;
 }
 
 .theme-blue .chart-bar {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: linear-gradient(45deg, #FF3C3C, #FF7B54);
 }
 
 .theme-blue .phone-header {
-  background: #667eea;
+  background: #FF3C3C;
 }
 
 .theme-blue .phone-stat-number,
 .theme-blue .phone-score {
-  color: #667eea;
+  color: #FF3C3C;
 }
 
 .theme-blue .cta-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #A18CFF 0%, #cfa3ff 100%);
 }
 
 .theme-blue .footer-title {
-  color: #667eea;
+  color: #FF3C3C;
 }
 
 .theme-blue .footer-link:hover {
-  color: #667eea;
+  color: #FF3C3C;
 }
 
 .theme-blue .loading-spinner {
-  border-top: 4px solid #667eea;
+  border-top: 4px solid #FF3C3C;
 }
 
-/* Red Theme Colors */
-.theme-red .gradient-text {
-  background: linear-gradient(45deg, #fbbf24, #f59e0b);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
 
-.theme-red .btn-primary {
-  background: linear-gradient(45deg, #f59e0b, #fbbf24);
-  color: white;
-  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
-}
-
-.theme-red .btn-primary:hover {
-  box-shadow: 0 15px 40px rgba(245, 158, 11, 0.5);
-}
-
-.theme-red .btn-outline {
-  color: #e53e3e;
-  border: 2px solid #e53e3e;
-}
-
-.theme-red .btn-outline:hover {
-  background: #e53e3e;
-  color: white;
-}
-
-.theme-red .stat-number {
-  color: #e53e3e;
-}
-
-.theme-red .league-badge {
-  background: #e53e3e;
-}
-
-.theme-red .chart-bar {
-  background: linear-gradient(45deg, #e53e3e, #c53030);
-}
-
-.theme-red .phone-header {
-  background: #e53e3e;
-}
-
-.theme-red .phone-stat-number,
-.theme-red .phone-score {
-  color: #e53e3e;
-}
-
-.theme-red .cta-section {
-  background: linear-gradient(135deg, #e53e3e 0%, #c53030 50%, #9b2c2c 100%);
-}
-
-.theme-red .footer-title {
-  color: #e53e3e;
-}
-
-.theme-red .footer-link:hover {
-  color: #e53e3e;
-}
-
-.theme-red .loading-spinner {
-  border-top: 4px solid #e53e3e;
-}
-
-/* Theme Toggle Button */
+/* Footer Bottom Content */
 .footer-bottom-content {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   width: 100%;
-}
-
-.theme-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-  backdrop-filter: blur(10px);
-}
-
-.theme-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-}
-
-.theme-icon {
-  font-size: 1rem;
-}
-
-.theme-text {
-  font-weight: 500;
-}
-
-@media (max-width: 768px) {
-  .footer-bottom-content {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-  
-  .theme-toggle-btn {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-  }
 }
