@@ -1,0 +1,92 @@
+<div class="container">
+  <div class="stats-content">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Loading statistics...</p>
+    </div>
+
+    <!-- Stats Content -->
+    <div *ngIf="!isLoading" class="stats-grid">
+      
+      <!-- General Stats Section -->
+      <div class="stats-section">
+        <h2 class="section-title">
+          <ng-icon name="heroChartBar" class="section-icon"></ng-icon>
+          General Statistics
+        </h2>
+        
+        <div class="stats-cards">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <ng-icon name="heroCalendar" class="icon"></ng-icon>
+            </div>
+            <div class="stat-content">
+              <h3 class="stat-value">{{ generalStats.totalMatches | number }}</h3>
+              <p class="stat-label">Total Matches</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <ng-icon name="heroTrophy" class="icon"></ng-icon>
+            </div>
+            <div class="stat-content">
+              <h3 class="stat-value">{{ generalStats.totalLeagues }}</h3>
+              <p class="stat-label">Leagues Tracked</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <ng-icon name="heroUsers" class="icon"></ng-icon>
+            </div>
+            <div class="stat-content">
+              <h3 class="stat-value">{{ generalStats.totalTeams | number }}</h3>
+              <p class="stat-label">Teams Followed</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <ng-icon name="heroStar" class="icon"></ng-icon>
+            </div>
+            <div class="stat-content">
+              <h3 class="stat-value">{{ generalStats.favoriteLeague }}</h3>
+              <p class="stat-label">Favorite League</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Stats Section -->
+      <div class="stats-section">
+        <h2 class="section-title">
+          <ng-icon name="heroActivity" class="section-icon"></ng-icon>
+          Activity Overview
+        </h2>
+        
+        <div class="activity-placeholder">
+          <p class="placeholder-text">Activity statistics coming soon...</p>
+          <button mat-button color="primary" (click)="refreshStats()">
+            <ng-icon name="heroArrowPath" class="icon"></ng-icon>
+            Refresh Data
+          </button>
+        </div>
+      </div>
+
+      <!-- League Performance Section -->
+      <div class="stats-section">
+        <h2 class="section-title">
+          <ng-icon name="heroChartPie" class="section-icon"></ng-icon>
+          League Performance
+        </h2>
+        
+        <div class="performance-placeholder">
+          <p class="placeholder-text">League performance analytics coming soon...</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
