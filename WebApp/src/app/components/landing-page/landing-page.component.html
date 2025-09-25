@@ -1,0 +1,308 @@
+<!-- Landing Page -->
+<div class="landing-page theme-blue">
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-background">
+      <div class="hero-pattern"></div>
+    </div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text">
+          <div class="mega-goal-brand">
+            <h1 class="mega-goal-title-seo">MegaGoal</h1>
+            <img src="https://server.megamedia.megagera.com/megagera/MG_logo.png" 
+                 alt="MegaGoal - Football Match Tracking Platform Logo" 
+                 class="mega-goal-logo"
+                 title="MegaGoal - Track Every Football Match You Watch">
+          </div>
+          <h2 class="hero-title">
+            Track Every<br>
+            <span class="gradient-text">Football Match</span><br>
+            You Watch
+          </h2>
+          <p class="hero-subtitle">
+            MegaGoal is the ultimate platform for football fans to track matches, 
+            analyze statistics, and discover viewing patterns. Join
+            now to never miss a match
+          </p>
+          <div class="hero-buttons">
+            <button class="btn-primary" (click)="goToApp()">
+              <span>Get Started</span>
+              <ng-icon name="jamArrowRight"></ng-icon>
+            </button>
+            <button class="btn-secondary" (click)="scrollToSection('features')">
+              <span>Learn More</span>
+              <ng-icon name="jamArrowDown"></ng-icon>
+            </button>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-cards">
+            <!-- Match Cards Column -->
+            <div class="match-cards-column">
+              <!-- First Real Match Card -->
+              <div class="demo-card demo-card-1">
+                @if (matchLoaded && demoMatches.length > 0 && !matchError) {
+                  <app-real-match-card 
+                    [match]="demoMatches[0]" 
+                    [watched]="true" 
+                    [locations]="[]"
+                    [size]="'md'">
+                  </app-real-match-card>
+                } @else if (matchLoaded && matchError) {
+                  <div class="match-error">
+                    <div class="error-icon">⚽</div>
+                    <div class="error-text">Demo match unavailable</div>
+                  </div>
+                } @else {
+                  <div class="match-loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Loading match...</div>
+                  </div>
+                }
+              </div>
+              <!-- Second Real Match Card -->
+              <div class="demo-card demo-card-2">
+                @if (matchLoaded && demoMatches.length > 1 && !matchError) {
+                  <app-real-match-card 
+                    [match]="demoMatches[1]" 
+                    [watched]="true" 
+                    [locations]="[]"
+                    [size]="'md'">
+                  </app-real-match-card>
+                } @else if (matchLoaded && matchError) {
+                  <div class="match-error">
+                    <div class="error-icon">⚽</div>
+                    <div class="error-text">Demo match unavailable</div>
+                  </div>
+                } @else {
+                  <div class="match-loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Loading match...</div>
+                  </div>
+                }
+              </div>
+              <!-- Third Real Match Card -->
+              <div class="demo-card demo-card-3">
+                @if (matchLoaded && demoMatches.length > 2 && !matchError) {
+                  <app-real-match-card 
+                    [match]="demoMatches[2]" 
+                    [watched]="true" 
+                    [locations]="[]"
+                    [size]="'md'">
+                  </app-real-match-card>
+                } @else if (matchLoaded && matchError) {
+                  <div class="match-error">
+                    <div class="error-icon">⚽</div>
+                    <div class="error-text">Demo match unavailable</div>
+                  </div>
+                } @else {
+                  <div class="match-loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Loading match...</div>
+                  </div>
+                }
+              </div>
+            </div>
+            
+            <!-- Favourite Team Card - Far Right -->
+            @if (teamStatsLoaded && teamStats && !teamStatsError) {
+              <app-favourite-team-card 
+                [teamStats]="teamStats" 
+                [isLoading]="false"
+                [teams]="[]"
+                [selectedTeamId]="null">
+              </app-favourite-team-card>
+            } @else if (teamStatsLoaded && teamStatsError) {
+              <div class="team-error">
+                <div class="error-icon">⚽</div>
+                <div class="error-text">Team stats unavailable</div>
+              </div>
+            } @else {
+              <div class="team-loading">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Loading team stats...</div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let stat of stats">
+          <div class="stat-number">{{ stat.number }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Why Use MegaGoal?</h2>
+        <p class="section-subtitle">
+          Everything you need to become the ultimate football fan
+        </p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card" *ngFor="let feature of features; let i = index" 
+             [style.animation-delay]="(i * 0.1) + 's'">
+          <div class="feature-icon" [style.background-color]="feature.color + '20'">
+            <ng-icon [name]="feature.icon" [style.color]="feature.color"></ng-icon>
+          </div>
+          <h3 class="feature-title">{{ feature.title }}</h3>
+          <p class="feature-description">{{ feature.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Section -->
+  <section class="demo-section">
+    <div class="container">
+      <div class="demo-content">
+        <div class="demo-text">
+          <h2 class="demo-title">See It In Action</h2>
+          <p class="demo-subtitle">
+            Try it now registering for free or using one of the users available on login page
+          </p>
+          <div class="demo-features">
+            <div class="demo-feature">
+              <ng-icon name="jamCheck" class="check-icon"></ng-icon>
+              <span>Real-time match tracking</span>
+            </div>
+            <div class="demo-feature">
+              <ng-icon name="jamCheck" class="check-icon"></ng-icon>
+              <span>Comprehensive statistics</span>
+            </div>
+            <div class="demo-feature">
+              <ng-icon name="jamCheck" class="check-icon"></ng-icon>
+              <span>Location-based insights</span>
+            </div>
+            <div class="demo-feature">
+              <ng-icon name="jamCheck" class="check-icon"></ng-icon>
+              <span>Top world leagues and competitions</span>
+            </div>
+          </div>
+          <button class="btn-primary" (click)="goToApp()">
+            <span>Try It Now</span>
+            <ng-icon name="jamPlay"></ng-icon>
+          </button>
+        </div>
+        <div class="demo-visual">
+          <div class="demo-phone">
+            <div class="phone-screen">
+              <div class="phone-header">
+                <div class="phone-title">MegaGoal</div>
+                <div class="phone-status">●</div>
+              </div>
+              <div class="phone-content">
+                <div class="phone-stats">
+                  <div class="phone-stat">
+                    <div class="phone-stat-number">42</div>
+                    <div class="phone-stat-label">This Month</div>
+                  </div>
+                  <div class="phone-stat">
+                    <div class="phone-stat-number">8</div>
+                    <div class="phone-stat-label">Leagues</div>
+                  </div>
+                </div>
+                <div class="phone-matches">
+                  <div class="phone-match" *ngFor="let i of [1,2,3]">
+                    <div class="phone-team">Team A</div>
+                    <div class="phone-score">2-1</div>
+                    <div class="phone-team">Team B</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <!-- <section class="testimonials-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">What Our Users Say</h2>
+        <p class="section-subtitle">
+          Join thousands of satisfied football fans
+        </p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card" *ngFor="let testimonial of testimonials">
+          <div class="testimonial-content">
+            <div class="quote-icon">
+              <ng-icon name="jamStar"></ng-icon>
+            </div>
+            <p class="testimonial-text">"{{ testimonial.content }}"</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">{{ testimonial.avatar }}</div>
+            <div class="author-info">
+              <div class="author-name">{{ testimonial.name }}</div>
+              <div class="author-role">{{ testimonial.role }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section> -->
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content">
+        <h2 class="cta-title">Ready to Start Your Football Journey?</h2>
+        <p class="cta-subtitle">
+          Join MegaGoal today and never miss a detail of your favorite sport
+        </p>
+        <div class="cta-buttons">
+          <button class="btn-primary btn-large" (click)="goToApp()">
+            <span>Get Started Free</span>
+            <ng-icon name="jamArrowRight"></ng-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <h3 class="footer-title">MegaGoal</h3>
+          <p class="footer-description">
+            The ultimate platform for football fans to track, analyze, and enjoy every match.
+          </p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-column">
+            <h4 class="footer-column-title">Social</h4>
+            <a href="https://github.com/MegaGera/MegaGoal" target="_blank" class="footer-link">
+              <ng-icon name="jamGithub"></ng-icon>
+              GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-bottom-content">
+          <p class="footer-copyright">© 2025 MegaGera</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div>

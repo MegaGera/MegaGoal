@@ -7,7 +7,10 @@
     
     <!-- Center: Welcome -->
     <div class="hero-welcome">
-      <h2 class="welcome-title">MegaGoal</h2>
+      <img src="https://server.megamedia.megagera.com/megagera/MegaGoal.png" 
+           alt="MegaGoal" 
+           class="hero-mega-goal-logo"
+           title="MegaGoal">
       @if (userStatsLoaded) {
         <p class="welcome-subtitle">
           {{ this.getWelcomeMessage() }}
@@ -17,11 +20,11 @@
     
     <!-- Right: Quick Actions -->
     <div class="hero-actions">
-      <a routerLink="/matches" class="hero-btn hero-btn-primary">
+      <a routerLink="/app/matches" class="hero-btn hero-btn-primary">
         <span class="btn-text">Add Match</span>
         <ng-icon name="jamPlus" class="btn-icon"></ng-icon>
       </a>
-      <a [routerLink]="['/matches']" [queryParams]="{live: 'true'}" class="hero-btn hero-btn-secondary">
+      <a [routerLink]="['/app/matches']" [queryParams]="{live: 'true'}" class="hero-btn hero-btn-secondary">
         <!-- Live Indicator - not for now -->
         <!-- <div class="live-indicator-btn">
           <div class="circle-btn"></div>

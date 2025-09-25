@@ -405,6 +405,6 @@ export class MatchesComponent implements OnInit {
   }
 
   goToLeague(leagueId: number): void {
-    this.router.navigate(['/leagues', leagueId]);
+    this.router.navigate(['/app/leagues', leagueId]);
   }
 } 

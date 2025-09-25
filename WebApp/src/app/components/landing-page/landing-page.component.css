@@ -1,0 +1,1184 @@
+/* Landing Page Styles */
+.landing-page {
+  font-family: 'Poppins-Regular', 'arial', sans-serif;
+  line-height: 1.6;
+  color: #333;
+  overflow-x: hidden;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Blue Theme (Default) */
+.theme-blue .hero-section {
+  background: linear-gradient(135deg, #A18CFF 0%, #F1E4FF 100%);
+}
+
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.hero-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(2deg); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 3rem;
+  align-items: center;
+  min-height: 80vh;
+}
+
+.hero-text {
+  color: white;
+  max-width: none;
+}
+
+/* MegaGoal Brand Title */
+.mega-goal-brand {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+/* SEO-friendly hidden h1 for search engines */
+.mega-goal-title-seo {
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 1px !important;
+  line-height: 1px !important;
+  white-space: nowrap !important;
+}
+
+
+.mega-goal-logo {
+  height: 8rem;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  filter: drop-shadow(0 0 30px rgba(255, 107, 107, 0.3));
+  animation: logoGlow 2s ease-in-out infinite alternate;
+  transition: all 0.3s ease;
+}
+
+.mega-goal-logo:hover {
+  filter: drop-shadow(0 0 40px rgba(255, 107, 107, 0.6)) drop-shadow(0 0 60px rgba(255, 215, 0, 0.3));
+  transform: scale(1.05);
+}
+
+/* Mobile responsive styling for logo */
+@media (max-width: 768px) {
+  .mega-goal-logo {
+    padding-top: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mega-goal-logo {
+    padding-top: 3rem;
+  }
+}
+
+/* Animations for MegaGoal logo */
+@keyframes logoGlow {
+  0% {
+    filter: drop-shadow(0 0 30px rgba(255, 107, 107, 0.3));
+  }
+  100% {
+    filter: drop-shadow(0 0 40px rgba(255, 107, 107, 0.6)) drop-shadow(0 0 60px rgba(255, 215, 0, 0.3));
+  }
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  animation: slideInLeft 1s ease-out;
+}
+
+.gradient-text {
+  background: linear-gradient(45deg, #E33434, #e24d4d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  margin-bottom: 2.5rem;
+  opacity: 0.9;
+  color: #FFFFFF;
+  animation: slideInLeft 1s ease-out 0.2s both;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  animation: slideInLeft 1s ease-out 0.4s both;
+}
+
+.btn-primary, .btn-secondary, .btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ensure icons in buttons are properly aligned */
+.btn-primary ng-icon,
+.btn-secondary ng-icon,
+.btn-outline ng-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.btn-primary {
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 60, 60, 0.4);
+}
+
+.btn-secondary {
+  background: #E0E0E0;
+  color: #333333;
+  border: 2px solid #E0E0E0;
+  backdrop-filter: blur(10px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary:hover {
+  background: #D0D0D0;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline {
+  background: transparent;
+  transform: translateY(-2px);
+}
+
+.btn-outline:hover {
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-large {
+  padding: 1.25rem 2.5rem;
+  font-size: 1.2rem;
+}
+
+/* Hero Visual */
+.hero-visual {
+  position: relative;
+  animation: slideInRight 1s ease-out 0.3s both;
+}
+
+/* Match Loading and Error States */
+.match-loading, .match-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #2C2C2C;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #e53e3e;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text, .error-text {
+  font-size: 0.9rem;
+  color: #2C2C2C;
+}
+
+.error-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.hero-cards {
+  position: relative;
+  height: 600px;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 4rem;
+}
+
+.demo-card {
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  animation: float 12s ease-in-out infinite;
+}
+
+/* Match cards column */
+.match-cards-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 400px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Match cards in column */
+.demo-card-1, .demo-card-2, .demo-card-3 {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  position: relative;
+  margin-bottom: 0;
+}
+
+.demo-card-1 {
+  animation-delay: 0s;
+}
+
+.demo-card-2 {
+  animation-delay: 2s;
+}
+
+.demo-card-3 {
+  animation-delay: 4s;
+}
+
+/* Team card positioned far right */
+.demo-card-team {
+  width: 280px;
+  animation-delay: 6s;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Make favourite-team-card wider in landing page */
+app-favourite-team-card {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+/* Team card error and loading states */
+.team-error, .team-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  width: 300px;
+}
+
+.team-error .error-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.6;
+}
+
+.team-error .error-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+}
+
+.team-loading .loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 0.5rem;
+}
+
+.team-loading .loading-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.team-logos {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.team-logo {
+  width: 30px;
+  height: 30px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.vs {
+  font-weight: bold;
+  color: #2C2C2C;
+  font-size: 0.9rem;
+}
+
+.match-score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.league-badge {
+  background: #FF3C3C;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.match-info {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.location-info {
+  color: #2C2C2C;
+  font-size: 0.9rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #FF3C3C;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #2C2C2C;
+}
+
+.chart-placeholder {
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+  height: 100px;
+  margin-bottom: 1rem;
+}
+
+.chart-bar {
+  background: linear-gradient(45deg, #FF3C3C, #FF7B54);
+  width: 20px;
+  border-radius: 10px 10px 0 0;
+  animation: growUp 2s ease-out;
+}
+
+.chart-label {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #2C2C2C;
+  font-weight: 600;
+}
+
+@keyframes growUp {
+  from { height: 0; }
+  to { height: var(--height, 50%); }
+}
+
+/* Stats Section */
+.stats-section {
+  padding: 4rem 0;
+  background: #f8f9fa;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-number {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 1.1rem;
+  color: #2C2C2C;
+  font-weight: 600;
+}
+
+/* Features Section */
+.features-section {
+  padding: 6rem 0;
+  background: white;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.2rem;
+  color: #2C2C2C;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  padding: 2.5rem;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1);
+}
+
+.feature-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.feature-description {
+  color: #2C2C2C;
+  line-height: 1.6;
+}
+
+/* Demo Section */
+.demo-section {
+  padding: 6rem 0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.demo-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.demo-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.demo-subtitle {
+  font-size: 1.2rem;
+  color: #2C2C2C;
+  margin-bottom: 2rem;
+}
+
+.demo-features {
+  margin-bottom: 2.5rem;
+}
+
+.demo-feature {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.check-icon {
+  color: #4CAF50;
+  font-size: 1.2rem;
+}
+
+.demo-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.demo-phone {
+  width: 300px;
+  height: 600px;
+  background: #333;
+  border-radius: 40px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: float 6s ease-in-out infinite;
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.phone-header {
+  background: #FF3C3C;
+  color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.phone-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.phone-status {
+  color: #4CAF50;
+  font-size: 1.2rem;
+}
+
+.phone-content {
+  padding: 1.5rem;
+}
+
+.phone-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.phone-stat {
+  text-align: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 15px;
+}
+
+.phone-stat-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #FF3C3C;
+}
+
+.phone-stat-label {
+  font-size: 0.9rem;
+  color: #2C2C2C;
+}
+
+/* space-y utility handled by margin-bottom on individual items */
+
+.phone-match {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.phone-team {
+  font-weight: 600;
+  color: #333;
+}
+
+.phone-score {
+  font-weight: bold;
+  color: #FF3C3C;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  padding: 6rem 0;
+  background: white;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.testimonial-card {
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 20px;
+  transition: transform 0.3s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-5px);
+}
+
+.testimonial-content {
+  margin-bottom: 1.5rem;
+}
+
+.quote-icon {
+  color: #ffd700;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.testimonial-text {
+  font-style: italic;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.author-avatar {
+  width: 50px;
+  height: 50px;
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.author-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.author-role {
+  color: #2C2C2C;
+  font-size: 0.9rem;
+}
+
+/* CTA Section */
+.cta-section {
+  padding: 6rem 0;
+  background: linear-gradient(135deg, #A18CFF 0%, #F1E4FF 100%);
+  color: white;
+  text-align: center;
+}
+
+.cta-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.cta-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2.5rem;
+  opacity: 0.9;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Footer */
+.landing-footer {
+  background: #1a1a1a;
+  color: white;
+  padding: 4rem 0 2rem;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 4rem;
+  margin-bottom: 2rem;
+}
+
+.footer-brand {
+  max-width: 400px;
+}
+
+.footer-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #FF3C3C;
+}
+
+.footer-description {
+  color: #ccc;
+  line-height: 1.6;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 2rem;
+}
+
+.footer-column-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.footer-column {
+  margin: auto;
+}
+
+.footer-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ccc;
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #FF3C3C;
+}
+
+.footer-bottom {
+  border-top: 1px solid #333;
+  padding-top: 2rem;
+  text-align: center;
+}
+
+.footer-copyright {
+  color: #999;
+  margin: 0;
+}
+
+/* Animations */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 2rem;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-buttons {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .demo-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .hero-cards {
+    height: 500px;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+  
+  .match-cards-column {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 0;
+  }
+  
+  .demo-card {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  
+  .demo-card-1, .demo-card-2, .demo-card-3 {
+    position: static;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto 1rem;
+    transform: none;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+  }
+  
+  app-favourite-team-card {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto 2rem;
+  }
+  
+  .team-error, .team-loading {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto 2rem;
+  }
+  
+  /* MegaGoal title responsive styles for tablet */
+  .mega-goal-title {
+    font-size: 3.5rem;
+    line-height: 1.15;
+    padding-top: 1rem;
+  }
+  
+  .mega-goal-brand {
+    text-align: center;
+  }
+  
+  .hero-text {
+    text-align: center;
+  }
+  
+  /* Ensure proper height for hero section on tablet */
+  .hero-section {
+    min-height: 110vh;
+  }
+  
+  .hero-cards {
+    height: auto;
+    min-height: 450px;
+  }
+  
+  /* Fix CTA title line spacing on tablet */
+  .cta-title {
+    font-size: 2.2rem;
+    line-height: 1.25;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-outline {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  /* Make cards smaller on very small screens */
+  .demo-card-1, .demo-card-2, .demo-card-3 {
+    max-width: 280px;
+    margin: 0 auto 0.75rem;
+  }
+  
+  app-favourite-team-card {
+    max-width: 280px;
+    margin: 0 auto 1.5rem;
+  }
+  
+  .team-error, .team-loading {
+    max-width: 280px;
+    margin: 0 auto 1.5rem;
+  }
+  
+  /* MegaGoal title responsive styles for mobile */
+  .mega-goal-title {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    padding-bottom: 0.1rem;
+    padding-top: 1.5rem;
+  }
+  
+  .mega-goal-brand {
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  /* Center hero text on mobile */
+  .hero-text {
+    text-align: center;
+  }
+  
+  /* Adjust hero content layout for mobile */
+  .hero-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  /* Ensure proper spacing and height for hero section on mobile */
+  .hero-section {
+    padding-bottom: 3rem;
+    min-height: 120vh;
+  }
+  
+  /* Make hero cards container taller on mobile */
+  .hero-cards {
+    height: auto;
+    min-height: 500px;
+  }
+  
+  /* Fix CTA title line spacing on mobile */
+  .cta-title {
+    font-size: 2rem;
+    line-height: 1.3;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Theme-specific styles */
+/* Blue Theme Colors */
+.theme-blue .gradient-text {
+  background: linear-gradient(45deg, #FF3C3C, #FF7B54);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.theme-blue .btn-primary {
+  background: linear-gradient(45deg, #FF3C3C, #FF7B54);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.theme-blue .btn-primary:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 60, 60, 0.4);
+}
+
+.theme-blue .btn-outline {
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.theme-blue .btn-outline:hover {
+  background: #667eea;
+  color: white;
+}
+
+.theme-blue .stat-number {
+  color: #FF3C3C;
+}
+
+.theme-blue .league-badge {
+  background: #FF3C3C;
+}
+
+.theme-blue .chart-bar {
+  background: linear-gradient(45deg, #FF3C3C, #FF7B54);
+}
+
+.theme-blue .phone-header {
+  background: #FF3C3C;
+}
+
+.theme-blue .phone-stat-number,
+.theme-blue .phone-score {
+  color: #FF3C3C;
+}
+
+.theme-blue .cta-section {
+  background: linear-gradient(135deg, #A18CFF 0%, #cfa3ff 100%);
+}
+
+.theme-blue .footer-title {
+  color: #FF3C3C;
+}
+
+.theme-blue .footer-link:hover {
+  color: #FF3C3C;
+}
+
+.theme-blue .loading-spinner {
+  border-top: 4px solid #FF3C3C;
+}
+
+
+/* Footer Bottom Content */
+.footer-bottom-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}

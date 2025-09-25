@@ -14,6 +14,10 @@ class CustomAuthenticationMiddleware:
     if not request.is_secure():
       return self.get_response(request)
 
+    # Skip authentication for public routes
+    if request.path == '/api/landing-page-team-stats/':
+      return self.get_response(request)
+
     # Get the cookie from the request
     cookie_value = request.COOKIES.get('access_token')
     

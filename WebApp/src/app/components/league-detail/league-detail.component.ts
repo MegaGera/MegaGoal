@@ -129,14 +129,14 @@ export class LeagueDetailComponent implements OnInit {
           this.getLocations();
         } else {
           // League not found, redirect to league selector
-          this.router.navigate(['/leagues']);
+          this.router.navigate(['/app/leagues']);
         }
         this.setLoading(false);
       },
       error: (error: any) => {
         console.error('Error fetching league:', error);
         this.setLoading(false);
-        this.router.navigate(['/leagues']);
+        this.router.navigate(['/app/leagues']);
       }
     });
   }
@@ -435,7 +435,7 @@ export class LeagueDetailComponent implements OnInit {
     Navigation method to go back to league selector
   */
   goToLeagueSelector(): void {
-    this.router.navigate(['/leagues']);
+    this.router.navigate(['/app/leagues']);
   }
 
   /*

@@ -46,7 +46,7 @@ export class LeagueSelectorComponent {
   }
 
   selectLeague(league: League): void {
-    this.router.navigate(['/leagues', league.league.id]);
+    this.router.navigate(['/app/leagues', league.league.id]);
   }
 
   setLoading(loading: boolean): void {

@@ -40,6 +40,7 @@
   gap: 1px;
   min-width: 0;
   flex: 1;
+  text-align: left;
 }
 
 .stat-highlight-label {

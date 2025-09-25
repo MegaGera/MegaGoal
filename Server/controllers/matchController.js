@@ -177,4 +177,38 @@ const checkLocationIsVenue = async (location_id, username, venueParams) => {
   }
 }
 
-export { getMatches, createMatch, deleteMatch, changeLocation };
+// Get landing page information with multiple matches (public endpoint)
+const getLandingPageInfo = async (req, res) => {
+  const db = getDB();
+  try {
+    // Define the fixture IDs we want to show on the landing page
+    const fixtureIds = [1379015, 1451030, 1390851];
+    
+    const matches = [];
+    
+    for (const fixtureId of fixtureIds) {
+      // First try to get from real_matches collection
+      let match = await db.collection('real_matches').findOne({ "fixture.id": +fixtureId });
+      
+      if (!match) {
+        // If not found in real_matches, try matches collection (user's tracked matches)
+        match = await db.collection('matches').findOne({ "fixture.id": +fixtureId });
+      }
+      
+      if (match) {
+        matches.push(match);
+      }
+    }
+
+    if (matches.length === 0) {
+      return res.status(404).json({ message: "No matches found for landing page" });
+    }
+
+    console.log(`Landing page info retrieved: ${matches.length} matches`);
+    res.send({ matches });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export { getMatches, createMatch, deleteMatch, changeLocation, getLandingPageInfo };

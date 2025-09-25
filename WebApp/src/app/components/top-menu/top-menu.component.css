@@ -74,6 +74,39 @@
   letter-spacing: 0.5px;
 }
 
+.nav-logo {
+  height: 24px;
+  width: auto;
+  max-width: 100px;
+  filter: brightness(0) invert(1);
+  transition: all 0.3s ease;
+}
+
+.nav-logo:hover {
+  filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+  transform: scale(1.1);
+}
+
+/* Special styling for Home button with logo - when ACTIVE */
+.nav-link:first-child.active {
+  background: white !important;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.nav-link:first-child.active:hover {
+  background: #f8f9fa !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* When Home is active, show logo in original colors */
+.nav-link:first-child.active .nav-logo {
+  filter: none;
+}
+
+.nav-link:first-child.active .nav-logo:hover {
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.3));
+}
+
 /* Right Section - contains user dropdown */
 .right-section {
   display: flex;
