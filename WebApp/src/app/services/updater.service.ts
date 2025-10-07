@@ -93,4 +93,15 @@ export class UpdaterService {
       this.options
     );
   }
+
+  /**
+   * Update statistics for a specific fixture
+   */
+  updateMatchStatistics(fixture_id: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_match_statistics/',
+      { fixture_id },
+      this.options
+    );
+  }
 } 

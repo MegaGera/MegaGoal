@@ -4,7 +4,7 @@ import { getDB } from '../config/db.js';
 const getRealMatches = async (req, res) => {
   const db = getDB();
   try {
-    let { league_id, team_id, team_2_id, season, finished, date } = req.query;
+    let { league_id, team_id, team_2_id, season, finished, date, country } = req.query;
 
     // Count non-finished parameters to ensure minimum 2 (unless date is provided)
     const nonFinishedParams = [league_id, team_id, team_2_id, season, date].filter(param => param !== undefined && param !== null);
@@ -24,6 +24,11 @@ const getRealMatches = async (req, res) => {
     // Add season filter
     if (season) {
       filters.push({ 'league.season': +season });
+    }
+
+    // Add country filter
+    if (country) {
+      filters.push({ 'league.country': country });
     }
 
     // Add team filters

@@ -6,7 +6,8 @@ export interface RealMatch {
     league: league,
     teams: teams,
     goals: goalsI,
-    score: score
+    score: score,
+    statistics?: TeamStatistics[]
 }
 
 interface fixture {
@@ -63,4 +64,16 @@ interface score {
 interface goalsI {
     home: number,
     away: number
+}
+
+export interface TeamStatistics {
+    team: {
+        id: number,
+        name: string,
+        logo: string
+    },
+    statistics: Array<{
+        type: string,
+        value: number | string | null
+    }>
 }

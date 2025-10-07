@@ -87,6 +87,9 @@ class ChangePositionRequest(BaseModel):
     league_id: int
     new_position: int
 
+class UpdateStatisticsRequest(BaseModel):
+    fixture_id: int
+
 @app.get("/health/")
 async def health_check():
     """Health check endpoint for debugging"""
@@ -133,6 +136,19 @@ async def update_leagues(request: Request):
     try:
         updater.add_leagues()
         return {"status": "success", "message": "Leagues updated"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_match_statistics/")
+async def update_match_statistics(req: UpdateStatisticsRequest, request: Request):
+    await validate_admin(request)
+    updater = MatchUpdater()
+    try:
+        success = updater.update_match_statistics(req.fixture_id)
+        if success:
+            return {"status": "success", "message": f"Updated statistics for fixture {req.fixture_id}"}
+        else:
+            return {"status": "not_found", "message": f"No real_match found for fixture {req.fixture_id}"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

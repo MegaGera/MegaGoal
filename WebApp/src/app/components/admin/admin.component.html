@@ -1,5 +1,14 @@
 <div class="admin-container">
   <section class="fade-in">
+    <div class="admin-header-row" style="margin-bottom: 12px; display: flex; gap: 12px; align-items: center;">
+      <select class="form-select form-select-sm view-select" style="width: 220px;" [(ngModel)]="selectedAdminView">
+        <option [ngValue]="'leagues'">Leagues Administration</option>
+        <option [ngValue]="'matches'">Matches Administration</option>
+      </select>
+    </div>
+    @if (selectedAdminView === 'matches') {
+      <app-admin-matches></app-admin-matches>
+    } @else {
     <div class="admin-header-row">
       <h1 class="section-title">League Automation Management</h1>
       <div class="header-buttons">
@@ -108,6 +117,7 @@
       <h2 class="empty-state-title">No Leagues Configured</h2>
       <p class="empty-state-description">Leagues will appear here once they are added to the system.</p>
     </div>
+    }
   </section>
 
   <!-- Settings Modal -->

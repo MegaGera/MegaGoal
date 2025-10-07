@@ -16,6 +16,7 @@ import { Match } from '../../models/match';
 import { Location } from '../../models/location';
 import { League } from '../../models/league';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
+import { FINISHED_STATUSES } from '../../config/matchStatus';
 
 @Component({
   selector: 'app-matches',
@@ -182,7 +183,7 @@ export class MatchesComponent implements OnInit {
 
   filterLiveMatches(): void {
     const now = Math.floor(Date.now() / 1000); // Current timestamp in seconds
-    const finishedStatuses = ["FT", "AET", "PEN", "PST", "CANC"];
+    const finishedStatuses = FINISHED_STATUSES as string[];
     
     // Create a new league order that only includes leagues with live matches
     const liveLeagueOrder: string[] = [];

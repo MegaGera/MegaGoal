@@ -1,0 +1,86 @@
+<div class="admin-container">
+  <section class="fade-in">
+    <h1 class="section-title">Matches Administration</h1>
+    <p class="section-description">Manage and populate statistics for real matches</p>
+
+    <div class="filters-row">
+      <select class="form-select form-select-sm" [(ngModel)]="selectedLeague" (change)="onLeagueChange()">
+        <option [ngValue]="null">All Leagues</option>
+        @for (l of leagues; track l.league_id) {
+          <option [ngValue]="l">{{ l.league_name }}</option>
+        }
+      </select>
+
+      <select class="form-select form-select-sm" [(ngModel)]="selectedSeason" (change)="filterTeamsByLeagueAndSeason(); applyFilters()">
+        <option [ngValue]="null">All Seasons</option>
+        @for (s of seasons; track s.id) {
+          <option [ngValue]="s">{{ s.text }}</option>
+        }
+      </select>
+
+      <select class="form-select form-select-sm" [(ngModel)]="selectedCountry" (change)="applyFilters()">
+        <option [ngValue]="null">All Countries</option>
+        @for (c of countries; track c) {
+          <option [ngValue]="c">{{ c }}</option>
+        }
+      </select>
+
+      <select class="form-select form-select-sm" [(ngModel)]="selectedTeamId_1" (change)="applyFilters()">
+        <option [ngValue]="null">All Teams</option>
+        @for (t of filteredTeams; track t.id) {
+          <option [ngValue]="t.id">{{ t.name }}</option>
+        }
+      </select>
+
+      <select class="form-select form-select-sm" [(ngModel)]="selectedTeamId_2" [disabled]="!selectedTeamId_1" (change)="applyFilters()">
+        <option [ngValue]="null">{{ selectedTeamId_1 ? 'Rival Team' : 'Select Team First' }}</option>
+        @for (t of filteredTeams; track t.id) {
+          <option [ngValue]="t.id">{{ t.name }}</option>
+        }
+      </select>
+
+      <button class="btn btn-sm btn-outline-secondary" (click)="clearFilters()">Clear</button>
+    </div>
+
+    @if (loading) {
+      <div class="text-center">
+        <div class="spinner-border spinner-border-sm" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    } @else {
+      <div class="matches-list">
+        @for (m of filteredMatches; track m.fixture.id) {
+          <div class="match-row" [class.has-stats]="hasStatistics(m)" [class.not-started]="isNotStarted(m)">
+            <div class="teams">
+              <img [src]="m.teams.home.logo" [alt]="m.teams.home.name" class="team-icon"/>
+              <span class="team-name">{{ m.teams.home.name }}</span>
+              <span class="vs">{{ m.goals.home }} - {{ m.goals.away }}</span>
+              <span class="team-name">{{ m.teams.away.name }}</span>
+              <img [src]="m.teams.away.logo" [alt]="m.teams.away.name" class="team-icon"/>
+            </div>
+            <div class="actions">
+              <span class="league">{{ m.league.name }}</span>
+              <span class="date">{{ m.fixture.date | date: 'dd/MM/yyyy' }}</span>
+              @if (!isNotStarted(m)) {
+                <span class="badge" [class.badge-success]="hasStatistics(m)" [class.badge-danger]="!hasStatistics(m)">
+                  {{ hasStatistics(m) ? '✓ Stats' : '✕ No stats' }}
+                </span>
+              }
+              @if (!isNotStarted(m)) {
+                <button class="btn btn-sm btn-primary" (click)="updateStatistics(m)" [disabled]="updatingFixtureId === m.fixture.id">
+                  {{ updatingFixtureId === m.fixture.id ? 'Updating...' : 'Update stats' }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+        @if (filteredMatches.length === 0) {
+          <div class="text-center text-muted py-3">No matches</div>
+        }
+      </div>
+    }
+  </section>
+</div>
+
+

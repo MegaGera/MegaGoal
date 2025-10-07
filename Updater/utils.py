@@ -74,6 +74,34 @@ class MatchUpdater:
             }
         }
         self.collection_matches.update_many(query_filter, query_projection)
+
+    def get_fixture_statistics_from_api(self, fixture_id: int):
+        """Fetch fixture statistics from external API (API-SPORTS)"""
+        conn = http.client.HTTPSConnection(self.url)
+        endpoint = f"/v3/fixtures/statistics?fixture={fixture_id}"
+        print(f"Getting statistics from API for fixture {fixture_id}")
+        conn.request("GET", endpoint, headers=self.headers)
+        response = conn.getresponse()
+        return json.loads(response.read())
+
+    def update_match_statistics(self, fixture_id: int):
+        """Fetch and persist statistics for a given fixture into real_matches document"""
+        # Get stats from API
+        stats_json = self.get_fixture_statistics_from_api(fixture_id)
+        stats_response = stats_json.get("response", [])
+
+        # Upsert statistics field into real_matches
+        query_filter = {"fixture.id": int(fixture_id)}
+        update_doc = {"$set": {"statistics": stats_response}}
+        result = self.collection_real_matches.update_one(query_filter, update_doc)
+
+        # If the real_match document does not exist, do nothing more
+        if result.matched_count == 0:
+            print(f"No real_match found for fixture {fixture_id} to update statistics")
+            return False
+
+        print(f"Updated statistics for fixture {fixture_id}")
+        return True
     
     def get_matches_from_api(self, league_id, season, date=None, date_to=None):
         """Get matches from API"""

@@ -3,6 +3,7 @@ import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid } from '@ng-icons/jam-icons';
+import { AdminMatchesComponent } from './admin-matches.component';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -13,7 +14,7 @@ import { League } from '../../models/league';
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgClass, NgIconComponent],
+  imports: [CommonModule, FormsModule, NgClass, NgIconComponent, AdminMatchesComponent],
   providers: [provideIcons({ jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid })],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
@@ -47,6 +48,8 @@ export class AdminComponent {
   
   // Order mode properties
   isPositionOrder: boolean = false;
+  showMatchesAdmin: boolean = false;
+  selectedAdminView: 'leagues' | 'matches' = 'leagues';
 
   constructor(
     private megagoal: MegaGoalService,

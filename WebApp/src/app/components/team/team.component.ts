@@ -18,6 +18,7 @@ import { RealMatchCardComponent } from '../real-match-card/real-match-card.compo
 import { MatchParserService } from '../../services/match-parser.service';
 import { SeasonInfo } from '../../models/season';
 import { Match } from '../../models/match';
+import { isNotStartedStatus } from '../../config/matchStatus';
 import { Location } from '../../models/location';
 
 @Component({
@@ -164,10 +165,10 @@ export class TeamComponent {
     This methods filter Real Matches by status to show them in two columns
   */
   filterStartedRealMatches() {
-    return this.showRealMatches.filter(match => match.fixture.status.short != "NS" && match.fixture.status.short != "TBD");
+    return this.showRealMatches.filter(match => !isNotStartedStatus(match.fixture.status.short));
   }
   filterNotStartedRealMatches() {
-    return this.showRealMatches.filter(match => match.fixture.status.short == "NS" || match.fixture.status.short == "TBD").sort(function (x, y) {
+    return this.showRealMatches.filter(match => isNotStartedStatus(match.fixture.status.short)).sort(function (x, y) {
       return x.fixture.timestamp - y.fixture.timestamp;
     });
   }
