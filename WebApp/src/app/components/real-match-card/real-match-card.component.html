@@ -19,7 +19,7 @@
         <div class="col-4 h-100 z-1">
           <div class="teamLogoSection">
 
-            <div class="team h-100">
+            <div class="team h-100" (click)="navigateToTeam(match.teams.home.id)" style="cursor: pointer;">
               <div class="teamLogo h-100" [ngClass]="leagueCSSSelector(match.league.id)">
                 <img class="imgLogo p-1" [src]="images.getRouteImageTeam(match.teams.home.id)">
               </div>
@@ -27,7 +27,7 @@
 
           </div>
           <div class="text-center">
-            <h2 class="m-auto team-name" [ngClass]="{'team-name-md': size === 'md'}">{{match.teams.home.name}}</h2>
+            <h2 class="m-auto team-name" [ngClass]="{'team-name-md': size === 'md'}" (click)="navigateToTeam(match.teams.home.id)" style="cursor: pointer;">{{match.teams.home.name}}</h2>
           </div>
         </div>
 
@@ -77,7 +77,7 @@
           
           <div class="teamLogoSection">
 
-            <div class="team h-100">
+            <div class="team h-100" (click)="navigateToTeam(match.teams.away.id)" style="cursor: pointer;">
               <div class="teamLogo h-100" [ngClass]="leagueCSSSelector(match.league.id)">
                 <img class="imgLogo p-1" [src]="images.getRouteImageTeam(match.teams.away.id)">
               </div>
@@ -85,7 +85,7 @@
 
           </div>
           <div class="text-center">
-            <h2 class="m-auto team-name" [ngClass]="{'team-name-md': size === 'md'}">{{match.teams.away.name}}</h2>
+            <h2 class="m-auto team-name" [ngClass]="{'team-name-md': size === 'md'}" (click)="navigateToTeam(match.teams.away.id)" style="cursor: pointer;">{{match.teams.away.name}}</h2>
           </div>
 
         </div>

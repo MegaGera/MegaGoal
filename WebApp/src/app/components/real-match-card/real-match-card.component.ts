@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
 import { FormsModule } from '@angular/forms';
@@ -32,7 +33,7 @@ export class RealMatchCardComponent {
   @Input() locations!: Location[];
   @Input() size: string = 'lg';
 
-  constructor(public images: ImagesService, private megaGoal: MegaGoalService, public matchParser: MatchParserService) {
+  constructor(public images: ImagesService, private megaGoal: MegaGoalService, public matchParser: MatchParserService, private router: Router) {
     this.orderLocations();
   }
 
@@ -162,5 +163,11 @@ export class RealMatchCardComponent {
 
   getLocationIdFromVenueId(venueId: number) {
     return this.locations.find(loc => loc.venue_id === venueId)?.id ?? venueId;
+  }
+
+  navigateToTeam(teamId: number) {
+    this.router.navigate(['/app/team'], { queryParams: { id: teamId, season: this.match.league.season } }).then(() => {
+      window.scrollTo(0, 0);
+    });
   }
 }

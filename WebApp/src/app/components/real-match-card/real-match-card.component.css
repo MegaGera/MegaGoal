@@ -595,4 +595,22 @@
 		opacity: 0;
 	}
 }
+
+/* Team hover effects */
+.team {
+	transition: transform 0.2s ease;
+}
+
+.team:hover {
+	transform: scale(1.05);
+}
+
+.team-name {
+	transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.team-name:hover {
+	color: #e94d4a;
+	transform: scale(1.02);
+}
   
