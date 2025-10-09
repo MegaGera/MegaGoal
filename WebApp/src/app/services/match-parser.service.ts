@@ -39,13 +39,14 @@ export class MatchParserService {
       },
       location: match ? match.location : '',
       status: realMatch.fixture.status.short,
-      venue: {id: realMatch.fixture.venue.id, name: realMatch.fixture.venue.name}
+      venue: {id: realMatch.fixture.venue.id, name: realMatch.fixture.venue.name},
+      statistics: realMatch.statistics
     }
     return matchModel;
   }
   
   matchToMatchRequest(match: Match): MatchRequest {
-    const { _id, ...matchRequest } = match;
+    const { _id, statistics, ...matchRequest } = match;
     return matchRequest;
   }
 

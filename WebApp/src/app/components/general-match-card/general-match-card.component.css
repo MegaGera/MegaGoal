@@ -1,0 +1,848 @@
+/* Import the same color variables */
+::ng-deep :root {
+	--color-predefined-border: #dcdcdc;
+	--color-segunda-division: #00d4d6;
+	--color-segunda-division-trans: rgba(0, 212, 214, 0.9);
+	--color-primera-division: #e94d4a;
+	--color-primera-division-trans: rgba(233, 77, 74, 0.9);
+	--color-premier-league: #3d185c;
+	--color-premier-league-trans: rgba(61, 24, 92, 0.9);
+	--color-champions-league: #3562A6;
+	--color-champions-league-trans: rgba(53, 98, 166, 0.9);
+	--color-europa-league: #fc6c04;
+	--color-europa-league-trans: rgba(252, 108, 4, 0.9);
+	--color-bundesliga: #d10214;
+	--color-bundesliga-trans: rgba(209, 2, 20, 0.9);
+	--color-ligue1: #091C3E;
+	--color-ligue1-trans: rgba(9, 28, 62, 0.9);
+	--color-seriea: #0578ff;
+	--color-seriea-trans: rgba(5, 120, 255, 0.9);
+	--color-copa-rey: #ff032e;
+	--color-copa-rey-trans: rgba(255, 3, 46, 0.9);
+	--color-fa-cup: #be3434;
+	--color-fa-cup-trans: rgba(190, 52, 52, 0.9);
+	--color-spanish-supercup: #ff2701;
+	--color-spanish-supercup-trans: rgba(255, 39, 1, 0.9);
+	--color-uefa-supercup: #ccd2e5;
+	--color-uefa-supercup-trans: rgba(204, 210, 229, 0.9);
+	--color-conference-league: #00bf0c;
+	--color-conference-league-trans: rgba(0, 191, 12, 0.9);
+	--color-world-cup: 	#ffbf00;
+	--color-world-cup-trans: rgba(255, 191, 0, 0.9);
+	--color-euro-cup: #98dbfa;
+	--color-euro-cup-trans: rgba(152, 219, 250, 0.9);
+	--color-american-cup: #0063e1;
+	--color-american-cup-trans: rgba(0, 99, 225, 0.9);
+	--color-club-world-cup: #d4af37;
+	--color-club-world-cup-trans: rgba(255, 191, 0, 0.9);
+	--color-none: #000000;
+	--color-none-trans: rgba(92, 86, 86, 0.9);
+	--img-team-shadow: 0 0 0 15px;
+}
+
+.match-card-container {
+  position: relative;
+  background: white;
+  border-radius: 18px;
+  border: 2px solid var(--color-predefined-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  padding: 1.75rem 1.5rem;
+  margin-bottom: 2rem;
+  overflow: hidden;
+  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.match-card-container:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+.match-card-container.SegundaDivision {
+	border: 3px solid var(--color-segunda-division);
+	box-shadow: 0 0 8px 2px var(--color-segunda-division-trans);
+}
+
+.match-card-container.PrimeraDivision {
+	border: 3px solid var(--color-primera-division);
+	box-shadow: 0 0 8px 2px var(--color-primera-division-trans);
+}
+
+.match-card-container.PremierLeague {
+	border: 3px solid var(--color-premier-league);
+	box-shadow: 0 0 8px 2px var(--color-premier-league-trans);
+}
+
+.match-card-container.ChampionsLeague {
+	border: 3px solid var(--color-champions-league);
+	box-shadow: 0 0 8px 2px var(--color-champions-league-trans);
+}
+
+.match-card-container.EuropaLeague {
+	border: 3px solid var(--color-europa-league);
+	box-shadow: 0 0 8px 2px var(--color-europa-league-trans);
+}
+
+.match-card-container.Bundesliga {
+	border: 3px solid var(--color-bundesliga);
+	box-shadow: 0 0 8px 2px var(--color-bundesliga-trans);
+}
+
+.match-card-container.Ligue1 {
+	border: 3px solid var(--color-ligue1);
+	box-shadow: 0 0 8px 2px var(--color-ligue1-trans);
+}
+
+.match-card-container.SerieA {
+	border: 3px solid var(--color-seriea);
+	box-shadow: 0 0 8px 2px var(--color-seriea-trans);
+}
+
+.match-card-container.CopaDelRey {
+	border: 3px solid var(--color-copa-rey);
+	box-shadow: 0 0 8px 2px var(--color-copa-rey-trans);
+}
+
+.match-card-container.FaCup {
+	border: 3px solid var(--color-fa-cup);
+	box-shadow: 0 0 8px 2px var(--color-fa-cup-trans);
+}
+
+.match-card-container.SpanishSupercup {
+	border: 3px solid var(--color-spanish-supercup);
+	box-shadow: 0 0 8px 2px var(--color-spanish-supercup-trans);
+}
+
+.match-card-container.UefaSupercup {
+	border: 3px solid var(--color-uefa-supercup);
+	box-shadow: 0 0 8px 2px var(--color-uefa-supercup-trans);
+}
+
+.match-card-container.ConferenceLeague {
+	border: 3px solid var(--color-conference-league);
+	box-shadow: 0 0 8px 2px var(--color-conference-league-trans);
+}
+
+.match-card-container.WorldCup {
+	border: 3px solid var(--color-world-cup);
+	box-shadow: 0 0 8px 2px var(--color-world-cup-trans);
+}
+
+.match-card-container.EuroCup {
+	border: 3px solid var(--color-euro-cup);
+	box-shadow: 0 0 8px 2px var(--color-euro-cup-trans);
+}
+
+.match-card-container.AmericanCup {
+	border: 3px solid var(--color-american-cup);
+	box-shadow: 0 0 8px 2px var(--color-american-cup-trans);
+}
+
+.match-card-container.ClubWorldCup {
+	border: 3px solid var(--color-club-world-cup);
+	box-shadow: 0 0 8px 2px var(--color-club-world-cup-trans);
+}
+
+.match-card-container.None {
+	border: 3px solid var(--color-none);
+	box-shadow: 0 0 8px 2px var(--color-none-trans);
+}
+
+/* League Background */
+.league-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.league-bg-img {
+  max-height: 100%;
+  opacity: 0.4;
+  object-fit: contain;
+  transition: opacity 0.3s ease;
+}
+
+.league-bg-img-watched {
+  opacity: 0.6;
+}
+
+.match-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.team-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.team-logo-wrapper {
+  width: fit-content;
+}
+
+.team-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px #f3f5f9;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.team-logo:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px #f3f5f9;
+}
+
+.team-logo.SegundaDivision {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-segunda-division-trans);
+}
+
+.team-logo.SegundaDivision:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-segunda-division-trans);
+}
+
+.team-logo.PrimeraDivision {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-primera-division-trans);
+}
+
+.team-logo.PrimeraDivision:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-primera-division-trans);
+}
+
+.team-logo.PremierLeague {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-premier-league-trans);
+}
+
+.team-logo.PremierLeague:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-premier-league-trans);
+}
+
+.team-logo.ChampionsLeague {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-champions-league-trans);
+}
+
+.team-logo.ChampionsLeague:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-champions-league-trans);
+}
+
+.team-logo.EuropaLeague {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-europa-league-trans);
+}
+
+.team-logo.EuropaLeague:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-europa-league-trans);
+}
+
+.team-logo.Bundesliga {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-bundesliga-trans);
+}
+
+.team-logo.Bundesliga:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-bundesliga-trans);
+}
+
+.team-logo.Ligue1 {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-ligue1-trans);
+}
+
+.team-logo.Ligue1:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-ligue1-trans);
+}
+
+.team-logo.SerieA {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-seriea-trans);
+}
+
+.team-logo.SerieA:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-seriea-trans);
+}
+
+.team-logo.CopaDelRey {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-copa-rey-trans);
+}
+
+.team-logo.CopaDelRey:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-copa-rey-trans);
+}
+
+.team-logo.FaCup {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-fa-cup-trans);
+}
+
+.team-logo.FaCup:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-fa-cup-trans);
+}
+
+.team-logo.SpanishSupercup {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-spanish-supercup-trans);
+}
+
+.team-logo.SpanishSupercup:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-spanish-supercup-trans);
+}
+
+.team-logo.UefaSupercup {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-uefa-supercup-trans);
+}
+
+.team-logo.UefaSupercup:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-uefa-supercup-trans);
+}
+
+.team-logo.ConferenceLeague {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-conference-league-trans);
+}
+
+.team-logo.ConferenceLeague:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-conference-league-trans);
+}
+
+.team-logo.WorldCup {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-world-cup-trans);
+}
+
+.team-logo.WorldCup:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-world-cup-trans);
+}
+
+.team-logo.EuroCup {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-euro-cup-trans);
+}
+
+.team-logo.EuroCup:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-euro-cup-trans);
+}
+
+.team-logo.AmericanCup {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-american-cup-trans);
+}
+
+.team-logo.AmericanCup:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-american-cup-trans);
+}
+
+.team-logo.ClubWorldCup {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-club-world-cup-trans);
+}
+
+.team-logo.ClubWorldCup:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-club-world-cup-trans);
+}
+
+.team-logo.None {
+	box-shadow: 0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px var(--color-none-trans);
+}
+
+.team-logo.None:hover {
+	box-shadow: 0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px var(--color-none-trans);
+}
+
+.logo-img {
+  width: 75%;
+  height: 75%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.team-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #2c3e50;
+}
+
+.team-name:hover {
+  color: #e94d4a;
+  transform: scale(1.05);
+}
+
+.center-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 200px;
+}
+
+.controls-row {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.match-eye-button {
+  margin: auto;
+  text-align: center;
+  border-radius: 12px;
+  padding: 8px 16px;
+  background: rgba(233, 77, 74, 0.15);
+  box-shadow: 0 2px 8px rgba(48, 48, 48, 0.12);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #e94d4a;
+  font-size: 1.5em;
+}
+
+.match-eye-button:hover {
+  background: rgba(233, 77, 74, 0.25);
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 4px 12px rgba(233, 77, 74, 0.3);
+}
+
+.match-eye-button:active {
+  transform: scale(0.95);
+}
+
+.match-eye-button-unwatched {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.match-eye-button-unwatched:hover {
+  color: #64748b;
+  background: rgba(148, 163, 184, 0.2);
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2);
+}
+
+.score-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: rgba(220, 220, 220, 0.5);
+  box-shadow: 0 0 2px 0 rgba(48, 48, 48, 0.1), 0px 4px 4px 1px rgba(48, 48, 48, 0.1);
+  backdrop-filter: blur(3px);
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.score-number {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #475569;
+  line-height: 1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.score-number.leading {
+  color: #623ce6;
+  transform: scale(1.1);
+}
+
+.score-divider {
+  font-size: 2.75rem;
+  color: #cbd5e1;
+  font-weight: 700;
+}
+
+.match-status {
+  text-align: center;
+}
+
+.status-text {
+  margin: 0;
+  color: #334155;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  background: rgba(220, 220, 220, 0.5);
+  box-shadow: 0 0 2px 0 rgba(48, 48, 48, 0.1), 0px 4px 4px 1px rgba(48, 48, 48, 0.1);
+  backdrop-filter: blur(3px);
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.match-datetime {
+  text-align: center;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 2px solid rgba(226, 232, 240, 0.6);
+}
+
+.match-date {
+  margin: 0 0 0.25rem 0;
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.match-time {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.venue-info {
+  text-align: center;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 2px solid rgba(226, 232, 240, 0.6);
+}
+
+.venue-name {
+  margin: 0.25rem 0;
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.venue-city {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.location-selector-row {
+  width: 100%;
+  margin-top: 0.5rem;
+  max-height: 100px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+}
+
+.location-selector {
+  margin: auto;
+  text-align: center;
+  border-radius: 12px;
+  padding: 6px 12px;
+  background: rgba(233, 77, 74, 0.08);
+  box-shadow: 0 2px 6px rgba(48, 48, 48, 0.1);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(233, 77, 74, 0.15);
+}
+
+.location-selector:hover {
+  background: rgba(233, 77, 74, 0.12);
+  box-shadow: 0 4px 10px rgba(233, 77, 74, 0.2);
+  transform: translateY(-1px);
+}
+
+.location-mat-select {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+/* Mobile Info Section - hidden on desktop */
+.mobile-info-section {
+  display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .match-card-container {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .match-content {
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.5rem;
+    align-items: start;
+  }
+
+  .center-section {
+    min-width: auto;
+    gap: 0.35rem;
+  }
+
+  .team-section {
+    gap: 0.5rem;
+  }
+
+  /* Hide datetime and venue in team sections on mobile - they'll show below */
+  .team-section .match-datetime,
+  .team-section .venue-info {
+    display: none;
+  }
+
+  .team-logo {
+    width: 75px;
+    height: 75px;
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px #f3f5f9;
+  }
+
+  .team-logo.SegundaDivision {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-segunda-division-trans);
+  }
+
+  .team-logo.PrimeraDivision {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-primera-division-trans);
+  }
+
+  .team-logo.PremierLeague {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-premier-league-trans);
+  }
+
+  .team-logo.ChampionsLeague {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-champions-league-trans);
+  }
+
+  .team-logo.EuropaLeague {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-europa-league-trans);
+  }
+
+  .team-logo.Bundesliga {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-bundesliga-trans);
+  }
+
+  .team-logo.Ligue1 {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-ligue1-trans);
+  }
+
+  .team-logo.SerieA {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-seriea-trans);
+  }
+
+  .team-logo.CopaDelRey {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-copa-rey-trans);
+  }
+
+  .team-logo.FaCup {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-fa-cup-trans);
+  }
+
+  .team-logo.SpanishSupercup {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-spanish-supercup-trans);
+  }
+
+  .team-logo.UefaSupercup {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-uefa-supercup-trans);
+  }
+
+  .team-logo.ConferenceLeague {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-conference-league-trans);
+  }
+
+  .team-logo.WorldCup {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-world-cup-trans);
+  }
+
+  .team-logo.EuroCup {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-euro-cup-trans);
+  }
+
+  .team-logo.AmericanCup {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-american-cup-trans);
+  }
+
+  .team-logo.ClubWorldCup {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-club-world-cup-trans);
+  }
+
+  .team-logo.None {
+    box-shadow: 0 3px 6px 0 rgba(48,48,48, 0.12), 0 0 0 5px var(--color-none-trans);
+  }
+
+  .team-logo:hover {
+    transform: scale(1.08);
+  }
+
+  .team-logo.SegundaDivision:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-segunda-division-trans);
+  }
+
+  .team-logo.PrimeraDivision:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-primera-division-trans);
+  }
+
+  .team-logo.PremierLeague:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-premier-league-trans);
+  }
+
+  .team-logo.ChampionsLeague:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-champions-league-trans);
+  }
+
+  .team-logo.EuropaLeague:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-europa-league-trans);
+  }
+
+  .team-logo.Bundesliga:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-bundesliga-trans);
+  }
+
+  .team-logo.Ligue1:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-ligue1-trans);
+  }
+
+  .team-logo.SerieA:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-seriea-trans);
+  }
+
+  .team-logo.CopaDelRey:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-copa-rey-trans);
+  }
+
+  .team-logo.FaCup:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-fa-cup-trans);
+  }
+
+  .team-logo.SpanishSupercup:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-spanish-supercup-trans);
+  }
+
+  .team-logo.UefaSupercup:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-uefa-supercup-trans);
+  }
+
+  .team-logo.ConferenceLeague:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-conference-league-trans);
+  }
+
+  .team-logo.WorldCup:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-world-cup-trans);
+  }
+
+  .team-logo.EuroCup:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-euro-cup-trans);
+  }
+
+  .team-logo.AmericanCup:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-american-cup-trans);
+  }
+
+  .team-logo.ClubWorldCup:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-club-world-cup-trans);
+  }
+
+  .team-logo.None:hover {
+    box-shadow: 0 4px 8px 0 rgba(48,48,48, 0.16), 0 0 0 5px var(--color-none-trans);
+  }
+
+  .team-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .match-eye-button {
+    padding: 5px 10px;
+    font-size: 1.1em;
+  }
+
+  .score-display {
+    padding: 5px 10px;
+    gap: 0.5rem;
+  }
+
+  .score-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+
+  .score-divider {
+    font-size: 1.35rem;
+  }
+
+  .status-text {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  .match-date {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .match-time {
+    font-size: 0.85rem;
+  }
+
+  .venue-info p {
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .venue-city {
+    font-size: 0.8rem;
+  }
+
+  .location-mat-select {
+    font-size: 0.85rem;
+  }
+
+  .league-bg-img {
+    max-height: 70%;
+    opacity: 0.3;
+  }
+
+  .league-bg-img-watched {
+    opacity: 0.5;
+  }
+
+  /* Show mobile info section only on mobile */
+  .mobile-info-section {
+    display: block;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 2px solid rgba(226, 232, 240, 0.6);
+    position: relative;
+    z-index: 1;
+  }
+
+  .mobile-info-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .mobile-info-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .mobile-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 1;
+    min-width: fit-content;
+  }
+
+  .mobile-info-label {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .mobile-info-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #64748b;
+    line-height: 1.2;
+  }
+
+  .mobile-info-bold {
+    font-weight: 700;
+  }
+}
+

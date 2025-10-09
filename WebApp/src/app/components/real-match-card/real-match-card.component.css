@@ -530,6 +530,16 @@
 }
 
 
+.button-row {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: center;
+	align-items: center;
+	width: fit-content;
+	height: 30%;
+	margin: auto;
+}
+
 .match-eye-button {
 	margin: auto;
 	text-align: center;
@@ -547,6 +557,23 @@
 
 .match-eye-button-unwatched:hover {
 	color: darkslategray;
+}
+
+.match-info-button {
+	margin: auto;
+	text-align: center;
+	border-radius: 10px;
+	padding: 2px 6px;
+	background: rgba(118, 75, 162, 0.9);
+	box-shadow: 0 0 2px 0 rgba(48, 48, 48, 0.1), 0px 4px 4px 1px rgba(48, 48, 48, 0.1);
+	backdrop-filter: blur(3px);
+	cursor: pointer;
+	color: white;
+	transition: all 0.3s ease;
+}
+
+.match-info-button:hover {
+	background: rgba(118, 75, 162, 1);
 }
 
 .location-selector-row {

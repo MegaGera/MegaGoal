@@ -1,0 +1,27 @@
+<div class="statistics-section" *ngIf="homeStatistics && awayStatistics">
+  <h2 class="section-title">Match Statistics</h2>
+  
+  <div class="stat-item" *ngFor="let stat of homeStatistics.statistics">
+    <div class="stat-row">
+      <span class="stat-value home">{{ getStatValue(homeStatistics, stat.type) }}</span>
+      <span class="stat-label">{{ stat.type }}</span>
+      <span class="stat-value away">{{ getStatValue(awayStatistics, stat.type) }}</span>
+    </div>
+    
+    <!-- Progress bar for all stats that have numeric or percentage values -->
+    <div class="stat-bar" *ngIf="isPercentageStat(homeStatistics, stat.type) || isNumericStat(homeStatistics, stat.type)">
+      <div class="bar-container home-container">
+        <div class="bar-fill home-bar" [style.width.%]="getBarPercentage(homeStatistics, stat.type)"></div>
+      </div>
+      <div class="bar-container away-container">
+        <div class="bar-fill away-bar" [style.width.%]="getBarPercentage(awayStatistics, stat.type)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- No Statistics Message -->
+<div class="no-statistics" *ngIf="!homeStatistics || !awayStatistics">
+  <p>No statistics available for this match</p>
+</div>
+

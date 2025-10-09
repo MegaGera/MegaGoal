@@ -1,6 +1,8 @@
 /*
     Match interface for football matches viewed (with the _id)
 */
+import { TeamStatistics } from './realMatch';
+
 export interface Match {
     _id: string,
     fixture: {
@@ -33,4 +35,5 @@ export interface Match {
         id: number,
         name: string
     },
+    statistics?: TeamStatistics[]
 }

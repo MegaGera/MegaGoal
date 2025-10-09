@@ -33,13 +33,16 @@
 
         <div class="col-4 h-100 z-1">
 
-          <div class="row" style="width: fit-content; height: 30%; margin:auto;">
+          <div class="button-row">
               <div class="match-eye-button" [ngClass]="{'match-eye-button-unwatched': !watched}" (click)="createMatch()">
                 @if (watched) {
                   <ng-icon name="jamEyeF"></ng-icon>
                 } @else {
                   <ng-icon name="jamEyeCloseF"></ng-icon>
                 }
+              </div>
+              <div class="match-info-button" (click)="navigateToMatchInfo()">
+                <ng-icon name="jamInfoF"></ng-icon>
               </div>
           </div>
 

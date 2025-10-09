@@ -1,0 +1,121 @@
+<div class="match-card-container" *ngIf="match" [ngClass]="leagueCSSSelector(realMatch.league.id)">
+  
+  <!-- Background League Logo -->
+  <div class="league-background">
+    <img [src]="images.getRouteImageLeagueBack(realMatch.league.id)" 
+         alt="League background" 
+         class="league-bg-img"
+         [ngClass]="{'league-bg-img-watched': watched}">
+  </div>
+
+  <div class="match-content">
+    <!-- Home Team -->
+    <div class="team-section">
+      <div class="team-logo-wrapper" (click)="navigateToTeam(realMatch.teams.home.id)" style="cursor: pointer;">
+        <div class="team-logo" [ngClass]="leagueCSSSelector(realMatch.league.id)">
+          <img [src]="images.getRouteImageTeam(realMatch.teams.home.id)" alt="Home team" class="logo-img">
+        </div>
+      </div>
+      <h2 class="team-name" (click)="navigateToTeam(realMatch.teams.home.id)" style="cursor: pointer;">
+        {{ realMatch.teams.home.name }}
+      </h2>
+      
+      <!-- Date & Time -->
+      <div class="match-datetime">
+        <p class="match-date">{{ getDate(realMatch.fixture.timestamp) }}</p>
+        <p class="match-time">{{ getTime(realMatch.fixture.timestamp) }}</p>
+      </div>
+    </div>
+
+    <!-- Center Section (Score & Controls) -->
+    <div class="center-section">
+      <!-- Eye Button -->
+      <div class="controls-row">
+        <div class="match-eye-button" [ngClass]="{'match-eye-button-unwatched': !watched}" (click)="createMatch()">
+          @if (watched) {
+            <ng-icon name="jamEyeF"></ng-icon>
+          } @else {
+            <ng-icon name="jamEyeCloseF"></ng-icon>
+          }
+        </div>
+      </div>
+
+      <!-- Score -->
+      <div class="score-display">
+        <span class="score-number" [ngClass]="{'leading': realMatch.goals.home > realMatch.goals.away}">
+          {{ realMatch.goals.home }}
+        </span>
+        <span class="score-divider">-</span>
+        <span class="score-number" [ngClass]="{'leading': realMatch.goals.away > realMatch.goals.home}">
+          {{ realMatch.goals.away }}
+        </span>
+      </div>
+
+      <!-- Match Status -->
+      <div class="match-status">
+        <p class="status-text">{{ realMatch.fixture.status.long }}</p>
+      </div>
+
+      <!-- Location Selector (only when watched) -->
+      @if (watched) {
+        <div class="location-selector-row">
+          <div class="location-selector">
+            <mat-select name="locationSelect" class="location-mat-select" panelWidth="null" 
+              [(ngModel)]="match.location" 
+              (selectionChange)="setLocation(match.fixture.id, $event.value)">
+              @if (match.venue && match.venue.id) {
+                <mat-option [value]="getLocationIdFromVenueId(match.venue.id)">
+                  <span>🏟️ {{match.venue.name}}</span>
+                </mat-option>
+              }
+              @for (location of getLocationList(); track $index) {
+                <mat-option [value]="location.id">
+                  <span>{{location.name}}</span>
+                </mat-option>
+              }
+            </mat-select>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Away Team -->
+    <div class="team-section">
+      <div class="team-logo-wrapper" (click)="navigateToTeam(realMatch.teams.away.id)" style="cursor: pointer;">
+        <div class="team-logo" [ngClass]="leagueCSSSelector(realMatch.league.id)">
+          <img [src]="images.getRouteImageTeam(realMatch.teams.away.id)" alt="Away team" class="logo-img">
+        </div>
+      </div>
+      <h2 class="team-name" (click)="navigateToTeam(realMatch.teams.away.id)" style="cursor: pointer;">
+        {{ realMatch.teams.away.name }}
+      </h2>
+      
+      <!-- Venue -->
+      <div class="venue-info" *ngIf="realMatch.fixture.venue.name">
+        <p class="venue-name">🏟️ {{ realMatch.fixture.venue.name }}</p>
+        <p *ngIf="realMatch.fixture.venue.city" class="venue-city">{{ realMatch.fixture.venue.city }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Info Section (shown only on mobile) -->
+  <div class="mobile-info-section">
+    <div class="mobile-info-row">
+      <div class="mobile-info-item">
+        <span class="mobile-info-label">📅</span>
+        <span class="mobile-info-text mobile-info-bold">{{ getDate(realMatch.fixture.timestamp) }}</span>
+      </div>
+      <div class="mobile-info-item">
+        <span class="mobile-info-label">🕐</span>
+        <span class="mobile-info-text">{{ getTime(realMatch.fixture.timestamp) }}</span>
+      </div>
+    </div>
+    <div class="mobile-info-row" *ngIf="realMatch.fixture.venue.name">
+      <div class="mobile-info-item">
+        <span class="mobile-info-label">🏟️</span>
+        <span class="mobile-info-text"><span class="mobile-info-bold">{{ realMatch.fixture.venue.name }}</span><span *ngIf="realMatch.fixture.venue.city">, {{ realMatch.fixture.venue.city }}</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+

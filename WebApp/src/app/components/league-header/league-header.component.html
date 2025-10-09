@@ -1,0 +1,8 @@
+<div class="league-info" (click)="navigateToLeague()">
+  <img [src]="images.getRouteImageLeague(leagueId)" alt="League logo" class="league-logo">
+  <div class="league-details">
+    <h2>{{ leagueName }}</h2>
+    <p>{{ leagueRound }} • {{ leagueSeason }}/{{ leagueSeason + 1 }}</p>
+  </div>
+</div>
+
