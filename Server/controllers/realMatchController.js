@@ -100,4 +100,27 @@ const getRealMatches = async (req, res) => {
   }
 }
 
-export { getRealMatches };
+// Get single real match by fixture ID
+const getRealMatchById = async (req, res) => {
+  const db = getDB();
+  try {
+    const { id } = req.params;
+    
+    if (!id) {
+      return res.status(400).json({ message: "Match ID is required" });
+    }
+
+    const result = await db.collection('real_matches').findOne({ 'fixture.id': +id });
+
+    if (!result) {
+      return res.status(404).json({ message: "Match not found" });
+    }
+
+    console.log(`Real Match found: ${result.fixture.id}`);
+    res.send(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export { getRealMatches, getRealMatchById };

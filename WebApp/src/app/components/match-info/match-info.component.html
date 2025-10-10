@@ -1,0 +1,45 @@
+<div class="match-info-container" *ngIf="!loading && match">
+  
+  <!-- League Header Component -->
+  <app-league-header 
+    [leagueId]="match.league.id"
+    [leagueName]="match.league.name"
+    [leagueRound]="match.league.round"
+    [leagueSeason]="match.league.season">
+  </app-league-header>
+
+  <!-- General Match Card Component -->
+  <app-general-match-card [realMatch]="match"></app-general-match-card>
+
+  <!-- Extra Time and Penalties (if applicable) -->
+  <div class="score-details" *ngIf="match.score && (match.score.extratime.home !== null || match.score.penalty.home !== null)">
+    <div class="score-row" *ngIf="match.score.extratime.home !== null">
+      <span class="score-label">Extra Time:</span>
+      <span class="score-value">{{ match.score.extratime.home }} - {{ match.score.extratime.away }}</span>
+    </div>
+    <div class="score-row" *ngIf="match.score.penalty.home !== null">
+      <span class="score-label">Penalties:</span>
+      <span class="score-value">{{ match.score.penalty.home }} - {{ match.score.penalty.away }}</span>
+    </div>
+  </div>
+
+  <!-- Match Statistics Component -->
+  <app-match-statistics 
+    *ngIf="homeStatistics && awayStatistics"
+    [homeStatistics]="homeStatistics"
+    [awayStatistics]="awayStatistics">
+  </app-match-statistics>
+
+  <!-- No Statistics Message -->
+  <div class="no-statistics" *ngIf="!homeStatistics || !awayStatistics">
+    <p>This match don't have statistics yet</p>
+  </div>
+
+</div>
+
+<!-- Loading State -->
+<div class="loading-container" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Loading match information...</p>
+</div>
+

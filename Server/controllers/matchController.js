@@ -7,7 +7,7 @@ import { logMatchCreated, logMatchDeleted, logMatchUpdateLocation } from './logC
 const getMatches = async (req, res) => {
   const db = getDB();
   try {
-    let {team_id, season, location} = req.query;
+    let {team_id, season, location, fixture_id} = req.query;
     let username = req.validateData.username;
 
     const filters = [];
@@ -22,6 +22,7 @@ const getMatches = async (req, res) => {
     if (season) filters.push({ 'league.season': +season });
     if (username) filters.push({ 'user.username': username });
     if (location) filters.push({ 'location': location });
+    if (fixture_id) filters.push({ 'fixture.id': +fixture_id });
     
     const query = filters.length > 0 ? { $and: filters } : {};
     const result = await db.collection('matches').find(query).toArray();

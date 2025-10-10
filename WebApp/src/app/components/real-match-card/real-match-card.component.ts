@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select'
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamEyeCloseF, jamEyeF } from '@ng-icons/jam-icons';
+import { jamEyeCloseF, jamEyeF, jamInfoF } from '@ng-icons/jam-icons';
 
 import { ImagesService } from '../../services/images.service';
 import { MegaGoalService } from '../../services/megagoal.service';
@@ -25,7 +25,7 @@ import { MatchParserService } from '../../services/match-parser.service';
   styleUrl: './real-match-card.component.css',
   providers: [ImagesService, MegaGoalService, provideNgIconsConfig({
     size: window.innerWidth < 769 ? '1.2em' : '1.5em',
-  }), provideIcons({ jamEyeCloseF, jamEyeF })]
+  }), provideIcons({ jamEyeCloseF, jamEyeF, jamInfoF })]
 })
 export class RealMatchCardComponent {
   @Input() match!: Match;
@@ -167,6 +167,12 @@ export class RealMatchCardComponent {
 
   navigateToTeam(teamId: number) {
     this.router.navigate(['/app/team'], { queryParams: { id: teamId, season: this.match.league.season } }).then(() => {
+      window.scrollTo(0, 0);
+    });
+  }
+
+  navigateToMatchInfo() {
+    this.router.navigate(['/app/match'], { queryParams: { id: this.match.fixture.id } }).then(() => {
       window.scrollTo(0, 0);
     });
   }
