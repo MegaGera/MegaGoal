@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { jamEyeF, jamTrophy, jamTarget } from '@ng-icons/jam-icons';
 import { ionFootball } from '@ng-icons/ionicons';
@@ -11,7 +12,7 @@ import { GeneralCardComponent } from '../../general-card/general-card.component'
 @Component({
   selector: 'app-favourite-team-card',
   standalone: true,
-  imports: [CommonModule, NgOptimizedImage, NgIconComponent, MiniStatCardComponent, GeneralCardComponent],
+  imports: [CommonModule, NgOptimizedImage, NgIconComponent, MiniStatCardComponent, GeneralCardComponent, RouterLink],
   templateUrl: './favourite-team-card.component.html',
   styleUrls: ['./favourite-team-card.component.css'],
   providers: [ImagesService, provideIcons({ jamEyeF, jamTrophy, jamTarget, ionFootball })]

@@ -10,6 +10,16 @@
   gap: 12px;
 }
 
+.team-logo-link {
+  text-decoration: none;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.team-logo-link:hover {
+  transform: scale(1.05);
+}
+
 .team-logo-container {
   width: 40px;
   height: 40px;
@@ -21,6 +31,11 @@
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
+  transition: box-shadow 0.2s ease;
+}
+
+.team-logo-link:hover .team-logo-container {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .team-logo {
@@ -43,12 +58,27 @@
   gap: 8px;
 }
 
+.team-name-link {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+.team-name-link:hover {
+  color: #dc143c;
+}
+
 .team-name {
   font-size: 16px;
   font-weight: 700;
   color: #1e293b;
   margin: 0;
   line-height: 1.2;
+  transition: color 0.2s ease;
+}
+
+.team-name-link:hover .team-name {
+  color: #dc143c;
 }
 
 .top-viewed-badge {

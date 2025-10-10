@@ -14,18 +14,22 @@
     <!-- Header Section -->
     <div class="card-header">
       <div class="team-info">
-        <div class="team-logo-container">
-          <img 
-            [ngSrc]="images.getRouteImageTeam(teamStats.team_id)" 
-            [alt]="teamStats.team_name"
-            width="40" 
-            height="40" 
-            class="team-logo"
-            priority="true">
-        </div>
+        <a [routerLink]="['/app/team']" [queryParams]="{id: teamStats.team_id}" class="team-logo-link">
+          <div class="team-logo-container">
+            <img 
+              [ngSrc]="images.getRouteImageTeam(teamStats.team_id)" 
+              [alt]="teamStats.team_name"
+              width="40" 
+              height="40" 
+              class="team-logo"
+              priority="true">
+          </div>
+        </a>
         <div class="team-details">
           <div class="team-name-row">
-            <h3 class="team-name">{{ teamStats.team_name }}</h3>
+            <a [routerLink]="['/app/team']" [queryParams]="{id: teamStats.team_id}" class="team-name-link">
+              <h3 class="team-name">{{ teamStats.team_name }}</h3>
+            </a>
             <div class="top-viewed-badge">
               <ng-icon name="jamTrophy" class="star-icon"></ng-icon>
               <span>Top Viewed</span>
