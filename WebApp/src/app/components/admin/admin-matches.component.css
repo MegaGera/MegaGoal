@@ -35,4 +35,51 @@
 .badge-success { background: #16a34a; color: #ffffff; border-color: #16a34a; }
 .badge-danger { background: #dc2626; color: #ffffff; border-color: #dc2626; }
 
+/* Priority section styles */
+.priority-section {
+  background: #fef3c7;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 2px solid #fbbf24;
+}
+.subsection-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: #92400e;
+}
+.subsection-description {
+  font-size: 14px;
+  color: #78350f;
+  margin: 0 0 12px 0;
+}
+.priority-list {
+  background: #fffbeb;
+  padding: 8px;
+  border-radius: 6px;
+}
+.priority-match {
+  background: #ffffff;
+  border-left: 4px solid #f59e0b;
+}
+.section-divider {
+  margin: 24px 0;
+  border-color: #e5e7eb;
+}
+
+/* Pagination controls */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.page-info {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
 

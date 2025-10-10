@@ -293,4 +293,15 @@ export class MegaGoalService {
     }
     return this.http.post<any>(this.url + '/admin/leagues_settings/create', body, this.options);
   }
+
+  /*
+    Method to get real matches without statistics that have been marked by users
+  */
+  getRealMatchesWithoutStatistics(page: number = 1): Observable<{ matches: RealMatch[], total: number, page: number, totalPages: number }> {
+    let params = new HttpParams().set('page', page.toString());
+    return this.http.get<{ matches: RealMatch[], total: number, page: number, totalPages: number }>(
+      this.url + '/admin/real_matches/without_statistics', 
+      { ...this.options, params: params }
+    );
+  }
 }

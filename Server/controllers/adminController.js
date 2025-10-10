@@ -111,3 +111,56 @@ export const createLeagueSetting = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 }
+
+// Get real matches without statistics that have been marked by users
+export const getRealMatchesWithoutStatistics = async (req, res) => {
+  const db = getDB();
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 50; // Max 50 matches per request
+    const skip = (page - 1) * limit;
+
+    // Step 1: Get distinct fixture IDs from user matches
+    const userMatchFixtureIds = await db.collection('matches')
+      .distinct('fixture.id');
+
+    if (userMatchFixtureIds.length === 0) {
+      return res.send({ matches: [], total: 0, page, totalPages: 0 });
+    }
+
+    // Step 2: Find real matches without statistics
+    // Statistics can be: missing field, null, or empty array
+    const query = {
+      'fixture.id': { $in: userMatchFixtureIds },
+      $or: [
+        { 'statistics': { $exists: false } },
+        { 'statistics': null },
+        { 'statistics': { $size: 0 } }
+      ]
+    };
+
+    // Get total count for pagination
+    const total = await db.collection('real_matches').countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+
+    // Get matches with pagination, sorted by fixture date (most recent first)
+    const matches = await db.collection('real_matches')
+      .find(query)
+      .sort({ 'fixture.timestamp': -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    console.log(`Real Matches without statistics found: ${matches.length} of ${total} total (page ${page}/${totalPages})`);
+    
+    res.send({
+      matches,
+      total,
+      page,
+      totalPages
+    });
+  } catch (error) {
+    console.error("Error getting real matches without statistics:", error);
+    res.status(500).json({ message: error.message });
+  }
+}

@@ -18,6 +18,7 @@ import { isNotStartedStatus } from '../../config/matchStatus';
 export class AdminMatchesComponent {
 
   filteredMatches: RealMatch[] = [];
+  matchesWithoutStats: RealMatch[] = [];
 
   // Filters sources
   leagues: LeaguesSettings[] = [];
@@ -33,7 +34,13 @@ export class AdminMatchesComponent {
   selectedCountry: string | null = null;
 
   loading = false;
+  loadingWithoutStats = false;
   updatingFixtureId: number | null = null;
+
+  // Pagination for matches without statistics
+  currentPage = 1;
+  totalPages = 0;
+  totalMatches = 0;
 
   constructor(
     private megagoal: MegaGoalService,
@@ -61,6 +68,26 @@ export class AdminMatchesComponent {
     this.megagoal.getTeamsByTopLeague().subscribe({
       next: (teams) => { this.teams = teams || []; this.filterTeamsByLeagueAndSeason(); },
       error: () => {}
+    });
+    // Load matches without statistics
+    this.loadMatchesWithoutStatistics();
+  }
+
+  loadMatchesWithoutStatistics(page: number = 1) {
+    this.loadingWithoutStats = true;
+    this.currentPage = page;
+    this.megagoal.getRealMatchesWithoutStatistics(page).subscribe({
+      next: (response) => {
+        this.matchesWithoutStats = response.matches || [];
+        this.totalMatches = response.total || 0;
+        this.totalPages = response.totalPages || 0;
+        this.currentPage = response.page || 1;
+        this.loadingWithoutStats = false;
+      },
+      error: () => {
+        this.matchesWithoutStats = [];
+        this.loadingWithoutStats = false;
+      }
     });
   }
 
@@ -131,6 +158,8 @@ export class AdminMatchesComponent {
       next: () => {
         this.updatingFixtureId = null;
         this.applyFilters();
+        // Reload matches without statistics to update the list
+        this.loadMatchesWithoutStatistics(this.currentPage);
       },
       error: () => {
         this.updatingFixtureId = null;

@@ -3,6 +3,56 @@
     <h1 class="section-title">Matches Administration</h1>
     <p class="section-description">Manage and populate statistics for real matches</p>
 
+    <!-- Matches without statistics section -->
+    <div class="priority-section">
+      <h2 class="subsection-title">User Matches Without Statistics</h2>
+      <p class="subsection-description">These are matches tracked by users that need statistics ({{ totalMatches }} total)</p>
+      
+      @if (loadingWithoutStats) {
+        <div class="text-center">
+          <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      } @else {
+        <div class="matches-list priority-list">
+          @for (m of matchesWithoutStats; track m.fixture.id) {
+            <div class="match-row priority-match">
+              <div class="teams">
+                <img [src]="'https://server.megamedia.megagera.com/megagoal/teams/team_' + m.teams.home.id + '.png'" [alt]="m.teams.home.name" class="team-icon"/>
+                <span class="team-name">{{ m.teams.home.name }}</span>
+                <span class="vs">{{ m.goals.home }} - {{ m.goals.away }}</span>
+                <span class="team-name">{{ m.teams.away.name }}</span>
+                <img [src]="'https://server.megamedia.megagera.com/megagoal/teams/team_' + m.teams.away.id + '.png'" [alt]="m.teams.away.name" class="team-icon"/>
+              </div>
+              <div class="actions">
+                <span class="league">{{ m.league.name }}</span>
+                <span class="date">{{ m.fixture.date | date: 'dd/MM/yyyy' }}</span>
+                @if (!isNotStarted(m)) {
+                  <button class="btn btn-sm btn-primary" (click)="updateStatistics(m)" [disabled]="updatingFixtureId === m.fixture.id">
+                    {{ updatingFixtureId === m.fixture.id ? 'Updating...' : 'Update stats' }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+          @if (matchesWithoutStats.length === 0) {
+            <div class="text-center text-success py-3">✓ All user matches have statistics!</div>
+          }
+        </div>
+        
+        @if (totalPages > 1) {
+          <div class="pagination-controls">
+            <button class="btn btn-sm btn-outline-secondary" (click)="loadMatchesWithoutStatistics(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+            <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+            <button class="btn btn-sm btn-outline-secondary" (click)="loadMatchesWithoutStatistics(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+          </div>
+        }
+      }
+    </div>
+
+    <hr class="section-divider" />
+
     <div class="filters-row">
       <select class="form-select form-select-sm" [(ngModel)]="selectedLeague" (change)="onLeagueChange()">
         <option [ngValue]="null">All Leagues</option>
@@ -53,11 +103,11 @@
         @for (m of filteredMatches; track m.fixture.id) {
           <div class="match-row" [class.has-stats]="hasStatistics(m)" [class.not-started]="isNotStarted(m)">
             <div class="teams">
-              <img [src]="m.teams.home.logo" [alt]="m.teams.home.name" class="team-icon"/>
+              <img [src]="'https://server.megamedia.megagera.com/megagoal/teams/team_' + m.teams.home.id + '.png'" [alt]="m.teams.home.name" class="team-icon"/>
               <span class="team-name">{{ m.teams.home.name }}</span>
               <span class="vs">{{ m.goals.home }} - {{ m.goals.away }}</span>
               <span class="team-name">{{ m.teams.away.name }}</span>
-              <img [src]="m.teams.away.logo" [alt]="m.teams.away.name" class="team-icon"/>
+              <img [src]="'https://server.megamedia.megagera.com/megagoal/teams/team_' + m.teams.away.id + '.png'" [alt]="m.teams.away.name" class="team-icon"/>
             </div>
             <div class="actions">
               <span class="league">{{ m.league.name }}</span>
