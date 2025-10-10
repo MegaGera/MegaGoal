@@ -55,10 +55,28 @@ export class TeamComponent {
     // this.team = megagoal.getSelectedTeam();
 
     this.Activatedroute.queryParamMap.subscribe(params => {
-      this.queryTeamId = +params.get('id')! || 0;
-      this.querySeasonId = +params.get('season')! || 2023;
-      this.selectedSeason = this.seasons.find(season => season.id == this.querySeasonId) || this.seasons[0];
-      this.init();
+      const newTeamId = +params.get('id')! || 0;
+      const newSeasonId = +params.get('season')! || 0;
+      
+      const teamChanged = this.queryTeamId !== newTeamId;
+      const seasonChanged = this.querySeasonId !== newSeasonId;
+      
+      this.queryTeamId = newTeamId;
+      this.querySeasonId = newSeasonId;
+      
+      if (teamChanged || !this.team) {
+        // Team changed or first load - reload everything
+        this.init();
+      } else if (seasonChanged && this.team) {
+        // Only season changed - just update season and reload matches
+        if (this.querySeasonId === 0) {
+          this.selectedSeason = this.seasons[0]; // Most recent season
+        } else {
+          this.selectedSeason = this.seasons.find(season => season.id == this.querySeasonId) || this.seasons[0];
+        }
+        this.getRealMatches();
+        this.getMatches();
+      }
     });
 
   }
@@ -101,8 +119,12 @@ export class TeamComponent {
       })
       .sort((a, b) => b.id - a.id); // Sort in descending order (newest first)
     
-    // Set default selected season
-    this.selectedSeason = this.seasons.find(season => season.id == this.querySeasonId) || this.seasons[0];
+    // Set default selected season - if no season provided (querySeasonId is 0), use the most recent season
+    if (this.querySeasonId === 0) {
+      this.selectedSeason = this.seasons[0]; // Most recent season
+    } else {
+      this.selectedSeason = this.seasons.find(season => season.id == this.querySeasonId) || this.seasons[0];
+    }
   }
 
   /*
@@ -126,9 +148,13 @@ export class TeamComponent {
     Select Season
   */
   selectSeason(season: SeasonInfo): void {
-    this.selectedSeason = season;
-    this.getRealMatches();
-    this.getMatches();
+    // Update URL with new season parameter
+    // The queryParamMap subscription will handle updating the data
+    this.router.navigate([], {
+      relativeTo: this.Activatedroute,
+      queryParams: { id: this.queryTeamId, season: season.id },
+      queryParamsHandling: 'merge'
+    });
   }
 
   /*
