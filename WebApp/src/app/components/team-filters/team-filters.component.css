@@ -1,0 +1,213 @@
+/* Adjust card padding for compact design */
+:host ::ng-deep app-general-card .card-content {
+  padding: 16px !important;
+}
+
+/* Filter Header */
+.filter-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(220, 20, 60, 0.2);
+}
+
+.filter-icon {
+  color: #dc143c;
+  --ng-icon__size: 1.4rem;
+}
+
+.filter-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* Filter Sections */
+.filter-section {
+  margin-bottom: 18px;
+}
+
+.filter-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Season Select */
+.season-select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1.5px solid #e5e7eb;
+  background: #f8fafc;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  transition: border 0.2s, box-shadow 0.2s;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.04);
+  width: 100%;
+}
+
+.season-select:focus {
+  border-color: #dc143c;
+  box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.15);
+}
+
+.season-select:hover {
+  border-color: #dc143c;
+}
+
+/* League Grid */
+.league-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.league-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: #f8f9fa;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  aspect-ratio: 1;
+  position: relative;
+}
+
+.league-item:hover {
+  background: #e9ecef;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(255, 107, 107, 0.15);
+}
+
+.league-item-selected {
+  background: linear-gradient(135deg, #fff5f5, #ffe4e4);
+  border-color: #ff6b6b;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
+  transform: scale(1.05);
+}
+
+.league-icon {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 3px;
+}
+
+/* Tooltip for league names */
+.league-item::before {
+  content: attr(data-league-name);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.league-item::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.league-item:hover::before,
+.league-item:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .filter-header {
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+  }
+
+  .filter-title {
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 11px;
+  }
+
+  .filter-section {
+    margin-bottom: 18px;
+  }
+
+  .league-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .league-item {
+    padding: 4px;
+  }
+
+  .league-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .season-select {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-title {
+    font-size: 10px;
+  }
+
+  .league-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .league-item {
+    padding: 3px;
+  }
+
+  .league-icon {
+    width: 28px;
+    height: 28px;
+  }
+}
+

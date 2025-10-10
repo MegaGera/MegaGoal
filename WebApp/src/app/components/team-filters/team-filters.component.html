@@ -1,0 +1,43 @@
+<app-general-card>
+  <!-- Filter Header -->
+  <div class="filter-header">
+    <ng-icon name="jamFilterF" class="filter-icon"></ng-icon>
+    <h4 class="filter-title">Filters</h4>
+  </div>
+
+  <!-- Season select form -->
+  <div class="filter-section">
+    <h5 class="section-title">Season</h5>
+    <select 
+      class="season-select" 
+      [(ngModel)]="selectedSeason" 
+      (change)="onSeasonChange(selectedSeason)">
+      @for (season of seasons; track $index) {
+        <option [ngValue]="season">{{season.text}}</option>
+      }
+    </select>
+  </div>
+
+  <!-- League selection -->
+  @if (leagues.length > 0) {
+    <div class="filter-section">
+      <h5 class="section-title">Leagues</h5>
+      <div class="league-grid">
+        @for (league of leagues; track league) {
+          <div class="league-item" 
+               (click)="onLeagueToggle(league)"
+               [class.league-item-selected]="selectedLeagues.includes(league)"
+               [attr.data-league-name]="getLeagueName(league)">
+            <img class="league-icon" 
+                 [ngSrc]="images.getRouteImageLeagueSm(+league)" 
+                 [alt]="getLeagueName(league)" 
+                 width="42" 
+                 height="42" 
+                 priority="false">
+          </div>
+        }
+      </div>
+    </div>
+  }
+</app-general-card>
+

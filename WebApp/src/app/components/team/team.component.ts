@@ -15,6 +15,7 @@ import { Team } from '../../models/team';
 import { RealMatch } from '../../models/realMatch';
 
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
+import { TeamFiltersComponent } from '../team-filters/team-filters.component';
 import { MatchParserService } from '../../services/match-parser.service';
 import { SeasonInfo } from '../../models/season';
 import { Match } from '../../models/match';
@@ -24,7 +25,7 @@ import { Location } from '../../models/location';
 @Component({
   selector: 'app-team',
   standalone: true,
-  imports: [FormsModule, MatFormFieldModule, MatSelectModule, RealMatchCardComponent, NgClass, NgFor],
+  imports: [FormsModule, MatFormFieldModule, MatSelectModule, RealMatchCardComponent, TeamFiltersComponent, NgClass, NgFor],
   templateUrl: './team.component.html',
   styleUrl: './team.component.css',
   providers: [ImagesService]
@@ -37,6 +38,7 @@ export class TeamComponent {
 
   leagues: string[] = [];
   selectedLeagues: string[] = [];
+  leagueNames: Map<string, string> = new Map();
 
   /* 
     Selected team shared with Leagues components
@@ -178,6 +180,10 @@ export class TeamComponent {
       this.realMatches.sort(function (x, y) {
         return y.fixture.timestamp - x.fixture.timestamp;
       })
+      // Build league names map from real matches
+      this.realMatches.forEach(match => {
+        this.leagueNames.set(match.league.id.toString(), match.league.name);
+      });
       this.getDifferentLeagues();
       this.filterMatches();
     })

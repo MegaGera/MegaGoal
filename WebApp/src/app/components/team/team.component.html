@@ -6,14 +6,14 @@
       <div class="nav nav-tabs d-md-none" id="nav-tab-team" role="tablist">
         <button class="nav-link" id="nav-stats-tab" data-bs-toggle="tab" data-bs-target="#nav-stats" type="button" role="tab" aria-controls="nav-stats" aria-selected="true">Stats</button>
         <button class="nav-link active" id="nav-team-tab" data-bs-toggle="tab" data-bs-target="#nav-team" type="button" role="tab" aria-controls="nav-team" aria-selected="false">Team</button>
-        <button class="nav-link" id="nav-competitions-tab" data-bs-toggle="tab" data-bs-target="#nav-competitions" type="button" role="tab" aria-controls="nav-competitions" aria-selected="false">Competitions</button>
+        <button class="nav-link" id="nav-competitions-tab" data-bs-toggle="tab" data-bs-target="#nav-competitions" type="button" role="tab" aria-controls="nav-competitions" aria-selected="false">Filters</button>
       </div>
     </nav>
 
-    <div class="tab-content row m-auto" id="nav-tab-team">
-
+    <!-- Desktop Layout: Side by side -->
+    <div class="row m-auto d-none d-md-flex mt-4">
       <!-- Stats information column -->
-      <div class="tab-pane show col-md-3 col-12" id="nav-stats" role="tabpanel" aria-labelledby="nav-stats-tab">
+      <div class="col-md-3 col-12">
         <div class="informationColumn">
           <div class="text-center">
             <h2 class="m-auto"><u>Stats</u></h2>
@@ -23,7 +23,7 @@
       </div>
 
       <!-- Team main information column -->
-      <div class="tab-pane show active col-md-6 col-12" id="nav-team" role="tabpanel" aria-labelledby="nav-team-tab">
+      <div class="col-md-6 col-12">
         <div class="centralTeamInformation">
           <div class="row">
             <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
@@ -49,41 +49,77 @@
               </tr>
             </table>
           </div>
-
-          <div class="row mt-4 text-center">
-            <form class="formLeagues">
-              <mat-form-field class="w-100">
-                <mat-label>Season</mat-label>
-                <mat-select name="seasonSelect" [(ngModel)]="selectedSeason" (selectionChange)="selectSeason(selectedSeason)">
-                  @for (season of seasons; track $index) {
-                    <mat-option [value]="season">{{season.text}}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-            </form>
-          </div>
-
         </div>
       </div>
 
-      <!-- Competitions information column -->
-      <div class="tab-pane show col-md-3 col-12" id="nav-competitions" role="tabpanel" aria-labelledby="nav-competitions-tab">
+      <!-- Filters column (Desktop) -->
+      <div class="col-md-3 col-12">
+        <app-team-filters
+          [selectedSeason]="selectedSeason"
+          [seasons]="seasons"
+          [leagues]="leagues"
+          [selectedLeagues]="selectedLeagues"
+          [leagueNames]="leagueNames"
+          (seasonChange)="selectSeason($event)"
+          (leagueToggle)="selectLeague($event)">
+        </app-team-filters>
+      </div>
+    </div>
+
+    <!-- Mobile Layout: Tabs -->
+    <div class="tab-content row m-auto d-md-none mt-3" id="nav-tab-team">
+      <!-- Stats information column -->
+      <div class="tab-pane show col-12" id="nav-stats" role="tabpanel" aria-labelledby="nav-stats-tab">
         <div class="informationColumn">
-
-          <div class="row flex-nowrap overflow-auto m-auto">
-            @for (league of leagues; track $index) {
-              <div class="col-3 p-1 m-auto">
-                <div class="leagueFilterSelectorDiv" (click)="selectLeague(league)"
-                  [ngClass]="{'leagueFilterSelectorDivSelected': selectedLeagues.includes(league)}">
-                  <img class="img-fluid p-1 imgTeamIcon" [src]="images.getRouteImageLeague(league)">
-                </div>
-              </div>
-          }
+          <div class="text-center">
+            <h2 class="m-auto"><u>Stats</u></h2>
+            <h3 class="m-auto">Total views:</h3>
           </div>
-
         </div>
       </div>
 
+      <!-- Team main information column -->
+      <div class="tab-pane show active col-12" id="nav-team" role="tabpanel" aria-labelledby="nav-team-tab">
+        <div class="centralTeamInformation">
+          <div class="row">
+            <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
+          </div>
+          <div class="row text-center">
+            <h1 class="teamNameText">{{team.team.name}}</h1>
+          </div>
+          <div class="row text-center">
+            <table class="informationTable">
+              <tr>
+                <th class="tableCol" scope="col">Code</th>
+                <th class="tableCol" scope="col">Country</th>
+                <th class="tableCol">City</th>
+                <th class="tableCol">Founded</th>
+                <th class="tableCol">Stadium</th>
+              </tr>
+              <tr>
+                <td>{{team.team.code}}</td>
+                <td>{{team.team.country}}</td>
+                <td>{{team.venue.city}}</td>
+                <td>{{team.team.founded}}</td>
+                <td>{{team.venue.name}}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters column (Mobile) -->
+      <div class="tab-pane show col-12" id="nav-competitions" role="tabpanel" aria-labelledby="nav-competitions-tab">
+        <app-team-filters
+          [selectedSeason]="selectedSeason"
+          [seasons]="seasons"
+          [leagues]="leagues"
+          [selectedLeagues]="selectedLeagues"
+          [leagueNames]="leagueNames"
+          (seasonChange)="selectSeason($event)"
+          (leagueToggle)="selectLeague($event)">
+        </app-team-filters>
+      </div>
     </div>
     
     @if (selectedSeason.id == seasons[0].id) {
