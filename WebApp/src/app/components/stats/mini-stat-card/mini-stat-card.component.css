@@ -1,3 +1,10 @@
+.mini-stat-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
+}
+
 .mini-stat-card {
   display: flex;
   align-items: center;
@@ -11,7 +18,8 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.mini-stat-card:hover {
+.mini-stat-card:hover,
+.mini-stat-card-link:hover .mini-stat-card {
   background: linear-gradient(135deg, #ffe4e4 0%, #ffd1d1 50%, #ffb3b3 100%);
   transform: translateX(2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -72,7 +80,8 @@
   transition: all 0.3s ease;
 }
 
-.mini-stat-card:hover .stat-highlight-sub-value {
+.mini-stat-card:hover .stat-highlight-sub-value,
+.mini-stat-card-link:hover .stat-highlight-sub-value {
   opacity: 1;
   max-height: 20px;
   margin-top: 2px;

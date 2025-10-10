@@ -33,7 +33,8 @@
         type="crazy-match"
         label="Crazy Match"
         [value]="generalStats.crazy_match.teams.home.name + ' ' + generalStats.crazy_match.goals.home + '-' + generalStats.crazy_match.goals.away + ' ' + generalStats.crazy_match.teams.away.name"
-        [subValue]="getMatchSubvalueForCard(generalStats.crazy_match)">
+        [subValue]="getMatchSubvalueForCard(generalStats.crazy_match)"
+        [match_id]="generalStats.crazy_match.fixture.id">
       </app-mini-stat-card>
     }
 

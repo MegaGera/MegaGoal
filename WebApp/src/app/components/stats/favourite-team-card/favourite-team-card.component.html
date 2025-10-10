@@ -81,7 +81,8 @@
         <app-mini-stat-card
           type="crazy-match"
           label="Crazy Match"
-          [value]="teamStats.crazy_match.teams.home.name + ' ' + teamStats.crazy_match.goals.home + '-' + teamStats.crazy_match.goals.away + ' ' + teamStats.crazy_match.teams.away.name">
+          [value]="teamStats.crazy_match.teams.home.name + ' ' + teamStats.crazy_match.goals.home + '-' + teamStats.crazy_match.goals.away + ' ' + teamStats.crazy_match.teams.away.name"
+          [match_id]="teamStats.crazy_match.fixture.id">
         </app-mini-stat-card>
       }
 

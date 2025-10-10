@@ -1,12 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
 import { ImagesService } from '../../../services/images.service';
 
 @Component({
   selector: 'app-mini-stat-card',
   standalone: true,
-  imports: [CommonModule, NgOptimizedImage, NgIconComponent],
+  imports: [CommonModule, NgOptimizedImage, NgIconComponent, RouterLink],
   templateUrl: './mini-stat-card.component.html',
   styleUrls: ['./mini-stat-card.component.css']
 })
@@ -16,6 +17,7 @@ export class MiniStatCardComponent {
   @Input() subValue?: string; // Optional sub-value that shows on hover
   @Input() type: 'crazy-match' | 'biggest-rival' | 'most-viewed-location' | 'home-stadium' | 'away-support' | 'total-away-visits' | 'king-of-draws' | 'biggest-win-percentage' | 'biggest-lose-percentage' | 'most-boring-team' | 'most-crazy-team' | 'most-watched-stadium' = 'crazy-match';
   @Input() team_id?: number;
+  @Input() match_id?: number;
 
   constructor(public images: ImagesService) {}
 
