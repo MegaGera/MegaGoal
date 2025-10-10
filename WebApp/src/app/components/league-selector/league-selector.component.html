@@ -24,6 +24,11 @@
             [src]="images.getRouteImageLeagueSm(league.league.id)"
             [alt]="league.league.name + ' logo'">
           <h3 class="league-name">{{ league.league.name }}</h3>
+          @if (getLeagueViewCount(league.league.id)) {
+            <div class="view-count-badge">
+              {{ getLeagueViewCount(league.league.id) }} views
+            </div>
+          }
         </div>
       }
     </div>

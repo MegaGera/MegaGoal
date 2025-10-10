@@ -110,6 +110,26 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+.view-count-badge {
+  display: inline-block;
+  margin-top: 12px;
+  background: linear-gradient(135deg, #dc143c 0%, #ff6b6b 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(220, 20, 60, 0.3);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.league-card:hover .view-count-badge {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(220, 20, 60, 0.4);
+}
+
 /* Section titles and descriptions */
 .section-title {
   font-size: 28px;
@@ -205,6 +225,12 @@
   .section-description {
     font-size: 16px;
   }
+  
+  .view-count-badge {
+    font-size: 10px;
+    padding: 5px 10px;
+    margin-top: 10px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -220,5 +246,11 @@
   .league-logo {
     width: 50px;
     height: 50px;
+  }
+  
+  .view-count-badge {
+    font-size: 9px;
+    padding: 4px 8px;
+    margin-top: 8px;
   }
 } 
