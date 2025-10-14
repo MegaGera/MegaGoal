@@ -41,69 +41,38 @@
           <div class="hero-cards">
             <!-- Match Cards Column -->
             <div class="match-cards-column">
-              <!-- First Real Match Card -->
-              <div class="demo-card demo-card-1">
-                @if (matchLoaded && demoMatches.length > 0 && !matchError) {
-                  <app-real-match-card 
-                    [match]="demoMatches[0]" 
-                    [watched]="true" 
-                    [locations]="[]"
-                    [size]="'md'">
-                  </app-real-match-card>
-                } @else if (matchLoaded && matchError) {
-                  <div class="match-error">
-                    <div class="error-icon">⚽</div>
-                    <div class="error-text">Demo match unavailable</div>
-                  </div>
-                } @else {
-                  <div class="match-loading">
-                    <div class="loading-spinner"></div>
-                    <div class="loading-text">Loading match...</div>
-                  </div>
-                }
-              </div>
-              <!-- Second Real Match Card -->
-              <div class="demo-card demo-card-2">
-                @if (matchLoaded && demoMatches.length > 1 && !matchError) {
-                  <app-real-match-card 
-                    [match]="demoMatches[1]" 
-                    [watched]="true" 
-                    [locations]="[]"
-                    [size]="'md'">
-                  </app-real-match-card>
-                } @else if (matchLoaded && matchError) {
-                  <div class="match-error">
-                    <div class="error-icon">⚽</div>
-                    <div class="error-text">Demo match unavailable</div>
-                  </div>
-                } @else {
-                  <div class="match-loading">
-                    <div class="loading-spinner"></div>
-                    <div class="loading-text">Loading match...</div>
+              @for (match of demoMatches; track match.fixture.id; let i = $index) {
+                <div class="demo-card demo-card-{{i + 1}}">
+                  @if (matchLoaded && !matchError) {
+                    <app-real-match-card 
+                      [match]="match" 
+                      [watched]="true" 
+                      [locations]="[]"
+                      [size]="'md'"
+                      [interactable]="false">
+                    </app-real-match-card>
+                  } @else if (matchLoaded && matchError) {
+                    <div class="match-error">
+                      <div class="error-icon">⚽</div>
+                      <div class="error-text">Demo match unavailable</div>
+                    </div>
+                  } @else {
+                    <div class="match-loading">
+                      <div class="loading-spinner"></div>
+                      <div class="loading-text">Loading match...</div>
+                    </div>
+                  }
+                </div>
+              } @empty {
+                @for (placeholder of [1, 2, 3]; track placeholder) {
+                  <div class="demo-card demo-card-{{placeholder}}">
+                    <div class="match-loading">
+                      <div class="loading-spinner"></div>
+                      <div class="loading-text">Loading match...</div>
+                    </div>
                   </div>
                 }
-              </div>
-              <!-- Third Real Match Card -->
-              <div class="demo-card demo-card-3">
-                @if (matchLoaded && demoMatches.length > 2 && !matchError) {
-                  <app-real-match-card 
-                    [match]="demoMatches[2]" 
-                    [watched]="true" 
-                    [locations]="[]"
-                    [size]="'md'">
-                  </app-real-match-card>
-                } @else if (matchLoaded && matchError) {
-                  <div class="match-error">
-                    <div class="error-icon">⚽</div>
-                    <div class="error-text">Demo match unavailable</div>
-                  </div>
-                } @else {
-                  <div class="match-loading">
-                    <div class="loading-spinner"></div>
-                    <div class="loading-text">Loading match...</div>
-                  </div>
-                }
-              </div>
+              }
             </div>
             
             <!-- Favourite Team Card - Far Right -->

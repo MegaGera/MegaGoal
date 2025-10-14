@@ -32,6 +32,7 @@ export class RealMatchCardComponent {
   @Input() watched: boolean = false;
   @Input() locations!: Location[];
   @Input() size: string = 'lg';
+  @Input() interactable: boolean = true;
 
   constructor(public images: ImagesService, private megaGoal: MegaGoalService, public matchParser: MatchParserService, private router: Router) {
     this.orderLocations();

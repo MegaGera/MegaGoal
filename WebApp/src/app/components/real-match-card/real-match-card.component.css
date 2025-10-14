@@ -540,6 +540,13 @@
 	margin: auto;
 }
 
+.center-score-column {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
 .match-eye-button {
 	margin: auto;
 	text-align: center;
