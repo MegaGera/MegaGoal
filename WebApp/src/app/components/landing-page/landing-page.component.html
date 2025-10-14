@@ -81,7 +81,8 @@
                 [teamStats]="teamStats" 
                 [isLoading]="false"
                 [teams]="[]"
-                [selectedTeamId]="null">
+                [selectedTeamId]="null"
+                [interactable]="false">
               </app-favourite-team-card>
             } @else if (teamStatsLoaded && teamStatsError) {
               <div class="team-error">

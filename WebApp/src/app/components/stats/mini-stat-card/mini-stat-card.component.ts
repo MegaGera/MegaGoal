@@ -18,6 +18,7 @@ export class MiniStatCardComponent {
   @Input() type: 'crazy-match' | 'biggest-rival' | 'most-viewed-location' | 'home-stadium' | 'away-support' | 'total-away-visits' | 'king-of-draws' | 'biggest-win-percentage' | 'biggest-lose-percentage' | 'most-boring-team' | 'most-crazy-team' | 'most-watched-stadium' = 'crazy-match';
   @Input() team_id?: number;
   @Input() match_id?: number;
+  @Input() interactable: boolean = true;
 
   constructor(public images: ImagesService) {}
 

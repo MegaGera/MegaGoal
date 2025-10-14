@@ -5,6 +5,28 @@
 */
 import { Match } from "./match";
 
+// Partial match data for landing page stats
+export interface PartialMatchData {
+  teams: {
+    home: {
+      id: number;
+      name: string;
+    };
+    away: {
+      id: number;
+      name: string;
+    };
+  };
+  goals: {
+    home: number;
+    away: number;
+  };
+  fixture?: {
+    id: number;
+    timestamp?: number;
+  };
+}
+
 export interface FavouriteTeamStats {
   team_id: number;
   team_name: string;
@@ -13,7 +35,7 @@ export interface FavouriteTeamStats {
   goals_conceded: number;
   matches_watched: number;
   win_rate: number;
-  crazy_match?: Match; // Match with most goals
+  crazy_match?: PartialMatchData | Match; // Match with most goals (can be partial or full)
   biggest_rival?: {
     team_id: number;
     team_name: string;
@@ -28,14 +50,14 @@ export interface FavouriteTeamStats {
   most_viewed_location?: {
     location_name: string;
     views_count: number;
-  };
+  } | null;
   home_stadium_times?: {
     location_name: string;
     views_count: number;
-  };
+  } | null;
   away_stadium_support?: {
     location_name: string;
     views_count: number;
-  };
+  } | null;
   total_away_stadium_visits?: number;
 } 

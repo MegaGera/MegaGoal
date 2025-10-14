@@ -86,7 +86,8 @@
           type="crazy-match"
           label="Crazy Match"
           [value]="teamStats.crazy_match.teams.home.name + ' ' + teamStats.crazy_match.goals.home + '-' + teamStats.crazy_match.goals.away + ' ' + teamStats.crazy_match.teams.away.name"
-          [match_id]="teamStats.crazy_match.fixture.id">
+          [match_id]="teamStats.crazy_match.fixture?.id"
+          [interactable]="interactable">
         </app-mini-stat-card>
       }
 
@@ -96,7 +97,8 @@
           type="biggest-rival"
           label="Biggest Rival"
           [value]="teamStats.biggest_rival.team_name + ' - ' + teamStats.biggest_rival.matches_played + ' matches'"
-          [team_id]="teamStats.biggest_rival.team_id">
+          [team_id]="teamStats.biggest_rival.team_id"
+          [interactable]="interactable">
         </app-mini-stat-card>
       }
 
@@ -105,7 +107,8 @@
         <app-mini-stat-card
           type="most-viewed-location"
           label="Most Viewed Location"
-          [value]="teamStats.most_viewed_location.location_name + ' - ' + teamStats.most_viewed_location.views_count + ' matches'">
+          [value]="teamStats.most_viewed_location.location_name + ' - ' + teamStats.most_viewed_location.views_count + ' matches'"
+          [interactable]="interactable">
         </app-mini-stat-card>
       }
 
@@ -114,7 +117,8 @@
         <app-mini-stat-card
           type="home-stadium"
           label="Home Stadium"
-          [value]="teamStats.home_stadium_times.location_name + ' - ' + teamStats.home_stadium_times.views_count + ' matches'">
+          [value]="teamStats.home_stadium_times.location_name + ' - ' + teamStats.home_stadium_times.views_count + ' matches'"
+          [interactable]="interactable">
         </app-mini-stat-card>
       }
 
@@ -123,7 +127,8 @@
         <app-mini-stat-card
           type="total-away-visits"
           label="Away Stadium Support"
-          [value]="teamStats.total_away_stadium_visits + ' stadium visits'">
+          [value]="teamStats.total_away_stadium_visits + ' stadium visits'"
+          [interactable]="interactable">
         </app-mini-stat-card>
       }
 
@@ -132,7 +137,8 @@
         <app-mini-stat-card
           type="away-support"
           label="Most Visited Away Stadium"
-          [value]="teamStats.away_stadium_support.location_name + ' - ' + teamStats.away_stadium_support.views_count + ' matches'">
+          [value]="teamStats.away_stadium_support.location_name + ' - ' + teamStats.away_stadium_support.views_count + ' matches'"
+          [interactable]="interactable">
         </app-mini-stat-card>
       }
     </div>

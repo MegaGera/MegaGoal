@@ -1,4 +1,4 @@
-@if (match_id !== undefined && type === 'crazy-match') {
+@if (interactable && match_id !== undefined && type === 'crazy-match') {
   <a [routerLink]="['/app/match']" [queryParams]="{id: match_id}" class="mini-stat-card-link">
     <div class="mini-stat-card" [ngClass]="type">
       <div class="stat-highlight-icon">
@@ -23,7 +23,7 @@
       </div>
     </div>
   </a>
-} @else if (team_id !== undefined) {
+} @else if (interactable && team_id !== undefined) {
   <a [routerLink]="['/app/team']" [queryParams]="{id: team_id}" class="mini-stat-card-link">
     <div class="mini-stat-card" [ngClass]="type">
       <div class="stat-highlight-icon">
