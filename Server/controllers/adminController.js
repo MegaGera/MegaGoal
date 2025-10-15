@@ -164,3 +164,103 @@ export const getRealMatchesWithoutStatistics = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 }
+
+// Add a match to landing page matches
+export const addLandingMatch = async (req, res) => {
+  const db = getDB();
+  try {
+    const { fixture_id } = req.body;
+    
+    if (!fixture_id) {
+      return res.status(400).json({ message: "fixture_id is required" });
+    }
+
+    // Check if match already exists in settings
+    const existing = await db.collection('settings').findOne({ 
+      type: 'LANDING_MATCH', 
+      fixture_id: +fixture_id 
+    });
+    
+    if (existing) {
+      return res.status(400).json({ message: "Match already marked for landing page" });
+    }
+
+    // Add new landing match
+    const newSetting = {
+      type: 'LANDING_MATCH',
+      fixture_id: +fixture_id,
+      created_at: new Date()
+    };
+    
+    const result = await db.collection('settings').insertOne(newSetting);
+    console.log(`Added landing match: fixture_id=${fixture_id}`);
+    
+    await logAdminAction(req.validateData.username, 'ADD_LANDING_MATCH', { fixture_id: fixture_id }, req);
+
+    res.status(201).json({ success: true, acknowledged: result.acknowledged });
+  } catch (error) {
+    console.error("Error adding landing match:", error);
+    res.status(500).json({ message: error.message });
+  }
+}
+
+// Remove a match from landing page matches
+export const removeLandingMatch = async (req, res) => {
+  const db = getDB();
+  try {
+    const { fixture_id } = req.body;
+    
+    if (!fixture_id) {
+      return res.status(400).json({ message: "fixture_id is required" });
+    }
+
+    const result = await db.collection('settings').deleteOne({ 
+      type: 'LANDING_MATCH', 
+      fixture_id: +fixture_id 
+    });
+    
+    console.log(`Removed landing match: fixture_id=${fixture_id}`);
+    
+    await logAdminAction(req.validateData.username, 'REMOVE_LANDING_MATCH', { fixture_id: fixture_id }, req);
+
+    res.status(200).json({ success: true, acknowledged: result.acknowledged, deletedCount: result.deletedCount });
+  } catch (error) {
+    console.error("Error removing landing match:", error);
+    res.status(500).json({ message: error.message });
+  }
+}
+
+// Get all landing page matches (for admin view - shows all marked matches)
+export const getLandingMatches = async (req, res) => {
+  const db = getDB();
+  try {
+    // Get all fixture IDs from settings collection (no limit for admin view)
+    const landingSettings = await db.collection('settings')
+      .find({ type: 'LANDING_MATCH' })
+      .sort({ created_at: -1 })
+      .toArray();
+
+    if (landingSettings.length === 0) {
+      return res.send([]);
+    }
+
+    const fixtureIds = landingSettings.map(s => s.fixture_id);
+
+    // Get the actual matches from real_matches collection
+    const matches = await db.collection('real_matches')
+      .find({ 'fixture.id': { $in: fixtureIds } })
+      .toArray();
+
+    // Sort matches in the same order as landingSettings
+    const sortedMatches = fixtureIds
+      .map(id => matches.find(m => m.fixture.id === id))
+      .filter(m => m !== undefined);
+
+    console.log(`Landing page matches retrieved for admin: ${sortedMatches.length}`);
+    
+    res.send(sortedMatches);
+  } catch (error) {
+    console.error("Error getting landing matches:", error);
+    res.status(500).json({ message: error.message });
+  }
+}

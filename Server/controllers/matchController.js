@@ -179,33 +179,32 @@ const checkLocationIsVenue = async (location_id, username, venueParams) => {
 }
 
 // Get landing page information with multiple matches (public endpoint)
+// Randomly selects up to 3 matches from all marked landing matches
 const getLandingPageInfo = async (req, res) => {
   const db = getDB();
   try {
-    // Define the fixture IDs we want to show on the landing page
-    const fixtureIds = [1379015, 1451030, 1390851];
-    
-    const matches = [];
-    
-    for (const fixtureId of fixtureIds) {
-      // First try to get from real_matches collection
-      let match = await db.collection('real_matches').findOne({ "fixture.id": +fixtureId });
-      
-      if (!match) {
-        // If not found in real_matches, try matches collection (user's tracked matches)
-        match = await db.collection('matches').findOne({ "fixture.id": +fixtureId });
-      }
-      
-      if (match) {
-        matches.push(match);
-      }
+    // Get random 3 fixture IDs from settings collection using MongoDB's $sample
+    const landingSettings = await db.collection('settings')
+      .aggregate([
+        { $match: { type: 'LANDING_MATCH' } },
+        { $sample: { size: 3 } }
+      ])
+      .toArray();
+
+    if (landingSettings.length === 0) {
+      // Return empty matches array if none configured
+      console.log('No landing matches configured');
+      return res.send({ matches: [] });
     }
 
-    if (matches.length === 0) {
-      return res.status(404).json({ message: "No matches found for landing page" });
-    }
+    const fixtureIds = landingSettings.map(s => s.fixture_id);
+    
+    // Get only the selected matches from real_matches collection
+    const matches = await db.collection('real_matches')
+      .find({ 'fixture.id': { $in: fixtureIds } })
+      .toArray();
 
-    console.log(`Landing page info retrieved: ${matches.length} matches`);
+    console.log(`Landing page info retrieved: ${matches.length} matches (randomly selected)`);
     res.send({ matches });
   } catch (error) {
     res.status(500).json({ message: error.message });

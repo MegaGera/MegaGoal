@@ -304,4 +304,27 @@ export class MegaGoalService {
       { ...this.options, params: params }
     );
   }
+
+  /*
+    Method to add a match to landing page matches
+  */
+  addLandingMatch(fixture_id: number): Observable<any> {
+    let body = { fixture_id: fixture_id };
+    return this.http.post<any>(this.url + '/admin/landing_matches/add', body, this.options);
+  }
+
+  /*
+    Method to remove a match from landing page matches
+  */
+  removeLandingMatch(fixture_id: number): Observable<any> {
+    let body = { fixture_id: fixture_id };
+    return this.http.request<any>('delete', this.url + '/admin/landing_matches/remove', { ...this.options, body: body });
+  }
+
+  /*
+    Method to get landing page matches
+  */
+  getLandingMatches(): Observable<RealMatch[]> {
+    return this.http.get<RealMatch[]>(this.url + '/admin/landing_matches', this.options);
+  }
 }

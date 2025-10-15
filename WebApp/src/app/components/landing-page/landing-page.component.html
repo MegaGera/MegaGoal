@@ -43,7 +43,7 @@
             <div class="match-cards-column">
               @for (match of demoMatches; track match.fixture.id; let i = $index) {
                 <div class="demo-card demo-card-{{i + 1}}">
-                  @if (matchLoaded && !matchError) {
+                  @if (!matchError) {
                     <app-real-match-card 
                       [match]="match" 
                       [watched]="true" 
@@ -51,27 +51,13 @@
                       [size]="'md'"
                       [interactable]="false">
                     </app-real-match-card>
-                  } @else if (matchLoaded && matchError) {
+                  } @else {
                     <div class="match-error">
                       <div class="error-icon">⚽</div>
                       <div class="error-text">Demo match unavailable</div>
                     </div>
-                  } @else {
-                    <div class="match-loading">
-                      <div class="loading-spinner"></div>
-                      <div class="loading-text">Loading match...</div>
-                    </div>
                   }
                 </div>
-              } @empty {
-                @for (placeholder of [1, 2, 3]; track placeholder) {
-                  <div class="demo-card demo-card-{{placeholder}}">
-                    <div class="match-loading">
-                      <div class="loading-spinner"></div>
-                      <div class="loading-text">Loading match...</div>
-                    </div>
-                  </div>
-                }
               }
             </div>
             

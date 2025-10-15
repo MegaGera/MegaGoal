@@ -7,18 +7,25 @@ import { RealMatch } from '../../models/realMatch';
 import { LeaguesSettings } from '../../models/leaguesSettings';
 import { shortTeam } from '../../models/team';
 import { isNotStartedStatus } from '../../config/matchStatus';
+import { AdminMatchRowComponent } from './admin-match-row/admin-match-row.component';
+
+type TabType = 'landing' | 'without-stats' | 'filters';
 
 @Component({
   selector: 'app-admin-matches',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminMatchRowComponent],
   templateUrl: './admin-matches.component.html',
   styleUrl: './admin-matches.component.css'
 })
 export class AdminMatchesComponent {
+  
+  // Active tab
+  activeTab: TabType = 'without-stats';
 
   filteredMatches: RealMatch[] = [];
   matchesWithoutStats: RealMatch[] = [];
+  markedLandingMatches: RealMatch[] = [];
 
   // Filters sources
   leagues: LeaguesSettings[] = [];
@@ -35,12 +42,17 @@ export class AdminMatchesComponent {
 
   loading = false;
   loadingWithoutStats = false;
+  loadingMarkedMatches = false;
   updatingFixtureId: number | null = null;
 
   // Pagination for matches without statistics
   currentPage = 1;
   totalPages = 0;
   totalMatches = 0;
+
+  // Landing page matches management
+  landingMatchIds: Set<number> = new Set();
+  markingFixtureId: number | null = null;
 
   constructor(
     private megagoal: MegaGoalService,
@@ -71,6 +83,8 @@ export class AdminMatchesComponent {
     });
     // Load matches without statistics
     this.loadMatchesWithoutStatistics();
+    // Load landing matches
+    this.loadLandingMatches();
   }
 
   loadMatchesWithoutStatistics(page: number = 1) {
@@ -167,6 +181,10 @@ export class AdminMatchesComponent {
     });
   }
 
+  setActiveTab(tab: TabType) {
+    this.activeTab = tab;
+  }
+
   filterTeamsByLeagueAndSeason() {
     if (!this.selectedLeague && !this.selectedSeason) {
       this.filteredTeams = [...this.teams];
@@ -194,6 +212,61 @@ export class AdminMatchesComponent {
       this.selectedTeamId_2 = null;
     }
     if (!this.selectedTeamId_1) this.selectedTeamId_2 = null;
+  }
+
+  loadLandingMatches() {
+    this.loadingMarkedMatches = true;
+    this.megagoal.getLandingMatches().subscribe({
+      next: (matches) => {
+        this.landingMatchIds = new Set(matches.map(m => m.fixture.id));
+        this.markedLandingMatches = matches;
+        this.loadingMarkedMatches = false;
+      },
+      error: (err) => {
+        console.error('Error loading landing matches:', err);
+        this.loadingMarkedMatches = false;
+      }
+    });
+  }
+
+  isMarkedForLanding(m: RealMatch): boolean {
+    return this.landingMatchIds.has(m.fixture.id);
+  }
+
+  toggleLandingMatch(m: RealMatch) {
+    this.markingFixtureId = m.fixture.id;
+    const isMarked = this.isMarkedForLanding(m);
+
+    if (isMarked) {
+      // Remove from landing
+      this.megagoal.removeLandingMatch(m.fixture.id).subscribe({
+        next: () => {
+          this.landingMatchIds.delete(m.fixture.id);
+          this.markingFixtureId = null;
+          // Reload the marked matches list
+          this.loadLandingMatches();
+        },
+        error: (err) => {
+          console.error('Error removing landing match:', err);
+          this.markingFixtureId = null;
+        }
+      });
+    } else {
+      // Add to landing
+      this.megagoal.addLandingMatch(m.fixture.id).subscribe({
+        next: () => {
+          this.landingMatchIds.add(m.fixture.id);
+          this.markingFixtureId = null;
+          // Reload the marked matches list
+          this.loadLandingMatches();
+        },
+        error: (err) => {
+          console.error('Error adding landing match:', err);
+          alert(err.error?.message || 'Error marking match for landing page');
+          this.markingFixtureId = null;
+        }
+      });
+    }
   }
 }
 

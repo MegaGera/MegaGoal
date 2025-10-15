@@ -1,0 +1,45 @@
+<div class="match-row" [class.priority-match]="!showStatsBadge" [class.has-stats]="hasStatistics()" [class.not-started]="isNotStarted()">
+  <div class="teams">
+    <img [src]="'https://server.megamedia.megagera.com/megagoal/teams/team_' + match.teams.home.id + '.png'" 
+         [alt]="match.teams.home.name" 
+         class="team-icon"/>
+    <span class="team-name">{{ match.teams.home.name }}</span>
+    <span class="vs">{{ match.goals.home }} - {{ match.goals.away }}</span>
+    <span class="team-name">{{ match.teams.away.name }}</span>
+    <img [src]="'https://server.megamedia.megagera.com/megagoal/teams/team_' + match.teams.away.id + '.png'" 
+         [alt]="match.teams.away.name" 
+         class="team-icon"/>
+  </div>
+  <div class="actions">
+    <span class="league">{{ match.league.name }}</span>
+    <span class="date">{{ match.fixture.date | date: 'dd/MM/yyyy' }}</span>
+    
+    @if (showStatsBadge && !isNotStarted()) {
+      <span class="badge" [class.badge-success]="hasStatistics()" [class.badge-danger]="!hasStatistics()">
+        {{ hasStatistics() ? '✓ Stats' : '✕ No stats' }}
+      </span>
+    }
+    
+    @if (showLandingButton) {
+      <button 
+        class="btn btn-sm" 
+        [class.btn-warning]="isMarkedForLanding" 
+        [class.btn-outline-secondary]="!isMarkedForLanding"
+        (click)="onToggleLanding()" 
+        [disabled]="isMarking"
+        [title]="isMarkedForLanding ? 'Remove from landing page' : 'Mark for landing page'">
+        {{ isMarking ? '...' : (isMarkedForLanding ? '★' : '☆') }}
+      </button>
+    }
+    
+    @if (showUpdateButton && !isNotStarted()) {
+      <button 
+        class="btn btn-sm btn-primary" 
+        (click)="onUpdateStatistics()" 
+        [disabled]="isUpdating">
+        {{ isUpdating ? 'Updating...' : 'Update stats' }}
+      </button>
+    }
+  </div>
+</div>
+

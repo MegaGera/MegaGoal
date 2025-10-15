@@ -970,7 +970,6 @@ input:disabled + .toggle-slider {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
   flex-wrap: wrap;
   gap: 16px;
 }
