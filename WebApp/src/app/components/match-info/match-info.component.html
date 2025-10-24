@@ -33,6 +33,16 @@
   <!-- No Statistics Message -->
   <div class="no-statistics" *ngIf="!homeStatistics || !awayStatistics">
     <p>This match don't have statistics yet</p>
+    
+    <!-- Admin-only update button -->
+    <div class="admin-actions" *ngIf="isAdmin && isFinished()">
+      <button 
+        class="btn btn-primary btn-sm" 
+        (click)="updateStatistics()" 
+        [disabled]="isUpdating">
+        {{ isUpdating ? 'Updating...' : 'Update Statistics' }}
+      </button>
+    </div>
   </div>
 
 </div>

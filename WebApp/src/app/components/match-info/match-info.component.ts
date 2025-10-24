@@ -8,7 +8,10 @@ import { CommonModule } from '@angular/common';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
+import { AuthService } from '../../services/auth.service';
+import { UpdaterService } from '../../services/updater.service';
 import { RealMatch, TeamStatistics } from '../../models/realMatch';
+import { isFinishedStatus } from '../../config/matchStatus';
 import { LeagueHeaderComponent } from '../league-header/league-header.component';
 import { GeneralMatchCardComponent } from '../general-match-card/general-match-card.component';
 import { MatchStatisticsComponent } from '../match-statistics/match-statistics.component';
@@ -28,16 +31,25 @@ export class MatchInfoComponent {
   homeStatistics: TeamStatistics | undefined;
   awayStatistics: TeamStatistics | undefined;
   loading: boolean = true;
+  isAdmin: boolean = false;
+  isUpdating: boolean = false;
 
   constructor(
     private megagoal: MegaGoalService, 
     private router: Router, 
     public images: ImagesService,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private authService: AuthService,
+    private updater: UpdaterService
   ) {
     this.activatedRoute.queryParamMap.subscribe(params => {
       this.queryMatchId = +params.get('id')! || 0;
       this.init();
+    });
+    
+    // Check if user is admin
+    this.authService.isAdmin().subscribe(isAdmin => {
+      this.isAdmin = isAdmin;
     });
   }
 
@@ -55,6 +67,32 @@ export class MatchInfoComponent {
       }
     }, error => {
       this.router.navigate(["/app/matches"]);
+    });
+  }
+
+  hasStatistics(): boolean {
+    return Array.isArray(this.match?.statistics) && this.match.statistics.length > 0;
+  }
+
+  isFinished(): boolean {
+    return isFinishedStatus(this.match?.fixture.status?.short);
+  }
+
+  updateStatistics(): void {
+    if (!this.match || this.isUpdating) return;
+    
+    this.isUpdating = true;
+    this.updater.updateMatchStatistics(this.match.fixture.id).subscribe({
+      next: () => {
+        this.isUpdating = false;
+        // Reload the match data to get updated statistics
+        this.init();
+      },
+      error: (error) => {
+        console.error('Error updating match statistics:', error);
+        this.isUpdating = false;
+        alert('Error updating match statistics. Please try again.');
+      }
     });
   }
 }
