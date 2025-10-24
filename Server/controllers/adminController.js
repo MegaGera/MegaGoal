@@ -128,27 +128,91 @@ export const getRealMatchesWithoutStatistics = async (req, res) => {
       return res.send({ matches: [], total: 0, page, totalPages: 0 });
     }
 
-    // Step 2: Find real matches without statistics
-    // Statistics can be: missing field, null, or empty array
-    const query = {
-      'fixture.id': { $in: userMatchFixtureIds },
-      $or: [
-        { 'statistics': { $exists: false } },
-        { 'statistics': null },
-        { 'statistics': { $size: 0 } }
-      ]
-    };
+    // Step 2: Use aggregation to get real matches with usernames
+    const pipeline = [
+      // Match real matches without statistics
+      {
+        $match: {
+          'fixture.id': { $in: userMatchFixtureIds },
+          $or: [
+            { 'statistics': { $exists: false } },
+            { 'statistics': null },
+            { 'statistics': { $size: 0 } }
+          ]
+        }
+      },
+      // Lookup usernames from matches collection
+      {
+        $lookup: {
+          from: 'matches',
+          let: { fixtureId: '$fixture.id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$fixture.id', '$$fixtureId'] }
+              }
+            },
+            {
+              $project: {
+                username: '$user.username'
+              }
+            }
+          ],
+          as: 'userMatches'
+        }
+      },
+      // Add usernames array to each match
+      {
+        $addFields: {
+          usernames: {
+            $map: {
+              input: '$userMatches',
+              as: 'userMatch',
+              in: '$$userMatch.username'
+            }
+          }
+        }
+      },
+      // Remove the temporary userMatches field
+      {
+        $project: {
+          userMatches: 0
+        }
+      },
+      // Sort by fixture date (most recent first)
+      {
+        $sort: { 'fixture.timestamp': -1 }
+      }
+    ];
 
-    // Get total count for pagination
-    const total = await db.collection('real_matches').countDocuments(query);
+    // Get total count for pagination (without usernames for performance)
+    const countPipeline = [
+      {
+        $match: {
+          'fixture.id': { $in: userMatchFixtureIds },
+          $or: [
+            { 'statistics': { $exists: false } },
+            { 'statistics': null },
+            { 'statistics': { $size: 0 } }
+          ]
+        }
+      },
+      {
+        $count: 'total'
+      }
+    ];
+
+    const [countResult] = await db.collection('real_matches').aggregate(countPipeline).toArray();
+    const total = countResult ? countResult.total : 0;
     const totalPages = Math.ceil(total / limit);
 
-    // Get matches with pagination, sorted by fixture date (most recent first)
+    // Get matches with pagination
     const matches = await db.collection('real_matches')
-      .find(query)
-      .sort({ 'fixture.timestamp': -1 })
-      .skip(skip)
-      .limit(limit)
+      .aggregate([
+        ...pipeline,
+        { $skip: skip },
+        { $limit: limit }
+      ])
       .toArray();
 
     console.log(`Real Matches without statistics found: ${matches.length} of ${total} total (page ${page}/${totalPages})`);

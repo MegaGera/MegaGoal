@@ -65,6 +65,24 @@
   margin-left: 8px;
 }
 
+.usernames {
+  color: #059669;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.usernames.single-user {
+  cursor: default;
+}
+
+.usernames.multiple-users {
+  cursor: help;
+}
+
 .actions { 
   display: flex; 
   align-items: center; 

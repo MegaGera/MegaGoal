@@ -156,6 +156,30 @@
             <button class="btn btn-sm btn-outline-secondary" (click)="clearFilters()">Clear</button>
           </div>
 
+          <!-- Toggle Filters -->
+          <div class="toggle-filters-row mt-3">
+            <div class="toggle-group">
+              <button 
+                class="toggle-button" 
+                [class.active]="showOnlyFinished"
+                (click)="showOnlyFinished = !showOnlyFinished; onToggleFilterChange()">
+                <span class="toggle-label">Finished Only</span>
+              </button>
+              <button 
+                class="toggle-button" 
+                [class.active]="showOnlyWithoutStats"
+                (click)="showOnlyWithoutStats = !showOnlyWithoutStats; onToggleFilterChange()">
+                <span class="toggle-label">Without Stats</span>
+              </button>
+              <button 
+                class="toggle-button" 
+                [class.active]="sortByDateDesc"
+                (click)="sortByDateDesc = !sortByDateDesc; onToggleFilterChange()">
+                <span class="toggle-label">{{ sortByDateDesc ? 'Newest First' : 'Oldest First' }}</span>
+              </button>
+            </div>
+          </div>
+
           @if (loading) {
             <div class="text-center mt-3">
               <div class="spinner-border spinner-border-sm" role="status">

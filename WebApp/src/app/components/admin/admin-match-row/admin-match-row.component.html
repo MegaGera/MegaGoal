@@ -14,6 +14,19 @@
     <span class="league">{{ match.league.name }}</span>
     <span class="date">{{ match.fixture.date | date: 'dd/MM/yyyy' }}</span>
     
+    @if (match.usernames && match.usernames.length > 0) {
+      <span class="usernames" 
+            [title]="match.usernames.length === 1 ? '' : match.usernames.join(', ')"
+            [class.single-user]="match.usernames.length === 1"
+            [class.multiple-users]="match.usernames.length > 1">
+        @if (match.usernames.length === 1) {
+          👤 {{ match.usernames[0] }}
+        } @else {
+          👥 {{ match.usernames.length }} users
+        }
+      </span>
+    }
+    
     @if (showStatsBadge && !isNotStarted()) {
       <span class="badge" [class.badge-success]="hasStatistics()" [class.badge-danger]="!hasStatistics()">
         {{ hasStatistics() ? '✓ Stats' : '✕ No stats' }}

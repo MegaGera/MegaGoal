@@ -6,7 +6,7 @@ import { UpdaterService } from '../../services/updater.service';
 import { RealMatch } from '../../models/realMatch';
 import { LeaguesSettings } from '../../models/leaguesSettings';
 import { shortTeam } from '../../models/team';
-import { isNotStartedStatus } from '../../config/matchStatus';
+import { isNotStartedStatus, isFinishedStatus } from '../../config/matchStatus';
 import { AdminMatchRowComponent } from './admin-match-row/admin-match-row.component';
 
 type TabType = 'landing' | 'without-stats' | 'filters';
@@ -39,6 +39,11 @@ export class AdminMatchesComponent {
   selectedTeamId_1: number | null = null;
   selectedTeamId_2: number | null = null;
   selectedCountry: string | null = null;
+
+  // Toggle filters for Search & Filter tab
+  showOnlyFinished: boolean = true;
+  showOnlyWithoutStats: boolean = true;
+  sortByDateDesc: boolean = true;
 
   loading = false;
   loadingWithoutStats = false;
@@ -141,7 +146,10 @@ export class AdminMatchesComponent {
     if (selectedCount >= 2) {
       this.loading = true;
       this.megagoal.getRealMatchesByParameters(params).subscribe({
-        next: (matches) => { this.filteredMatches = matches || []; this.loading = false; },
+        next: (matches) => { 
+          this.filteredMatches = this.applyToggleFilters(matches || []); 
+          this.loading = false; 
+        },
         error: () => { this.filteredMatches = []; this.loading = false; }
       });
     } else {
@@ -149,11 +157,35 @@ export class AdminMatchesComponent {
     }
   }
 
+  applyToggleFilters(matches: RealMatch[]): RealMatch[] {
+    let filtered = [...matches];
+
+    // Filter by finished status
+    if (this.showOnlyFinished) {
+      filtered = filtered.filter(match => isFinishedStatus(match.fixture.status?.short));
+    }
+
+    // Filter by statistics
+    if (this.showOnlyWithoutStats) {
+      filtered = filtered.filter(match => !this.hasStatistics(match));
+    }
+
+    // Sort by date
+    if (this.sortByDateDesc) {
+      filtered.sort((a, b) => b.fixture.timestamp - a.fixture.timestamp);
+    } else {
+      filtered.sort((a, b) => a.fixture.timestamp - b.fixture.timestamp);
+    }
+
+    return filtered;
+  }
+
   clearFilters() {
     this.selectedLeague = null;
     this.selectedSeason = null;
     this.selectedTeamId_1 = null;
     this.selectedTeamId_2 = null;
+    this.selectedCountry = null;
     this.filterTeamsByLeagueAndSeason();
     this.applyFilters();
   }
@@ -183,6 +215,11 @@ export class AdminMatchesComponent {
 
   setActiveTab(tab: TabType) {
     this.activeTab = tab;
+  }
+
+  onToggleFilterChange() {
+    // Reapply filters when toggle states change
+    this.applyFilters();
   }
 
   filterTeamsByLeagueAndSeason() {
@@ -219,7 +256,8 @@ export class AdminMatchesComponent {
     this.megagoal.getLandingMatches().subscribe({
       next: (matches) => {
         this.landingMatchIds = new Set(matches.map(m => m.fixture.id));
-        this.markedLandingMatches = matches;
+        // Sort matches by descending date (most recent first)
+        this.markedLandingMatches = matches.sort((a, b) => b.fixture.timestamp - a.fixture.timestamp);
         this.loadingMarkedMatches = false;
       },
       error: (err) => {

@@ -7,7 +7,8 @@ export interface RealMatch {
     teams: teams,
     goals: goalsI,
     score: score,
-    statistics?: TeamStatistics[]
+    statistics?: TeamStatistics[],
+    usernames?: string[]  // Array of usernames tracking this match
 }
 
 interface fixture {
