@@ -1,0 +1,1362 @@
+
+/* Section titles and descriptions - matching league selector */
+.section-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a202c;
+  margin-bottom: 12px;
+  margin-top: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-description {
+  font-size: 18px;
+  color: #4a5568;
+  margin-bottom: 32px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.2s ease-in;
+}
+/* Modern select styling */
+.view-select {
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  padding: 6px 10px;
+  outline: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.view-select:focus {
+  border-color: #dc143c;
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.15);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Leagues List - Row based layout */
+.leagues-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+/* League Row */
+.league-row {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.league-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #dc143c, #ff6b6b);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.league-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+  border-color: #dc143c;
+}
+
+.league-row:hover::before {
+  transform: scaleY(1);
+}
+
+/* Enhanced gray contrast for inactive leagues */
+.league-row.league-inactive {
+  background: #f8f9fa;
+  border-color: #dee2e6;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  opacity: 0.85;
+}
+
+.league-row.league-inactive .league-name {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.league-row.league-inactive .league-id {
+  color: #adb5bd;
+}
+
+.league-row.league-inactive .control-label {
+  color: #6c757d;
+}
+
+.league-row.league-inactive .date-label {
+  color: #adb5bd;
+}
+
+.league-row.league-inactive .date-value {
+  color: #6c757d;
+}
+
+.league-row.league-inactive:hover {
+  transform: none;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  border-color: #dee2e6;
+}
+
+/* Enhanced contrast for daily update leagues */
+.league-row.league-daily-update {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #ffffff 100%);
+  border: 3px solid #10b981;
+  border-left: 6px solid #10b981;
+  box-shadow: 0 6px 12px -2px rgba(16, 185, 129, 0.15), 0 4px 8px -1px rgba(16, 185, 129, 0.1);
+  position: relative;
+}
+
+.league-row.league-daily-update:hover {
+  border-color: #059669;
+  box-shadow: 0 8px 20px -3px rgba(16, 185, 129, 0.2), 0 6px 12px -2px rgba(16, 185, 129, 0.15);
+}
+
+.league-row.league-daily-update .league-name {
+  color: #065f46;
+  font-weight: 800;
+}
+
+/* League Info */
+.league-info {
+  min-width: 300px;
+  flex-shrink: 0;
+}
+
+.league-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.league-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: white;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+}
+
+.league-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.league-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.league-id {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* League Controls */
+.league-controls {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.control-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+/* Status Control */
+.status-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.toggle-switch.small {
+  width: 36px;
+  height: 18px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.3s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch.small .toggle-slider:before {
+  height: 12px;
+  width: 12px;
+  left: 3px;
+  bottom: 3px;
+}
+
+input:checked + .toggle-slider {
+  background-color: #10b981;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+
+.toggle-switch.small input:checked + .toggle-slider:before {
+  transform: translateX(18px);
+}
+
+input:disabled + .toggle-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Frequency Options */
+.frequency-options {
+  display: flex;
+  gap: 8px;
+}
+
+.frequency-options.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.frequency-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 2px solid #e5e7eb;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.frequency-option:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.frequency-option input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #10b981;
+}
+
+.frequency-option input[type="radio"]:checked + .frequency-label {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.frequency-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+/* Daily Update Control */
+.daily-update-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* League Dates */
+.league-dates {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
+.date-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.date-label {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.date-value {
+  font-size: 13px;
+  color: #374151;
+  font-weight: 600;
+}
+
+/* League Actions */
+.league-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.settings-button {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-button:hover {
+  background: #e5e7eb;
+  color: #374151;
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settings-button:active {
+  transform: scale(0.95);
+  background: #d1d5db;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 700px;
+  width: 98%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.modal-body {
+  padding: 24px;
+  color: #6b7280;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal responsive styles */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    margin: 10px;
+    max-height: 95vh;
+  }
+  
+  .modal-header {
+    padding: 20px 20px 0 20px;
+  }
+  
+  .modal-title {
+    font-size: 18px;
+  }
+  
+  .modal-body {
+    padding: 20px;
+    font-size: 14px;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #6c757d;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  margin-top: 40px;
+}
+
+.empty-state-icon {
+  font-size: 64px;
+  margin-bottom: 24px;
+  opacity: 0.6;
+}
+
+.empty-state-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #495057;
+}
+
+.empty-state-description {
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+/* Responsive Design - Card layout on mobile */
+@media (max-width: 1024px) {
+  .league-row {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .league-info {
+    min-width: auto;
+    text-align: center;
+  }
+  
+  .league-controls {
+    justify-content: space-around;
+    gap: 16px;
+  }
+  
+  .league-dates {
+    min-width: auto;
+    justify-content: space-around;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 16px;
+  }
+  
+  .section-title {
+    font-size: 24px;
+  }
+  
+  .section-description {
+    font-size: 16px;
+  }
+  
+  /* Mobile card layout */
+  .league-row {
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+    position: relative;
+  }
+  
+  /* Top row: Title/ID */
+  .league-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: auto;
+    text-align: left;
+    width: 100%;
+  }
+  
+  .league-header-info {
+    gap: 8px;
+  }
+  
+  .league-logo {
+    width: 32px;
+    height: 32px;
+  }
+  
+  /* Additional mobile modal improvements */
+  .modal-content {
+    max-height: 98vh;
+    margin: 5px;
+  }
+  
+  .modal-body {
+    padding: 16px;
+  }
+  
+  .modal-seasons-status-list {
+    max-height: 200px;
+  }
+  
+  .league-name {
+    font-size: 16px;
+    margin: 0;
+  }
+  
+  .league-id {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  /* Position settings button in top-right corner of card */
+  .league-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: auto;
+    flex-shrink: 0;
+  }
+  
+  .settings-button {
+    padding: 6px;
+  }
+  
+  /* Middle row: Status, Frequency, Daily Updates in one row */
+  .league-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    width: 100%;
+  }
+  
+  .control-group {
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+  }
+  
+  .control-label {
+    font-size: 12px;
+  }
+  
+  /* Frequency options in two rows */
+  .frequency-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  
+  .frequency-option {
+    padding: 4px 6px;
+    justify-content: center;
+  }
+  
+  .frequency-label {
+    font-size: 11px;
+  }
+  
+  /* Bottom row: Dates */
+  .league-dates {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .date-item {
+    text-align: center;
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-container {
+    padding: 12px;
+  }
+  
+  .league-row {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .league-name {
+    font-size: 14px;
+  }
+  
+  .league-id {
+    font-size: 11px;
+  }
+  
+  .league-controls {
+    gap: 12px;
+  }
+  
+  .control-group {
+    gap: 6px;
+  }
+  
+  .control-label {
+    font-size: 11px;
+  }
+  
+  .frequency-options {
+    gap: 3px;
+  }
+  
+  .frequency-option {
+    padding: 3px 4px;
+  }
+  
+  .frequency-label {
+    font-size: 10px;
+  }
+  
+  .league-dates {
+    gap: 8px;
+  }
+  
+  .date-label {
+    font-size: 9px;
+  }
+  
+  .date-value {
+    font-size: 11px;
+  }
+  
+  .league-logo {
+    width: 28px;
+    height: 28px;
+  }
+  
+  /* Additional mobile modal improvements for very small screens */
+  .modal-section {
+    gap: 6px;
+  }
+  
+  .modal-section label {
+    min-width: 70px;
+    font-size: 13px;
+  }
+  
+  .modal-section select {
+    min-width: 100px;
+    padding: 5px 10px;
+    font-size: 13px;
+  }
+  
+  .modal-action-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+/* --- Modern Modal Section Styles --- */
+.modal-section {
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.modal-section label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  margin: auto;
+  min-width: 120px;
+}
+
+.modal-section select {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  background: #f8fafc;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1e293b;
+  transition: border 0.2s, box-shadow 0.2s;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.04);
+  margin-right: 8px;
+}
+
+.modal-section select:focus {
+  border-color: #dc143c;
+  box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.15);
+}
+
+.modal-action-btn {
+  background: linear-gradient(90deg, #dc143c 0%, #ff6b6b 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.10);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.modal-action-btn:disabled {
+  background: #e5e7eb;
+  color: #b0b0b0;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+.modal-action-btn:not(:disabled):hover {
+  background: linear-gradient(90deg, #b91c3c 0%, #dc143c 100%);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(220, 20, 60, 0.18);
+}
+
+@media (max-width: 600px) {
+  .modal-section {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .modal-section label {
+    margin-bottom: 0;
+    min-width: 80px;
+    font-size: 14px;
+  }
+  .modal-section select {
+    flex: 1;
+    min-width: 120px;
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  .modal-action-btn {
+    width: auto;
+    justify-content: center;
+    margin-left: 0;
+    padding: 8px 16px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  
+  .modal-seasons-status-list {
+    max-height: 250px;
+    padding: 10px 12px;
+  }
+  
+  .season-status-row {
+    font-size: 14px;
+    padding: 6px 0;
+  }
+  
+  .season-status-matches,
+  .season-status-teams {
+    font-size: 12px;
+    padding: 1px 6px;
+  }
+}
+
+@media (max-width: 900px) {
+  .modal-content {
+    max-width: 98vw;
+    width: 99%;
+    max-height: 92vh;
+  }
+}
+
+.modal-league-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #dc143c;
+  margin-top: 2px;
+  margin-bottom: 0;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 2px rgba(220, 20, 60, 0.08);
+}
+
+.modal-seasons-status-list {
+  margin-top: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 12px 18px;
+  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.04);
+  max-height: 300px;
+  overflow-y: auto;
+}
+.season-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #ececec;
+  font-size: 15px;
+}
+.season-status-row:last-child {
+  border-bottom: none;
+}
+.season-status-year {
+  font-weight: 600;
+  color: #374151;
+  min-width: 60px;
+}
+.season-status-details {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.season-status-matches,
+.season-status-teams {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.season-status-matches {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.season-status-teams {
+  background: #dcfce7;
+  color: #059669;
+}
+.season-status-matches.no-data,
+.season-status-teams.no-data {
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Admin Header Row */
+.admin-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.settings-btn {
+  background: #dc143c !important;
+  color: #fff;
+  border: 2px solid #dc143c;
+  box-shadow: none;
+  outline: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 0;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+.settings-btn ng-icon {
+  color: #fff;
+}
+.settings-btn:hover,
+.settings-btn:focus {
+  background: #b91c3c !important;
+  color: #fff;
+  border-color: #b91c3c;
+  box-shadow: none;
+  outline: none;
+}
+.settings-btn:hover ng-icon,
+.settings-btn:focus ng-icon {
+  color: #fff;
+}
+.settings-btn:active {
+  outline: none;
+  box-shadow: none;
+}
+
+.order-btn {
+  background: #059669 !important;
+  color: #fff;
+  border: 2px solid #059669;
+  box-shadow: none;
+  outline: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 0;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+
+.order-btn:hover,
+.order-btn:focus {
+  background: #047857 !important;
+  color: #fff;
+  border-color: #047857;
+  box-shadow: none;
+  outline: none;
+}
+
+.order-btn:hover ng-icon,
+.order-btn:focus ng-icon {
+  color: #fff;
+}
+
+.order-btn:active {
+  outline: none;
+  box-shadow: none;
+}
+
+.season-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 2px solid #d1d5db;
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 8px;
+}
+.season-status-header .season-status-year {
+  min-width: 60px;
+  font-weight: 700;
+}
+.season-status-header .season-status-details {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.season-status-header .season-status-matches,
+.season-status-header .season-status-teams {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  color: #374151;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* League Search Input */
+.league-search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  background: white;
+  color: #1f2937;
+}
+
+.league-search-input:focus {
+  outline: none;
+  border-color: #dc143c;
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+.league-search-input::placeholder {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.league-search-input:hover {
+  border-color: #d1d5db;
+}
+
+.league-count-hint {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  text-align: center;
+  margin: 0;
+}
+
+.league-select-dropdown {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  background: white;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+.league-select-dropdown:focus {
+  outline: none;
+  border-color: #dc143c;
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+.league-select-dropdown:hover {
+  border-color: #d1d5db;
+}
+
+.league-select-dropdown option {
+  padding: 8px;
+  font-size: 14px;
+}
+
+/* Modal Separator */
+.modal-separator {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #dd9090, transparent);
+  margin: 24px 0;
+  border-radius: 1px;
+}
+
+/* Centered Modal Section */
+.modal-section.centered {
+  text-align: center;
+  margin: auto;
+}
+
+.centered-label {
+  margin: auto;
+  text-align: center !important;
+  display: block;
+  margin-bottom: 16px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.centered-btn {
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+.league-action-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 auto;
+}
+
+.top-buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 0 auto;
+}
+
+/* Leagues Position Table */
+.leagues-position-table {
+  margin: auto;
+}
+
+.position-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.position-table th {
+  background: #f8fafc;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.position-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.position-table tr:last-child td {
+  border-bottom: none;
+}
+
+.position-table tr:hover {
+  background: #f9fafb;
+}
+
+.position-cell {
+  font-weight: 600;
+  color: #dc143c;
+  min-width: 60px;
+  text-align: center;
+}
+
+.league-cell {
+  min-width: 200px;
+}
+
+.league-info-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.league-logo-small {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.league-name-small {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.actions-cell {
+  text-align: center;
+  min-width: 140px;
+}
+
+.position-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.position-input-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.position-input {
+  width: 50px;
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: center;
+  background: white;
+}
+
+.position-input:focus {
+  outline: none;
+  border-color: #dc143c;
+  box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.1);
+}
+
+.position-input:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.arrow-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.position-btn {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 6px;
+  margin: 0 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+}
+
+.position-btn:hover:not(:disabled) {
+  background: #dc143c;
+  border-color: #dc143c;
+  color: white;
+}
+
+.position-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.up-btn {
+  color: #059669;
+}
+
+.down-btn {
+  color: #dc2626;
+}
+
+.up-btn:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+.down-btn:hover:not(:disabled) {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.apply-btn {
+  color: #1d4ed8;
+}
+
+.apply-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}

@@ -327,4 +327,26 @@ export class MegaGoalService {
   getLandingMatches(): Observable<RealMatch[]> {
     return this.http.get<RealMatch[]>(this.url + '/admin/landing_matches', this.options);
   }
+
+  /**
+   * Get players from database with search and pagination
+   */
+  getPlayers(page: number = 1, limit: number = 50, search: string = '', position: string = '', nationality: string = '', teamsFilter: string = ''): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('search', search)
+      .set('position', position)
+      .set('nationality', nationality)
+      .set('teams_filter', teamsFilter);
+    
+    return this.http.get<any>(this.url + '/players/', { ...this.options, params });
+  }
+
+  /**
+   * Get players API info from settings
+   */
+  getPlayersApiInfo(): Observable<any> {
+    return this.http.get<any>(this.url + '/players/players-api-info/', this.options);
+  }
 }

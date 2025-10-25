@@ -104,4 +104,26 @@ export class UpdaterService {
       this.options
     );
   }
+
+  /**
+   * Update players for a specific page
+   */
+  updatePlayers(page: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_players/',
+      { page },
+      this.options
+    );
+  }
+
+  /**
+   * Update teams for a specific player
+   */
+  updatePlayerTeams(player_id: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_player_teams/',
+      { player_id },
+      this.options
+    );
+  }
 } 

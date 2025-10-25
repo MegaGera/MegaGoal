@@ -5,6 +5,7 @@ import os
 import httpx
 import logging
 from utils import MatchUpdater
+from utils_players import PlayersUpdater
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -89,6 +90,12 @@ class ChangePositionRequest(BaseModel):
 
 class UpdateStatisticsRequest(BaseModel):
     fixture_id: int
+
+class UpdatePlayersRequest(BaseModel):
+    page: int
+
+class UpdatePlayerTeamsRequest(BaseModel):
+    player_id: int
 
 @app.get("/health/")
 async def health_check():
@@ -197,5 +204,28 @@ async def change_league_position(req: ChangePositionRequest, request: Request):
             return {"status": "success", "message": f"Changed league {req.league_id} to position {req.new_position}"}
         else:
             return {"status": "error", "message": f"Cannot change league {req.league_id} to position {req.new_position}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_players/")
+async def update_players(req: UpdatePlayersRequest, request: Request):
+    await validate_admin(request)
+    updater = PlayersUpdater()
+    try:
+        result = updater.update_players_by_page(req.page)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_player_teams/")
+async def update_player_teams(req: UpdatePlayerTeamsRequest, request: Request):
+    await validate_admin(request)
+    updater = PlayersUpdater()
+    try:
+        success = updater.update_player_teams(req.player_id)
+        if success:
+            return {"status": "success", "message": f"Updated teams for player {req.player_id}"}
+        else:
+            return {"status": "error", "message": f"Player {req.player_id} not found"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

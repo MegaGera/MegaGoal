@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MegaGoalService } from '../../services/megagoal.service';
-import { UpdaterService } from '../../services/updater.service';
-import { RealMatch } from '../../models/realMatch';
-import { LeaguesSettings } from '../../models/leaguesSettings';
-import { shortTeam } from '../../models/team';
-import { isNotStartedStatus, isFinishedStatus } from '../../config/matchStatus';
+import { MegaGoalService } from '../../../services/megagoal.service';
+import { UpdaterService } from '../../../services/updater.service';
+import { RealMatch } from '../../../models/realMatch';
+import { LeaguesSettings } from '../../../models/leaguesSettings';
+import { shortTeam } from '../../../models/team';
+import { isNotStartedStatus, isFinishedStatus } from '../../../config/matchStatus';
 import { AdminMatchRowComponent } from './admin-match-row/admin-match-row.component';
 
 type TabType = 'landing' | 'without-stats' | 'filters';
@@ -70,7 +70,7 @@ export class AdminMatchesComponent {
     this.loading = true;
     // Load leagues settings and teams for filters
     this.megagoal.getLeaguesSettings().subscribe({
-      next: (ls) => {
+      next: (ls: any) => {
         this.leagues = (ls || []) as LeaguesSettings[];
         // Build countries list from leagues settings
         const cset = new Set<string>();
@@ -83,7 +83,7 @@ export class AdminMatchesComponent {
       error: () => { this.loading = false; }
     });
     this.megagoal.getTeamsByTopLeague().subscribe({
-      next: (teams) => { this.teams = teams || []; this.filterTeamsByLeagueAndSeason(); },
+      next: (teams: any) => { this.teams = teams || []; this.filterTeamsByLeagueAndSeason(); },
       error: () => {}
     });
     // Load matches without statistics
@@ -96,7 +96,7 @@ export class AdminMatchesComponent {
     this.loadingWithoutStats = true;
     this.currentPage = page;
     this.megagoal.getRealMatchesWithoutStatistics(page).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.matchesWithoutStats = response.matches || [];
         this.totalMatches = response.total || 0;
         this.totalPages = response.totalPages || 0;
@@ -146,7 +146,7 @@ export class AdminMatchesComponent {
     if (selectedCount >= 2) {
       this.loading = true;
       this.megagoal.getRealMatchesByParameters(params).subscribe({
-        next: (matches) => { 
+        next: (matches: any) => { 
           this.filteredMatches = this.applyToggleFilters(matches || []); 
           this.loading = false; 
         },
@@ -254,13 +254,13 @@ export class AdminMatchesComponent {
   loadLandingMatches() {
     this.loadingMarkedMatches = true;
     this.megagoal.getLandingMatches().subscribe({
-      next: (matches) => {
-        this.landingMatchIds = new Set(matches.map(m => m.fixture.id));
+      next: (matches: any) => {
+        this.landingMatchIds = new Set(matches.map((m: any) => m.fixture.id));
         // Sort matches by descending date (most recent first)
-        this.markedLandingMatches = matches.sort((a, b) => b.fixture.timestamp - a.fixture.timestamp);
+        this.markedLandingMatches = matches.sort((a: any, b: any) => b.fixture.timestamp - a.fixture.timestamp);
         this.loadingMarkedMatches = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading landing matches:', err);
         this.loadingMarkedMatches = false;
       }
@@ -284,7 +284,7 @@ export class AdminMatchesComponent {
           // Reload the marked matches list
           this.loadLandingMatches();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Error removing landing match:', err);
           this.markingFixtureId = null;
         }
@@ -298,7 +298,7 @@ export class AdminMatchesComponent {
           // Reload the marked matches list
           this.loadLandingMatches();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Error adding landing match:', err);
           alert(err.error?.message || 'Error marking match for landing page');
           this.markingFixtureId = null;

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RealMatch } from '../../../models/realMatch';
+import { RealMatch } from '../../../../models/realMatch';
 
 @Component({
   selector: 'app-admin-match-row',
