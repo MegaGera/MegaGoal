@@ -8,6 +8,7 @@ export interface RealMatch {
     goals: goalsI,
     score: score,
     statistics?: TeamStatistics[],
+    lineups?: LineupData[],
     usernames?: string[]  // Array of usernames tracking this match
 }
 
@@ -77,4 +78,48 @@ export interface TeamStatistics {
         type: string,
         value: number | string | null
     }>
+}
+
+export interface LineupData {
+    team: {
+        id: number,
+        name: string,
+        logo: string,
+        colors?: {
+            player: {
+                primary: string,
+                number: string,
+                border: string
+            },
+            goalkeeper: {
+                primary: string,
+                number: string,
+                border: string
+            }
+        }
+    },
+    formation?: string,
+    startXI: Array<{
+        player: {
+            id: number,
+            name: string,
+            number: number,
+            pos: string,
+            grid: string | null
+        }
+    }>,
+    substitutes: Array<{
+        player: {
+            id: number,
+            name: string,
+            number: number,
+            pos: string,
+            grid: string | null
+        }
+    }>,
+    coach?: {
+        id: number,
+        name: string,
+        photo: string
+    }
 }

@@ -137,4 +137,15 @@ export class UpdaterService {
       this.options
     );
   }
+
+  /**
+   * Update lineups for a league and season
+   */
+  updateLeagueLineups(league_id: number, season: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_league_lineups/',
+      { league_id, season },
+      this.options
+    );
+  }
 } 

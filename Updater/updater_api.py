@@ -101,6 +101,10 @@ class UpdateLeaguePlayersRequest(BaseModel):
     league_id: int
     season: int
 
+class UpdateLeagueLineupsRequest(BaseModel):
+    league_id: int
+    season: int
+
 @app.get("/health/")
 async def health_check():
     """Health check endpoint for debugging"""
@@ -244,6 +248,20 @@ async def update_league_players(req: UpdateLeaguePlayersRequest, request: Reques
             "status": "success", 
             "message": f"Updated {player_count} players for league {req.league_id}, season {req.season}",
             "players_count": player_count
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_league_lineups/")
+async def update_league_lineups(req: UpdateLeagueLineupsRequest, request: Request):
+    await validate_admin(request)
+    updater = MatchUpdater()
+    try:
+        lineup_count = updater.update_lineups_by_league_and_season(req.league_id, req.season)
+        return {
+            "status": "success", 
+            "message": f"Updated {lineup_count} lineups for league {req.league_id}, season {req.season}",
+            "lineups_count": lineup_count
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -12,6 +12,8 @@ export interface LeaguesSettings {
     available_seasons?: {
         season: number,
         real_matches: number,
-        teams: number
+        teams: number,
+        players?: number,
+        lineups_updated?: Date
     }[]
 }

@@ -139,18 +139,26 @@
             </button>
           </div>
 
-          <!-- Matches Update Section -->
+          <!-- Matches & Lineups Update Section -->
           <div class="modal-section">
-            <label for="full-update-selector">Matches Update</label>
-            <select id="full-update-selector" [(ngModel)]="selectedMatchesUpdateSeason">
-              <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
-            </select>
-            <button 
-              (click)="triggerMatchesUpdate()"
-              [disabled]="isMatchesUpdateLoading"
-              class="modal-action-btn">
-              {{ isMatchesUpdateLoading ? 'Updating...' : 'Update' }}
-            </button>
+            <label for="matches-lineups-selector">Matches</label>
+            <div class="update-buttons-row">
+              <select id="matches-lineups-selector" [(ngModel)]="selectedMatchesUpdateSeason">
+                <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
+              </select>
+              <button 
+                (click)="triggerMatchesUpdate()"
+                [disabled]="isMatchesUpdateLoading"
+                class="modal-action-btn">
+                {{ isMatchesUpdateLoading ? 'Updating...' : 'Update' }}
+              </button>
+              <button 
+                (click)="triggerLineupsUpdate()"
+                [disabled]="isUpdateLineupsLoading"
+                class="modal-action-btn">
+                {{ isUpdateLineupsLoading ? 'Updating...' : 'Lineups' }}
+              </button>
+            </div>
           </div>
 
           <!-- Teams Update Section -->
@@ -189,6 +197,7 @@
                 <span class="season-status-matches">Matches</span>
                 <span class="season-status-teams">Teams</span>
                 <span class="season-status-players">Players</span>
+                <span class="season-status-lineups">Lineups</span>
               </div>
             </div>
             <div *ngFor="let seasonDetail of availableSeasonsDetails.slice().reverse()" class="season-status-row">
@@ -202,6 +211,9 @@
                 </span>
                 <span class="season-status-players" [ngClass]="{'no-data': seasonDetail.players === null}">
                   {{ seasonDetail.players !== null ? seasonDetail.players : 'No data' }}
+                </span>
+                <span class="season-status-lineups" [ngClass]="{'no-data': !seasonDetail.lineups_updated}">
+                  {{ seasonDetail.lineups_updated ? (seasonDetail.lineups_updated | date:'dd/MM/yyyy') : 'No data' }}
                 </span>
               </div>
             </div>

@@ -35,6 +35,7 @@ export class AdminLeaguesComponent {
   isCheckSeasonsLoading: boolean = false;
   isUpdateTeamsLoading: boolean = false;
   isUpdatePlayersLoading: boolean = false;
+  isUpdateLineupsLoading: boolean = false;
 
   shortSeasonsList: number[] = [2024, 2025];
 
@@ -264,6 +265,18 @@ export class AdminLeaguesComponent {
         this.getLeaguesSettings();
       },
       error: () => { this.isUpdatePlayersLoading = false; }
+    });
+  }
+
+  triggerLineupsUpdate(): void {
+    if (!this.selectedLeague || this.selectedMatchesUpdateSeason === null) return;
+    this.isUpdateLineupsLoading = true;
+    this.updater.updateLeagueLineups(this.selectedLeague.league_id, this.selectedMatchesUpdateSeason).subscribe({
+      next: () => { 
+        this.isUpdateLineupsLoading = false;
+        console.log('Lineups updated successfully');
+      },
+      error: () => { this.isUpdateLineupsLoading = false; }
     });
   }
 

@@ -789,6 +789,18 @@ input:disabled + .toggle-slider {
   min-width: 120px;
 }
 
+.update-buttons-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.update-buttons-row select {
+  flex: 1;
+  max-width: 200px;
+}
+
 .modal-section select {
   padding: 8px 18px;
   border-radius: 8px;
