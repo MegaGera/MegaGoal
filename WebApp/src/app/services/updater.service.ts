@@ -148,4 +148,15 @@ export class UpdaterService {
       this.options
     );
   }
+
+  /**
+   * Update events for a league and season
+   */
+  updateLeagueEvents(league_id: number, season: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_league_events/',
+      { league_id, season },
+      this.options
+    );
+  }
 } 

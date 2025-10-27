@@ -892,7 +892,9 @@ input:disabled + .toggle-slider {
   
   .season-status-matches,
   .season-status-teams,
-  .season-status-players {
+  .season-status-players,
+  .season-status-lineups,
+  .season-status-events {
     font-size: 12px;
     padding: 1px 6px;
   }
@@ -948,7 +950,9 @@ input:disabled + .toggle-slider {
 }
 .season-status-matches,
 .season-status-teams,
-.season-status-players {
+.season-status-players,
+.season-status-lineups,
+.season-status-events {
   font-size: 13px;
   font-weight: 500;
   padding: 2px 8px;
@@ -968,9 +972,19 @@ input:disabled + .toggle-slider {
   background: #fef3c7;
   color: #92400e;
 }
+.season-status-lineups {
+  background: #fdf4ff;
+  color: #a855f7;
+}
+.season-status-events {
+  background: #fee2e2;
+  color: #b91c1c;
+}
 .season-status-matches.no-data,
 .season-status-teams.no-data,
-.season-status-players.no-data {
+.season-status-players.no-data,
+.season-status-lineups.no-data,
+.season-status-events.no-data {
   background: #f3f4f6;
   color: #9ca3af;
   font-style: italic;
@@ -1091,7 +1105,9 @@ input:disabled + .toggle-slider {
 }
 .season-status-header .season-status-matches,
 .season-status-header .season-status-teams,
-.season-status-header .season-status-players {
+.season-status-header .season-status-players,
+.season-status-header .season-status-lineups,
+.season-status-header .season-status-events {
   font-size: 13px;
   font-weight: 700;
   padding: 2px 8px;

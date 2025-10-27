@@ -158,6 +158,12 @@
                 class="modal-action-btn">
                 {{ isUpdateLineupsLoading ? 'Updating...' : 'Lineups' }}
               </button>
+              <button 
+                (click)="triggerEventsUpdate()"
+                [disabled]="isUpdateEventsLoading"
+                class="modal-action-btn">
+                {{ isUpdateEventsLoading ? 'Updating...' : 'Events' }}
+              </button>
             </div>
           </div>
 
@@ -198,6 +204,7 @@
                 <span class="season-status-teams">Teams</span>
                 <span class="season-status-players">Players</span>
                 <span class="season-status-lineups">Lineups</span>
+                <span class="season-status-events">Events</span>
               </div>
             </div>
             <div *ngFor="let seasonDetail of availableSeasonsDetails.slice().reverse()" class="season-status-row">
@@ -214,6 +221,9 @@
                 </span>
                 <span class="season-status-lineups" [ngClass]="{'no-data': !seasonDetail.lineups_updated}">
                   {{ seasonDetail.lineups_updated ? (seasonDetail.lineups_updated | date:'dd/MM/yyyy') : 'No data' }}
+                </span>
+                <span class="season-status-events" [ngClass]="{'no-data': !seasonDetail.events_updated}">
+                  {{ seasonDetail.events_updated ? (seasonDetail.events_updated | date:'dd/MM/yyyy') : 'No data' }}
                 </span>
               </div>
             </div>

@@ -9,6 +9,7 @@ export interface RealMatch {
     score: score,
     statistics?: TeamStatistics[],
     lineups?: LineupData[],
+    events?: MatchEvent[],
     usernames?: string[]  // Array of usernames tracking this match
 }
 
@@ -122,4 +123,27 @@ export interface LineupData {
         name: string,
         photo: string
     }
+}
+
+export interface MatchEvent {
+    time: {
+        elapsed: number,
+        extra?: number
+    },
+    team: {
+        id: number,
+        name: string,
+        logo: string
+    },
+    player: {
+        id: number,
+        name: string
+    },
+    assist: {
+        id: number | null,
+        name: string | null
+    } | null,
+    type: string,
+    detail: string,
+    comments?: string | null
 }
