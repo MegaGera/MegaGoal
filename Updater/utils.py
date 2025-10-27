@@ -13,6 +13,7 @@ class MatchUpdater:
         self.collection_settings = self.db['league_settings']
         self.collection_leagues = self.db['leagues']
         self.collection_teams = self.db['teams']
+        self.collection_players = self.db['players']
         self.headers = Config.get_api_headers()
         self.url = Config.RAPIDAPI_HOST
 
@@ -36,7 +37,7 @@ class MatchUpdater:
         
     def get_leagues_from_api(self):
         conn = http.client.HTTPSConnection(self.url)
-        endpoint = f"/v3/leagues"
+        endpoint = f"/leagues"
         conn.request("GET", endpoint, headers=self.headers)
         response = conn.getresponse()
         return json.loads(response.read())
@@ -78,7 +79,7 @@ class MatchUpdater:
     def get_fixture_statistics_from_api(self, fixture_id: int):
         """Fetch fixture statistics from external API (API-SPORTS)"""
         conn = http.client.HTTPSConnection(self.url)
-        endpoint = f"/v3/fixtures/statistics?fixture={fixture_id}"
+        endpoint = f"/fixtures/statistics?fixture={fixture_id}"
         print(f"Getting statistics from API for fixture {fixture_id}")
         conn.request("GET", endpoint, headers=self.headers)
         response = conn.getresponse()
@@ -111,13 +112,13 @@ class MatchUpdater:
         
         if date:
             if date_to:
-                endpoint = f"/v3/fixtures?season={season}&league={league_id}&from={date}&to={date_to}"
+                endpoint = f"/fixtures?season={season}&league={league_id}&from={date}&to={date_to}"
                 print(f"Getting matches from API for league {league_id}, season {season}, date {date} to {date_to}")
             else:
-                endpoint = f"/v3/fixtures?season={season}&league={league_id}&date={date}"
+                endpoint = f"/fixtures?season={season}&league={league_id}&date={date}"
                 print(f"Getting matches from API for league {league_id}, season {season}, date {date}")
         else:
-            endpoint = f"/v3/fixtures?league={league_id}&season={season}"
+            endpoint = f"/fixtures?league={league_id}&season={season}"
             print(f"Getting matches from API for league {league_id}, season {season}")
         
         conn.request("GET", endpoint, headers=self.headers)
@@ -335,7 +336,7 @@ class MatchUpdater:
     def get_teams_from_api(self, league_id, season):
         """Get teams from API"""
         conn = http.client.HTTPSConnection(self.url)
-        endpoint = f"/v3/teams?league={league_id}&season={season}"
+        endpoint = f"/teams?league={league_id}&season={season}"
         print(f"Getting teams from API for league {league_id}, season {season}")
         
         conn.request("GET", endpoint, headers=self.headers)
@@ -501,3 +502,147 @@ class MatchUpdater:
                         )
         
         return True
+
+    def get_players_from_api(self, league_id, season, page=1):
+        """Get players from API for a specific league and season"""
+        conn = http.client.HTTPSConnection(self.url)
+        endpoint = f"/players?league={league_id}&season={season}&page={page}"
+        print(f"Getting players from API for league {league_id}, season {season}, page {page}")
+        
+        conn.request("GET", endpoint, headers=self.headers)
+        response = conn.getresponse()
+        return json.loads(response.read())
+
+    def player_exists(self, player_id):
+        """Check if player exists in database"""
+        player = self.collection_players.find_one({"player.id": player_id})
+        if player is not None:
+            return True, player
+        else:
+            return False, None
+
+    def add_team_to_player(self, player_data, team_info, season):
+        """Add team information to a player's teams array"""
+        if "teams" not in player_data:
+            player_data["teams"] = []
+        
+        # Check if team already exists in player's teams
+        team_found = False
+        for team_data in player_data["teams"]:
+            if team_data["team"]["id"] == team_info["team"]["id"]:
+                # Team exists, add season if not already present
+                if season not in team_data["seasons"]:
+                    team_data["seasons"].append(season)
+                team_found = True
+                break
+        
+        # If team doesn't exist, add it
+        if not team_found:
+            player_data["teams"].append({
+                "team": team_info["team"],
+                "seasons": [season]
+            })
+        
+        return player_data
+
+    def update_players_by_league_and_season(self, league_id, season):
+        """Update players for a league and season with pagination"""
+        print(f"Updating players for league {league_id}, season {season}")
+        
+        page = 1
+        total_players = 0
+        
+        while True:
+            # Get players from API for current page
+            players_data = self.get_players_from_api(league_id, season, page)
+            players_response = players_data.get("response", [])
+            
+            if not players_response:
+                break
+            
+            # Process each player
+            for player_data in players_response:
+                player_id = player_data["player"]["id"]
+                statistics = player_data.get("statistics", [])
+                
+                # Extract team information from statistics
+                for stat in statistics:
+                    if stat.get("team") and stat.get("league", {}).get("id") == league_id:
+                        team_info = {
+                            "team": stat["team"]
+                        }
+                        
+                        # Check if player exists
+                        exists, existing_player = self.player_exists(player_id)
+                        
+                        if exists:
+                            # Update existing player with team information
+                            print(f"Updating player {player_id} ({player_data['player']['name']}) with team {team_info['team']['name']} for season {season}")
+                            updated_player = self.add_team_to_player(existing_player, team_info, season)
+                            self.collection_players.update_one(
+                                {"player.id": player_id},
+                                {"$set": {"teams": updated_player["teams"]}}
+                            )
+                        else:
+                            # Create new player with team information
+                            new_player = {
+                                "player": player_data["player"],
+                                "teams": [{
+                                    "team": team_info["team"],
+                                    "seasons": [season]
+                                }]
+                            }
+                            self.collection_players.insert_one(new_player)
+                        
+                        total_players += 1
+                        break  # Only process the first matching team for this league
+            
+            # Check if there are more pages
+            paging = players_data.get("paging", {})
+            current_page = paging.get("current", page)
+            total_pages = paging.get("total", 1)
+            
+            print(f"Page {current_page} of {total_pages} processed for league {league_id}, season {season}. Total players added/updated so far: {total_players}")
+            
+            if current_page >= total_pages:
+                break
+            
+            page += 1
+        
+        # Update available_seasons with players count
+        self.update_available_season_with_players(league_id, season, total_players)
+        
+        print(f"Updated {total_players} players for league {league_id}, season {season}")
+        return total_players
+
+    def update_available_season_with_players(self, league_id, season, player_count):
+        """Update available_seasons for a league with player count"""
+        # Get current available_seasons
+        setting = self.collection_settings.find_one({"league_id": int(league_id)})
+        if not setting:
+            return
+        
+        available_seasons = setting.get("available_seasons", [])
+        
+        # Find if season already exists
+        season_found = False
+        for season_data in available_seasons:
+            if season_data.get("season") == season:
+                season_data["players"] = player_count if player_count > 0 else None
+                season_found = True
+                break
+        
+        # If season not found, add it
+        if not season_found:
+            available_seasons.append({
+                "season": season,
+                "real_matches": None,  # Will be updated when matches are added
+                "teams": None,  # Will be updated when teams are added
+                "players": player_count if player_count > 0 else None
+            })
+        
+        # Update the settings
+        self.collection_settings.update_one(
+            {"league_id": int(league_id)},
+            {"$set": {"available_seasons": available_seasons}}
+        )

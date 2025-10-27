@@ -123,6 +123,7 @@
           >
             <option value="">All Players</option>
             <option value="with-teams">With Teams</option>
+            <option value="with-teams-and-no-last-update">With Teams and No Last Update</option>
             <option value="without-teams">Without Teams</option>
           </select>
         </div>
@@ -159,6 +160,7 @@
             <th>Position</th>
             <th>Age</th>
             <th>Nationality</th>
+            <th>Last Update</th>
             <th>Teams</th>
             <th>Actions</th>
           </tr>
@@ -196,6 +198,10 @@
             <td class="player-nationality">
               <span *ngIf="player.player.nationality">{{ player.player.nationality }}</span>
               <span *ngIf="!player.player.nationality" class="no-data">-</span>
+            </td>
+            <td class="player-last-update">
+              <span *ngIf="player.last_update">{{ player.last_update | date:'short' }}</span>
+              <span *ngIf="!player.last_update" class="no-data">-</span>
             </td>
             <td class="player-teams">
               <span *ngIf="player.teams && player.teams.length > 0" class="teams-badge has-teams">

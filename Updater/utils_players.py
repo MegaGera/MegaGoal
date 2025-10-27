@@ -24,7 +24,7 @@ class PlayersUpdater:
     def get_players_from_api(self, page):
         """Get players from API with pagination"""
         conn = http.client.HTTPSConnection(self.url)
-        endpoint = f"/v3/players/profiles?page={page}"
+        endpoint = f"/players/profiles?page={page}"
         print(f"Getting players from API for page {page}")
         
         conn.request("GET", endpoint, headers=self.headers)
@@ -106,7 +106,7 @@ class PlayersUpdater:
     def get_player_teams_from_api(self, player_id):
         """Get player teams from API"""
         conn = http.client.HTTPSConnection(self.url)
-        endpoint = f"/v3/players/teams?player={player_id}"
+        endpoint = f"/players/teams?player={player_id}"
         print(f"Getting teams from API for player {player_id}")
         
         conn.request("GET", endpoint, headers=self.headers)
@@ -123,7 +123,7 @@ class PlayersUpdater:
         
         # Update player document with teams information
         query_filter = {"player.id": int(player_id)}
-        update_doc = {"$set": {"teams": teams_response}}
+        update_doc = {"$set": {"teams": teams_response, "last_update": datetime.datetime.now()}}
         result = self.collection_players.update_one(query_filter, update_doc)
         
         if result.matched_count == 0:

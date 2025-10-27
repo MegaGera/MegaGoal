@@ -126,4 +126,15 @@ export class UpdaterService {
       this.options
     );
   }
+
+  /**
+   * Update players for a league and season
+   */
+  updateLeaguePlayers(league_id: number, season: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_league_players/',
+      { league_id, season },
+      this.options
+    );
+  }
 } 

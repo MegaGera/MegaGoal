@@ -167,6 +167,20 @@
             </button>
           </div>
 
+          <!-- Players Update Section -->
+          <div class="modal-section">
+            <label for="players-update-selector">Players Update</label>
+            <select id="players-update-selector" [(ngModel)]="selectedPlayersUpdateSeason">
+              <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
+            </select>
+            <button 
+              (click)="triggerPlayersUpdate()"
+              [disabled]="isUpdatePlayersLoading"
+              class="modal-action-btn">
+              {{ isUpdatePlayersLoading ? 'Updating...' : 'Update' }}
+            </button>
+          </div>
+
           <!-- Available Seasons Status List -->
           <div *ngIf="selectedLeague" class="modal-seasons-status-list">
             <div class="season-status-header">
@@ -174,6 +188,7 @@
               <div class="season-status-details">
                 <span class="season-status-matches">Matches</span>
                 <span class="season-status-teams">Teams</span>
+                <span class="season-status-players">Players</span>
               </div>
             </div>
             <div *ngFor="let seasonDetail of availableSeasonsDetails.slice().reverse()" class="season-status-row">
@@ -184,6 +199,9 @@
                 </span>
                 <span class="season-status-teams" [ngClass]="{'no-data': seasonDetail.teams === null}">
                   {{ seasonDetail.teams !== null ? seasonDetail.teams : 'No data' }}
+                </span>
+                <span class="season-status-players" [ngClass]="{'no-data': seasonDetail.players === null}">
+                  {{ seasonDetail.players !== null ? seasonDetail.players : 'No data' }}
                 </span>
               </div>
             </div>

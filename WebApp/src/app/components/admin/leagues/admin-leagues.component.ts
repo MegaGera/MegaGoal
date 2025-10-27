@@ -27,12 +27,14 @@ export class AdminLeaguesComponent {
   selectedSeason: number | null = null;
   selectedMatchesUpdateSeason: number | null = null;
   selectedTeamsUpdateSeason: number | null = null;
+  selectedPlayersUpdateSeason: number | null = null;
   isUpdateSeasonLoading: boolean = false;
   isMatchesUpdateLoading: boolean = false;
   showGeneralModal: boolean = false;
   isUpdateLeaguesLoading: boolean = false;
   isCheckSeasonsLoading: boolean = false;
   isUpdateTeamsLoading: boolean = false;
+  isUpdatePlayersLoading: boolean = false;
 
   shortSeasonsList: number[] = [2024, 2025];
 
@@ -107,6 +109,7 @@ export class AdminLeaguesComponent {
     this.selectedSeason = league.season;
     this.selectedMatchesUpdateSeason = league.season;
     this.selectedTeamsUpdateSeason = league.season;
+    this.selectedPlayersUpdateSeason = league.season;
     this.selectedNewLeague = null;
     this.leagueSearchText = '';
     this.showSettingsModal = true;
@@ -248,6 +251,19 @@ export class AdminLeaguesComponent {
         this.getLeaguesSettings();
       },
       error: () => { this.isUpdateTeamsLoading = false; }
+    });
+  }
+
+  triggerPlayersUpdate(): void {
+    if (!this.selectedLeague || this.selectedPlayersUpdateSeason === null) return;
+    this.isUpdatePlayersLoading = true;
+    this.updater.updateLeaguePlayers(this.selectedLeague.league_id, this.selectedPlayersUpdateSeason).subscribe({
+      next: () => { 
+        this.isUpdatePlayersLoading = false;
+        // Refresh the leagues settings to show updated players count
+        this.getLeaguesSettings();
+      },
+      error: () => { this.isUpdatePlayersLoading = false; }
     });
   }
 

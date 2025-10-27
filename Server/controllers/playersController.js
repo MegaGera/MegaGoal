@@ -37,6 +37,11 @@ export const getPlayers = async (req, res) => {
     // Teams filter
     if (teamsFilter === 'with-teams') {
       filter['teams'] = { $exists: true, $ne: [], $not: { $size: 0 } };
+    } else if (teamsFilter === 'with-teams-and-no-last-update') {
+      filter['$and'] = [
+        { 'teams': { $exists: true, $ne: [], $not: { $size: 0 } } },
+        { 'last_update': { $exists: false } }
+      ];
     } else if (teamsFilter === 'without-teams') {
       filter['$or'] = [
         { 'teams': { $exists: false } },

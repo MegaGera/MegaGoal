@@ -97,6 +97,10 @@ class UpdatePlayersRequest(BaseModel):
 class UpdatePlayerTeamsRequest(BaseModel):
     player_id: int
 
+class UpdateLeaguePlayersRequest(BaseModel):
+    league_id: int
+    season: int
+
 @app.get("/health/")
 async def health_check():
     """Health check endpoint for debugging"""
@@ -227,5 +231,19 @@ async def update_player_teams(req: UpdatePlayerTeamsRequest, request: Request):
             return {"status": "success", "message": f"Updated teams for player {req.player_id}"}
         else:
             return {"status": "error", "message": f"Player {req.player_id} not found"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_league_players/")
+async def update_league_players(req: UpdateLeaguePlayersRequest, request: Request):
+    await validate_admin(request)
+    updater = MatchUpdater()
+    try:
+        player_count = updater.update_players_by_league_and_season(req.league_id, req.season)
+        return {
+            "status": "success", 
+            "message": f"Updated {player_count} players for league {req.league_id}, season {req.season}",
+            "players_count": player_count
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

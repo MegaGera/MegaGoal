@@ -19,4 +19,5 @@ export interface Player {
     photo: string;
   };
   teams?: any[]; // Optional teams information
+  last_update?: Date;
 }
