@@ -14,7 +14,7 @@ export interface LeaguesSettings {
         real_matches: number,
         teams: number,
         players?: number,
-        lineups_updated?: Date,
-        events_updated?: Date
+        lineups?: number,
+        events?: number
     }[]
 }

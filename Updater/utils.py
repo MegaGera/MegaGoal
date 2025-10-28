@@ -690,14 +690,13 @@ class MatchUpdater:
         
         print(f"Updated {total_lineups} lineups for league {league_id}, season {season}")
         
-        # Update available_seasons with lineups_updated timestamp only if lineups were found
-        if total_lineups > 0:
-            self.update_available_season_with_lineups(league_id, season)
+        # Update available_seasons with lineups count
+        self.update_available_season_with_lineups(league_id, season, total_lineups)
         
         return total_lineups
 
-    def update_available_season_with_lineups(self, league_id, season):
-        """Update available_seasons for a league with lineups_updated timestamp"""
+    def update_available_season_with_lineups(self, league_id, season, lineups_count):
+        """Update available_seasons for a league with lineups count"""
         # Get current available_seasons
         setting = self.collection_settings.find_one({"league_id": int(league_id)})
         if not setting:
@@ -709,7 +708,7 @@ class MatchUpdater:
         season_found = False
         for season_data in available_seasons:
             if season_data.get("season") == season:
-                season_data["lineups_updated"] = datetime.datetime.today()
+                season_data["lineups"] = lineups_count if lineups_count > 0 else None
                 season_found = True
                 break
         
@@ -720,7 +719,7 @@ class MatchUpdater:
                 {"league_id": int(league_id)},
                 {"$set": {"available_seasons": available_seasons}}
             )
-            print(f"Updated lineups_updated timestamp for league {league_id}, season {season}")
+            print(f"Updated lineups_count for league {league_id}, season {season}: {lineups_count}")
         else:
             print(f"Season {season} not found in available_seasons for league {league_id}, skipping lineups update")
 
@@ -767,14 +766,13 @@ class MatchUpdater:
         
         print(f"Updated {total_events} events for league {league_id}, season {season}")
         
-        # Update available_seasons with events_updated timestamp only if events were found
-        if total_events > 0:
-            self.update_available_season_with_events(league_id, season)
+        # Update available_seasons with events count
+        self.update_available_season_with_events(league_id, season, total_events)
         
         return total_events
 
-    def update_available_season_with_events(self, league_id, season):
-        """Update available_seasons for a league with events_updated timestamp"""
+    def update_available_season_with_events(self, league_id, season, events_count):
+        """Update available_seasons for a league with events count"""
         # Get current available_seasons
         setting = self.collection_settings.find_one({"league_id": int(league_id)})
         if not setting:
@@ -786,7 +784,7 @@ class MatchUpdater:
         season_found = False
         for season_data in available_seasons:
             if season_data.get("season") == season:
-                season_data["events_updated"] = datetime.datetime.today()
+                season_data["events"] = events_count if events_count > 0 else None
                 season_found = True
                 break
         
@@ -797,6 +795,6 @@ class MatchUpdater:
                 {"league_id": int(league_id)},
                 {"$set": {"available_seasons": available_seasons}}
             )
-            print(f"Updated events_updated timestamp for league {league_id}, season {season}")
+            print(f"Updated events_count for league {league_id}, season {season}: {events_count}")
         else:
             print(f"Season {season} not found in available_seasons for league {league_id}, skipping events update")
