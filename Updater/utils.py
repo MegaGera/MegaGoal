@@ -798,3 +798,62 @@ class MatchUpdater:
             print(f"Updated events_count for league {league_id}, season {season}: {events_count}")
         else:
             print(f"Season {season} not found in available_seasons for league {league_id}, skipping events update")
+
+    def update_statistics_by_league_and_season(self, league_id, season):
+        """Update statistics for all finished matches in a league and season"""
+        print(f"Updating statistics for league {league_id}, season {season}")
+        
+        # Get finished matches for this league and season
+        finished_statuses = Config.get_finished_match_status_array()
+        matches = self.collection_real_matches.find({
+            "league.id": int(league_id),
+            "league.season": int(season),
+            "fixture.status.short": {"$in": finished_statuses}
+        })
+        
+        total_statistics = 0
+        matches_list = list(matches)
+        
+        for match in matches_list:
+            fixture_id = match["fixture"]["id"]
+            
+            # Update statistics for this match
+            success = self.update_match_statistics(fixture_id)
+            if success:
+                total_statistics += 1
+                print(f"Updated statistics for fixture {fixture_id}")
+        
+        print(f"Updated {total_statistics} statistics for league {league_id}, season {season}")
+        
+        # Update available_seasons with statistics count
+        self.update_available_season_with_statistics(league_id, season, total_statistics)
+        
+        return total_statistics
+
+    def update_available_season_with_statistics(self, league_id, season, statistics_count):
+        """Update available_seasons for a league with statistics count"""
+        # Get current available_seasons
+        setting = self.collection_settings.find_one({"league_id": int(league_id)})
+        if not setting:
+            return
+        
+        available_seasons = setting.get("available_seasons", [])
+        
+        # Find if season already exists
+        season_found = False
+        for season_data in available_seasons:
+            if season_data.get("season") == season:
+                season_data["statistics"] = statistics_count if statistics_count > 0 else None
+                season_found = True
+                break
+        
+        # Only update if season exists in available_seasons
+        if season_found:
+            # Update the settings
+            self.collection_settings.update_one(
+                {"league_id": int(league_id)},
+                {"$set": {"available_seasons": available_seasons}}
+            )
+            print(f"Updated statistics_count for league {league_id}, season {season}: {statistics_count}")
+        else:
+            print(f"Season {season} not found in available_seasons for league {league_id}, skipping statistics update")

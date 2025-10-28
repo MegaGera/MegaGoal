@@ -15,6 +15,7 @@ export interface LeaguesSettings {
         teams: number,
         players?: number,
         lineups?: number,
-        events?: number
+        events?: number,
+        statistics?: number
     }[]
 }

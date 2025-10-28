@@ -159,4 +159,15 @@ export class UpdaterService {
       this.options
     );
   }
+
+  /**
+   * Update statistics for a league and season
+   */
+  updateLeagueStatistics(league_id: number, season: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_league_statistics/',
+      { league_id, season },
+      this.options
+    );
+  }
 } 

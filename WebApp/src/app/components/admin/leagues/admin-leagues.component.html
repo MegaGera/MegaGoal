@@ -164,6 +164,12 @@
                 class="modal-action-btn">
                 {{ isUpdateEventsLoading ? 'Updating...' : 'Events' }}
               </button>
+              <button 
+                (click)="triggerStatisticsUpdate()"
+                [disabled]="isUpdateStatisticsLoading"
+                class="modal-action-btn">
+                {{ isUpdateStatisticsLoading ? 'Updating...' : 'Statistics' }}
+              </button>
             </div>
           </div>
 
@@ -205,6 +211,7 @@
                 <span class="season-status-players">Players</span>
                 <span class="season-status-lineups">Lineups</span>
                 <span class="season-status-events">Events</span>
+                <span class="season-status-statistics">Statistics</span>
               </div>
             </div>
             <div *ngFor="let seasonDetail of availableSeasonsDetails.slice().reverse()" class="season-status-row">
@@ -219,11 +226,14 @@
                 <span class="season-status-players" [ngClass]="{'no-data': seasonDetail.players === null}">
                   {{ seasonDetail.players !== null ? seasonDetail.players : 'No data' }}
                 </span>
-                <span class="season-status-lineups" [ngClass]="{'no-data': !seasonDetail.lineups_updated}">
-                  {{ seasonDetail.lineups_updated ? (seasonDetail.lineups_updated | date:'dd/MM/yyyy') : 'No data' }}
+                <span class="season-status-lineups" [ngClass]="{'no-data': seasonDetail.lineups === null}">
+                  {{ seasonDetail.lineups !== null ? seasonDetail.lineups : 'No data' }}
                 </span>
-                <span class="season-status-events" [ngClass]="{'no-data': !seasonDetail.events_updated}">
-                  {{ seasonDetail.events_updated ? (seasonDetail.events_updated | date:'dd/MM/yyyy') : 'No data' }}
+                <span class="season-status-events" [ngClass]="{'no-data': seasonDetail.events === null}">
+                  {{ seasonDetail.events !== null ? seasonDetail.events : 'No data' }}
+                </span>
+                <span class="season-status-statistics" [ngClass]="{'no-data': seasonDetail.statistics === null}">
+                  {{ seasonDetail.statistics !== null ? seasonDetail.statistics : 'No data' }}
                 </span>
               </div>
             </div>
