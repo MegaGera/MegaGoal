@@ -6,6 +6,9 @@ import httpx
 import logging
 from utils import MatchUpdater
 from utils_players import PlayersUpdater
+from utils_lineups import LineupsUpdater
+from utils_events import EventsUpdater
+from utils_statistics import StatisticsUpdater
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -165,7 +168,7 @@ async def update_leagues(request: Request):
 @app.post("/update_match_statistics/")
 async def update_match_statistics(req: UpdateStatisticsRequest, request: Request):
     await validate_admin(request)
-    updater = MatchUpdater()
+    updater = StatisticsUpdater()
     try:
         success = updater.update_match_statistics(req.fixture_id)
         if success:
@@ -263,7 +266,7 @@ async def update_league_players(req: UpdateLeaguePlayersRequest, request: Reques
 @app.post("/update_league_lineups/")
 async def update_league_lineups(req: UpdateLeagueLineupsRequest, request: Request):
     await validate_admin(request)
-    updater = MatchUpdater()
+    updater = LineupsUpdater()
     try:
         lineup_count = updater.update_lineups_by_league_and_season(req.league_id, req.season)
         return {
@@ -277,7 +280,7 @@ async def update_league_lineups(req: UpdateLeagueLineupsRequest, request: Reques
 @app.post("/update_league_events/")
 async def update_league_events(req: UpdateLeagueEventsRequest, request: Request):
     await validate_admin(request)
-    updater = MatchUpdater()
+    updater = EventsUpdater()
     try:
         events_count = updater.update_events_by_league_and_season(req.league_id, req.season)
         return {
@@ -291,7 +294,7 @@ async def update_league_events(req: UpdateLeagueEventsRequest, request: Request)
 @app.post("/update_league_statistics/")
 async def update_league_statistics(req: UpdateLeagueStatisticsRequest, request: Request):
     await validate_admin(request)
-    updater = MatchUpdater()
+    updater = StatisticsUpdater()
     try:
         statistics_count = updater.update_statistics_by_league_and_season(req.league_id, req.season)
         return {
