@@ -116,6 +116,17 @@ class UpdateLeagueStatisticsRequest(BaseModel):
     league_id: int
     season: int
 
+class MultiSeasonUpdateRequest(BaseModel):
+    league_id: int
+    season_from: int
+    season_to: int
+    update_matches: bool = False
+    update_teams: bool = False
+    update_players: bool = False
+    update_statistics: bool = False
+    update_lineups: bool = False
+    update_events: bool = False
+
 @app.get("/health/")
 async def health_check():
     """Health check endpoint for debugging"""
@@ -302,5 +313,89 @@ async def update_league_statistics(req: UpdateLeagueStatisticsRequest, request: 
             "message": f"Updated {statistics_count} statistics for league {req.league_id}, season {req.season}",
             "statistics_count": statistics_count
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/multi_season_update/")
+async def multi_season_update(req: MultiSeasonUpdateRequest, request: Request):
+    await validate_admin(request)
+    
+    logger.info(f"Starting multi-season update for league {req.league_id} from season {req.season_from} to {req.season_to}")
+    logger.info(f"Update options: matches={req.update_matches}, teams={req.update_teams}, players={req.update_players}, statistics={req.update_statistics}, lineups={req.update_lineups}, events={req.update_events}")
+    
+    results = {
+        "league_id": req.league_id,
+        "season_from": req.season_from,
+        "season_to": req.season_to,
+        "seasons_processed": [],
+        "total_updates": {
+            "matches": 0,
+            "teams": 0,
+            "players": 0,
+            "statistics": 0,
+            "lineups": 0,
+            "events": 0
+        }
+    }
+    
+    try:
+        # Process each season from season_from to season_to
+        for season in range(req.season_from, req.season_to + 1):
+            season_result = {"season": season, "updates": {}}
+            
+            # Update matches
+            if req.update_matches:
+                updater = MatchUpdater()
+                updater.update_league_matches(req.league_id, season)
+                season_result["updates"]["matches"] = "completed"
+                results["total_updates"]["matches"] += 1
+            
+            # Update teams
+            if req.update_teams:
+                updater = MatchUpdater()
+                updater.update_teams_by_league_and_season(req.league_id, season)
+                season_result["updates"]["teams"] = "completed"
+                results["total_updates"]["teams"] += 1
+            
+            # Update players
+            if req.update_players:
+                updater = MatchUpdater()
+                updater.update_players_by_league_and_season(req.league_id, season)
+                season_result["updates"]["players"] = "completed"
+                results["total_updates"]["players"] += 1
+            
+            # Update statistics
+            if req.update_statistics:
+                updater = StatisticsUpdater()
+                updater.update_statistics_by_league_and_season(req.league_id, season)
+                season_result["updates"]["statistics"] = "completed"
+                results["total_updates"]["statistics"] += 1
+            
+            # Update lineups
+            if req.update_lineups:
+                updater = LineupsUpdater()
+                updater.update_lineups_by_league_and_season(req.league_id, season)
+                season_result["updates"]["lineups"] = "completed"
+                results["total_updates"]["lineups"] += 1
+            
+            # Update events
+            if req.update_events:
+                updater = EventsUpdater()
+                updater.update_events_by_league_and_season(req.league_id, season)
+                season_result["updates"]["events"] = "completed"
+                results["total_updates"]["events"] += 1
+            
+            results["seasons_processed"].append(season_result)
+            logger.info(f"Season {season} processing completed for league {req.league_id}")
+        
+        logger.info(f"Multi-season update completed successfully for league {req.league_id}")
+        logger.info(f"Total updates performed: {results['total_updates']}")
+        
+        return {
+            "status": "success",
+            "message": f"Multi-season update completed for league {req.league_id} from season {req.season_from} to {req.season_to}",
+            "results": results
+        }
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

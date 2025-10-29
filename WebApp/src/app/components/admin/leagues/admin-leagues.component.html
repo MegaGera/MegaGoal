@@ -139,104 +139,162 @@
             </button>
           </div>
 
-          <!-- Matches & Lineups Update Section -->
+          <!-- Data Updates Section -->
           <div class="modal-section">
-            <label for="matches-lineups-selector">Matches</label>
-            <div class="update-buttons-row">
-              <select id="matches-lineups-selector" [(ngModel)]="selectedMatchesUpdateSeason">
+            <label for="data-update-selector">Season for Data Updates</label>
+            <div class="data-updates-container">
+              <select id="data-update-selector" [(ngModel)]="selectedDataUpdateSeason">
                 <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
               </select>
-              <button 
-                (click)="triggerMatchesUpdate()"
-                [disabled]="isMatchesUpdateLoading"
-                class="modal-action-btn">
-                {{ isMatchesUpdateLoading ? 'Updating...' : 'Update' }}
-              </button>
-              <button 
-                (click)="triggerLineupsUpdate()"
-                [disabled]="isUpdateLineupsLoading"
-                class="modal-action-btn">
-                {{ isUpdateLineupsLoading ? 'Updating...' : 'Lineups' }}
-              </button>
-              <button 
-                (click)="triggerEventsUpdate()"
-                [disabled]="isUpdateEventsLoading"
-                class="modal-action-btn">
-                {{ isUpdateEventsLoading ? 'Updating...' : 'Events' }}
-              </button>
-              <button 
-                (click)="triggerStatisticsUpdate()"
-                [disabled]="isUpdateStatisticsLoading"
-                class="modal-action-btn">
-                {{ isUpdateStatisticsLoading ? 'Updating...' : 'Statistics' }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Teams Update Section -->
-          <div class="modal-section">
-            <label for="teams-update-selector">Teams Update</label>
-            <select id="teams-update-selector" [(ngModel)]="selectedTeamsUpdateSeason">
-              <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
-            </select>
-            <button 
-              (click)="triggerTeamsUpdate()"
-              [disabled]="isUpdateTeamsLoading"
-              class="modal-action-btn">
-              {{ isUpdateTeamsLoading ? 'Updating...' : 'Update' }}
-            </button>
-          </div>
-
-          <!-- Players Update Section -->
-          <div class="modal-section">
-            <label for="players-update-selector">Players Update</label>
-            <select id="players-update-selector" [(ngModel)]="selectedPlayersUpdateSeason">
-              <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
-            </select>
-            <button 
-              (click)="triggerPlayersUpdate()"
-              [disabled]="isUpdatePlayersLoading"
-              class="modal-action-btn">
-              {{ isUpdatePlayersLoading ? 'Updating...' : 'Update' }}
-            </button>
-          </div>
-
-          <!-- Available Seasons Status List -->
-          <div *ngIf="selectedLeague" class="modal-seasons-status-list">
-            <div class="season-status-header">
-              <span class="season-status-year">Season</span>
-              <div class="season-status-details">
-                <span class="season-status-matches">Matches</span>
-                <span class="season-status-teams">Teams</span>
-                <span class="season-status-players">Players</span>
-                <span class="season-status-lineups">Lineups</span>
-                <span class="season-status-events">Events</span>
-                <span class="season-status-statistics">Statistics</span>
+              <div class="update-buttons-grid">
+                <button 
+                  (click)="triggerMatchesUpdate()"
+                  [disabled]="isMatchesUpdateLoading"
+                  class="modal-action-btn matches-btn">
+                  {{ isMatchesUpdateLoading ? 'Updating...' : 'Matches' }}
+                </button>
+                <button 
+                  (click)="triggerTeamsUpdate()"
+                  [disabled]="isUpdateTeamsLoading"
+                  class="modal-action-btn teams-btn">
+                  {{ isUpdateTeamsLoading ? 'Updating...' : 'Teams' }}
+                </button>
+                <button 
+                  (click)="triggerPlayersUpdate()"
+                  [disabled]="isUpdatePlayersLoading"
+                  class="modal-action-btn players-btn">
+                  {{ isUpdatePlayersLoading ? 'Updating...' : 'Players' }}
+                </button>
+                <button 
+                  (click)="triggerStatisticsUpdate()"
+                  [disabled]="isUpdateStatisticsLoading"
+                  class="modal-action-btn statistics-btn">
+                  {{ isUpdateStatisticsLoading ? 'Updating...' : 'Statistics' }}
+                </button>
+                <button 
+                  (click)="triggerLineupsUpdate()"
+                  [disabled]="isUpdateLineupsLoading"
+                  class="modal-action-btn lineups-btn">
+                  {{ isUpdateLineupsLoading ? 'Updating...' : 'Lineups' }}
+                </button>
+                <button 
+                  (click)="triggerEventsUpdate()"
+                  [disabled]="isUpdateEventsLoading"
+                  class="modal-action-btn events-btn">
+                  {{ isUpdateEventsLoading ? 'Updating...' : 'Events' }}
+                </button>
               </div>
             </div>
-            <div *ngFor="let seasonDetail of availableSeasonsDetails.slice().reverse()" class="season-status-row">
-              <span class="season-status-year">{{ seasonDetail.season }}</span>
-              <div class="season-status-details">
-                <span class="season-status-matches" [ngClass]="{'no-data': seasonDetail.real_matches === null}">
-                  {{ seasonDetail.real_matches !== null ? seasonDetail.real_matches : 'No data' }}
-                </span>
-                <span class="season-status-teams" [ngClass]="{'no-data': seasonDetail.teams === null}">
-                  {{ seasonDetail.teams !== null ? seasonDetail.teams : 'No data' }}
-                </span>
-                <span class="season-status-players" [ngClass]="{'no-data': seasonDetail.players === null}">
-                  {{ seasonDetail.players !== null ? seasonDetail.players : 'No data' }}
-                </span>
-                <span class="season-status-lineups" [ngClass]="{'no-data': seasonDetail.lineups === null}">
-                  {{ seasonDetail.lineups !== null ? seasonDetail.lineups : 'No data' }}
-                </span>
-                <span class="season-status-events" [ngClass]="{'no-data': seasonDetail.events === null}">
-                  {{ seasonDetail.events !== null ? seasonDetail.events : 'No data' }}
-                </span>
-                <span class="season-status-statistics" [ngClass]="{'no-data': seasonDetail.statistics === null}">
-                  {{ seasonDetail.statistics !== null ? seasonDetail.statistics : 'No data' }}
-                </span>
+          </div>
+
+          <!-- Multi-Season Update Section -->
+          <div class="modal-section">
+            <div class="multi-season-container">
+              <h3 class="multi-season-title">Multi-Season Update</h3>
+              <div class="season-range-container">
+                <div class="season-range-item">
+                  <label for="season-from-selector">From Season</label>
+                  <select id="season-from-selector" [(ngModel)]="selectedSeasonFrom">
+                    <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
+                  </select>
+                </div>
+                <div class="season-range-item">
+                  <label for="season-to-selector">To Season</label>
+                  <select id="season-to-selector" [(ngModel)]="selectedSeasonTo">
+                    <option *ngFor="let s of availableSeasonsForSelectedLeague" [value]="s">{{s}}</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="update-options-container">
+                <h4 class="update-options-title">Select Updates to Perform:</h4>
+                <div class="checkbox-grid">
+                  <label class="checkbox-item">
+                    <input type="checkbox" [(ngModel)]="multiUpdateOptions.matches">
+                    <span class="checkbox-label matches-label">Matches</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" [(ngModel)]="multiUpdateOptions.teams">
+                    <span class="checkbox-label teams-label">Teams</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" [(ngModel)]="multiUpdateOptions.players">
+                    <span class="checkbox-label players-label">Players</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" [(ngModel)]="multiUpdateOptions.statistics">
+                    <span class="checkbox-label statistics-label">Statistics</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" [(ngModel)]="multiUpdateOptions.lineups">
+                    <span class="checkbox-label lineups-label">Lineups</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" [(ngModel)]="multiUpdateOptions.events">
+                    <span class="checkbox-label events-label">Events</span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="multi-update-actions">
+                <button 
+                  (click)="triggerMultiSeasonUpdate()"
+                  [disabled]="isMultiUpdateLoading || !hasSelectedOptions()"
+                  class="multi-update-btn">
+                  {{ isMultiUpdateLoading ? 'Updating...' : 'Execute Multi-Season Update' }}
+                </button>
+                <button 
+                  (click)="selectAllOptions()"
+                  class="select-all-btn">
+                  Select All
+                </button>
+                <button 
+                  (click)="deselectAllOptions()"
+                  class="deselect-all-btn">
+                  Deselect All
+                </button>
               </div>
             </div>
+          </div>
+
+          <!-- Available Seasons Status Table -->
+          <div *ngIf="selectedLeague" class="modal-seasons-status-table">
+            <table class="seasons-table">
+              <thead>
+                <tr>
+                  <th class="season-status-year">Season</th>
+                  <th class="season-status-matches">Matches</th>
+                  <th class="season-status-teams">Teams</th>
+                  <th class="season-status-players">Players</th>
+                  <th class="season-status-statistics">Statistics</th>
+                  <th class="season-status-lineups">Lineups</th>
+                  <th class="season-status-events">Events</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let seasonDetail of availableSeasonsDetails.slice().reverse()">
+                  <td class="season-status-year">{{ seasonDetail.season }}</td>
+                  <td class="season-status-matches" [ngClass]="{'no-data': seasonDetail.real_matches === null}">
+                    {{ seasonDetail.real_matches ? seasonDetail.real_matches : 'No data' }}
+                  </td>
+                  <td class="season-status-teams" [ngClass]="{'no-data': seasonDetail.teams === null}">
+                    {{ seasonDetail.teams ? seasonDetail.teams : 'No data' }}
+                  </td>
+                  <td class="season-status-players" [ngClass]="{'no-data': seasonDetail.players === null}">
+                    {{ seasonDetail.players ? seasonDetail.players : 'No data' }}
+                  </td>
+                  <td class="season-status-statistics" [ngClass]="{'no-data': seasonDetail.statistics === null}">
+                    {{ seasonDetail.statistics ? seasonDetail.statistics : 'No data' }}
+                  </td>
+                  <td class="season-status-lineups" [ngClass]="{'no-data': seasonDetail.lineups === null}">
+                    {{ seasonDetail.lineups ? seasonDetail.lineups : 'No data' }}
+                  </td>
+                  <td class="season-status-events" [ngClass]="{'no-data': seasonDetail.events === null}">
+                    {{ seasonDetail.events ? seasonDetail.events : 'No data' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
         </div>

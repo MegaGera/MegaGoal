@@ -25,9 +25,9 @@ export class AdminLeaguesComponent {
   showSettingsModal: boolean = false;
   selectedLeague: LeaguesSettings | null = null;
   selectedSeason: number | null = null;
-  selectedMatchesUpdateSeason: number | null = null;
-  selectedTeamsUpdateSeason: number | null = null;
-  selectedPlayersUpdateSeason: number | null = null;
+  selectedDataUpdateSeason: number | null = null;
+  selectedSeasonFrom: number | null = null;
+  selectedSeasonTo: number | null = null;
   isUpdateSeasonLoading: boolean = false;
   isMatchesUpdateLoading: boolean = false;
   showGeneralModal: boolean = false;
@@ -38,6 +38,16 @@ export class AdminLeaguesComponent {
   isUpdateLineupsLoading: boolean = false;
   isUpdateEventsLoading: boolean = false;
   isUpdateStatisticsLoading: boolean = false;
+  isMultiUpdateLoading: boolean = false;
+  
+  multiUpdateOptions = {
+    matches: false,
+    teams: false,
+    players: false,
+    statistics: false,
+    lineups: false,
+    events: false
+  };
 
   shortSeasonsList: number[] = [2024, 2025];
 
@@ -110,9 +120,9 @@ export class AdminLeaguesComponent {
   openSettingsModal(league: LeaguesSettings): void {
     this.selectedLeague = league;
     this.selectedSeason = league.season;
-    this.selectedMatchesUpdateSeason = league.season;
-    this.selectedTeamsUpdateSeason = league.season;
-    this.selectedPlayersUpdateSeason = league.season;
+    this.selectedDataUpdateSeason = league.season;
+    this.selectedSeasonFrom = league.season;
+    this.selectedSeasonTo = league.season;
     this.selectedNewLeague = null;
     this.leagueSearchText = '';
     this.showSettingsModal = true;
@@ -156,9 +166,9 @@ export class AdminLeaguesComponent {
   }
 
   triggerMatchesUpdate(): void {
-    if (!this.selectedLeague || this.selectedMatchesUpdateSeason === null) return;
+    if (!this.selectedLeague || this.selectedDataUpdateSeason === null) return;
     this.isMatchesUpdateLoading = true;
-    this.updater.updateMatches(this.selectedLeague.league_id, this.selectedMatchesUpdateSeason).subscribe({
+    this.updater.updateMatches(this.selectedLeague.league_id, this.selectedDataUpdateSeason).subscribe({
       next: () => { this.isMatchesUpdateLoading = false; },
       error: () => { this.isMatchesUpdateLoading = false; }
     });
@@ -245,9 +255,9 @@ export class AdminLeaguesComponent {
   }
 
   triggerTeamsUpdate(): void {
-    if (!this.selectedLeague || this.selectedTeamsUpdateSeason === null) return;
+    if (!this.selectedLeague || this.selectedDataUpdateSeason === null) return;
     this.isUpdateTeamsLoading = true;
-    this.updater.updateTeams(this.selectedLeague.league_id, this.selectedTeamsUpdateSeason).subscribe({
+    this.updater.updateTeams(this.selectedLeague.league_id, this.selectedDataUpdateSeason).subscribe({
       next: () => { 
         this.isUpdateTeamsLoading = false;
         // Refresh the leagues settings to show updated teams count
@@ -258,9 +268,9 @@ export class AdminLeaguesComponent {
   }
 
   triggerPlayersUpdate(): void {
-    if (!this.selectedLeague || this.selectedPlayersUpdateSeason === null) return;
+    if (!this.selectedLeague || this.selectedDataUpdateSeason === null) return;
     this.isUpdatePlayersLoading = true;
-    this.updater.updateLeaguePlayers(this.selectedLeague.league_id, this.selectedPlayersUpdateSeason).subscribe({
+    this.updater.updateLeaguePlayers(this.selectedLeague.league_id, this.selectedDataUpdateSeason).subscribe({
       next: () => { 
         this.isUpdatePlayersLoading = false;
         // Refresh the leagues settings to show updated players count
@@ -271,9 +281,9 @@ export class AdminLeaguesComponent {
   }
 
   triggerLineupsUpdate(): void {
-    if (!this.selectedLeague || this.selectedMatchesUpdateSeason === null) return;
+    if (!this.selectedLeague || this.selectedDataUpdateSeason === null) return;
     this.isUpdateLineupsLoading = true;
-    this.updater.updateLeagueLineups(this.selectedLeague.league_id, this.selectedMatchesUpdateSeason).subscribe({
+    this.updater.updateLeagueLineups(this.selectedLeague.league_id, this.selectedDataUpdateSeason).subscribe({
       next: () => { 
         this.isUpdateLineupsLoading = false;
         console.log('Lineups updated successfully');
@@ -283,9 +293,9 @@ export class AdminLeaguesComponent {
   }
 
   triggerEventsUpdate(): void {
-    if (!this.selectedLeague || this.selectedMatchesUpdateSeason === null) return;
+    if (!this.selectedLeague || this.selectedDataUpdateSeason === null) return;
     this.isUpdateEventsLoading = true;
-    this.updater.updateLeagueEvents(this.selectedLeague.league_id, this.selectedMatchesUpdateSeason).subscribe({
+    this.updater.updateLeagueEvents(this.selectedLeague.league_id, this.selectedDataUpdateSeason).subscribe({
       next: () => { 
         this.isUpdateEventsLoading = false;
         console.log('Events updated successfully');
@@ -296,15 +306,67 @@ export class AdminLeaguesComponent {
   }
 
   triggerStatisticsUpdate(): void {
-    if (!this.selectedLeague || this.selectedMatchesUpdateSeason === null) return;
+    if (!this.selectedLeague || this.selectedDataUpdateSeason === null) return;
     this.isUpdateStatisticsLoading = true;
-    this.updater.updateLeagueStatistics(this.selectedLeague.league_id, this.selectedMatchesUpdateSeason).subscribe({
+    this.updater.updateLeagueStatistics(this.selectedLeague.league_id, this.selectedDataUpdateSeason).subscribe({
       next: () => { 
         this.isUpdateStatisticsLoading = false;
         console.log('Statistics updated successfully');
         this.getLeaguesSettings();
       },
       error: () => { this.isUpdateStatisticsLoading = false; }
+    });
+  }
+
+  // Multi-season update methods
+  hasSelectedOptions(): boolean {
+    return Object.values(this.multiUpdateOptions).some(option => option === true);
+  }
+
+  selectAllOptions(): void {
+    this.multiUpdateOptions = {
+      matches: true,
+      teams: true,
+      players: true,
+      statistics: true,
+      lineups: true,
+      events: true
+    };
+  }
+
+  deselectAllOptions(): void {
+    this.multiUpdateOptions = {
+      matches: false,
+      teams: false,
+      players: false,
+      statistics: false,
+      lineups: false,
+      events: false
+    };
+  }
+
+  triggerMultiSeasonUpdate(): void {
+    if (!this.selectedLeague || this.selectedSeasonFrom === null || this.selectedSeasonTo === null) return;
+    if (!this.hasSelectedOptions()) return;
+
+    this.isMultiUpdateLoading = true;
+    this.updater.multiSeasonUpdate(
+      this.selectedLeague.league_id,
+      this.selectedSeasonFrom,
+      this.selectedSeasonTo,
+      this.multiUpdateOptions
+    ).subscribe({
+      next: (result) => { 
+        this.isMultiUpdateLoading = false;
+        console.log('Multi-season update completed:', result);
+        this.getLeaguesSettings();
+        // Reset options after successful update
+        this.deselectAllOptions();
+      },
+      error: (error) => { 
+        this.isMultiUpdateLoading = false;
+        console.error('Multi-season update failed:', error);
+      }
     });
   }
 

@@ -170,4 +170,25 @@ export class UpdaterService {
       this.options
     );
   }
+
+  /**
+   * Multi-season update for a league
+   */
+  multiSeasonUpdate(league_id: number, season_from: number, season_to: number, options: any): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/multi_season_update/',
+      { 
+        league_id, 
+        season_from, 
+        season_to,
+        update_matches: options.matches,
+        update_teams: options.teams,
+        update_players: options.players,
+        update_statistics: options.statistics,
+        update_lineups: options.lineups,
+        update_events: options.events
+      },
+      this.options
+    );
+  }
 } 
