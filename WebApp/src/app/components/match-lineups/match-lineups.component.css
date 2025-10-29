@@ -1,0 +1,222 @@
+/* Lineups Section */
+.lineups-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  text-align: center;
+  margin: 0 0 2rem 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.lineups-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.team-lineup {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.team-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.team-logo-large {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.team-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  text-align: center;
+}
+
+.formation {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #667eea;
+  padding: 0.5rem 1rem;
+  background: #f0f0f0;
+  border-radius: 6px;
+}
+
+.players-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.section-subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.player-item {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #f9f9f9;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.player-item:hover {
+  background: #f0f0f0;
+}
+
+.player-item.substitute {
+  opacity: 0.8;
+  background: #f5f5f5;
+}
+
+.player-number {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #667eea;
+  text-align: center;
+  min-width: 30px;
+}
+
+.player-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+  word-wrap: break-word;
+}
+
+.player-position {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  background: #e5e7eb;
+  border-radius: 4px;
+  min-width: 35px;
+  text-align: center;
+}
+
+.coach-section {
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.coach-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+.coach-label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.coach-name {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+/* No Lineups */
+.no-lineups {
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+  font-size: 1.1rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .lineups-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .lineups-section {
+    padding: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+  }
+
+  .lineups-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .team-logo-large {
+    width: 48px;
+    height: 48px;
+  }
+
+  .team-name {
+    font-size: 1.1rem;
+  }
+
+  .formation {
+    font-size: 0.9rem;
+  }
+
+  .player-item {
+    grid-template-columns: 35px 1fr auto;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+  }
+
+  .player-number {
+    font-size: 0.85rem;
+    min-width: 25px;
+  }
+
+  .player-name {
+    font-size: 0.85rem;
+  }
+
+  .player-position {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+    min-width: 30px;
+  }
+}
+

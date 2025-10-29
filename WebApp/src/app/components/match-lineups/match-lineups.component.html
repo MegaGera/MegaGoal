@@ -1,0 +1,104 @@
+<div class="lineups-section" *ngIf="lineups && lineups.length > 0">
+  <h2 class="section-title">Lineups</h2>
+  
+  <div class="lineups-container">
+    <!-- Home Team -->
+    <div class="team-lineup" *ngIf="getHomeLineup()">
+      <div class="team-header">
+        <img 
+          [src]="images.getRouteImageTeam(getHomeLineup()!.team.id)" 
+          [alt]="getHomeLineup()!.team.name" 
+          class="team-logo-large"
+          onerror="this.src='assets/default-team.png'">
+        <h3 class="team-name">{{ getHomeLineup()!.team.name }}</h3>
+        <div class="formation" *ngIf="getHomeLineup()!.formation">
+          {{ getHomeLineup()!.formation }}
+        </div>
+      </div>
+
+      <!-- Starting XI -->
+      <div class="players-section">
+        <h4 class="section-subtitle">Starting XI</h4>
+        <div class="players-list">
+          <app-player-item 
+            *ngFor="let player of getHomeLineup()!.startXI"
+            [player]="player.player"
+            [isSubstitute]="false">
+          </app-player-item>
+        </div>
+      </div>
+
+      <!-- Substitutes -->
+      <div class="players-section" *ngIf="getHomeLineup()!.substitutes && getHomeLineup()!.substitutes.length > 0">
+        <h4 class="section-subtitle">Substitutes</h4>
+        <div class="players-list">
+          <app-player-item 
+            *ngFor="let player of getHomeLineup()!.substitutes"
+            [player]="player.player"
+            [isSubstitute]="true">
+          </app-player-item>
+        </div>
+      </div>
+
+      <!-- Coach -->
+      <div class="coach-section" *ngIf="getHomeLineup()!.coach">
+        <div class="coach-item">
+          <span class="coach-label">Coach:</span>
+          <span class="coach-name">{{ getHomeLineup()!.coach!.name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Away Team -->
+    <div class="team-lineup" *ngIf="getAwayLineup()">
+      <div class="team-header">
+        <img 
+          [src]="images.getRouteImageTeam(getAwayLineup()!.team.id)" 
+          [alt]="getAwayLineup()!.team.name" 
+          class="team-logo-large"
+          onerror="this.src='assets/default-team.png'">
+        <h3 class="team-name">{{ getAwayLineup()!.team.name }}</h3>
+        <div class="formation" *ngIf="getAwayLineup()!.formation">
+          {{ getAwayLineup()!.formation }}
+        </div>
+      </div>
+
+      <!-- Starting XI -->
+      <div class="players-section">
+        <h4 class="section-subtitle">Starting XI</h4>
+        <div class="players-list">
+          <app-player-item 
+            *ngFor="let player of getAwayLineup()!.startXI"
+            [player]="player.player"
+            [isSubstitute]="false">
+          </app-player-item>
+        </div>
+      </div>
+
+      <!-- Substitutes -->
+      <div class="players-section" *ngIf="getAwayLineup()!.substitutes && getAwayLineup()!.substitutes.length > 0">
+        <h4 class="section-subtitle">Substitutes</h4>
+        <div class="players-list">
+          <app-player-item 
+            *ngFor="let player of getAwayLineup()!.substitutes"
+            [player]="player.player"
+            [isSubstitute]="true">
+          </app-player-item>
+        </div>
+      </div>
+
+      <!-- Coach -->
+      <div class="coach-section" *ngIf="getAwayLineup()!.coach">
+        <div class="coach-item">
+          <span class="coach-label">Coach:</span>
+          <span class="coach-name">{{ getAwayLineup()!.coach!.name }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- No Lineups Message -->
+<div class="no-lineups" *ngIf="!lineups || lineups.length === 0">
+  <p>No lineups available for this match</p>
+</div>

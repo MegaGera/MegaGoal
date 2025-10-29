@@ -14,6 +14,37 @@
   color: #333;
 }
 
+/* Teams Header */
+.teams-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.team-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.team-logo-large {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.team-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  text-align: center;
+}
+
 .stat-item {
   margin-bottom: 1.5rem;
 }
@@ -99,6 +130,10 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.admin-actions {
+  margin-top: 1.5rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .statistics-section {
@@ -120,6 +155,22 @@
 
   .section-title {
     font-size: 1.4rem;
+  }
+
+  .teams-header {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .team-logo-large {
+    width: 48px;
+    height: 48px;
+  }
+
+  .team-name {
+    font-size: 1.1rem;
   }
 
   .stat-bar {

@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TeamStatistics } from '../../models/realMatch';
+import { ImagesService } from '../../services/images.service';
 
 @Component({
   selector: 'app-match-statistics',
@@ -12,6 +13,12 @@ import { TeamStatistics } from '../../models/realMatch';
 export class MatchStatisticsComponent {
   @Input() homeStatistics!: TeamStatistics;
   @Input() awayStatistics!: TeamStatistics;
+  @Input() isAdmin: boolean = false;
+  @Input() isFinished: boolean = false;
+  @Input() isUpdating: boolean = false;
+  @Output() updateStatistics = new EventEmitter<void>();
+
+  constructor(public images: ImagesService) {}
 
   getStatValue(statistics: TeamStatistics, type: string): string | number {
     if (!statistics) return '-';
@@ -53,7 +60,7 @@ export class MatchStatisticsComponent {
   getMaxValue(type: string): number {
     const homeVal = this.getStatNumber(this.homeStatistics, type);
     const awayVal = this.getStatNumber(this.awayStatistics, type);
-    return Math.max(homeVal, awayVal, 1); // At least 1 to avoid division by zero
+    return Math.max(homeVal, awayVal, 1);
   }
 
   getBarPercentage(statistics: TeamStatistics, type: string): number {
@@ -67,5 +74,8 @@ export class MatchStatisticsComponent {
     }
     return 0;
   }
-}
 
+  onUpdateStatistics(): void {
+    this.updateStatistics.emit();
+  }
+}

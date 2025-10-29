@@ -14,12 +14,14 @@ import { RealMatch, TeamStatistics } from '../../models/realMatch';
 import { isFinishedStatus } from '../../config/matchStatus';
 import { LeagueHeaderComponent } from '../league-header/league-header.component';
 import { GeneralMatchCardComponent } from '../general-match-card/general-match-card.component';
+import { MatchEventsComponent } from '../match-events/match-events.component';
 import { MatchStatisticsComponent } from '../match-statistics/match-statistics.component';
+import { MatchLineupsComponent } from '../match-lineups/match-lineups.component';
 
 @Component({
   selector: 'app-match-info',
   standalone: true,
-  imports: [CommonModule, LeagueHeaderComponent, GeneralMatchCardComponent, MatchStatisticsComponent],
+  imports: [CommonModule, LeagueHeaderComponent, GeneralMatchCardComponent, MatchEventsComponent, MatchStatisticsComponent, MatchLineupsComponent],
   templateUrl: './match-info.component.html',
   styleUrl: './match-info.component.css',
   providers: [ImagesService]
@@ -95,5 +97,6 @@ export class MatchInfoComponent {
       }
     });
   }
+
 }
 

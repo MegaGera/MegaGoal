@@ -23,25 +23,37 @@
     </div>
   </div>
 
-  <!-- Match Statistics Component -->
-  <app-match-statistics 
-    *ngIf="homeStatistics && awayStatistics"
-    [homeStatistics]="homeStatistics"
-    [awayStatistics]="awayStatistics">
-  </app-match-statistics>
+  <!-- Match Events Section -->
+  <app-match-events 
+    *ngIf="match.events"
+    [events]="match.events"
+    [homeTeamId]="match.teams.home.id"
+    [awayTeamId]="match.teams.away.id">
+  </app-match-events>
 
-  <!-- No Statistics Message -->
-  <div class="no-statistics" *ngIf="!homeStatistics || !awayStatistics">
-    <p>This match don't have statistics yet</p>
-    
-    <!-- Admin-only update button -->
-    <div class="admin-actions" *ngIf="isAdmin && isFinished()">
-      <button 
-        class="btn btn-primary btn-sm" 
-        (click)="updateStatistics()" 
-        [disabled]="isUpdating">
-        {{ isUpdating ? 'Updating...' : 'Update Statistics' }}
-      </button>
+  <!-- Statistics and Lineups Two-Column Layout -->
+  <div class="stats-lineups-container">
+    <!-- Match Statistics Section - Left Column (35%) -->
+    <div class="stats-column">
+      <app-match-statistics
+        *ngIf="homeStatistics && awayStatistics"
+        [homeStatistics]="homeStatistics"
+        [awayStatistics]="awayStatistics"
+        [isAdmin]="isAdmin"
+        [isFinished]="isFinished()"
+        [isUpdating]="isUpdating"
+        (updateStatistics)="updateStatistics()">
+      </app-match-statistics>
+    </div>
+
+    <!-- Match Lineups Section - Right Column (65%) -->
+    <div class="lineups-column">
+      <app-match-lineups
+        *ngIf="match.lineups"
+        [lineups]="match.lineups"
+        [homeTeamId]="match.teams.home.id"
+        [awayTeamId]="match.teams.away.id">
+      </app-match-lineups>
     </div>
   </div>
 
@@ -52,4 +64,3 @@
   <div class="spinner"></div>
   <p>Loading match information...</p>
 </div>
-

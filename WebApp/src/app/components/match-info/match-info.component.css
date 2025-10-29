@@ -1,8 +1,8 @@
+/* Match Info Container */
 .match-info-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -13,24 +13,22 @@
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
-  margin-bottom: 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .score-row {
   display: flex;
-  justify-content: space-between;
-  padding: 0.75rem;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.score-row:last-child {
-  border-bottom: none;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
 }
 
 .score-label {
   font-weight: 600;
-  color: #555;
+  color: #666;
 }
 
 .score-value {
@@ -38,65 +36,21 @@
   font-weight: 500;
 }
 
-/* No Statistics */
-.no-statistics {
-  text-align: center;
-  padding: 3rem;
-  color: #999;
-  font-size: 1.1rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Statistics and Lineups Container */
+.stats-lineups-container {
+  display: grid;
+  grid-template-columns: 35% 65%;
+  gap: 2rem;
 }
 
-/* Admin Actions */
-.admin-actions {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 12px;
-}
-
-.btn-primary {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #2563eb;
-  border-color: #2563eb;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Loading */
+/* Loading State */
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 50vh;
-  gap: 1rem;
+  padding: 4rem 2rem;
+  text-align: center;
 }
 
 .spinner {
@@ -106,6 +60,7 @@
   border-top: 4px solid #667eea;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -114,9 +69,15 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  .match-info-container {
-    padding: 1rem;
+@media (max-width: 1024px) {
+  .stats-lineups-container {
+    grid-template-columns: 1fr;
   }
 }
 
+@media (max-width: 768px) {
+  .match-info-container {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+}

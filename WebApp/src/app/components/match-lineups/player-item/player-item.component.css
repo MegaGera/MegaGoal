@@ -1,0 +1,133 @@
+/* Player Row - Modern card style similar to admin-leagues */
+.player-row {
+  background: white;
+  border-radius: 12px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.player-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #dc143c, #ff6b6b);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.player-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+  border-color: #dc143c;
+}
+
+.player-row:hover::before {
+  transform: scaleY(1);
+}
+
+.player-row.player-substitute {
+  opacity: 0.85;
+  background: #f8f9fa;
+}
+
+.player-row.player-substitute:hover {
+  opacity: 1;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.player-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: white;
+  border: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.player-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.player-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-number {
+  font-size: 14px;
+  color: #dc143c;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: #fee;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.player-position {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .player-row {
+    padding: 6px 12px;
+  }
+
+  .player-image {
+    width: 36px;
+    height: 36px;
+  }
+
+  .player-details {
+    gap: 8px;
+  }
+
+  .player-name {
+    font-size: 13px;
+  }
+
+  .player-number {
+    font-size: 12px;
+    padding: 1px 6px;
+  }
+
+  .player-position {
+    font-size: 11px;
+    padding: 1px 6px;
+  }
+}
+

@@ -1,6 +1,27 @@
 <div class="statistics-section" *ngIf="homeStatistics && awayStatistics">
   <h2 class="section-title">Match Statistics</h2>
   
+  <!-- Team Headers -->
+  <div class="teams-header">
+    <div class="team-header">
+      <img 
+        [src]="images.getRouteImageTeam(homeStatistics.team.id)" 
+        [alt]="homeStatistics.team.name" 
+        class="team-logo-large"
+        onerror="this.src='assets/default-team.png'">
+      <h3 class="team-name">{{ homeStatistics.team.name }}</h3>
+    </div>
+    
+    <div class="team-header">
+      <img 
+        [src]="images.getRouteImageTeam(awayStatistics.team.id)" 
+        [alt]="awayStatistics.team.name" 
+        class="team-logo-large"
+        onerror="this.src='assets/default-team.png'">
+      <h3 class="team-name">{{ awayStatistics.team.name }}</h3>
+    </div>
+  </div>
+  
   <div class="stat-item" *ngFor="let stat of homeStatistics.statistics">
     <div class="stat-row">
       <span class="stat-value home">{{ getStatValue(homeStatistics, stat.type) }}</span>
@@ -22,6 +43,15 @@
 
 <!-- No Statistics Message -->
 <div class="no-statistics" *ngIf="!homeStatistics || !awayStatistics">
-  <p>No statistics available for this match</p>
+  <p>This match don't have statistics yet</p>
+  
+  <!-- Admin-only update button -->
+  <div class="admin-actions" *ngIf="isAdmin && isFinished">
+    <button 
+      class="btn btn-primary btn-sm" 
+      (click)="onUpdateStatistics()" 
+      [disabled]="isUpdating">
+      {{ isUpdating ? 'Updating...' : 'Update Statistics' }}
+    </button>
+  </div>
 </div>
-

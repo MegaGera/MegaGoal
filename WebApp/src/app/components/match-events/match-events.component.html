@@ -1,0 +1,45 @@
+<div class="events-section" *ngIf="events && events.length > 0">
+  <h2 class="section-title">Match Events</h2>
+  
+  <div class="timeline-container">
+    <div class="timeline-vertical">
+      <div 
+        class="event-card" 
+        *ngFor="let event of getSortedEvents()"
+        [ngClass]="getEventClass(event)">
+        
+        <!-- Home Team Event (Left Side) -->
+        <div class="event-content-home" *ngIf="isHomeTeam(event)">
+          <div class="event-main">
+            <div class="event-icon">{{ getEventIcon(event) }}</div>
+            <div class="event-details">
+              <div class="event-type" *ngIf="getEventDetailDisplay(event)">{{ getEventDetailDisplay(event) }}</div>
+              <div class="event-player">{{ getEventDescription(event) }}</div>
+            </div>
+          </div>
+          <div class="event-time">{{ formatTime(event) }}</div>
+        </div>
+
+        <!-- Away Team Event (Right Side) -->
+        <div class="event-content-away" *ngIf="!isHomeTeam(event)">
+          <div class="event-time">{{ formatTime(event) }}</div>
+          <div class="event-main">
+            <div class="event-icon">{{ getEventIcon(event) }}</div>
+            <div class="event-details">
+              <div class="event-type" *ngIf="getEventDetailDisplay(event)">{{ getEventDetailDisplay(event) }}</div>
+              <div class="event-player">{{ getEventDescription(event) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline Dot -->
+        <div class="timeline-dot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- No Events Message -->
+<div class="no-events" *ngIf="!events || events.length === 0">
+  <p>No events available for this match</p>
+</div>
