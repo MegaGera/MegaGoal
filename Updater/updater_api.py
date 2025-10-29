@@ -124,8 +124,11 @@ class MultiSeasonUpdateRequest(BaseModel):
     update_teams: bool = False
     update_players: bool = False
     update_statistics: bool = False
+    update_statistics_missing: bool = False
     update_lineups: bool = False
+    update_lineups_missing: bool = False
     update_events: bool = False
+    update_events_missing: bool = False
 
 @app.get("/health/")
 async def health_check():
@@ -184,6 +187,32 @@ async def update_match_statistics(req: UpdateStatisticsRequest, request: Request
         success = updater.update_match_statistics(req.fixture_id)
         if success:
             return {"status": "success", "message": f"Updated statistics for fixture {req.fixture_id}"}
+        else:
+            return {"status": "not_found", "message": f"No real_match found for fixture {req.fixture_id}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_match_lineups/")
+async def update_match_lineups(req: UpdateStatisticsRequest, request: Request):
+    await validate_admin(request)
+    updater = LineupsUpdater()
+    try:
+        success = updater.update_match_lineups(req.fixture_id)
+        if success:
+            return {"status": "success", "message": f"Updated lineups for fixture {req.fixture_id}"}
+        else:
+            return {"status": "not_found", "message": f"No real_match found for fixture {req.fixture_id}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_match_events/")
+async def update_match_events(req: UpdateStatisticsRequest, request: Request):
+    await validate_admin(request)
+    updater = EventsUpdater()
+    try:
+        success = updater.update_match_events(req.fixture_id)
+        if success:
+            return {"status": "success", "message": f"Updated events for fixture {req.fixture_id}"}
         else:
             return {"status": "not_found", "message": f"No real_match found for fixture {req.fixture_id}"}
     except Exception as e:
@@ -279,10 +308,24 @@ async def update_league_lineups(req: UpdateLeagueLineupsRequest, request: Reques
     await validate_admin(request)
     updater = LineupsUpdater()
     try:
-        lineup_count = updater.update_lineups_by_league_and_season(req.league_id, req.season)
+        lineup_count = updater.update_lineups_by_league_and_season_full(req.league_id, req.season)
         return {
             "status": "success", 
             "message": f"Updated {lineup_count} lineups for league {req.league_id}, season {req.season}",
+            "lineups_count": lineup_count
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_league_lineups_missing/")
+async def update_league_lineups_missing(req: UpdateLeagueLineupsRequest, request: Request):
+    await validate_admin(request)
+    updater = LineupsUpdater()
+    try:
+        lineup_count = updater.update_lineups_by_league_and_season_missing(req.league_id, req.season)
+        return {
+            "status": "success", 
+            "message": f"Updated {lineup_count} missing lineups for league {req.league_id}, season {req.season}",
             "lineups_count": lineup_count
         }
     except Exception as e:
@@ -293,10 +336,24 @@ async def update_league_events(req: UpdateLeagueEventsRequest, request: Request)
     await validate_admin(request)
     updater = EventsUpdater()
     try:
-        events_count = updater.update_events_by_league_and_season(req.league_id, req.season)
+        events_count = updater.update_events_by_league_and_season_full(req.league_id, req.season)
         return {
             "status": "success", 
             "message": f"Updated {events_count} events for league {req.league_id}, season {req.season}",
+            "events_count": events_count
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_league_events_missing/")
+async def update_league_events_missing(req: UpdateLeagueEventsRequest, request: Request):
+    await validate_admin(request)
+    updater = EventsUpdater()
+    try:
+        events_count = updater.update_events_by_league_and_season_missing(req.league_id, req.season)
+        return {
+            "status": "success", 
+            "message": f"Updated {events_count} missing events for league {req.league_id}, season {req.season}",
             "events_count": events_count
         }
     except Exception as e:
@@ -307,10 +364,24 @@ async def update_league_statistics(req: UpdateLeagueStatisticsRequest, request: 
     await validate_admin(request)
     updater = StatisticsUpdater()
     try:
-        statistics_count = updater.update_statistics_by_league_and_season(req.league_id, req.season)
+        statistics_count = updater.update_statistics_by_league_and_season_full(req.league_id, req.season)
         return {
             "status": "success", 
             "message": f"Updated {statistics_count} statistics for league {req.league_id}, season {req.season}",
+            "statistics_count": statistics_count
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_league_statistics_missing/")
+async def update_league_statistics_missing(req: UpdateLeagueStatisticsRequest, request: Request):
+    await validate_admin(request)
+    updater = StatisticsUpdater()
+    try:
+        statistics_count = updater.update_statistics_by_league_and_season_missing(req.league_id, req.season)
+        return {
+            "status": "success", 
+            "message": f"Updated {statistics_count} missing statistics for league {req.league_id}, season {req.season}",
             "statistics_count": statistics_count
         }
     except Exception as e:
@@ -321,7 +392,7 @@ async def multi_season_update(req: MultiSeasonUpdateRequest, request: Request):
     await validate_admin(request)
     
     logger.info(f"Starting multi-season update for league {req.league_id} from season {req.season_from} to {req.season_to}")
-    logger.info(f"Update options: matches={req.update_matches}, teams={req.update_teams}, players={req.update_players}, statistics={req.update_statistics}, lineups={req.update_lineups}, events={req.update_events}")
+    logger.info(f"Update options: matches={req.update_matches}, teams={req.update_teams}, players={req.update_players}, statistics={req.update_statistics}, statistics_missing={req.update_statistics_missing}, lineups={req.update_lineups}, lineups_missing={req.update_lineups_missing}, events={req.update_events}, events_missing={req.update_events_missing}")
     
     results = {
         "league_id": req.league_id,
@@ -333,8 +404,11 @@ async def multi_season_update(req: MultiSeasonUpdateRequest, request: Request):
             "teams": 0,
             "players": 0,
             "statistics": 0,
+            "statistics_missing": 0,
             "lineups": 0,
-            "events": 0
+            "lineups_missing": 0,
+            "events": 0,
+            "events_missing": 0
         }
     }
     
@@ -364,26 +438,47 @@ async def multi_season_update(req: MultiSeasonUpdateRequest, request: Request):
                 season_result["updates"]["players"] = "completed"
                 results["total_updates"]["players"] += 1
             
-            # Update statistics
+            # Update statistics (full)
             if req.update_statistics:
                 updater = StatisticsUpdater()
-                updater.update_statistics_by_league_and_season(req.league_id, season)
+                updater.update_statistics_by_league_and_season_full(req.league_id, season)
                 season_result["updates"]["statistics"] = "completed"
                 results["total_updates"]["statistics"] += 1
             
-            # Update lineups
+            # Update statistics (missing only)
+            if req.update_statistics_missing:
+                updater = StatisticsUpdater()
+                updater.update_statistics_by_league_and_season_missing(req.league_id, season)
+                season_result["updates"]["statistics_missing"] = "completed"
+                results["total_updates"]["statistics_missing"] += 1
+            
+            # Update lineups (full)
             if req.update_lineups:
                 updater = LineupsUpdater()
-                updater.update_lineups_by_league_and_season(req.league_id, season)
+                updater.update_lineups_by_league_and_season_full(req.league_id, season)
                 season_result["updates"]["lineups"] = "completed"
                 results["total_updates"]["lineups"] += 1
             
-            # Update events
+            # Update lineups (missing only)
+            if req.update_lineups_missing:
+                updater = LineupsUpdater()
+                updater.update_lineups_by_league_and_season_missing(req.league_id, season)
+                season_result["updates"]["lineups_missing"] = "completed"
+                results["total_updates"]["lineups_missing"] += 1
+            
+            # Update events (full)
             if req.update_events:
                 updater = EventsUpdater()
-                updater.update_events_by_league_and_season(req.league_id, season)
+                updater.update_events_by_league_and_season_full(req.league_id, season)
                 season_result["updates"]["events"] = "completed"
                 results["total_updates"]["events"] += 1
+            
+            # Update events (missing only)
+            if req.update_events_missing:
+                updater = EventsUpdater()
+                updater.update_events_by_league_and_season_missing(req.league_id, season)
+                season_result["updates"]["events_missing"] = "completed"
+                results["total_updates"]["events_missing"] += 1
             
             results["seasons_processed"].append(season_result)
             logger.info(f"Season {season} processing completed for league {req.league_id}")

@@ -1,4 +1,5 @@
 <div class="match-row" [class.priority-match]="!showStatsBadge" [class.has-stats]="hasStatistics()" [class.not-started]="isNotStarted()">
+  <a class="match-id" [routerLink]="['/app/match']" [queryParams]="{ id: match.fixture.id }" title="View match details">#{{ match.fixture.id }}</a>
   <div class="teams">
     <img [src]="'https://server.megamedia.megagera.com/megagoal/teams/team_' + match.teams.home.id + '.png'" 
          [alt]="match.teams.home.name" 
@@ -15,14 +16,12 @@
     <span class="date">{{ match.fixture.date | date: 'dd/MM/yyyy' }}</span>
     
     @if (match.usernames && match.usernames.length > 0) {
-      <span class="usernames" 
-            [title]="match.usernames.length === 1 ? '' : match.usernames.join(', ')"
-            [class.single-user]="match.usernames.length === 1"
-            [class.multiple-users]="match.usernames.length > 1">
+      <span class="usernames users" 
+            [title]="match.usernames.join(', ')">
         @if (match.usernames.length === 1) {
-          👤 {{ match.usernames[0] }}
+          👤 {{ match.usernames.length }}
         } @else {
-          👥 {{ match.usernames.length }} users
+          👥 {{ match.usernames.length }}
         }
       </span>
     }
@@ -30,6 +29,12 @@
     @if (showStatsBadge && !isNotStarted()) {
       <span class="badge" [class.badge-success]="hasStatistics()" [class.badge-danger]="!hasStatistics()">
         {{ hasStatistics() ? '✓ Stats' : '✕ No stats' }}
+      </span>
+      <span class="badge" [class.badge-success]="hasLineups()" [class.badge-danger]="!hasLineups()">
+        {{ hasLineups() ? '✓ Lineups' : '✕ No lineups' }}
+      </span>
+      <span class="badge" [class.badge-success]="hasEvents()" [class.badge-danger]="!hasEvents()">
+        {{ hasEvents() ? '✓ Events' : '✕ No events' }}
       </span>
     }
     
@@ -51,6 +56,18 @@
         (click)="onUpdateStatistics()" 
         [disabled]="isUpdating">
         {{ isUpdating ? 'Updating...' : 'Update stats' }}
+      </button>
+      <button 
+        class="btn btn-sm btn-primary" 
+        (click)="onUpdateLineups()" 
+        [disabled]="isUpdatingLineups">
+        {{ isUpdatingLineups ? 'Updating...' : 'Update lineups' }}
+      </button>
+      <button 
+        class="btn btn-sm btn-primary" 
+        (click)="onUpdateEvents()" 
+        [disabled]="isUpdatingEvents">
+        {{ isUpdatingEvents ? 'Updating...' : 'Update events' }}
       </button>
     }
   </div>

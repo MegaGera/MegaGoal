@@ -130,7 +130,7 @@ export const getRealMatchesWithoutStatistics = async (req, res) => {
 
     // Step 2: Use aggregation to get real matches with usernames
     const pipeline = [
-      // Match real matches without statistics
+      // Match real matches without statistics, lineups or events
       {
         $match: {
           'fixture.id': { $in: userMatchFixtureIds },
@@ -138,6 +138,16 @@ export const getRealMatchesWithoutStatistics = async (req, res) => {
             { 'statistics': { $exists: false } },
             { 'statistics': null },
             { 'statistics': { $size: 0 } }
+          ],
+          $or: [
+            { 'lineups': { $exists: false } },
+            { 'lineups': null },
+            { 'lineups': { $size: 0 } }
+          ],
+          $or: [
+            { 'events': { $exists: false } },
+            { 'events': null },
+            { 'events': { $size: 0 } }
           ]
         }
       },
@@ -194,6 +204,16 @@ export const getRealMatchesWithoutStatistics = async (req, res) => {
             { 'statistics': { $exists: false } },
             { 'statistics': null },
             { 'statistics': { $size: 0 } }
+          ],
+          $or: [
+            { 'lineups': { $exists: false } },
+            { 'lineups': null },
+            { 'lineups': { $size: 0 } }
+          ],
+          $or: [
+            { 'events': { $exists: false } },
+            { 'events': null },
+            { 'events': { $size: 0 } }
           ]
         }
       },
@@ -215,7 +235,7 @@ export const getRealMatchesWithoutStatistics = async (req, res) => {
       ])
       .toArray();
 
-    console.log(`Real Matches without statistics found: ${matches.length} of ${total} total (page ${page}/${totalPages})`);
+    console.log(`Real Matches without statistics, lineups or events found: ${matches.length} of ${total} total (page ${page}/${totalPages})`);
     
     res.send({
       matches,
@@ -224,7 +244,7 @@ export const getRealMatchesWithoutStatistics = async (req, res) => {
       totalPages
     });
   } catch (error) {
-    console.error("Error getting real matches without statistics:", error);
+    console.error("Error getting real matches without statistics, lineups or events:", error);
     res.status(500).json({ message: error.message });
   }
 }

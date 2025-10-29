@@ -52,11 +52,15 @@
                   [match]="m"
                   [isMarkedForLanding]="true"
                   [isUpdating]="updatingFixtureId === m.fixture.id"
+                  [isUpdatingLineups]="updatingLineupsFixtureId === m.fixture.id"
+                  [isUpdatingEvents]="updatingEventsFixtureId === m.fixture.id"
                   [isMarking]="markingFixtureId === m.fixture.id"
                   [showStatsBadge]="!isNotStarted(m)"
                   [showUpdateButton]="!isNotStarted(m)"
                   [showLandingButton]="true"
                   (updateStatistics)="updateStatistics($event)"
+                  (updateLineups)="updateLineups($event)"
+                  (updateEvents)="updateEvents($event)"
                   (toggleLanding)="toggleLandingMatch($event)">
                 </app-admin-match-row>
               }
@@ -71,8 +75,7 @@
       <!-- Matches Without Statistics Tab -->
       @if (activeTab === 'without-stats') {
         <div class="priority-section">
-          <h2 class="subsection-title">User Matches Without Statistics</h2>
-          <p class="subsection-description">These are matches tracked by users that need statistics ({{ totalMatches }} total)</p>
+          <h2 class="subsection-title">User Matches Tracked Without Statistics, Lineups or Events</h2>
           
           @if (loadingWithoutStats) {
             <div class="text-center">
@@ -87,11 +90,15 @@
                   [match]="m"
                   [isMarkedForLanding]="isMarkedForLanding(m)"
                   [isUpdating]="updatingFixtureId === m.fixture.id"
+                  [isUpdatingLineups]="updatingLineupsFixtureId === m.fixture.id"
+                  [isUpdatingEvents]="updatingEventsFixtureId === m.fixture.id"
                   [isMarking]="markingFixtureId === m.fixture.id"
                   [showStatsBadge]="!isNotStarted(m)"
                   [showUpdateButton]="!isNotStarted(m)"
                   [showLandingButton]="true"
                   (updateStatistics)="updateStatistics($event)"
+                  (updateLineups)="updateLineups($event)"
+                  (updateEvents)="updateEvents($event)"
                   (toggleLanding)="toggleLandingMatch($event)">
                 </app-admin-match-row>
               }
@@ -173,6 +180,18 @@
               </button>
               <button 
                 class="toggle-button" 
+                [class.active]="showOnlyWithoutLineups"
+                (click)="showOnlyWithoutLineups = !showOnlyWithoutLineups; onToggleFilterChange()">
+                <span class="toggle-label">Without Lineups</span>
+              </button>
+              <button 
+                class="toggle-button" 
+                [class.active]="showOnlyWithoutEvents"
+                (click)="showOnlyWithoutEvents = !showOnlyWithoutEvents; onToggleFilterChange()">
+                <span class="toggle-label">Without Events</span>
+              </button>
+              <button 
+                class="toggle-button" 
                 [class.active]="sortByDateDesc"
                 (click)="sortByDateDesc = !sortByDateDesc; onToggleFilterChange()">
                 <span class="toggle-label">{{ sortByDateDesc ? 'Newest First' : 'Oldest First' }}</span>
@@ -193,11 +212,15 @@
                   [match]="m"
                   [isMarkedForLanding]="isMarkedForLanding(m)"
                   [isUpdating]="updatingFixtureId === m.fixture.id"
+                  [isUpdatingLineups]="updatingLineupsFixtureId === m.fixture.id"
+                  [isUpdatingEvents]="updatingEventsFixtureId === m.fixture.id"
                   [isMarking]="markingFixtureId === m.fixture.id"
                   [showStatsBadge]="!isNotStarted(m)"
                   [showUpdateButton]="!isNotStarted(m)"
                   [showLandingButton]="true"
                   (updateStatistics)="updateStatistics($event)"
+                  (updateLineups)="updateLineups($event)"
+                  (updateEvents)="updateEvents($event)"
                   (toggleLanding)="toggleLandingMatch($event)">
                 </app-admin-match-row>
               }

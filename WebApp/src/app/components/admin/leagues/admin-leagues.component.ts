@@ -23,6 +23,7 @@ export class AdminLeaguesComponent {
   leagues: League[] = [];
   leaguesSettings: LeaguesSettings[] = [];
   showSettingsModal: boolean = false;
+  showUpdateSections: boolean = false;
   selectedLeague: LeaguesSettings | null = null;
   selectedSeason: number | null = null;
   selectedDataUpdateSeason: number | null = null;
@@ -38,6 +39,9 @@ export class AdminLeaguesComponent {
   isUpdateLineupsLoading: boolean = false;
   isUpdateEventsLoading: boolean = false;
   isUpdateStatisticsLoading: boolean = false;
+  isUpdateStatisticsMissingLoading: boolean = false;
+  isUpdateLineupsMissingLoading: boolean = false;
+  isUpdateEventsMissingLoading: boolean = false;
   isMultiUpdateLoading: boolean = false;
   
   multiUpdateOptions = {
@@ -45,8 +49,11 @@ export class AdminLeaguesComponent {
     teams: false,
     players: false,
     statistics: false,
+    statistics_missing: false,
     lineups: false,
-    events: false
+    lineups_missing: false,
+    events: false,
+    events_missing: false
   };
 
   shortSeasonsList: number[] = [2024, 2025];
@@ -126,6 +133,11 @@ export class AdminLeaguesComponent {
     this.selectedNewLeague = null;
     this.leagueSearchText = '';
     this.showSettingsModal = true;
+    this.showUpdateSections = false;
+  }
+
+  toggleUpdateSections(): void {
+    this.showUpdateSections = !this.showUpdateSections;
   }
 
   closeSettingsModal(): void {
@@ -318,6 +330,45 @@ export class AdminLeaguesComponent {
     });
   }
 
+  triggerStatisticsMissingUpdate(): void {
+    if (!this.selectedLeague || this.selectedDataUpdateSeason === null) return;
+    this.isUpdateStatisticsMissingLoading = true;
+    this.updater.updateLeagueStatisticsMissing(this.selectedLeague.league_id, this.selectedDataUpdateSeason).subscribe({
+      next: () => { 
+        this.isUpdateStatisticsMissingLoading = false;
+        console.log('Statistics (missing only) updated successfully');
+        this.getLeaguesSettings();
+      },
+      error: () => { this.isUpdateStatisticsMissingLoading = false; }
+    });
+  }
+
+  triggerLineupsMissingUpdate(): void {
+    if (!this.selectedLeague || this.selectedDataUpdateSeason === null) return;
+    this.isUpdateLineupsMissingLoading = true;
+    this.updater.updateLeagueLineupsMissing(this.selectedLeague.league_id, this.selectedDataUpdateSeason).subscribe({
+      next: () => { 
+        this.isUpdateLineupsMissingLoading = false;
+        console.log('Lineups (missing only) updated successfully');
+        this.getLeaguesSettings();
+      },
+      error: () => { this.isUpdateLineupsMissingLoading = false; }
+    });
+  }
+
+  triggerEventsMissingUpdate(): void {
+    if (!this.selectedLeague || this.selectedDataUpdateSeason === null) return;
+    this.isUpdateEventsMissingLoading = true;
+    this.updater.updateLeagueEventsMissing(this.selectedLeague.league_id, this.selectedDataUpdateSeason).subscribe({
+      next: () => { 
+        this.isUpdateEventsMissingLoading = false;
+        console.log('Events (missing only) updated successfully');
+        this.getLeaguesSettings();
+      },
+      error: () => { this.isUpdateEventsMissingLoading = false; }
+    });
+  }
+
   // Multi-season update methods
   hasSelectedOptions(): boolean {
     return Object.values(this.multiUpdateOptions).some(option => option === true);
@@ -329,8 +380,11 @@ export class AdminLeaguesComponent {
       teams: true,
       players: true,
       statistics: true,
+      statistics_missing: true,
       lineups: true,
-      events: true
+      lineups_missing: true,
+      events: true,
+      events_missing: true
     };
   }
 
@@ -340,8 +394,11 @@ export class AdminLeaguesComponent {
       teams: false,
       players: false,
       statistics: false,
+      statistics_missing: false,
       lineups: false,
-      events: false
+      lineups_missing: false,
+      events: false,
+      events_missing: false
     };
   }
 

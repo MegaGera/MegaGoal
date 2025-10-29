@@ -106,6 +106,28 @@ export class UpdaterService {
   }
 
   /**
+   * Update lineups for a specific fixture
+   */
+  updateMatchLineups(fixture_id: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_match_lineups/',
+      { fixture_id },
+      this.options
+    );
+  }
+
+  /**
+   * Update events for a specific fixture
+   */
+  updateMatchEvents(fixture_id: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_match_events/',
+      { fixture_id },
+      this.options
+    );
+  }
+
+  /**
    * Update players for a specific page
    */
   updatePlayers(page: number): Observable<any> {
@@ -161,11 +183,44 @@ export class UpdaterService {
   }
 
   /**
-   * Update statistics for a league and season
+   * Update statistics for a league and season (full)
    */
   updateLeagueStatistics(league_id: number, season: number): Observable<any> {
     return this.http.post<any>(
       this.url + '/update_league_statistics/',
+      { league_id, season },
+      this.options
+    );
+  }
+
+  /**
+   * Update statistics for a league and season (missing only)
+   */
+  updateLeagueStatisticsMissing(league_id: number, season: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_league_statistics_missing/',
+      { league_id, season },
+      this.options
+    );
+  }
+
+  /**
+   * Update lineups for a league and season (missing only)
+   */
+  updateLeagueLineupsMissing(league_id: number, season: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_league_lineups_missing/',
+      { league_id, season },
+      this.options
+    );
+  }
+
+  /**
+   * Update events for a league and season (missing only)
+   */
+  updateLeagueEventsMissing(league_id: number, season: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_league_events_missing/',
       { league_id, season },
       this.options
     );
@@ -185,8 +240,11 @@ export class UpdaterService {
         update_teams: options.teams,
         update_players: options.players,
         update_statistics: options.statistics,
+        update_statistics_missing: options.statistics_missing,
         update_lineups: options.lineups,
-        update_events: options.events
+        update_lineups_missing: options.lineups_missing,
+        update_events: options.events,
+        update_events_missing: options.events_missing
       },
       this.options
     );

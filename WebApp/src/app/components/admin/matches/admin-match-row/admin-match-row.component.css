@@ -25,6 +25,27 @@
   border-left: 4px solid #f59e0b;
 }
 
+.match-id {
+  color: #9ca3af;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: 12px;
+  min-width: 50px;
+  font-family: monospace;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.match-id:hover {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.match-id:visited {
+  color: #9ca3af;
+}
+
 .teams {
   display: flex;
   align-items: center;
@@ -38,30 +59,30 @@
   object-fit: contain;
 }
 
-.team-name { 
-  min-width: 120px;
+.team-name {
   max-width: 160px; 
   white-space: nowrap; 
   overflow: hidden; 
   text-overflow: ellipsis;
   font-weight: 500;
+  font-size: 12px;
 }
 
 .vs { 
   margin: 0 12px; 
   font-weight: 700; 
-  font-size: 16px;
+  font-size: 13px;
   color: #374151;
 }
 
 .league { 
   color: #6b7280; 
-  font-size: 14px;
+  font-size: 11px;
 }
 
 .date {
   color: #6b7280;
-  font-size: 14px;
+  font-size: 11px;
   margin-left: 8px;
 }
 
@@ -73,13 +94,6 @@
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.usernames.single-user {
-  cursor: default;
-}
-
-.usernames.multiple-users {
   cursor: help;
 }
 

@@ -125,7 +125,19 @@
         </div>
         <div class="modal-body">
 
-          <!-- Update Season Section -->
+          <!-- Toggle Button for Update Sections -->
+          <div class="modal-section">
+            <button 
+              (click)="toggleUpdateSections()"
+              class="modal-action-btn toggle-updates-btn">
+              <span>{{ showUpdateSections ? 'Hide' : 'Show' }} Update Options</span>
+              <ng-icon [name]="showUpdateSections ? 'jamChevronUp' : 'jamChevronDown'" size="20"></ng-icon>
+            </button>
+          </div>
+
+          <!-- Update Sections (Collapsible) -->
+          @if (showUpdateSections) {
+            <!-- Update Season Section -->
           <div class="modal-section">
             <label for="season-selector">Current Season</label>
             <select id="season-selector" [(ngModel)]="selectedSeason">
@@ -169,19 +181,37 @@
                   (click)="triggerStatisticsUpdate()"
                   [disabled]="isUpdateStatisticsLoading"
                   class="modal-action-btn statistics-btn">
-                  {{ isUpdateStatisticsLoading ? 'Updating...' : 'Statistics' }}
+                  {{ isUpdateStatisticsLoading ? 'Updating...' : 'Statistics - Full' }}
                 </button>
                 <button 
                   (click)="triggerLineupsUpdate()"
                   [disabled]="isUpdateLineupsLoading"
                   class="modal-action-btn lineups-btn">
-                  {{ isUpdateLineupsLoading ? 'Updating...' : 'Lineups' }}
+                  {{ isUpdateLineupsLoading ? 'Updating...' : 'Lineups - Full' }}
                 </button>
                 <button 
                   (click)="triggerEventsUpdate()"
                   [disabled]="isUpdateEventsLoading"
                   class="modal-action-btn events-btn">
-                  {{ isUpdateEventsLoading ? 'Updating...' : 'Events' }}
+                  {{ isUpdateEventsLoading ? 'Updating...' : 'Events - Full' }}
+                </button>
+                <button 
+                  (click)="triggerStatisticsMissingUpdate()"
+                  [disabled]="isUpdateStatisticsMissingLoading"
+                  class="modal-action-btn statistics-btn">
+                  {{ isUpdateStatisticsMissingLoading ? 'Updating...' : 'Statistics - Missing' }}
+                </button>
+                <button 
+                  (click)="triggerLineupsMissingUpdate()"
+                  [disabled]="isUpdateLineupsMissingLoading"
+                  class="modal-action-btn lineups-btn">
+                  {{ isUpdateLineupsMissingLoading ? 'Updating...' : 'Lineups - Missing' }}
+                </button>
+                <button 
+                  (click)="triggerEventsMissingUpdate()"
+                  [disabled]="isUpdateEventsMissingLoading"
+                  class="modal-action-btn events-btn">
+                  {{ isUpdateEventsMissingLoading ? 'Updating...' : 'Events - Missing' }}
                 </button>
               </div>
             </div>
@@ -223,15 +253,27 @@
                   </label>
                   <label class="checkbox-item">
                     <input type="checkbox" [(ngModel)]="multiUpdateOptions.statistics">
-                    <span class="checkbox-label statistics-label">Statistics</span>
+                    <span class="checkbox-label statistics-label">Statistics - Full</span>
                   </label>
                   <label class="checkbox-item">
                     <input type="checkbox" [(ngModel)]="multiUpdateOptions.lineups">
-                    <span class="checkbox-label lineups-label">Lineups</span>
+                    <span class="checkbox-label lineups-label">Lineups - Full</span>
                   </label>
                   <label class="checkbox-item">
                     <input type="checkbox" [(ngModel)]="multiUpdateOptions.events">
-                    <span class="checkbox-label events-label">Events</span>
+                    <span class="checkbox-label events-label">Events - Full</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" [(ngModel)]="multiUpdateOptions.statistics_missing">
+                    <span class="checkbox-label statistics-label">Statistics - Missing</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" [(ngModel)]="multiUpdateOptions.lineups_missing">
+                    <span class="checkbox-label lineups-label">Lineups - Missing</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" [(ngModel)]="multiUpdateOptions.events_missing">
+                    <span class="checkbox-label events-label">Events - Missing</span>
                   </label>
                 </div>
               </div>
@@ -256,6 +298,7 @@
               </div>
             </div>
           </div>
+          }
 
           <!-- Available Seasons Status Table -->
           <div *ngIf="selectedLeague" class="modal-seasons-status-table">

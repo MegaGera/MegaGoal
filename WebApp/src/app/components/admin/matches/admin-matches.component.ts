@@ -43,12 +43,16 @@ export class AdminMatchesComponent {
   // Toggle filters for Search & Filter tab
   showOnlyFinished: boolean = true;
   showOnlyWithoutStats: boolean = true;
+  showOnlyWithoutLineups: boolean = true;
+  showOnlyWithoutEvents: boolean = true;
   sortByDateDesc: boolean = true;
 
   loading = false;
   loadingWithoutStats = false;
   loadingMarkedMatches = false;
   updatingFixtureId: number | null = null;
+  updatingLineupsFixtureId: number | null = null;
+  updatingEventsFixtureId: number | null = null;
 
   // Pagination for matches without statistics
   currentPage = 1;
@@ -170,6 +174,16 @@ export class AdminMatchesComponent {
       filtered = filtered.filter(match => !this.hasStatistics(match));
     }
 
+    // Filter by lineups
+    if (this.showOnlyWithoutLineups) {
+      filtered = filtered.filter(match => !this.hasLineups(match));
+    }
+
+    // Filter by events
+    if (this.showOnlyWithoutEvents) {
+      filtered = filtered.filter(match => !this.hasEvents(match));
+    }
+
     // Sort by date
     if (this.sortByDateDesc) {
       filtered.sort((a, b) => b.fixture.timestamp - a.fixture.timestamp);
@@ -194,6 +208,14 @@ export class AdminMatchesComponent {
     return Array.isArray((m as any).statistics) && ((m as any).statistics as any[]).length > 0;
   }
 
+  hasLineups(m: RealMatch): boolean {
+    return Array.isArray((m as any).lineups) && ((m as any).lineups as any[]).length > 0;
+  }
+
+  hasEvents(m: RealMatch): boolean {
+    return Array.isArray((m as any).events) && ((m as any).events as any[]).length > 0;
+  }
+
   isNotStarted(m: RealMatch): boolean {
     return isNotStartedStatus(m.fixture.status?.short);
   }
@@ -209,6 +231,36 @@ export class AdminMatchesComponent {
       },
       error: () => {
         this.updatingFixtureId = null;
+      }
+    });
+  }
+
+  updateLineups(m: RealMatch) {
+    this.updatingLineupsFixtureId = m.fixture.id;
+    this.updater.updateMatchLineups(m.fixture.id).subscribe({
+      next: () => {
+        this.updatingLineupsFixtureId = null;
+        this.applyFilters();
+        // Reload matches without statistics to update the list
+        this.loadMatchesWithoutStatistics(this.currentPage);
+      },
+      error: () => {
+        this.updatingLineupsFixtureId = null;
+      }
+    });
+  }
+
+  updateEvents(m: RealMatch) {
+    this.updatingEventsFixtureId = m.fixture.id;
+    this.updater.updateMatchEvents(m.fixture.id).subscribe({
+      next: () => {
+        this.updatingEventsFixtureId = null;
+        this.applyFilters();
+        // Reload matches without statistics to update the list
+        this.loadMatchesWithoutStatistics(this.currentPage);
+      },
+      error: () => {
+        this.updatingEventsFixtureId = null;
       }
     });
   }
