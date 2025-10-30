@@ -60,4 +60,21 @@ export interface FavouriteTeamStats {
     views_count: number;
   } | null;
   total_away_stadium_visits?: number;
+  top_goalscorer?: {
+    player_id: number;
+    player_name: string;
+    goals: number;
+    matches: number;
+  };
+  top_assist_provider?: {
+    player_id: number;
+    player_name: string;
+    assists: number;
+    matches: number;
+  };
+  most_watched_player?: {
+    player_id: number;
+    player_name: string;
+    matches: number;
+  };
 } 

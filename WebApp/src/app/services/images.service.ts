@@ -45,4 +45,11 @@ export class ImagesService {
     return this.url + "/teams/team_" + id + ".png"; 
   }
 
+  /*
+    Get the route for a player image
+  */
+  getRouteImagePlayer(id: number | string): string {
+    return `https://media.api-sports.io/football/players/${id}.png`;
+  }
+
 }

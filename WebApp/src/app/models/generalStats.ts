@@ -50,4 +50,21 @@ export interface GeneralStats {
     location_name: string;
     views_count: number;
   };
+  top_goalscorer?: {
+    player_id: number;
+    player_name: string;
+    goals: number;
+    matches: number;
+  };
+  top_assist_provider?: {
+    player_id: number;
+    player_name: string;
+    assists: number;
+    matches: number;
+  };
+  most_watched_player?: {
+    player_id: number;
+    player_name: string;
+    matches: number;
+  };
 } 

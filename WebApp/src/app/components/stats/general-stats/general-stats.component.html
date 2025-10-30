@@ -99,5 +99,37 @@
         [value]="generalStats.most_watched_stadium.location_name + ' - ' + generalStats.most_watched_stadium.views_count + ' times'">
       </app-mini-stat-card>
     }
+
+    <!-- Top Goalscorer -->
+    @if (generalStats.top_goalscorer) {
+      <app-mini-stat-card
+        type="top-goalscorer"
+        label="Top Goalscorer"
+        [value]="generalStats.top_goalscorer.player_name + ' - ' + generalStats.top_goalscorer.goals + ' goals'"
+        [subValue]="generalStats.top_goalscorer.goals + ' goals in ' + generalStats.top_goalscorer.matches + ' matches'"
+        [player_id]="generalStats.top_goalscorer.player_id">
+      </app-mini-stat-card>
+    }
+
+    <!-- Top Assist Provider -->
+    @if (generalStats.top_assist_provider) {
+      <app-mini-stat-card
+        type="top-assist-provider"
+        label="Top Assist Provider"
+        [value]="generalStats.top_assist_provider.player_name + ' - ' + generalStats.top_assist_provider.assists + ' assists'"
+        [subValue]="generalStats.top_assist_provider.assists + ' assists in ' + generalStats.top_assist_provider.matches + ' matches'"
+        [player_id]="generalStats.top_assist_provider.player_id">
+      </app-mini-stat-card>
+    }
+
+    <!-- Most Watched Player -->
+    @if (generalStats.most_watched_player) {
+      <app-mini-stat-card
+        type="most-watched-player"
+        label="Most Watched Player"
+        [value]="generalStats.most_watched_player.player_name + ' - ' + generalStats.most_watched_player.matches + ' matches'"
+        [player_id]="generalStats.most_watched_player.player_id">
+      </app-mini-stat-card>
+    }
   </app-general-card>
 } 

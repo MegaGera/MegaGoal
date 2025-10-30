@@ -35,11 +35,22 @@
   justify-content: center;
 }
 
+.stat-highlight-icon:has(.player-photo) {
+  width: 28px;
+}
+
 .team-badge {
   width: 16px;
   height: 16px;
   object-fit: contain;
   border-radius: 2px;
+}
+
+.player-photo {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .stat-highlight-content {
@@ -134,4 +145,16 @@
 
 .mini-stat-card.most-watched-stadium {
   border-left-color: #20c997;
+}
+
+.mini-stat-card.top-goalscorer {
+  border-left-color: #ff6b35;
+}
+
+.mini-stat-card.top-assist-provider {
+  border-left-color: #4ecdc4;
+}
+
+.mini-stat-card.most-watched-player {
+  border-left-color: #95e1d3;
 } 

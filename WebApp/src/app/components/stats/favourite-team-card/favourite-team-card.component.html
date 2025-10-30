@@ -141,6 +141,41 @@
           [interactable]="interactable">
         </app-mini-stat-card>
       }
+
+      <!-- Top Goalscorer -->
+      @if (teamStats.top_goalscorer) {
+        <app-mini-stat-card
+          type="top-goalscorer"
+          label="Top Goalscorer"
+          [value]="teamStats.top_goalscorer.player_name + ' - ' + teamStats.top_goalscorer.goals + ' goals'"
+          [subValue]="teamStats.top_goalscorer.goals + ' goals in ' + teamStats.top_goalscorer.matches + ' matches'"
+          [player_id]="teamStats.top_goalscorer.player_id"
+          [interactable]="interactable">
+        </app-mini-stat-card>
+      }
+
+      <!-- Top Assist Provider -->
+      @if (teamStats.top_assist_provider) {
+        <app-mini-stat-card
+          type="top-assist-provider"
+          label="Top Assist Provider"
+          [value]="teamStats.top_assist_provider.player_name + ' - ' + teamStats.top_assist_provider.assists + ' assists'"
+          [subValue]="teamStats.top_assist_provider.assists + ' assists in ' + teamStats.top_assist_provider.matches + ' matches'"
+          [player_id]="teamStats.top_assist_provider.player_id"
+          [interactable]="interactable">
+        </app-mini-stat-card>
+      }
+
+      <!-- Most Watched Player -->
+      @if (teamStats.most_watched_player) {
+        <app-mini-stat-card
+          type="most-watched-player"
+          label="Most Watched Player"
+          [value]="teamStats.most_watched_player.player_name + ' - ' + teamStats.most_watched_player.matches + ' matches'"
+          [player_id]="teamStats.most_watched_player.player_id"
+          [interactable]="interactable">
+        </app-mini-stat-card>
+      }
     </div>
   </app-general-card>
 } @else {

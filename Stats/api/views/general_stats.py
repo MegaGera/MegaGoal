@@ -109,6 +109,11 @@ class GeneralStatsAPIView(APIView):
         # Most watched stadium location
         most_watched_stadium = self._find_most_watched_stadium(matches_df, locations_df)
 
+        # Player stats from events and lineups
+        top_goalscorer = self._find_top_goalscorer(matches_df)
+        top_assist_provider = self._find_top_assist_provider(matches_df)
+        most_watched_player = self._find_most_watched_player(matches_df)
+
         return {
             'king_of_draws': draw_stats,
             'crazy_match': crazy_match,
@@ -117,7 +122,10 @@ class GeneralStatsAPIView(APIView):
             'most_boring_team': most_boring_team,
             'most_crazy_team': most_crazy_team,
             'most_watched_location': most_watched_location,
-            'most_watched_stadium': most_watched_stadium
+            'most_watched_stadium': most_watched_stadium,
+            'top_goalscorer': top_goalscorer,
+            'top_assist_provider': top_assist_provider,
+            'most_watched_player': most_watched_player
         }
 
     def _find_king_of_draws(self, matches_df):
@@ -467,4 +475,169 @@ class GeneralStatsAPIView(APIView):
             },
             'location': match_row.get('location', ''),
             'status': match_row.get('status', '')
+        }
+
+    def _find_top_goalscorer(self, matches_df):
+        """Find player with most goals across all watched matches"""
+        collection_real_matches = settings.MONGO_DB['real_matches']
+        player_goals = {}
+        
+        for _, match in matches_df.iterrows():
+            fixture_id = match['fixture']['id']
+            
+            # Get events from real_matches collection
+            real_match = collection_real_matches.find_one({'fixture.id': fixture_id})
+            if not real_match or 'events' not in real_match or not real_match['events']:
+                continue
+            
+            for event in real_match['events']:
+                if event.get('type', '').lower() == 'goal':
+                    player_id = event.get('player', {}).get('id')
+                    player_name = event.get('player', {}).get('name')
+                    
+                    if player_id and player_name:
+                        if player_id not in player_goals:
+                            player_goals[player_id] = {
+                                'name': player_name,
+                                'goals': 0,
+                                'matches': set()
+                            }
+                        player_goals[player_id]['goals'] += 1
+                        player_goals[player_id]['matches'].add(fixture_id)
+        
+        if not player_goals:
+            return None
+        
+        # Convert sets to counts
+        for player_id in player_goals:
+            player_goals[player_id]['matches'] = len(player_goals[player_id]['matches'])
+        
+        # Find top goalscorer
+        top_scorer = max(player_goals.values(), key=lambda x: x['goals'])
+        top_scorer_id = next(k for k, v in player_goals.items() if v == top_scorer)
+        
+        return {
+            'player_id': top_scorer_id,
+            'player_name': top_scorer['name'],
+            'goals': top_scorer['goals'],
+            'matches': top_scorer['matches']
+        }
+
+    def _find_top_assist_provider(self, matches_df):
+        """Find player with most assists across all watched matches"""
+        collection_real_matches = settings.MONGO_DB['real_matches']
+        player_assists = {}
+        
+        for _, match in matches_df.iterrows():
+            fixture_id = match['fixture']['id']
+            
+            # Get events from real_matches collection
+            real_match = collection_real_matches.find_one({'fixture.id': fixture_id})
+            if not real_match or 'events' not in real_match or not real_match['events']:
+                continue
+            
+            for event in real_match['events']:
+                if event.get('type', '').lower() == 'goal':
+                    assist = event.get('assist')
+                    if assist and assist.get('id') and assist.get('name'):
+                        player_id = assist['id']
+                        player_name = assist['name']
+                        
+                        if player_id not in player_assists:
+                            player_assists[player_id] = {
+                                'name': player_name,
+                                'assists': 0,
+                                'matches': set()
+                            }
+                        player_assists[player_id]['assists'] += 1
+                        player_assists[player_id]['matches'].add(fixture_id)
+        
+        if not player_assists:
+            return None
+        
+        # Convert sets to counts
+        for player_id in player_assists:
+            player_assists[player_id]['matches'] = len(player_assists[player_id]['matches'])
+        
+        # Find top assist provider
+        top_assist = max(player_assists.values(), key=lambda x: x['assists'])
+        top_assist_id = next(k for k, v in player_assists.items() if v == top_assist)
+        
+        return {
+            'player_id': top_assist_id,
+            'player_name': top_assist['name'],
+            'assists': top_assist['assists'],
+            'matches': top_assist['matches']
+        }
+
+    def _find_most_watched_player(self, matches_df):
+        """Find player appearing in most matches (via lineups or events)"""
+        collection_real_matches = settings.MONGO_DB['real_matches']
+        player_matches = {}
+        
+        for _, match in matches_df.iterrows():
+            fixture_id = match['fixture']['id']
+            
+            # Get real match data
+            real_match = collection_real_matches.find_one({'fixture.id': fixture_id})
+            if not real_match:
+                continue
+            
+            # Count players from lineups
+            if 'lineups' in real_match and real_match['lineups']:
+                for lineup in real_match['lineups']:
+                    # Count startXI players
+                    if 'startXI' in lineup:
+                        for player_info in lineup['startXI']:
+                            player_id = player_info.get('player', {}).get('id')
+                            player_name = player_info.get('player', {}).get('name')
+                            if player_id and player_name:
+                                if player_id not in player_matches:
+                                    player_matches[player_id] = {
+                                        'name': player_name,
+                                        'matches': set()
+                                    }
+                                player_matches[player_id]['matches'].add(fixture_id)
+                    
+                    # Count substitutes
+                    if 'substitutes' in lineup:
+                        for player_info in lineup['substitutes']:
+                            player_id = player_info.get('player', {}).get('id')
+                            player_name = player_info.get('player', {}).get('name')
+                            if player_id and player_name:
+                                if player_id not in player_matches:
+                                    player_matches[player_id] = {
+                                        'name': player_name,
+                                        'matches': set()
+                                    }
+                                player_matches[player_id]['matches'].add(fixture_id)
+            
+            # Also count players from events (to catch players who only appeared in events)
+            if 'events' in real_match and real_match['events']:
+                for event in real_match['events']:
+                    player_id = event.get('player', {}).get('id')
+                    player_name = event.get('player', {}).get('name')
+                    if player_id and player_name:
+                        if player_id not in player_matches:
+                            player_matches[player_id] = {
+                                'name': player_name,
+                                'matches': set()
+                            }
+                        player_matches[player_id]['matches'].add(fixture_id)
+        
+        if not player_matches:
+            return None
+        
+        # Convert sets to counts
+        for player_id in player_matches:
+            player_matches[player_id]['matches'] = len(player_matches[player_id]['matches'])
+        
+        # Find most watched player
+        most_watched = max(player_matches.values(), key=lambda x: x['matches'])
+        most_watched_id = next(k for k, v in player_matches.items() if v == most_watched)
+        
+        return {
+            'player_id': most_watched_id,
+            'player_name': most_watched['name'],
+            'matches': most_watched['matches']
         } 
