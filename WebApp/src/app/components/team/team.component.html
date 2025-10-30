@@ -1,59 +1,77 @@
 
 @if (team !== undefined) {
-  <div class="container">
+  <div class="team-container">
 
-    <nav class="nav-class">
+    <!-- Mobile Navigation Tabs -->
+    <nav class="mobile-nav">
       <div class="nav nav-tabs d-md-none" id="nav-tab-team" role="tablist">
-        <button class="nav-link" id="nav-stats-tab" data-bs-toggle="tab" data-bs-target="#nav-stats" type="button" role="tab" aria-controls="nav-stats" aria-selected="true">Stats</button>
-        <button class="nav-link active" id="nav-team-tab" data-bs-toggle="tab" data-bs-target="#nav-team" type="button" role="tab" aria-controls="nav-team" aria-selected="false">Team</button>
-        <button class="nav-link" id="nav-competitions-tab" data-bs-toggle="tab" data-bs-target="#nav-competitions" type="button" role="tab" aria-controls="nav-competitions" aria-selected="false">Filters</button>
+        <button class="nav-link" id="nav-stats-tab" data-bs-toggle="tab" data-bs-target="#nav-stats" type="button" role="tab" aria-controls="nav-stats" aria-selected="true">
+          <span class="nav-tab-icon">📊</span>
+          <span class="nav-tab-text">Stats</span>
+        </button>
+        <button class="nav-link active" id="nav-team-tab" data-bs-toggle="tab" data-bs-target="#nav-team" type="button" role="tab" aria-controls="nav-team" aria-selected="false">
+          <span class="nav-tab-icon">👥</span>
+          <span class="nav-tab-text">Team</span>
+        </button>
+        <button class="nav-link" id="nav-competitions-tab" data-bs-toggle="tab" data-bs-target="#nav-competitions" type="button" role="tab" aria-controls="nav-competitions" aria-selected="false">
+          <span class="nav-tab-icon">⚙️</span>
+          <span class="nav-tab-text">Filters</span>
+        </button>
       </div>
     </nav>
 
     <!-- Desktop Layout: Side by side -->
-    <div class="row m-auto d-none d-md-flex mt-4">
+    <div class="team-layout-desktop d-none d-md-flex">
       <!-- Stats information column -->
-      <div class="col-md-3 col-12">
-        <div class="informationColumn">
-          <div class="text-center">
-            <h2 class="m-auto"><u>Stats</u></h2>
-            <h3 class="m-auto">Total views:</h3>
+      <div class="stats-column">
+        <div class="stats-card">
+          <div class="stats-header">
+            <h2 class="stats-title">Statistics</h2>
+          </div>
+          <div class="stats-content">
+            <div class="stat-item">
+              <span class="stat-label">Total views</span>
+              <span class="stat-value">-</span>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Team main information column -->
-      <div class="col-md-6 col-12">
-        <div class="centralTeamInformation">
-          <div class="row">
-            <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
+      <div class="team-info-column">
+        <div class="team-card">
+          <div class="team-header">
+            <img class="team-logo" [src]="images.getRouteImageTeam(team.team.id)" [alt]="team.team.name + ' logo'">
+            <h1 class="team-name">{{team.team.name}}</h1>
           </div>
-          <div class="row text-center">
-            <h1 class="teamNameText">{{team.team.name}}</h1>
-          </div>
-          <div class="row text-center">
-            <table class="informationTable">
-              <tr>
-                <th class="tableCol" scope="col">Code</th>
-                <th class="tableCol" scope="col">Country</th>
-                <th class="tableCol">City</th>
-                <th class="tableCol">Founded</th>
-                <th class="tableCol">Stadium</th>
-              </tr>
-              <tr>
-                <td>{{team.team.code}}</td>
-                <td>{{team.team.country}}</td>
-                <td>{{team.venue.city}}</td>
-                <td>{{team.team.founded}}</td>
-                <td>{{team.venue.name}}</td>
-              </tr>
-            </table>
+          
+          <div class="team-details-grid">
+            <div class="detail-item">
+              <span class="detail-label">Code</span>
+              <span class="detail-value">{{team.team.code}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Country</span>
+              <span class="detail-value">{{team.team.country}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">City</span>
+              <span class="detail-value">{{team.venue.city}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Founded</span>
+              <span class="detail-value">{{team.team.founded}}</span>
+            </div>
+            <div class="detail-item detail-item-full">
+              <span class="detail-label">Stadium</span>
+              <span class="detail-value">{{team.venue.name}}</span>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Filters column (Desktop) -->
-      <div class="col-md-3 col-12">
+      <div class="filters-column">
         <app-team-filters
           [selectedSeason]="selectedSeason"
           [seasons]="seasons"
@@ -67,49 +85,57 @@
     </div>
 
     <!-- Mobile Layout: Tabs -->
-    <div class="tab-content row m-auto d-md-none mt-3" id="nav-tab-team">
+    <div class="tab-content team-layout-mobile d-md-none" id="nav-tab-team">
       <!-- Stats information column -->
-      <div class="tab-pane show col-12" id="nav-stats" role="tabpanel" aria-labelledby="nav-stats-tab">
-        <div class="informationColumn">
-          <div class="text-center">
-            <h2 class="m-auto"><u>Stats</u></h2>
-            <h3 class="m-auto">Total views:</h3>
+      <div class="tab-pane show" id="nav-stats" role="tabpanel" aria-labelledby="nav-stats-tab">
+        <div class="stats-card">
+          <div class="stats-header">
+            <h2 class="stats-title">Statistics</h2>
+          </div>
+          <div class="stats-content">
+            <div class="stat-item">
+              <span class="stat-label">Total views</span>
+              <span class="stat-value">-</span>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Team main information column -->
-      <div class="tab-pane show active col-12" id="nav-team" role="tabpanel" aria-labelledby="nav-team-tab">
-        <div class="centralTeamInformation">
-          <div class="row">
-            <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
+      <div class="tab-pane show active" id="nav-team" role="tabpanel" aria-labelledby="nav-team-tab">
+        <div class="team-card">
+          <div class="team-header">
+            <img class="team-logo" [src]="images.getRouteImageTeam(team.team.id)" [alt]="team.team.name + ' logo'">
+            <h1 class="team-name">{{team.team.name}}</h1>
           </div>
-          <div class="row text-center">
-            <h1 class="teamNameText">{{team.team.name}}</h1>
-          </div>
-          <div class="row text-center">
-            <table class="informationTable">
-              <tr>
-                <th class="tableCol" scope="col">Code</th>
-                <th class="tableCol" scope="col">Country</th>
-                <th class="tableCol">City</th>
-                <th class="tableCol">Founded</th>
-                <th class="tableCol">Stadium</th>
-              </tr>
-              <tr>
-                <td>{{team.team.code}}</td>
-                <td>{{team.team.country}}</td>
-                <td>{{team.venue.city}}</td>
-                <td>{{team.team.founded}}</td>
-                <td>{{team.venue.name}}</td>
-              </tr>
-            </table>
+          
+          <div class="team-details-grid">
+            <div class="detail-item">
+              <span class="detail-label">Code</span>
+              <span class="detail-value">{{team.team.code}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Country</span>
+              <span class="detail-value">{{team.team.country}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">City</span>
+              <span class="detail-value">{{team.venue.city}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Founded</span>
+              <span class="detail-value">{{team.team.founded}}</span>
+            </div>
+            <div class="detail-item detail-item-full">
+              <span class="detail-label">Stadium</span>
+              <span class="detail-value">{{team.venue.name}}</span>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Filters column (Mobile) -->
-      <div class="tab-pane show col-12" id="nav-competitions" role="tabpanel" aria-labelledby="nav-competitions-tab">
+      <div class="tab-pane show" id="nav-competitions" role="tabpanel" aria-labelledby="nav-competitions-tab">
         <app-team-filters
           [selectedSeason]="selectedSeason"
           [seasons]="seasons"
@@ -122,77 +148,92 @@
       </div>
     </div>
     
+    <!-- Matches Section -->
     @if (selectedSeason.id == seasons[0].id) {
-
-      <nav class="nav-class">
+      <!-- Mobile Navigation for Matches -->
+      <nav class="mobile-nav matches-nav">
         <div class="nav nav-tabs d-md-none" id="nav-tab-matches" role="tablist">
-          <button class="nav-link active" id="nav-last-tab" data-bs-toggle="tab" data-bs-target="#nav-last" type="button" role="tab" aria-controls="nav-last" aria-selected="true">Last played</button>
-          <button class="nav-link" id="nav-next-tab" data-bs-toggle="tab" data-bs-target="#nav-next" type="button" role="tab" aria-controls="nav-next" aria-selected="false">Next matches</button>
+          <button class="nav-link active" id="nav-last-tab" data-bs-toggle="tab" data-bs-target="#nav-last" type="button" role="tab" aria-controls="nav-last" aria-selected="true">
+            <span class="nav-tab-icon">🏁</span>
+            <span class="nav-tab-text">Last played</span>
+          </button>
+          <button class="nav-link" id="nav-next-tab" data-bs-toggle="tab" data-bs-target="#nav-next" type="button" role="tab" aria-controls="nav-next" aria-selected="false">
+            <span class="nav-tab-icon">📅</span>
+            <span class="nav-tab-text">Next matches</span>
+          </button>
         </div>
       </nav>
 
-
-      <div class="tab-content row m-auto" id="nav-team-matches">
-
-        <div class="tab-pane show active col-12 col-lg-6" id="nav-last" role="tabpanel" aria-labelledby="nav-last-tab">
-
-          <div class="text-center d-none d-md-flex">
-            <h2 class="m-auto"><u>Last played</u></h2>
-          </div>
-          
-          @for (match of filterStartedRealMatches(); track $index) {
-            <div class="matchCardAdapter matchCardAdapterTwoColumns">
-              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-              [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-              [locations]="locations"></app-real-match-card>
+      <div class="matches-section">
+        <div class="tab-content matches-tab-content" id="nav-team-matches">
+          <!-- Last Played Matches -->
+          <div class="tab-pane show active matches-column" id="nav-last" role="tabpanel" aria-labelledby="nav-last-tab">
+            <div class="matches-header-section d-none d-md-flex">
+              <h2 class="section-title">Last played</h2>
             </div>
-          }
-        </div>
-
-        <div class="tab-pane show col-12 col-lg-6" id="nav-next" role="tabpanel" aria-labelledby="nav-next-tab">
-
-          <div class="text-center d-none d-md-flex">
-            <h2 class="m-auto"><u>Next matches</u></h2>
+            
+            @for (match of filterStartedRealMatches(); track $index) {
+              <div class="match-card-wrapper">
+                <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                  [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                  [locations]="locations">
+                </app-real-match-card>
+              </div>
+            }
           </div>
 
-          @for (match of filterNotStartedRealMatches(); track $index) {
-            <div class="matchCardAdapter matchCardAdapterTwoColumns">
-              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-              [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-              [locations]="locations"></app-real-match-card>
+          <!-- Next Matches -->
+          <div class="tab-pane show matches-column" id="nav-next" role="tabpanel" aria-labelledby="nav-next-tab">
+            <div class="matches-header-section d-none d-md-flex">
+              <h2 class="section-title">Next matches</h2>
             </div>
-          }
-        </div>
-        
-      </div>
-    } @else {
-      <div class="row d-none d-md-flex">
-        <div class="col-12 col-lg-6">
-          <div class="matchCardAdapter matchCardAdapterTwoColumns"
-            *ngFor="let match of filterHalfRealMatches(showRealMatches, 0); trackBy: trackByMatchId">
-            <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-            [locations]="locations"></app-real-match-card>
-          </div>
-        </div>
-        <div class="col-12 col-lg-6 mt-4">
-          <div class="matchCardAdapter matchCardAdapterTwoColumns"
-            *ngFor="let match of filterHalfRealMatches(showRealMatches, 1); trackBy: trackByMatchId">
-            <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-            [locations]="locations"></app-real-match-card>
+
+            @for (match of filterNotStartedRealMatches(); track $index) {
+              <div class="match-card-wrapper">
+                <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                  [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                  [locations]="locations">
+                </app-real-match-card>
+              </div>
+            }
           </div>
         </div>
       </div>
-
-      <div class="row d-md-none">
-        <div class="col-12 col-lg-6">
-          <div class="matchCardAdapter matchCardAdapterTwoColumns"
-            *ngFor="let match of showRealMatches; trackBy: trackByMatchId">
-            <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-            [locations]="locations"></app-real-match-card>
+    } @else {
+      <!-- Historical Season Matches -->
+      <div class="matches-section">
+        <div class="matches-grid-desktop d-none d-md-flex">
+          <div class="matches-column">
+            @for (match of filterHalfRealMatches(showRealMatches, 0); track match.fixture.id) {
+              <div class="match-card-wrapper">
+                <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                  [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                  [locations]="locations">
+                </app-real-match-card>
+              </div>
+            }
           </div>
+          <div class="matches-column">
+            @for (match of filterHalfRealMatches(showRealMatches, 1); track match.fixture.id) {
+              <div class="match-card-wrapper">
+                <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                  [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                  [locations]="locations">
+                </app-real-match-card>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="matches-list-mobile d-md-none">
+          @for (match of showRealMatches; track match.fixture.id) {
+            <div class="match-card-wrapper">
+              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                [locations]="locations">
+              </app-real-match-card>
+            </div>
+          }
         </div>
       </div>
     }
