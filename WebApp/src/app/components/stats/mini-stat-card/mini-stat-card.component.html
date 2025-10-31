@@ -32,6 +32,40 @@
       </div>
     </div>
   </a>
+} @else if (interactable && player_id !== undefined && isPlayerType()) {
+  <a [routerLink]="['/app/player']" [queryParams]="{id: player_id}" class="mini-stat-card-link">
+    <div class="mini-stat-card" [ngClass]="type">
+      <div class="stat-highlight-icon">
+        @if (shouldShowTeamBadge()) {
+          <img 
+            [ngSrc]="images.getRouteImageTeam(team_id!)" 
+            [alt]="'Team badge'"
+            width="16" 
+            height="16" 
+            class="team-badge"
+            priority="false">
+        } @else if (isPlayerType() && player_id !== undefined) {
+          <img 
+            [src]="images.getRouteImagePlayer(player_id)" 
+            [alt]="'Player photo'"
+            width="28" 
+            height="28" 
+            class="player-photo"
+            (error)="onPlayerImageError($event)"
+            priority="false">
+        } @else {
+          {{ getIcon() }}
+        }
+      </div>
+      <div class="stat-highlight-content">
+        <span class="stat-highlight-label">{{ label }}</span>
+        <span class="stat-highlight-value">{{ value }}</span>
+        @if (subValue) {
+          <span class="stat-highlight-sub-value">{{ subValue }}</span>
+        }
+      </div>
+    </div>
+  </a>
 } @else if (interactable && team_id !== undefined && !isPlayerType()) {
   <a [routerLink]="['/app/team']" [queryParams]="{id: team_id}" class="mini-stat-card-link">
     <div class="mini-stat-card" [ngClass]="type">

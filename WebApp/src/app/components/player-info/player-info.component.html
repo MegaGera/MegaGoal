@@ -1,0 +1,153 @@
+<div class="player-info-container" *ngIf="!loading && player">
+  
+  <!-- Player Header Section -->
+  <div class="player-header">
+    <div class="player-header-left">
+      <div class="player-image-container">
+        <img 
+          [src]="getPlayerImageUrl()" 
+          [alt]="player.player.name"
+          class="player-image"
+          (error)="onImageError($event)">
+      </div>
+      <div class="player-header-info">
+        <h1 class="player-name">{{ player.player.name }}</h1>
+        <div class="player-basic-info">
+          <span class="info-badge" *ngIf="player.player.position">
+            {{ player.player.position }}
+          </span>
+          <span class="info-badge" *ngIf="player.player.number">
+            #{{ player.player.number }}
+          </span>
+          <span class="info-badge" *ngIf="player.player.nationality">
+            {{ player.player.nationality }}
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Player Stats Section -->
+    <div class="player-stats-section" *ngIf="!statsLoading && playerStats">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">Matches Viewed</span>
+          <span class="stat-value">{{ playerStats.matches_viewed }}</span>
+          <span class="stat-sub-value" *ngIf="playerStats.matches_startXI > 0">({{ playerStats.matches_startXI }} start XI)</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Goals</span>
+          <span class="stat-value">{{ playerStats.total_goals }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Assists</span>
+          <span class="stat-value">{{ playerStats.total_assists }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Win %</span>
+          <span class="stat-value">{{ playerStats.win_percentage }}%</span>
+          <span class="stat-sub-value">({{ playerStats.wins }}-{{ playerStats.draws }}-{{ playerStats.losses }})</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Draw %</span>
+          <span class="stat-value">{{ playerStats.draw_percentage }}%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Loss %</span>
+          <span class="stat-value">{{ playerStats.loss_percentage }}%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Teams Watched</span>
+          <span class="stat-value">{{ playerStats.different_teams_watched }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Yellow Cards</span>
+          <span class="stat-value">{{ playerStats.yellow_cards }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Red Cards</span>
+          <span class="stat-value">{{ playerStats.red_cards }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Player Profile Section -->
+  <div class="player-profile-section">
+    <h2 class="section-title">Profile</h2>
+    <div class="profile-grid">
+      <div class="profile-item" *ngIf="player.player.age">
+        <span class="profile-label">Age</span>
+        <span class="profile-value">{{ player.player.age }} years</span>
+      </div>
+      <div class="profile-item" *ngIf="player.player.birth?.date">
+        <span class="profile-label">Date of Birth</span>
+        <span class="profile-value">{{ formatDate(player.player.birth.date) }}</span>
+      </div>
+      <div class="profile-item" *ngIf="player.player.birth?.place">
+        <span class="profile-label">Place of Birth</span>
+        <span class="profile-value">{{ player.player.birth.place }}</span>
+      </div>
+      <div class="profile-item" *ngIf="player.player.birth?.country">
+        <span class="profile-label">Country of Birth</span>
+        <span class="profile-value">{{ player.player.birth.country }}</span>
+      </div>
+      <div class="profile-item" *ngIf="player.player.height">
+        <span class="profile-label">Height</span>
+        <span class="profile-value">{{ player.player.height }}</span>
+      </div>
+      <div class="profile-item" *ngIf="player.player.weight">
+        <span class="profile-label">Weight</span>
+        <span class="profile-value">{{ player.player.weight }}</span>
+      </div>
+      <div class="profile-item" *ngIf="player.player.nationality">
+        <span class="profile-label">Nationality</span>
+        <span class="profile-value">{{ player.player.nationality }}</span>
+      </div>
+      <div class="profile-item" *ngIf="player.player.position">
+        <span class="profile-label">Position</span>
+        <span class="profile-value">{{ player.player.position }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teams and Seasons Section -->
+  <div class="teams-seasons-section" *ngIf="hasTeams()">
+    <h2 class="section-title">Teams & Seasons</h2>
+    <div class="teams-list">
+      <div class="team-card" *ngFor="let teamData of getTeamsGroupedByTeam()">
+        <div class="team-card-header">
+          <img 
+            [src]="images.getRouteImageTeam(teamData.team.id)" 
+            [alt]="teamData.team.name"
+            class="team-badge"
+            (error)="onImageError($event)">
+          <div class="team-info">
+            <h3 class="team-name">{{ teamData.team.name }}</h3>
+            <span class="team-country" *ngIf="teamData.team.country">{{ teamData.team.country }}</span>
+          </div>
+        </div>
+        <div class="seasons-container" *ngIf="teamData.seasons && teamData.seasons.length > 0">
+          <span class="seasons-label">Seasons:</span>
+          <div class="seasons-list">
+            <span class="season-badge" *ngFor="let season of sortSeasons(teamData.seasons)">
+              {{ season }}/{{ (season + 1).toString().slice(-2) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Teams Message -->
+  <div class="no-teams-message" *ngIf="!loading && !hasTeams()">
+    <p>No team information available for this player.</p>
+  </div>
+
+</div>
+
+<!-- Loading State -->
+<div class="loading-container" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Loading player information...</p>
+</div>
+

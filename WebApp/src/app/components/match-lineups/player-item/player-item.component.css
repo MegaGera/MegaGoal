@@ -1,3 +1,10 @@
+/* Player Row Link */
+.player-row-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 /* Player Row - Modern card style similar to admin-leagues */
 .player-row {
   background: white;

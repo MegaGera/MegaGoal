@@ -14,6 +14,7 @@ import { environment } from '../../environments/environment';
 import { LeaguesSettings } from '../models/leaguesSettings';
 import { MatchRequest } from '../models/matchRequest';
 import { UserFeedback } from '../models/user_feedback';
+import { Player } from '../models/player';
 
 @Injectable({
   providedIn: 'root'
@@ -348,5 +349,12 @@ export class MegaGoalService {
    */
   getPlayersApiInfo(): Observable<any> {
     return this.http.get<any>(this.url + '/players/players-api-info/', this.options);
+  }
+
+  /**
+   * Get player by ID
+   */
+  getPlayerById(playerId: number): Observable<Player> {
+    return this.http.get<Player>(this.url + '/players/' + playerId, this.options);
   }
 }
