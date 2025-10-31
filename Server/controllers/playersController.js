@@ -100,3 +100,26 @@ export const getPlayersApiInfo = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch players API info' });
   }
 };
+
+// Get player by ID
+export const getPlayerById = async (req, res) => {
+  try {
+    const db = getDB();
+    const playerId = parseInt(req.params.id);
+    
+    if (isNaN(playerId)) {
+      return res.status(400).json({ error: 'Invalid player ID' });
+    }
+    
+    const player = await db.collection('players').findOne({ 'player.id': playerId });
+    
+    if (!player) {
+      return res.status(404).json({ error: 'Player not found' });
+    }
+    
+    res.json(player);
+  } catch (error) {
+    console.error('Error fetching player by ID:', error);
+    res.status(500).json({ error: 'Failed to fetch player' });
+  }
+};
