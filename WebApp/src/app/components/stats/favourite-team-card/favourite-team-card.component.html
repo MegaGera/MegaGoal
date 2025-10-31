@@ -172,6 +172,7 @@
           type="most-watched-player"
           label="Most Watched Player"
           [value]="teamStats.most_watched_player.player_name + ' - ' + teamStats.most_watched_player.matches + ' matches'"
+          [subValue]="teamStats.most_watched_player.startXI_matches + ' starts'"
           [player_id]="teamStats.most_watched_player.player_id"
           [interactable]="interactable">
         </app-mini-stat-card>

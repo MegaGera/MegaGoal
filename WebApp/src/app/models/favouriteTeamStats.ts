@@ -76,5 +76,6 @@ export interface FavouriteTeamStats {
     player_id: number;
     player_name: string;
     matches: number;
+    startXI_matches: number;
   };
 } 
