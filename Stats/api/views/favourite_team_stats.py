@@ -295,18 +295,37 @@ class FavouriteTeamStatsAPIView(APIView):
         collection_real_matches = settings.MONGO_DB['real_matches']
         player_goals = {}
         
-        # OPTIMIZATION 1: Batch fetch all real_matches with aggregation - filter by favourite team_id directly in MongoDB
+        # OPTIMIZATION 1: Batch fetch all real_matches - need lineups + all events for match counting, and goal events for goal counting
         fixture_ids = matches_df['fixture'].apply(lambda x: x['id']).tolist()
         if not fixture_ids:
             return None
         
-        # Single batch aggregation query - filter events by favourite team_id directly in MongoDB
-        # Since all fixtures are for the same favourite team, we can use team_id directly
+        # Fetch lineups (startXI only) and substitution events (for counting total matches) + goal events (for counting goals)
         pipeline = [
             {'$match': {'fixture.id': {'$in': fixture_ids}}},
             {'$project': {
                 'fixture.id': 1,
+                'lineups': {
+                    '$filter': {
+                        'input': {'$ifNull': ['$lineups', []]},
+                        'as': 'lineup',
+                        'cond': {'$eq': ['$$lineup.team.id', int(team_id)]}
+                    }
+                },
                 'events': {
+                    '$filter': {
+                        'input': {'$ifNull': ['$events', []]},
+                        'as': 'event',
+                        'cond': {
+                            '$and': [
+                                {'$eq': ['$$event.team.id', int(team_id)]},
+                                {'$eq': [{'$toLower': '$$event.type'}, 'subst']},
+                                {'$ne': ['$$event.assist', None]}
+                            ]
+                        }
+                    }
+                },
+                'goal_events': {
                     '$filter': {
                         'input': {'$ifNull': ['$events', []]},
                         'as': 'event',
@@ -324,29 +343,63 @@ class FavouriteTeamStatsAPIView(APIView):
         real_matches_dict = {
             rm['fixture']['id']: rm 
             for rm in collection_real_matches.aggregate(pipeline)
-            if rm.get('events')
         }
         
-        # OPTIMIZATION 2: Process events (already filtered by team_id in database)
+        # OPTIMIZATION 2: Process lineups and events to count total matches, and goal_events to count goals
         for fixture_id, real_match in real_matches_dict.items():
-            events = real_match.get('events', [])
-            # Track which players appeared in this match to count matches
+            # Track which players appeared in this match (from startXI or substitution events)
             players_in_match = set()
-            for event in events:
-                # Events are already filtered by team_id, just extract player info
-                player_id = event.get('player', {}).get('id')
-                player_name = event.get('player', {}).get('name')
-                
-                if player_id and player_name:
-                    if player_id not in player_goals:
-                        player_goals[player_id] = {
-                            'name': player_name,
-                            'goals': 0,
-                            'matches': 0
-                        }
-                    player_goals[player_id]['goals'] += 1
-                    players_in_match.add(player_id)
-
+            
+            # Count players from startXI only (not substitutes from lineup)
+            if 'lineups' in real_match and real_match['lineups']:
+                for lineup in real_match['lineups']:
+                    # Count startXI players
+                    if 'startXI' in lineup:
+                        for player_info in lineup['startXI']:
+                            player_id = player_info.get('player', {}).get('id')
+                            player_name = player_info.get('player', {}).get('name')
+                            if player_id and player_name:
+                                if player_id not in player_goals:
+                                    player_goals[player_id] = {
+                                        'name': player_name,
+                                        'goals': 0,
+                                        'matches': 0
+                                    }
+                                players_in_match.add(player_id)
+            
+            # Count players from substitution events (event.type == "subst")
+            # The player that enters is in event.assist
+            if 'events' in real_match and real_match['events']:
+                for event in real_match['events']:
+                    # Only process substitution events
+                    if event.get('type', '').lower() == 'subst':
+                        assist = event.get('assist')  # Player entering the game
+                        if assist and assist.get('id') and assist.get('name'):
+                            player_id = assist['id']
+                            player_name = assist['name']
+                            if player_id not in player_goals:
+                                player_goals[player_id] = {
+                                    'name': player_name,
+                                    'goals': 0,
+                                    'matches': 0
+                                }
+                            players_in_match.add(player_id)
+            
+            # Count goals from goal_events
+            if 'goal_events' in real_match and real_match['goal_events']:
+                for event in real_match['goal_events']:
+                    player_id = event.get('player', {}).get('id')
+                    player_name = event.get('player', {}).get('name')
+                    if player_id and player_name:
+                        if player_id not in player_goals:
+                            player_goals[player_id] = {
+                                'name': player_name,
+                                'goals': 0,
+                                'matches': 0
+                            }
+                        player_goals[player_id]['goals'] += 1
+            
+            # Increment match count for all players that appeared in this match
             for player_id in players_in_match:
                 player_goals[player_id]['matches'] += 1
         
@@ -369,19 +422,37 @@ class FavouriteTeamStatsAPIView(APIView):
         collection_real_matches = settings.MONGO_DB['real_matches']
         player_assists = {}
         
-        # OPTIMIZATION 1: Batch fetch all real_matches in one query with projection
+        # OPTIMIZATION 1: Batch fetch all real_matches - need lineups + all events for match counting, and assist events for assist counting
         fixture_ids = matches_df['fixture'].apply(lambda x: x['id']).tolist()
         if not fixture_ids:
             return None
         
-        # Single batch aggregation query - filter events by favourite team_id directly in MongoDB
-        # Since all fixtures are for the same favourite team, we can use team_id directly
-        # Use aggregation to filter events by team_id at database level
+        # Fetch lineups (startXI only) and substitution events (for counting total matches) + goal events with assists (for counting assists)
         pipeline = [
             {'$match': {'fixture.id': {'$in': fixture_ids}}},
             {'$project': {
                 'fixture.id': 1,
+                'lineups': {
+                    '$filter': {
+                        'input': {'$ifNull': ['$lineups', []]},
+                        'as': 'lineup',
+                        'cond': {'$eq': ['$$lineup.team.id', int(team_id)]}
+                    }
+                },
                 'events': {
+                    '$filter': {
+                        'input': {'$ifNull': ['$events', []]},
+                        'as': 'event',
+                        'cond': {
+                            '$and': [
+                                {'$eq': ['$$event.team.id', int(team_id)]},
+                                {'$eq': [{'$toLower': '$$event.type'}, 'subst']},
+                                {'$ne': ['$$event.assist', None]}
+                            ]
+                        }
+                    }
+                },
+                'assist_events': {
                     '$filter': {
                         'input': {'$ifNull': ['$events', []]},
                         'as': 'event',
@@ -400,33 +471,66 @@ class FavouriteTeamStatsAPIView(APIView):
         real_matches_dict = {
             rm['fixture']['id']: rm 
             for rm in collection_real_matches.aggregate(pipeline)
-            if rm.get('events')
         }
         
-        # OPTIMIZATION 2: Process events (already filtered by team_id in database)
+        # OPTIMIZATION 2: Process lineups and events to count total matches, and assist_events to count assists
         for fixture_id, real_match in real_matches_dict.items():
-            events = real_match.get('events', [])
-            # Track which players appeared in this match to count matches
+            # Track which players appeared in this match (from startXI or substitution events)
             players_in_match = set()
-            for event in events:
-                # Events are already filtered by team_id and have assists, just extract assist info
-                assist = event.get('assist')
-                if assist and assist.get('id') and assist.get('name'):
-                    player_id = assist['id']
-                    player_name = assist['name']
-                    
-                    if player_id not in player_assists:
-                        player_assists[player_id] = {
-                            'name': player_name,
-                            'assists': 0,
-                            'matches': 0
-                        }
-                    players_in_match.add(player_id)
-                    player_assists[player_id]['assists'] += 1
-
+            
+            # Count players from startXI only (not substitutes from lineup)
+            if 'lineups' in real_match and real_match['lineups']:
+                for lineup in real_match['lineups']:
+                    # Count startXI players
+                    if 'startXI' in lineup:
+                        for player_info in lineup['startXI']:
+                            player_id = player_info.get('player', {}).get('id')
+                            player_name = player_info.get('player', {}).get('name')
+                            if player_id and player_name:
+                                if player_id not in player_assists:
+                                    player_assists[player_id] = {
+                                        'name': player_name,
+                                        'assists': 0,
+                                        'matches': 0
+                                    }
+                                players_in_match.add(player_id)
+            
+            # Count players from substitution events (event.type == "subst")
+            # The player that enters is in event.assist
+            if 'events' in real_match and real_match['events']:
+                for event in real_match['events']:
+                    # Only process substitution events
+                    if event.get('type', '').lower() == 'subst':
+                        assist = event.get('assist')  # Player entering the game
+                        if assist and assist.get('id') and assist.get('name'):
+                            player_id = assist['id']
+                            player_name = assist['name']
+                            if player_id not in player_assists:
+                                player_assists[player_id] = {
+                                    'name': player_name,
+                                    'assists': 0,
+                                    'matches': 0
+                                }
+                            players_in_match.add(player_id)
+            
+            # Count assists from assist_events
+            if 'assist_events' in real_match and real_match['assist_events']:
+                for event in real_match['assist_events']:
+                    assist = event.get('assist')
+                    if assist and assist.get('id') and assist.get('name'):
+                        player_id = assist['id']
+                        player_name = assist['name']
+                        if player_id not in player_assists:
+                            player_assists[player_id] = {
+                                'name': player_name,
+                                'assists': 0,
+                                'matches': 0
+                            }
+                        player_assists[player_id]['assists'] += 1
+            
+            # Increment match count for all players that appeared in this match
             for player_id in players_in_match:
                 player_assists[player_id]['matches'] += 1
-
         
         if not player_assists:
             return None
