@@ -1,5 +1,6 @@
 import { getDB } from '../config/db.js';
 import { logAdminAction } from './logController.js';
+import { createIndexes, ensureIndexes } from '../config/indexes.js';
 
 // Get leagues settings
 export const getLeaguesSettings = async (req, res) => {
@@ -345,6 +346,34 @@ export const getLandingMatches = async (req, res) => {
     res.send(sortedMatches);
   } catch (error) {
     console.error("Error getting landing matches:", error);
+    res.status(500).json({ message: error.message });
+  }
+}
+
+// Create/ensure database indexes (for performance optimization)
+export const createDatabaseIndexes = async (req, res) => {
+  try {
+    const { force } = req.query;
+    
+    if (force === 'true') {
+      // Force create indexes (may fail if they already exist with different options)
+      await createIndexes();
+      await logAdminAction(req.validateData.username, 'CREATE_DATABASE_INDEXES', { force: true }, req);
+      res.status(200).json({ 
+        success: true, 
+        message: 'Database indexes created/updated (force mode)' 
+      });
+    } else {
+      // Ensure indexes exist (safe, won't fail if they already exist)
+      await ensureIndexes();
+      await logAdminAction(req.validateData.username, 'ENSURE_DATABASE_INDEXES', { force: false }, req);
+      res.status(200).json({ 
+        success: true, 
+        message: 'Database indexes ensured (only missing indexes were created)' 
+      });
+    }
+  } catch (error) {
+    console.error("Error creating/ensuring database indexes:", error);
     res.status(500).json({ message: error.message });
   }
 }
