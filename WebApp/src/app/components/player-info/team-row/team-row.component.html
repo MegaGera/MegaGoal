@@ -1,0 +1,69 @@
+<div class="team-row-wrapper">
+  <div class="team-row-card">
+    <div class="season-section">
+      <span class="season-badge">{{ getSeasonDisplay() }}</span>
+    </div>
+    
+    <div class="team-info-section">
+      <a [routerLink]="['/app/team']" [queryParams]="{ id: teamData.team.id }" class="team-link">
+        <img 
+          [src]="images.getRouteImageTeam(teamData.team.id)" 
+          [alt]="teamData.team.name"
+          class="team-badge"
+          (error)="onImageError($event)">
+      </a>
+      <div class="team-details">
+        <a [routerLink]="['/app/team']" [queryParams]="{ id: teamData.team.id }" class="team-link">
+          <h4 class="team-name">{{ teamData.team.name }}</h4>
+        </a>
+        <span class="team-country" *ngIf="teamData.team.country">{{ teamData.team.country }}</span>
+      </div>
+    </div>
+    
+    <div class="stats-section">
+      <!-- Stats badges -->
+      <div class="stats-badges" *ngIf="hasStats()">
+        <app-player-stat-badge 
+          *ngIf="teamStats!.matches_viewed > 0" 
+          icon="👁️"
+          [value]="teamStats!.matches_viewed">
+        </app-player-stat-badge>
+        <app-player-stat-badge 
+          *ngIf="teamStats!.goals > 0" 
+          icon="⚽"
+          [value]="teamStats!.goals">
+        </app-player-stat-badge>
+        <app-player-stat-badge 
+          *ngIf="teamStats!.assists > 0" 
+          icon="🎯"
+          [value]="teamStats!.assists">
+        </app-player-stat-badge>
+        <app-player-stat-badge 
+          *ngIf="teamStats!.yellow_cards > 0" 
+          icon="🟨"
+          [value]="teamStats!.yellow_cards">
+        </app-player-stat-badge>
+        <app-player-stat-badge 
+          *ngIf="teamStats!.red_cards > 0" 
+          icon="🟥"
+          [value]="teamStats!.red_cards">
+        </app-player-stat-badge>
+      </div>
+      
+      <!-- Toggle matches button -->
+      <button 
+        class="toggle-matches-btn" 
+        *ngIf="hasMatches()"
+        (click)="toggleMatches()"
+        [title]="matchesExpanded ? 'Hide matches' : 'Show matches'">
+        {{ matchesExpanded ? '▲' : '▼' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Matches list (expandable) -->
+  <div class="matches-container" *ngIf="hasMatches() && matchesExpanded">
+    <app-match-row *ngFor="let match of teamStats!.matches" [match]="match"></app-match-row>
+  </div>
+</div>
+

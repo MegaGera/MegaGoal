@@ -1,0 +1,222 @@
+.team-row-wrapper {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.team-row-card {
+  background: white;
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  min-height: 60px;
+}
+
+.team-row-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #667eea, #764ba2);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.team-row-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+  border-color: #667eea;
+}
+
+.team-row-card:hover::before {
+  transform: scaleY(1);
+}
+
+.season-section {
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.team-info-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.team-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+}
+
+.team-badge {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.team-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.team-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.team-country {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.stats-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: visible;
+}
+
+.season-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+  white-space: nowrap;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.stats-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.toggle-matches-btn {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  border: 2px solid rgba(102, 126, 234, 0.2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.toggle-matches-btn:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.matches-container {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  max-height: 500px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.matches-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.matches-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.matches-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.matches-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .team-row-card {
+    padding: 8px 12px;
+  }
+
+  .team-info-section {
+    gap: 10px;
+  }
+
+  .team-badge {
+    width: 36px;
+    height: 36px;
+  }
+
+  .team-name {
+    font-size: 14px;
+  }
+
+  .team-country {
+    font-size: 11px;
+  }
+
+  .season-badge {
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+
+  .stats-section {
+    gap: 6px;
+  }
+
+  .season-section {
+    margin-right: 10px;
+  }
+
+  .toggle-matches-btn {
+    min-width: 32px;
+    height: 32px;
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .matches-container {
+    padding: 10px;
+    gap: 8px;
+  }
+}
+

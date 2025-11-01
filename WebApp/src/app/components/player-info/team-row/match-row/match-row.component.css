@@ -1,0 +1,132 @@
+/* Match Row Link */
+.match-row-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  overflow: visible;
+}
+
+/* Match Row - Modern card style inspired by player-item */
+.match-row {
+  background: white;
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.match-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #dc143c, #ff6b6b);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.match-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+  border-color: #dc143c;
+}
+
+.match-row:hover::before {
+  transform: scaleY(1);
+}
+
+.match-teams {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  overflow: visible;
+}
+
+.team-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.team-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score {
+  font-size: 15px;
+  font-weight: 700;
+  color: #dc143c;
+  margin: 0 8px;
+  flex-shrink: 0;
+}
+
+.match-league {
+  font-weight: 500;
+  color: #64748b;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.match-date {
+  color: #94a3b8;
+  font-weight: 400;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.match-stats-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .match-row {
+    padding: 8px 12px;
+  }
+
+  .team-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .team-name {
+    font-size: 12px;
+    max-width: 120px;
+  }
+
+  .score {
+    font-size: 13px;
+    margin: 0 6px;
+  }
+
+  .match-league,
+  .match-date {
+    font-size: 11px;
+    margin-left: 6px;
+  }
+
+  .match-stats-badges {
+    gap: 4px;
+  }
+}
+

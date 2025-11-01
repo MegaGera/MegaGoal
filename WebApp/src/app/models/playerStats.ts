@@ -1,3 +1,5 @@
+import { Match } from './match';
+
 export interface PlayerStats {
   player_id: number;
   matches_viewed: number;
@@ -13,5 +15,22 @@ export interface PlayerStats {
   wins: number;
   draws: number;
   losses: number;
+  seasons?: SeasonStats[];
+}
+
+export interface SeasonStats {
+  season: number;
+  teams: TeamSeasonStats[];
+}
+
+export interface TeamSeasonStats {
+  team_id: number;
+  team_name: string;
+  matches: Match[];
+  matches_viewed: number;
+  goals: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
 }
 

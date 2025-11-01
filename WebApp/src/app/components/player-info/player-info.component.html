@@ -114,27 +114,12 @@
   <div class="teams-seasons-section" *ngIf="hasTeams()">
     <h2 class="section-title">Teams & Seasons</h2>
     <div class="teams-list">
-      <div class="team-card" *ngFor="let teamData of getTeamsGroupedByTeam()">
-        <div class="team-card-header">
-          <img 
-            [src]="images.getRouteImageTeam(teamData.team.id)" 
-            [alt]="teamData.team.name"
-            class="team-badge"
-            (error)="onImageError($event)">
-          <div class="team-info">
-            <h3 class="team-name">{{ teamData.team.name }}</h3>
-            <span class="team-country" *ngIf="teamData.team.country">{{ teamData.team.country }}</span>
-          </div>
-        </div>
-        <div class="seasons-container" *ngIf="teamData.seasons && teamData.seasons.length > 0">
-          <span class="seasons-label">Seasons:</span>
-          <div class="seasons-list">
-            <span class="season-badge" *ngFor="let season of sortSeasons(teamData.seasons)">
-              {{ season }}/{{ (season + 1).toString().slice(-2) }}
-            </span>
-          </div>
-        </div>
-      </div>
+      <app-team-row 
+        *ngFor="let item of getTeamsAndSeasonsFlat()"
+        [teamData]="item.team"
+        [season]="item.season"
+        [teamStats]="item.teamStats">
+      </app-team-row>
     </div>
   </div>
 

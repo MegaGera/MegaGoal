@@ -165,84 +165,7 @@
 .teams-list {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-}
-
-.team-card {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid #e2e8f0;
-  transition: all 0.3s ease;
-}
-
-.team-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: #cbd5e1;
-}
-
-.team-card-header {
-  display: flex;
-  align-items: center;
   gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.team-badge {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  border-radius: 8px;
-  background: white;
-  padding: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.team-info {
-  flex: 1;
-}
-
-.team-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 0.25rem 0;
-}
-
-.team-country {
-  font-size: 0.875rem;
-  color: #64748b;
-}
-
-.seasons-container {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e2e8f0;
-}
-
-.seasons-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #64748b;
-  margin-right: 0.75rem;
-}
-
-.seasons-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.season-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 0.375rem 0.75rem;
-  border-radius: 16px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* No Teams Message */
@@ -318,11 +241,6 @@
 
   .profile-grid {
     grid-template-columns: 1fr;
-  }
-
-  .team-card-header {
-    flex-direction: column;
-    text-align: center;
   }
 }
 

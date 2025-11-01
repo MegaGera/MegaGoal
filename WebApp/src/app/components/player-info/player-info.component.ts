@@ -11,11 +11,12 @@ import { ImagesService } from '../../services/images.service';
 import { StatsService } from '../../services/stats.service';
 import { Player } from '../../models/player';
 import { PlayerStats } from '../../models/playerStats';
+import { TeamRowComponent } from './team-row/team-row.component';
 
 @Component({
   selector: 'app-player-info',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TeamRowComponent],
   templateUrl: './player-info.component.html',
   styleUrl: './player-info.component.css',
   providers: [ImagesService]
@@ -27,6 +28,8 @@ export class PlayerInfoComponent {
   playerStats?: PlayerStats;
   loading: boolean = true;
   statsLoading: boolean = true;
+  
+  teamsSeasonsList: any[] = [];
 
   constructor(
     private megagoal: MegaGoalService, 
@@ -63,10 +66,28 @@ export class PlayerInfoComponent {
     this.statsService.getPlayerStats(this.queryPlayerId).subscribe(result => {
       this.playerStats = result;
       this.statsLoading = false;
+      this.updateTeamsSeasonsList();
     }, error => {
       console.error('Error loading player stats:', error);
       this.statsLoading = false;
     });
+  }
+  
+  updateTeamsSeasonsList(): void {
+    if (!this.hasTeams() || !this.player.teams || !this.playerStats) return;
+    
+    const flatList: any[] = [];
+    
+    this.player.teams.forEach((teamData: any) => {
+      if (teamData.seasons && Array.isArray(teamData.seasons)) {
+        teamData.seasons.forEach((season: number) => {
+          const teamStats = this.getTeamStats(teamData.team.id, season);
+          flatList.push({ team: teamData, season, teamStats });
+        });
+      }
+    });
+    
+    this.teamsSeasonsList = flatList.sort((a, b) => b.season - a.season);
   }
 
   getPlayerImageUrl(): string {
@@ -90,13 +111,19 @@ export class PlayerInfoComponent {
     return Array.isArray(this.player?.teams) && this.player.teams.length > 0;
   }
 
-  getTeamsGroupedByTeam(): any[] {
-    if (!this.hasTeams()) return [];
-    return this.player.teams || [];
+  getTeamsAndSeasonsFlat(): any[] {
+    return this.teamsSeasonsList;
   }
-
-  sortSeasons(seasons: number[]): number[] {
-    return seasons.sort((a, b) => b - a); // Sort descending (newest first)
+  
+  getTeamStats(teamId: number, season: number): any {
+    if (!this.playerStats?.seasons) return undefined;
+    
+    // Find the season data
+    const seasonData = this.playerStats.seasons.find(s => s.season === season);
+    if (!seasonData) return undefined;
+    
+    // Find the team in that season
+    return seasonData.teams.find(t => t.team_id === teamId);
   }
 }
 
