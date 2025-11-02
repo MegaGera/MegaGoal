@@ -4,9 +4,26 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 import pandas as pd
+import numpy as np
 import os
 
 class PlayerStatsAPIView(APIView):
+    def _sanitize_value(self, value):
+        """Convert NaN, Infinity, and other non-JSON-compliant values to None or 0"""
+        if isinstance(value, float):
+            if np.isnan(value) or np.isinf(value):
+                return None
+        return value
+    
+    def _sanitize_dict(self, data):
+        """Recursively sanitize dictionary values for JSON serialization"""
+        if isinstance(data, dict):
+            return {key: self._sanitize_dict(value) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [self._sanitize_dict(item) for item in data]
+        else:
+            return self._sanitize_value(data)
+    
     def get(self, request, *args, **kwargs):
         # Access the validation data added by the middleware
         validate_data = getattr(request, 'validateData', None)
@@ -41,6 +58,9 @@ class PlayerStatsAPIView(APIView):
 
         # Calculate player stats
         player_stats = self._calculate_player_stats(fixture_ids, player_id, user_matches)
+        
+        # Sanitize the response to remove NaN and Infinity values
+        player_stats = self._sanitize_dict(player_stats)
         
         return Response(player_stats, status=status.HTTP_200_OK)
 
