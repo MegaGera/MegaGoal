@@ -19,7 +19,7 @@
           <span class="info-badge" *ngIf="player.player.number">
             #{{ player.player.number }}
           </span>
-          <span class="info-badge" *ngIf="player.player.nationality">
+          <span class="info-badge info-badge-nationality" *ngIf="player.player.nationality">
             {{ player.player.nationality }}
           </span>
         </div>
@@ -79,35 +79,43 @@
         <span class="profile-label">Age</span>
         <span class="profile-value">{{ player.player.age }} years</span>
       </div>
-      <div class="profile-item" *ngIf="player.player.birth?.date">
-        <span class="profile-label">Date of Birth</span>
-        <span class="profile-value">{{ formatDate(player.player.birth.date) }}</span>
-      </div>
-      <div class="profile-item" *ngIf="player.player.birth?.place">
-        <span class="profile-label">Place of Birth</span>
-        <span class="profile-value">{{ player.player.birth.place }}</span>
-      </div>
-      <div class="profile-item" *ngIf="player.player.birth?.country">
-        <span class="profile-label">Country of Birth</span>
-        <span class="profile-value">{{ player.player.birth.country }}</span>
-      </div>
-      <div class="profile-item" *ngIf="player.player.height">
-        <span class="profile-label">Height</span>
-        <span class="profile-value">{{ player.player.height }}</span>
-      </div>
-      <div class="profile-item" *ngIf="player.player.weight">
-        <span class="profile-label">Weight</span>
-        <span class="profile-value">{{ player.player.weight }}</span>
-      </div>
       <div class="profile-item" *ngIf="player.player.nationality">
         <span class="profile-label">Nationality</span>
         <span class="profile-value">{{ player.player.nationality }}</span>
       </div>
-      <div class="profile-item" *ngIf="player.player.position">
+      <!-- Expandable profile items -->
+      <div class="profile-item profile-item-expandable" *ngIf="player.player.birth?.date" [class.profile-expanded]="profileExpanded">
+        <span class="profile-label">Date of Birth</span>
+        <span class="profile-value">{{ formatDate(player.player.birth.date) }}</span>
+      </div>
+      <div class="profile-item profile-item-expandable" *ngIf="player.player.birth?.place" [class.profile-expanded]="profileExpanded">
+        <span class="profile-label">Place of Birth</span>
+        <span class="profile-value">{{ player.player.birth.place }}</span>
+      </div>
+      <div class="profile-item profile-item-expandable" *ngIf="player.player.birth?.country" [class.profile-expanded]="profileExpanded">
+        <span class="profile-label">Country of Birth</span>
+        <span class="profile-value">{{ player.player.birth.country }}</span>
+      </div>
+      <div class="profile-item profile-item-expandable" *ngIf="player.player.height" [class.profile-expanded]="profileExpanded">
+        <span class="profile-label">Height</span>
+        <span class="profile-value">{{ player.player.height }}</span>
+      </div>
+      <div class="profile-item profile-item-expandable" *ngIf="player.player.weight" [class.profile-expanded]="profileExpanded">
+        <span class="profile-label">Weight</span>
+        <span class="profile-value">{{ player.player.weight }}</span>
+      </div>
+      <div class="profile-item profile-item-expandable" *ngIf="player.player.position" [class.profile-expanded]="profileExpanded">
         <span class="profile-label">Position</span>
         <span class="profile-value">{{ player.player.position }}</span>
       </div>
     </div>
+    <!-- More button for mobile -->
+    <button 
+      class="profile-more-btn" 
+      (click)="toggleProfile()"
+      *ngIf="hasAdditionalProfileInfo()">
+      {{ profileExpanded ? 'Less -' : 'More +' }}
+    </button>
   </div>
 
   <!-- Teams and Seasons Section -->

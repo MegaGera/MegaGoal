@@ -30,6 +30,7 @@ export class PlayerInfoComponent {
   statsLoading: boolean = true;
   
   teamsSeasonsList: any[] = [];
+  profileExpanded: boolean = false;
 
   constructor(
     private megagoal: MegaGoalService, 
@@ -124,6 +125,19 @@ export class PlayerInfoComponent {
     
     // Find the team in that season
     return seasonData.teams.find(t => t.team_id === teamId);
+  }
+
+  toggleProfile(): void {
+    this.profileExpanded = !this.profileExpanded;
+  }
+
+  hasAdditionalProfileInfo(): boolean {
+    return !!(this.player?.player?.birth?.date || 
+              this.player?.player?.birth?.place || 
+              this.player?.player?.birth?.country || 
+              this.player?.player?.height || 
+              this.player?.player?.weight || 
+              this.player?.player?.position);
   }
 }
 

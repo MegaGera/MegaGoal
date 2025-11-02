@@ -42,12 +42,33 @@
   transform: scaleY(1);
 }
 
-.match-teams {
+.match-content {
   display: flex;
   align-items: center;
   gap: 12px;
   flex: 1;
   overflow: visible;
+}
+
+.match-teams-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  overflow: visible;
+}
+
+.match-teams-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.match-league-date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .team-icon {
@@ -80,14 +101,12 @@
   font-weight: 500;
   color: #64748b;
   font-size: 12px;
-  margin-left: 8px;
 }
 
 .match-date {
   color: #94a3b8;
   font-weight: 400;
   font-size: 12px;
-  margin-left: 8px;
 }
 
 .match-stats-badges {
@@ -101,32 +120,73 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .match-row {
-    padding: 8px 12px;
+    padding: 8px 6px;
+    margin: 0 -4px;
+  }
+
+  .match-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .match-teams-row {
+    width: 100%;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .match-teams-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    justify-content: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .match-league-date-row {
+    flex-basis: 100%;
+    justify-content: center;
+    gap: 6px;
   }
 
   .team-icon {
     width: 28px;
     height: 28px;
+    flex-shrink: 0;
   }
 
   .team-name {
     font-size: 12px;
-    max-width: 120px;
+    max-width: none;
+    white-space: nowrap;
   }
 
   .score {
     font-size: 13px;
-    margin: 0 6px;
+    margin: 0 4px;
+    flex-shrink: 0;
   }
 
-  .match-league,
+  .match-league {
+    font-size: 11px;
+  }
+
   .match-date {
     font-size: 11px;
-    margin-left: 6px;
   }
 
   .match-stats-badges {
     gap: 4px;
+    width: 100%;
+    justify-content: center;
+    order: 3;
   }
 }
 

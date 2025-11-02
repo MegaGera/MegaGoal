@@ -68,6 +68,27 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.profile-more-btn {
+  display: none;
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  border: 2px solid rgba(102, 126, 234, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.profile-more-btn:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+}
+
+
 /* Player Stats Section */
 .player-stats-section {
   flex: 1;
@@ -206,8 +227,12 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .player-info-container {
+    padding: 0.5rem;
+    gap: 1rem;
+  }
+
+  .teams-seasons-section {
     padding: 1rem;
-    gap: 1.5rem;
   }
 
   .player-header {
@@ -230,6 +255,16 @@
     font-size: 2rem;
   }
 
+  .player-basic-info {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .info-badge-nationality {
+    width: 100%;
+    text-align: center;
+  }
+
   .player-stats-section {
     width: 100%;
     min-width: 100%;
@@ -241,6 +276,18 @@
 
   .profile-grid {
     grid-template-columns: 1fr;
+  }
+
+  .profile-item-expandable {
+    display: none;
+  }
+
+  .profile-item-expandable.profile-expanded {
+    display: flex;
+  }
+
+  .profile-more-btn {
+    display: block;
   }
 }
 

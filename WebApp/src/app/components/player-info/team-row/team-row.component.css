@@ -174,11 +174,15 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .team-row-card {
-    padding: 8px 12px;
+    padding: 8px 6px;
+    margin: 0 -4px;
+    flex-wrap: wrap;
   }
 
   .team-info-section {
     gap: 10px;
+    flex: 1;
+    min-width: 0;
   }
 
   .team-badge {
@@ -188,6 +192,8 @@
 
   .team-name {
     font-size: 14px;
+    white-space: nowrap;
+    overflow: visible;
   }
 
   .team-country {
@@ -201,6 +207,11 @@
 
   .stats-section {
     gap: 6px;
+    margin-left: 0;
+    margin-top: 8px;
+    width: 100%;
+    order: 3;
+    justify-content: flex-end;
   }
 
   .season-section {
@@ -215,7 +226,7 @@
   }
 
   .matches-container {
-    padding: 10px;
+    padding: 8px 6px;
     gap: 8px;
   }
 }

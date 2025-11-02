@@ -1,50 +1,57 @@
 <a [routerLink]="['/app/match']" [queryParams]="{ id: match.fixture.id }" class="match-row-link">
   <div class="match-row">
-    <div class="match-teams">
-      <img 
-        [src]="images.getRouteImageTeam(match.teams.home.id)" 
-        [alt]="match.teams.home.name"
-        class="team-icon"
-        (error)="onImageError($event)">
-      <span class="team-name">{{ match.teams.home.name }}</span>
-      <span class="score">{{ match.goals.home }} - {{ match.goals.away }}</span>
-      <span class="team-name">{{ match.teams.away.name }}</span>
-      <img 
-        [src]="images.getRouteImageTeam(match.teams.away.id)" 
-        [alt]="match.teams.away.name"
-        class="team-icon"
-        (error)="onImageError($event)">
-      <span class="match-league">{{ match.league.name }}</span>
-      <span class="match-date">{{ formatDate(match.fixture.timestamp) }}</span>
-    </div>
-    
-    <!-- Player stats badges -->
-    <div class="match-stats-badges" *ngIf="hasPlayerStats()">
-      <app-player-stat-badge 
-        *ngIf="started()" 
-        icon=""
-        value="XI">
-      </app-player-stat-badge>
-      <app-player-stat-badge 
-        *ngIf="hasGoals()" 
-        icon="⚽"
-        [value]="match.player_stats!.goals">
-      </app-player-stat-badge>
-      <app-player-stat-badge 
-        *ngIf="hasAssists()" 
-        icon="🎯"
-        [value]="match.player_stats!.assists">
-      </app-player-stat-badge>
-      <app-player-stat-badge 
-        *ngIf="hasYellowCards()" 
-        icon="🟨"
-        [value]="match.player_stats!.yellow_cards">
-      </app-player-stat-badge>
-      <app-player-stat-badge 
-        *ngIf="hasRedCards()" 
-        icon="🟥"
-        [value]="match.player_stats!.red_cards">
-      </app-player-stat-badge>
+    <div class="match-content">
+      <!-- Teams and Score Row -->
+      <div class="match-teams-row">
+        <div class="match-teams-content">
+          <img 
+            [src]="images.getRouteImageTeam(match.teams.home.id)" 
+            [alt]="match.teams.home.name"
+            class="team-icon"
+            (error)="onImageError($event)">
+          <span class="team-name">{{ match.teams.home.name }}</span>
+          <span class="score">{{ match.goals.home }} - {{ match.goals.away }}</span>
+          <span class="team-name">{{ match.teams.away.name }}</span>
+          <img 
+            [src]="images.getRouteImageTeam(match.teams.away.id)" 
+            [alt]="match.teams.away.name"
+            class="team-icon"
+            (error)="onImageError($event)">
+        </div>
+        <div class="match-league-date-row">
+          <span class="match-league">{{ match.league.name }}</span>
+          <span class="match-date">{{ formatDate(match.fixture.timestamp) }}</span>
+        </div>
+      </div>
+      
+      <!-- Player stats badges -->
+      <div class="match-stats-badges" *ngIf="hasPlayerStats()">
+        <app-player-stat-badge 
+          *ngIf="started()" 
+          icon=""
+          value="XI">
+        </app-player-stat-badge>
+        <app-player-stat-badge 
+          *ngIf="hasGoals()" 
+          icon="⚽"
+          [value]="match.player_stats!.goals">
+        </app-player-stat-badge>
+        <app-player-stat-badge 
+          *ngIf="hasAssists()" 
+          icon="🎯"
+          [value]="match.player_stats!.assists">
+        </app-player-stat-badge>
+        <app-player-stat-badge 
+          *ngIf="hasYellowCards()" 
+          icon="🟨"
+          [value]="match.player_stats!.yellow_cards">
+        </app-player-stat-badge>
+        <app-player-stat-badge 
+          *ngIf="hasRedCards()" 
+          icon="🟥"
+          [value]="match.player_stats!.red_cards">
+        </app-player-stat-badge>
+      </div>
     </div>
   </div>
 </a>
