@@ -63,7 +63,7 @@
 
   <!-- Matches list (expandable) -->
   <div class="matches-container" *ngIf="hasMatches() && matchesExpanded">
-    <app-match-row *ngFor="let match of teamStats!.matches" [match]="match"></app-match-row>
+    <app-match-row *ngFor="let match of getSortedMatches()" [match]="match"></app-match-row>
   </div>
 </div>
 

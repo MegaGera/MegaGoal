@@ -44,5 +44,14 @@ export class TeamRowComponent {
   hasMatches(): boolean {
     return this.teamStats !== undefined && this.teamStats.matches.length > 0;
   }
+  
+  getSortedMatches(): any[] {
+    if (!this.teamStats || !this.teamStats.matches) {
+      return [];
+    }
+    return [...this.teamStats.matches].sort((a, b) => {
+      return (b.fixture?.timestamp || 0) - (a.fixture?.timestamp || 0);
+    });
+  }
 }
 
