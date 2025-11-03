@@ -12,11 +12,12 @@ import { StatsService } from '../../services/stats.service';
 import { Player } from '../../models/player';
 import { PlayerStats } from '../../models/playerStats';
 import { TeamRowComponent } from './team-row/team-row.component';
+import { PlayerStatComponent } from './player-stat/player-stat.component';
 
 @Component({
   selector: 'app-player-info',
   standalone: true,
-  imports: [CommonModule, TeamRowComponent],
+  imports: [CommonModule, TeamRowComponent, PlayerStatComponent],
   templateUrl: './player-info.component.html',
   styleUrl: './player-info.component.css',
   providers: [ImagesService]

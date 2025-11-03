@@ -29,44 +29,52 @@
     <!-- Player Stats Section -->
     <div class="player-stats-section" *ngIf="!statsLoading && playerStats">
       <div class="stats-grid">
-        <div class="stat-item">
-          <span class="stat-label">Matches Viewed</span>
-          <span class="stat-value">{{ playerStats.matches_viewed }}</span>
-          <span class="stat-sub-value" *ngIf="playerStats.matches_startXI > 0">({{ playerStats.matches_startXI }} start XI)</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Goals</span>
-          <span class="stat-value">{{ playerStats.total_goals }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Assists</span>
-          <span class="stat-value">{{ playerStats.total_assists }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Win %</span>
-          <span class="stat-value">{{ playerStats.win_percentage }}%</span>
-          <span class="stat-sub-value">({{ playerStats.wins }}-{{ playerStats.draws }}-{{ playerStats.losses }})</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Draw %</span>
-          <span class="stat-value">{{ playerStats.draw_percentage }}%</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Loss %</span>
-          <span class="stat-value">{{ playerStats.loss_percentage }}%</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Teams Watched</span>
-          <span class="stat-value">{{ playerStats.different_teams_watched }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Yellow Cards</span>
-          <span class="stat-value">{{ playerStats.yellow_cards }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Red Cards</span>
-          <span class="stat-value">{{ playerStats.red_cards }}</span>
-        </div>
+        <app-player-stat
+          icon="👁️"
+          label="Matches Viewed"
+          [value]="playerStats.matches_viewed"
+          [subValue]="playerStats.matches_startXI > 0 ? playerStats.matches_startXI + ' start XI' : undefined">
+        </app-player-stat>
+        <app-player-stat
+          icon="⚽"
+          label="Goals"
+          [value]="playerStats.total_goals">
+        </app-player-stat>
+        <app-player-stat
+          icon="🎯"
+          label="Assists"
+          [value]="playerStats.total_assists">
+        </app-player-stat>
+        <app-player-stat
+          icon="✅"
+          label="Wins"
+          [value]="playerStats.wins + ' - ' + playerStats.win_percentage + '%'">
+        </app-player-stat>
+        <app-player-stat
+          icon="🤝"
+          label="Draws"
+          [value]="playerStats.draws + ' - ' + playerStats.draw_percentage + '%'">
+        </app-player-stat>
+        <app-player-stat
+          icon="❌"
+          label="Losses"
+          [value]="playerStats.losses + ' - ' + playerStats.loss_percentage + '%'">
+        </app-player-stat>
+        <app-player-stat
+          icon="🟨"
+          label="Yellow Cards"
+          [value]="playerStats.yellow_cards">
+        </app-player-stat>
+        <app-player-stat
+          icon="🟥"
+          label="Red Cards"
+          [value]="playerStats.red_cards">
+        </app-player-stat>
+        <app-player-stat
+          icon="👥"
+          label="Teams Watched"
+          [value]="playerStats.different_teams_watched">
+        </app-player-stat>
       </div>
     </div>
   </div>
