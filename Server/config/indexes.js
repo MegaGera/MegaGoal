@@ -57,12 +57,9 @@ export const createIndexes = async () => {
     }, { background: true, sparse: true });
     
     // For admin queries checking missing statistics/lineups/events
-    await realMatchesCollection.createIndex({ 
-      'fixture.id': 1, 
-      'statistics': 1, 
-      'lineups': 1, 
-      'events': 1 
-    }, { background: true, sparse: true });
+    await realMatchesCollection.createIndex({ 'fixture.id': 1, 'statistics': 1 }, { background: true, sparse: true });
+    await realMatchesCollection.createIndex({ 'fixture.id': 1, 'lineups': 1 }, { background: true, sparse: true });
+    await realMatchesCollection.createIndex({ 'fixture.id': 1, 'events': 1 }, { background: true, sparse: true });
     
     console.log('✓ real_matches indexes created');
     
@@ -196,7 +193,9 @@ export const ensureIndexes = async () => {
       { key: { 'events.assist.id': 1 }, sparse: true },
       { key: { 'events.team.id': 1 }, sparse: true },
       { key: { 'fixture.id': 1, 'lineups.startXI.player.id': 1 }, sparse: true },
-      { key: { 'fixture.id': 1, 'statistics': 1, 'lineups': 1, 'events': 1 }, sparse: true },
+      { key: { 'fixture.id': 1, 'statistics': 1 }, sparse: true },
+      { key: { 'fixture.id': 1, 'lineups': 1 }, sparse: true },
+      { key: { 'fixture.id': 1, 'events': 1 }, sparse: true },
     ];
     
     for (const idxSpec of realMatchesIndexes) {
