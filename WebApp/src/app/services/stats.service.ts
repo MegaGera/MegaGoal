@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import { UserStats } from '../models/userStats';
 import { FavouriteTeamStats } from '../models/favouriteTeamStats';
 import { GeneralStats } from '../models/generalStats';
+import { PlayerStats } from '../models/playerStats';
 
 @Injectable({
   providedIn: 'root'
@@ -101,6 +102,14 @@ export class StatsService {
   */
   getLandingPageTeamStats(): Observable<FavouriteTeamStats> {
     return this.http.get<FavouriteTeamStats>(this.url + '/landing-page-team-stats/', this.options);
+  }
+
+  /*
+    Method to get player statistics based on matches viewed by user
+  */
+  getPlayerStats(playerId: number): Observable<PlayerStats> {
+    let params = new HttpParams().set('player_id', playerId.toString());
+    return this.http.get<PlayerStats>(this.url + '/player-stats/', { ...this.options, params: params });
   }
 
 }

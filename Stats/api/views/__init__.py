@@ -4,6 +4,7 @@ from .user_general_stats import UserGeneralStatsAPIView
 from .favourite_team_stats import FavouriteTeamStatsAPIView
 from .general_stats import GeneralStatsAPIView
 from .landing_page_team_stats import LandingPageTeamStatsAPIView
+from .player_stats import PlayerStatsAPIView
 
 __all__ = [
     'TeamsViewedAPIView',
@@ -11,5 +12,6 @@ __all__ = [
     'UserGeneralStatsAPIView',
     'FavouriteTeamStatsAPIView',
     'GeneralStatsAPIView',
-    'LandingPageTeamStatsAPIView'
+    'LandingPageTeamStatsAPIView',
+    'PlayerStatsAPIView'
 ] 

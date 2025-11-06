@@ -1,0 +1,47 @@
+.stat-mini-badge {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-mini-badge:hover {
+  background: rgba(102, 126, 234, 0.15);
+  transform: translateY(-1px);
+}
+
+.stat-icon {
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stat-mini-badge {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .stat-icon {
+    font-size: 12px;
+  }
+
+  .stat-value {
+    font-size: 11px;
+  }
+}
+

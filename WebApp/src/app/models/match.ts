@@ -35,5 +35,12 @@ export interface Match {
         id: number,
         name: string
     },
-    statistics?: TeamStatistics[]
+    statistics?: TeamStatistics[],
+    player_stats?: {
+        started: boolean,
+        goals: number,
+        assists: number,
+        yellow_cards: number,
+        red_cards: number
+    }
 }

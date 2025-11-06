@@ -1,15 +1,17 @@
-<div class="player-row" [class.player-substitute]="isSubstitute">
-  <div class="player-info">
-    <img 
-      [src]="getPlayerImageUrl(player.id)" 
-      [alt]="player.name"
-      class="player-image"
-      (error)="onImageError($event)">
-    <div class="player-details">
-      <span class="player-name">{{ player.name }}</span>
-      <span class="player-number">#{{ player.number }}</span>
-      <span class="player-position">{{ player.pos || '-' }}</span>
+<a [routerLink]="['/app/player']" [queryParams]="{id: player.id}" class="player-row-link">
+  <div class="player-row" [class.player-substitute]="isSubstitute">
+    <div class="player-info">
+      <img 
+        [src]="getPlayerImageUrl(player.id)" 
+        [alt]="player.name"
+        class="player-image"
+        (error)="onImageError($event)">
+      <div class="player-details">
+        <span class="player-name">{{ player.name }}</span>
+        <span class="player-number">#{{ player.number }}</span>
+        <span class="player-position">{{ player.pos || '-' }}</span>
+      </div>
     </div>
   </div>
-</div>
+</a>
 
