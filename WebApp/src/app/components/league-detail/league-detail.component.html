@@ -77,73 +77,107 @@
         }
 
         <!-- Matches section -->
-        @if (groupedRealMatches.length > 0) {
+        @if (groupedRealMatches.length > 0 || isLoadingMatches) {
           <div class="matches-section">
             <h2 class="section-title">Matches</h2>
             
-            <!-- Matchday selector -->
-            <div class="round-selector">
-              <button 
-                class="round-nav-btn"
-                (click)="changeMatchday(-1)"
-                [disabled]="selectedMatchday <= 0"
-                aria-label="Previous matchday">
-                <span>&laquo;</span>
-              </button>
-              
-              <mat-form-field appearance="outline">
-                <mat-label>Matchday</mat-label>
-                <mat-select 
-                  [(ngModel)]="selectedMatchday"
-                  (selectionChange)="onMatchdayChange(selectedMatchday)"
-                  aria-label="Select matchday">
-                  @for (matchday of groupedRealMatches; track $index) {
-                    <mat-option [value]="$index">
-                      {{ parseRoundName(groupedRealMatches[$index][0].league.round) }}
-                    </mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              
-              <button 
-                class="round-nav-btn"
-                (click)="changeMatchday(1)"
-                [disabled]="selectedMatchday >= groupedRealMatches.length - 1"
-                aria-label="Next matchday">
-                <span>&raquo;</span>
-              </button>
-            </div>
+            @if (!isLoadingMatches && groupedRealMatches.length > 0) {
+              <!-- Matchday selector -->
+              <div class="round-selector">
+                <button 
+                  class="round-nav-btn"
+                  (click)="changeMatchday(-1)"
+                  [disabled]="selectedMatchday <= 0"
+                  aria-label="Previous matchday">
+                  <span>&laquo;</span>
+                </button>
+                
+                <mat-form-field appearance="outline">
+                  <mat-label>Matchday</mat-label>
+                  <mat-select 
+                    [(ngModel)]="selectedMatchday"
+                    (selectionChange)="onMatchdayChange(selectedMatchday)"
+                    aria-label="Select matchday">
+                    @for (matchday of groupedRealMatches; track $index) {
+                      <mat-option [value]="$index">
+                        {{ parseRoundName(groupedRealMatches[$index][0].league.round) }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                
+                <button 
+                  class="round-nav-btn"
+                  (click)="changeMatchday(1)"
+                  [disabled]="selectedMatchday >= groupedRealMatches.length - 1"
+                  aria-label="Next matchday">
+                  <span>&raquo;</span>
+                </button>
+              </div>
+            }
 
-            <!-- Matches grid -->
-            <div class="matches-grid">
-              @for (match of showMatches; track match.fixture.id) {
-                <div class="match-card-wrapper">
-                  <app-real-match-card 
-                    [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-                    [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-                    [locations]="locations"
-                    [size]="'md'">
-                  </app-real-match-card>
-                </div>
+            @if (isLoadingMatches) {
+              <!-- Skeleton matchday selector -->
+              <div class="round-selector">
+                <div class="skeleton-nav-btn"></div>
+                <div class="skeleton-select"></div>
+                <div class="skeleton-nav-btn"></div>
+              </div>
+
+              <!-- Skeleton matches grid -->
+              <div class="matches-grid">
+                @for (item of [1,2,3,4,5,6]; track item) {
+                  <div class="match-card-wrapper">
+                    <div class="match-skeleton-card">
+                      <div class="skeleton-match-content">
+                        <div class="skeleton-team">
+                          <div class="skeleton-team-logo"></div>
+                          <div class="skeleton-team-name"></div>
+                        </div>
+                        <div class="skeleton-score">
+                          <div class="skeleton-score-value"></div>
+                        </div>
+                        <div class="skeleton-team">
+                          <div class="skeleton-team-logo"></div>
+                          <div class="skeleton-team-name"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else if (groupedRealMatches.length > 0) {
+              <!-- Matches grid -->
+              <div class="matches-grid">
+                @for (match of showMatches; track match.fixture.id) {
+                  <div class="match-card-wrapper">
+                    <app-real-match-card 
+                      [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                      [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                      [locations]="locations"
+                      [size]="'md'">
+                    </app-real-match-card>
+                  </div>
+                }
+              </div>
+
+              <!-- Show more matches button -->
+              @if (hasMoreMatches()) {
+                <button 
+                  class="show-all-btn"
+                  (click)="showMoreMatches()"
+                  aria-label="Show more matches">
+                  <ng-icon name="jamPlus"></ng-icon>
+                  Show More Matches ({{ groupedRealMatches[selectedMatchday].length - showMatches.length }} remaining)
+                </button>
               }
-            </div>
-
-            <!-- Show more matches button -->
-            @if (hasMoreMatches()) {
-              <button 
-                class="show-all-btn"
-                (click)="showMoreMatches()"
-                aria-label="Show more matches">
-                <ng-icon name="jamPlus"></ng-icon>
-                Show More Matches ({{ groupedRealMatches[selectedMatchday].length - showMatches.length }} remaining)
-              </button>
             }
           </div>
         }
       </div>
 
       <!-- Empty matches state -->
-      @if (groupedRealMatches.length === 0 && !isLoading) {
+      @if (groupedRealMatches.length === 0 && !isLoadingMatches) {
         <div class="empty-state">
           <div class="empty-state-icon">⚽</div>
           <h2 class="empty-state-title">No Matches Available</h2>

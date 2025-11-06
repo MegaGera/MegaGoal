@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ImagesService } from '../../services/images.service';
+import { ImagesService } from '../../../services/images.service';
 
 @Component({
   selector: 'app-league-header',

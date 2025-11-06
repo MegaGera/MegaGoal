@@ -12,7 +12,7 @@ import { AuthService } from '../../services/auth.service';
 import { UpdaterService } from '../../services/updater.service';
 import { RealMatch, TeamStatistics } from '../../models/realMatch';
 import { isFinishedStatus } from '../../config/matchStatus';
-import { LeagueHeaderComponent } from '../league-header/league-header.component';
+import { LeagueHeaderComponent } from './league-header/league-header.component';
 import { GeneralMatchCardComponent } from '../general-match-card/general-match-card.component';
 import { MatchEventsComponent } from '../match-events/match-events.component';
 import { MatchStatisticsComponent } from '../match-statistics/match-statistics.component';

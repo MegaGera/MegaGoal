@@ -63,6 +63,7 @@ export class LeagueDetailComponent implements OnInit {
 
   /* UI State */
   isLoading: boolean = false;
+  isLoadingMatches: boolean = false;
 
   /* Query params storage */
   querySeasonId: number | null = null;
@@ -200,7 +201,7 @@ export class LeagueDetailComponent implements OnInit {
   */
   getRealMatches() {
     if (this.selectedLeague !== undefined && this.selectedSeason !== undefined) {
-      this.setLoading(true);
+      this.isLoadingMatches = true;
       this.megagoal.getRealMatchesByLeagueIDAndSeason(this.selectedLeague.league.id, this.selectedSeason.id).subscribe({
         next: (result) => {
           this.realMatches = result;
@@ -222,16 +223,17 @@ export class LeagueDetailComponent implements OnInit {
             });
           }
           
-          this.setLoading(false);
+          this.isLoadingMatches = false;
         },
         error: (error: any) => {
           console.error('Error fetching real matches:', error);
-          this.setLoading(false);
+          this.isLoadingMatches = false;
         }
       });
     } else {
       this.realMatches = [];
       this.groupedRealMatches = [];
+      this.isLoadingMatches = false;
     }
   }
 

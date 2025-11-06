@@ -370,6 +370,94 @@
   line-height: 1.5;
 }
 
+/* Skeleton loaders */
+.skeleton-nav-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.skeleton-select {
+  min-width: 350px;
+  height: 56px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.match-skeleton-card {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  box-shadow: 0 0 2px 0 rgba(48, 48, 48, 0.1), 0 4px 4px 0 rgba(48, 48, 48, 0.1);
+  height: 20vh;
+  min-height: 180px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-match-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 100%;
+  gap: 20px;
+}
+
+.skeleton-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.skeleton-team-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+.skeleton-team-name {
+  width: 80px;
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+.skeleton-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.skeleton-score-value {
+  width: 50px;
+  height: 30px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Desktop layout with teams on left and matches on right */
 @media (min-width: 1025px) {
   .teams-matches-container {
@@ -498,6 +586,54 @@
     flex: 1;
     max-width: 300px;
   }
+
+  .skeleton-select {
+    min-width: 200px;
+    flex: 1;
+    max-width: 300px;
+  }
+
+  .skeleton-nav-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .match-skeleton-card {
+    min-height: 140px;
+    height: 14vh;
+  }
+
+  .skeleton-team-logo {
+    width: 50px;
+    height: 50px;
+  }
+
+  .skeleton-team-name {
+    width: 70px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .match-skeleton-card {
+    height: 14vh;
+    min-height: 120px;
+  }
+
+  .skeleton-team-logo {
+    width: 45px;
+    height: 45px;
+  }
+
+  .skeleton-team-name {
+    width: 60px;
+    height: 12px;
+  }
+
+  .skeleton-score-value {
+    width: 40px;
+    height: 24px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -537,6 +673,16 @@
   .round-selector mat-form-field {
     min-width: 150px;
     max-width: 200px;
+  }
+
+  .skeleton-select {
+    min-width: 150px;
+    max-width: 200px;
+  }
+
+  .skeleton-nav-btn {
+    width: 44px;
+    height: 44px;
   }
   
   .teams-grid {
