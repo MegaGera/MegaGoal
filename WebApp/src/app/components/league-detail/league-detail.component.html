@@ -85,19 +85,19 @@
             <div class="round-selector">
               <button 
                 class="round-nav-btn"
-                (click)="changeRound(-1)"
-                [disabled]="selectedRound <= 0"
-                aria-label="Previous round">
+                (click)="changeMatchday(-1)"
+                [disabled]="selectedMatchday <= 0"
+                aria-label="Previous matchday">
                 <span>&laquo;</span>
               </button>
               
               <mat-form-field appearance="outline">
                 <mat-label>Matchday</mat-label>
                 <mat-select 
-                  [(ngModel)]="selectedRound"
-                  (selectionChange)="onRoundChange(selectedRound)"
-                  aria-label="Select round">
-                  @for (round of groupedRealMatches; track $index) {
+                  [(ngModel)]="selectedMatchday"
+                  (selectionChange)="onMatchdayChange(selectedMatchday)"
+                  aria-label="Select matchday">
+                  @for (matchday of groupedRealMatches; track $index) {
                     <mat-option [value]="$index">
                       {{ parseRoundName(groupedRealMatches[$index][0].league.round) }}
                     </mat-option>
@@ -107,9 +107,9 @@
               
               <button 
                 class="round-nav-btn"
-                (click)="changeRound(1)"
-                [disabled]="selectedRound >= groupedRealMatches.length - 1"
-                aria-label="Next round">
+                (click)="changeMatchday(1)"
+                [disabled]="selectedMatchday >= groupedRealMatches.length - 1"
+                aria-label="Next matchday">
                 <span>&raquo;</span>
               </button>
             </div>
@@ -135,7 +135,7 @@
                 (click)="showMoreMatches()"
                 aria-label="Show more matches">
                 <ng-icon name="jamPlus"></ng-icon>
-                Show More Matches ({{ groupedRealMatches[selectedRound].length - showMatches.length }} remaining)
+                Show More Matches ({{ groupedRealMatches[selectedMatchday].length - showMatches.length }} remaining)
               </button>
             }
           </div>

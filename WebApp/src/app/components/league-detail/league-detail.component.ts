@@ -44,7 +44,7 @@ export class LeagueDetailComponent implements OnInit {
   selectedLeague!: League | undefined;
   realMatches: RealMatch[] = [];
   groupedRealMatches: RealMatch[][] = [];
-  selectedRound: number = 0;
+  selectedMatchday: number = 0;
   matches: Match[] = [];
   locations: Location[] = [];
 
@@ -64,6 +64,10 @@ export class LeagueDetailComponent implements OnInit {
   /* UI State */
   isLoading: boolean = false;
 
+  /* Query params storage */
+  querySeasonId: number | null = null;
+  queryMatchday: number | null = null;
+
   constructor(
     private megagoal: MegaGoalService, 
     public images: ImagesService, 
@@ -76,23 +80,38 @@ export class LeagueDetailComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Read query params synchronously first
+    const queryParams = this.route.snapshot.queryParamMap;
+    const seasonParam = queryParams.get('season');
+    const matchdayParam = queryParams.get('matchday');
+    this.querySeasonId = seasonParam ? +seasonParam : null;
+    // Convert 1-based matchday from URL to 0-based index (matchday 1 = index 0)
+    this.queryMatchday = matchdayParam ? +matchdayParam - 1 : null;
+
     this.route.params.subscribe(params => {
       const leagueId = +params['id'];
       this.loadLeague(leagueId);
     });
 
-    // Subscribe to query parameters for season and round
+    // Subscribe to query parameters for season and matchday changes
     this.route.queryParamMap.subscribe(params => {
       const seasonParam = params.get('season');
-      const roundParam = params.get('round');
-      const seasonId = seasonParam ? +seasonParam : (this.selectedSeason?.id || 2024);
-      const roundIndex = roundParam ? +roundParam : 0;
+      const matchdayParam = params.get('matchday');
+      const newSeasonId = seasonParam ? +seasonParam : null;
+      // Convert 1-based matchday from URL to 0-based index (matchday 1 = index 0)
+      const newMatchdayIndex = matchdayParam ? +matchdayParam - 1 : null;
+      
+      const seasonChanged = this.querySeasonId !== newSeasonId;
+      const matchdayChanged = this.queryMatchday !== newMatchdayIndex;
+      
+      this.querySeasonId = newSeasonId;
+      this.queryMatchday = newMatchdayIndex;
       
       if (this.selectedLeague) {
         // Update season if different
-        if (this.selectedSeason?.id !== seasonId) {
-          const newSeason = this.seasonsFiltered.find(season => season.id === seasonId);
-          if (newSeason) {
+        if (seasonChanged && newSeasonId !== null) {
+          const newSeason = this.seasonsFiltered.find(season => season.id === newSeasonId);
+          if (newSeason && this.selectedSeason?.id !== newSeasonId) {
             this.selectedSeason = newSeason;
             this.getTeamsByLeagueAndSeason(this.selectedLeague.league.id, this.selectedSeason.id);
             this.getRealMatches();
@@ -100,9 +119,17 @@ export class LeagueDetailComponent implements OnInit {
           }
         }
         
-        // Update round if different and available
-        if (this.selectedRound !== roundIndex && this.groupedRealMatches.length > roundIndex) {
-          this.selectedRound = roundIndex;
+        // Update matchday if different and available
+        if (matchdayChanged && newMatchdayIndex !== null && newMatchdayIndex >= 0 && this.groupedRealMatches.length > newMatchdayIndex) {
+          this.selectedMatchday = newMatchdayIndex;
+          // Reset pagination and update showMatches
+          this.currentMatchesPage = 1;
+          if (this.groupedRealMatches.length > 0 && this.selectedMatchday < this.groupedRealMatches.length) {
+            const allMatchesInMatchday = this.groupedRealMatches[this.selectedMatchday];
+            this.showMatches = allMatchesInMatchday.slice(0, this.matchesPerPage);
+          } else {
+            this.showMatches = [];
+          }
         }
       }
     });
@@ -118,9 +145,14 @@ export class LeagueDetailComponent implements OnInit {
           // Generate seasons dynamically from league data
           this.generateSeasonsFromLeague();
           
-          // Select the first available season (most recent)
+          // Select season from query params if available, otherwise use first available season (most recent)
           if (this.seasonsFiltered.length > 0) {
-            this.selectedSeason = this.seasonsFiltered[0];
+            if (this.querySeasonId !== null) {
+              const seasonFromQuery = this.seasonsFiltered.find(season => season.id === this.querySeasonId);
+              this.selectedSeason = seasonFromQuery || this.seasonsFiltered[0];
+            } else {
+              this.selectedSeason = this.seasonsFiltered[0];
+            }
           }
           
           this.getTeamsByLeagueAndSeason(leagueId, this.selectedSeason.id);
@@ -179,12 +211,12 @@ export class LeagueDetailComponent implements OnInit {
           
           // Add default URL parameters after real matches are loaded
           const currentUrl = this.router.url;
-          if (!currentUrl.includes('season=') || !currentUrl.includes('round=')) {
+          if (!currentUrl.includes('season=') || !currentUrl.includes('matchday=')) {
             this.router.navigate([], {
               relativeTo: this.route,
               queryParams: { 
                 season: this.selectedSeason.id,
-                round: this.selectedRound 
+                matchday: this.selectedMatchday + 1 // Convert 0-based index to 1-based matchday
               },
               queryParamsHandling: 'merge'
             });
@@ -204,51 +236,57 @@ export class LeagueDetailComponent implements OnInit {
   }
 
   /*
-    This method group Real Matches by round in a matrix to have easy acces to them
+    This method group Real Matches by matchday in a matrix to have easy access to them
   */
   groupRealMatches() {
-    // Step 1: Group matches by round using forEach
-    const groupedMatches: { [round: string]: RealMatch[] } = {};
+    // Step 1: Group matches by matchday using forEach
+    const groupedMatches: { [matchdayRound: string]: RealMatch[] } = {};
 
     this.realMatches.forEach(match => {
-        const round = match.league.round;
-        if (!groupedMatches[round]) {
-            groupedMatches[round] = [];
+        const matchdayRound = match.league.round; // API uses "round" field
+        if (!groupedMatches[matchdayRound]) {
+            groupedMatches[matchdayRound] = [];
         }
-        groupedMatches[round].push(match);
+        groupedMatches[matchdayRound].push(match);
     });
 
-    // Step 2: Extract and sort "Regular Season - n" rounds
+    // Step 2: Extract and sort "Regular Season - n" matchdays
     const regularSeasonMatches = Object.keys(groupedMatches)
-        .filter(round => round.startsWith("Regular Season"))
+        .filter(matchdayRound => matchdayRound.startsWith("Regular Season"))
         .sort((a, b) => {
-            const roundA = parseInt(a.split(" - ")[1], 10);
-            const roundB = parseInt(b.split(" - ")[1], 10);
-            return roundA - roundB;
+            const matchdayA = parseInt(a.split(" - ")[1], 10);
+            const matchdayB = parseInt(b.split(" - ")[1], 10);
+            return matchdayA - matchdayB;
         })
-        .map(round => groupedMatches[round]);
+        .map(matchdayRound => groupedMatches[matchdayRound]);
 
     // Step 3: Extract non-regular season matches
     const otherMatches = Object.keys(groupedMatches)
-        .filter(round => !round.startsWith("Regular Season"))
-        .map(round => groupedMatches[round]);
+        .filter(matchdayRound => !matchdayRound.startsWith("Regular Season"))
+        .map(matchdayRound => groupedMatches[matchdayRound]);
 
     // Step 4: Combine sorted regular season matches with other matches
     this.groupedRealMatches = [...regularSeasonMatches, ...otherMatches];
 
-    // Step 5: Reverse iterate to find the last played round
-    for (let i = regularSeasonMatches.length - 1; i >= 0; i--) {
-        let matchesInRound = regularSeasonMatches[i];
-        if (matchesInRound.some(match => match.fixture.status.short === "FT")) {
-            this.selectedRound = i;
-            break;
+    // Step 5: Set selected matchday from query params if available, otherwise find the last played matchday
+    if (this.queryMatchday !== null && this.queryMatchday >= 0 && this.queryMatchday < this.groupedRealMatches.length) {
+        // Use matchday from query params (already converted to 0-based index)
+        this.selectedMatchday = this.queryMatchday;
+    } else {
+        // Reverse iterate to find the last played matchday
+        for (let i = regularSeasonMatches.length - 1; i >= 0; i--) {
+            let matchesInMatchday = regularSeasonMatches[i];
+            if (matchesInMatchday.some(match => match.fixture.status.short === "FT")) {
+                this.selectedMatchday = i;
+                break;
+            }
         }
     }
 
-    // Initialize showMatches with first 50 matches of selected round
-    if (this.groupedRealMatches.length > 0 && this.selectedRound < this.groupedRealMatches.length) {
-        const allMatchesInRound = this.groupedRealMatches[this.selectedRound];
-        this.showMatches = allMatchesInRound.slice(0, this.matchesPerPage);
+    // Initialize showMatches with first 50 matches of selected matchday
+    if (this.groupedRealMatches.length > 0 && this.selectedMatchday < this.groupedRealMatches.length) {
+        const allMatchesInMatchday = this.groupedRealMatches[this.selectedMatchday];
+        this.showMatches = allMatchesInMatchday.slice(0, this.matchesPerPage);
         this.currentMatchesPage = 1;
     } else {
         this.showMatches = [];
@@ -257,28 +295,28 @@ export class LeagueDetailComponent implements OnInit {
   }
 
   /*
-    This method change the round of the matches by the arrows
+    This method change the matchday of the matches by the arrows
   */
-  changeRound(n: number) {
+  changeMatchday(n: number) {
     this.getMatches();
-    if (this.selectedRound + n >= 0 && this.selectedRound + n < this.groupedRealMatches.length) {
-      this.selectedRound = this.selectedRound + n;
+    if (this.selectedMatchday + n >= 0 && this.selectedMatchday + n < this.groupedRealMatches.length) {
+      this.selectedMatchday = this.selectedMatchday + n;
       
       // Reset pagination and update showMatches
       this.currentMatchesPage = 1;
-      if (this.groupedRealMatches.length > 0 && this.selectedRound < this.groupedRealMatches.length) {
-        const allMatchesInRound = this.groupedRealMatches[this.selectedRound];
-        this.showMatches = allMatchesInRound.slice(0, this.matchesPerPage);
+      if (this.groupedRealMatches.length > 0 && this.selectedMatchday < this.groupedRealMatches.length) {
+        const allMatchesInMatchday = this.groupedRealMatches[this.selectedMatchday];
+        this.showMatches = allMatchesInMatchday.slice(0, this.matchesPerPage);
       } else {
         this.showMatches = [];
       }
       
-      // Update URL with new round parameter
+      // Update URL with new matchday parameter (convert 0-based index to 1-based matchday)
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: { 
           season: this.selectedSeason.id,
-          round: this.selectedRound 
+          matchday: this.selectedMatchday + 1
         },
         queryParamsHandling: 'merge'
       });
@@ -286,26 +324,26 @@ export class LeagueDetailComponent implements OnInit {
   }
 
   /*
-    This method handles round selector changes
+    This method handles matchday selector changes
   */
-  onRoundChange(roundIndex: number) {
-    this.selectedRound = roundIndex;
+  onMatchdayChange(matchdayIndex: number) {
+    this.selectedMatchday = matchdayIndex;
     
     // Reset pagination and update showMatches
     this.currentMatchesPage = 1;
-    if (this.groupedRealMatches.length > 0 && this.selectedRound < this.groupedRealMatches.length) {
-      const allMatchesInRound = this.groupedRealMatches[this.selectedRound];
-      this.showMatches = allMatchesInRound.slice(0, this.matchesPerPage);
+    if (this.groupedRealMatches.length > 0 && this.selectedMatchday < this.groupedRealMatches.length) {
+      const allMatchesInMatchday = this.groupedRealMatches[this.selectedMatchday];
+      this.showMatches = allMatchesInMatchday.slice(0, this.matchesPerPage);
     } else {
       this.showMatches = [];
     }
     
-    // Update URL with new round parameter
+    // Update URL with new matchday parameter (convert 0-based index to 1-based matchday)
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { 
         season: this.selectedSeason.id,
-        round: this.selectedRound 
+        matchday: this.selectedMatchday + 1
       },
       queryParamsHandling: 'merge'
     });
@@ -341,6 +379,9 @@ export class LeagueDetailComponent implements OnInit {
   */
   getTeamsBySeason(season: SeasonInfo): void {
     this.selectedSeason = season;
+    // Reset matchday to 1 (index 0) when season changes
+    this.selectedMatchday = 0;
+    this.queryMatchday = 0; // Update query matchday to match (0-based index)
     this.getTeamsByLeagueAndSeason(this.selectedLeague!.league.id, season.id);
     this.getRealMatches();
     this.getMatches();
@@ -348,12 +389,12 @@ export class LeagueDetailComponent implements OnInit {
     // Reset match pagination
     this.currentMatchesPage = 1;
     
-    // Update URL with new season parameter
+    // Update URL with new season parameter and reset matchday to 1
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { 
         season: season.id,
-        round: this.selectedRound 
+        matchday: 1
       },
       queryParamsHandling: 'merge'
     });
@@ -392,9 +433,9 @@ export class LeagueDetailComponent implements OnInit {
     const startIndex = 0;
     const endIndex = nextPage * this.matchesPerPage;
     
-    if (this.groupedRealMatches.length > 0 && this.selectedRound < this.groupedRealMatches.length) {
-      const allMatchesInRound = this.groupedRealMatches[this.selectedRound];
-      this.showMatches = allMatchesInRound.slice(startIndex, endIndex);
+    if (this.groupedRealMatches.length > 0 && this.selectedMatchday < this.groupedRealMatches.length) {
+      const allMatchesInMatchday = this.groupedRealMatches[this.selectedMatchday];
+      this.showMatches = allMatchesInMatchday.slice(startIndex, endIndex);
       this.currentMatchesPage = nextPage;
     }
   }
@@ -403,11 +444,11 @@ export class LeagueDetailComponent implements OnInit {
     Check if there are more matches to show
   */
   hasMoreMatches(): boolean {
-    if (this.groupedRealMatches.length === 0 || this.selectedRound >= this.groupedRealMatches.length) {
+    if (this.groupedRealMatches.length === 0 || this.selectedMatchday >= this.groupedRealMatches.length) {
       return false;
     }
-    const allMatchesInRound = this.groupedRealMatches[this.selectedRound];
-    return allMatchesInRound.length > this.matchesPerPage && this.showMatches.length < allMatchesInRound.length;
+    const allMatchesInMatchday = this.groupedRealMatches[this.selectedMatchday];
+    return allMatchesInMatchday.length > this.matchesPerPage && this.showMatches.length < allMatchesInMatchday.length;
   }
 
   /*
@@ -439,34 +480,34 @@ export class LeagueDetailComponent implements OnInit {
   }
 
   /*
-    Parse the round name:
+    Parse the matchday name from API round field:
      - Regular Season - [N] -> Matchday - [N]
      - League Stage - [N] -> League R. - [N]
      - Group Stage - [N] -> Group R. - [N]
   */
-  parseRoundName(round: string): string {
+  parseRoundName(matchdayRound: string): string {
   // Regular Season - [n] -> Matchday - [n]
     const regularSeasonRegex = /^Regular Season - (\d+)$/;
-    const regularSeasonMatch = round.match(regularSeasonRegex);
+    const regularSeasonMatch = matchdayRound.match(regularSeasonRegex);
     if (regularSeasonMatch) {
       return `Matchday - ${regularSeasonMatch[1]}`;
     }
 
     // League Stage - [n] -> League R. - [n]
     const leagueStageRegex = /^League Stage - (\d+)$/;
-    const leagueStageMatch = round.match(leagueStageRegex);
+    const leagueStageMatch = matchdayRound.match(leagueStageRegex);
     if (leagueStageMatch) {
       return `League R. - ${leagueStageMatch[1]}`;
     }
 
     // Group Stage - [n] -> Group R. - [n]
     const groupStageRegex = /^Group Stage - (\d+)$/;
-    const groupStageMatch = round.match(groupStageRegex);
+    const groupStageMatch = matchdayRound.match(groupStageRegex);
     if (groupStageMatch) {
       return `Group R. - ${groupStageMatch[1]}`;
     }
 
-    return round;
+    return matchdayRound;
   }
 
 } 
