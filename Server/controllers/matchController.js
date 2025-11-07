@@ -34,6 +34,50 @@ const getMatches = async (req, res) => {
   }
 }
 
+// Get matches by team id
+const getMatchesByTeamId = async (req, res) => {
+  const db = getDB();
+  try {
+    const { teamId } = req.params;
+    const { season, location, fixture_id } = req.query;
+    const username = req.validateData.username;
+
+    if (!teamId) {
+      return res.status(400).json({ message: "Team ID is required" });
+    }
+
+    const filters = [
+      {
+        $or: [
+          { 'teams.home.id': +teamId },
+          { 'teams.away.id': +teamId }
+        ]
+      }
+    ];
+
+    if (username) {
+      filters.push({ 'user.username': username });
+    }
+    if (season) {
+      filters.push({ 'league.season': +season });
+    }
+    if (location) {
+      filters.push({ 'location': location });
+    }
+    if (fixture_id) {
+      filters.push({ 'fixture.id': +fixture_id });
+    }
+
+    const query = { $and: filters };
+    const result = await db.collection('matches').find(query).toArray();
+
+    console.log(`Matches retrieved for team ${teamId}`);
+    res.send(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
 // Post create a Match
 const createMatch = async (req, res) => {
   const db = getDB();
@@ -211,4 +255,4 @@ const getLandingPageInfo = async (req, res) => {
   }
 }
 
-export { getMatches, createMatch, deleteMatch, changeLocation, getLandingPageInfo };
+export { getMatches, getMatchesByTeamId, createMatch, deleteMatch, changeLocation, getLandingPageInfo };

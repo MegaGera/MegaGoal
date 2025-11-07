@@ -6,28 +6,30 @@
   </div>
 
   <!-- Filter team selection row -->
-  <div class="filter-section">
-    <div class="filter-chips">
-      <mat-chip 
-        class="filter-chip" 
-        [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 0}"
-        (click)="changeFilterPanelChipSelected(0)">
-        All
-      </mat-chip>
-      <mat-chip 
-        class="filter-chip" 
-        [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 1}"
-        (click)="changeFilterPanelChipSelected(1)">
-        Clubs
-      </mat-chip>
-      <mat-chip 
-        class="filter-chip" 
-        [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 2}"
-        (click)="changeFilterPanelChipSelected(2)">
-        Nations
-      </mat-chip>
+  @if (showPanelChips) {
+    <div class="filter-section">
+      <div class="filter-chips">
+        <mat-chip 
+          class="filter-chip" 
+          [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 0}"
+          (click)="changeFilterPanelChipSelected(0)">
+          All
+        </mat-chip>
+        <mat-chip 
+          class="filter-chip" 
+          [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 1}"
+          (click)="changeFilterPanelChipSelected(1)">
+          Clubs
+        </mat-chip>
+        <mat-chip 
+          class="filter-chip" 
+          [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 2}"
+          (click)="changeFilterPanelChipSelected(2)">
+          Nations
+        </mat-chip>
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Filter league selection row -->
   <div class="filter-section">

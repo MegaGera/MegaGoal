@@ -23,6 +23,7 @@ export class FavouriteTeamCardComponent {
   @Input() teams: any[] = [];
   @Input() selectedTeamId: number | null = null;
   @Input() interactable: boolean = true;
+  @Input() showHeader: boolean = true;
   @Output() teamSelected = new EventEmitter<number>();
 
   constructor(public images: ImagesService) {}

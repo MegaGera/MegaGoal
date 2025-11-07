@@ -406,13 +406,6 @@ export class HomeComponent implements OnInit {
     this.filterMatches();
   }
 
-  getMatchSubvalueForCard(match: Match) {
-    const locationName = this.locations.find(location => location.id === match.location)?.name || 'Unknown location';
-    const date = new Date(match.fixture.timestamp * 1000); // assuming timestamp is in seconds
-    const formattedDate = date.toLocaleDateString('en-GB'); // dd/mm/yyyy
-    return `Viewed at ${locationName} on ${formattedDate}`;
-  }
-
   resetFilters() {
     this.filterPanelChipSelected = 0; // All
     this.filterLeagueSelected = []; // No leagues selected

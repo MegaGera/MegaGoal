@@ -1,202 +1,389 @@
 
 @if (team !== undefined) {
-  <div class="container">
+  <div class="container team-page">
+
+    <app-team-header
+      [team]="team">
+    </app-team-header>
 
     <nav class="nav-class">
-      <div class="nav nav-tabs d-md-none" id="nav-tab-team" role="tablist">
-        <button class="nav-link" id="nav-stats-tab" data-bs-toggle="tab" data-bs-target="#nav-stats" type="button" role="tab" aria-controls="nav-stats" aria-selected="true">Stats</button>
-        <button class="nav-link active" id="nav-team-tab" data-bs-toggle="tab" data-bs-target="#nav-team" type="button" role="tab" aria-controls="nav-team" aria-selected="false">Team</button>
-        <button class="nav-link" id="nav-competitions-tab" data-bs-toggle="tab" data-bs-target="#nav-competitions" type="button" role="tab" aria-controls="nav-competitions" aria-selected="false">Filters</button>
+      <div class="nav nav-tabs d-md-none" id="team-nav-tabs" role="tablist">
+        <button class="nav-link" 
+                id="team-insights-tab" 
+                data-bs-toggle="tab" 
+                data-bs-target="#team-insights-pane" 
+                type="button" 
+                role="tab" 
+                aria-controls="team-insights-pane" 
+                aria-selected="true"
+                [class.d-none]="viewMode === 'allMatches'">Stats</button>
+        <button class="nav-link active" id="team-matches-tab" data-bs-toggle="tab" data-bs-target="#team-main-pane" type="button" role="tab" aria-controls="team-main-pane" aria-selected="false">Matches</button>
+        <button class="nav-link" id="team-filters-tab" data-bs-toggle="tab" data-bs-target="#team-filters-pane" type="button" role="tab" aria-controls="team-filters-pane" aria-selected="false">Filters</button>
       </div>
     </nav>
 
-    <!-- Desktop Layout: Side by side -->
-    <div class="row m-auto d-none d-md-flex mt-4">
-      <!-- Stats information column -->
-      <div class="col-md-3 col-12">
-        <div class="informationColumn">
-          <div class="text-center">
-            <h2 class="m-auto"><u>Stats</u></h2>
-            <h3 class="m-auto">Total views:</h3>
+    <div class="row">
+      <div class="col-12">
+        <div class="view-toggle-card">
+          <div class="view-toggle">
+            <button class="toggle-btn" [class.active]="viewMode === 'insights'" (click)="setView('insights')">Insights</button>
+            <button class="toggle-btn" [class.active]="viewMode === 'yourMatches'" (click)="setView('yourMatches')">Your Matches</button>
+            <button class="toggle-btn" [class.active]="viewMode === 'allMatches'" (click)="setView('allMatches')">All Matches</button>
           </div>
         </div>
-      </div>
-
-      <!-- Team main information column -->
-      <div class="col-md-6 col-12">
-        <div class="centralTeamInformation">
-          <div class="row">
-            <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
-          </div>
-          <div class="row text-center">
-            <h1 class="teamNameText">{{team.team.name}}</h1>
-          </div>
-          <div class="row text-center">
-            <table class="informationTable">
-              <tr>
-                <th class="tableCol" scope="col">Code</th>
-                <th class="tableCol" scope="col">Country</th>
-                <th class="tableCol">City</th>
-                <th class="tableCol">Founded</th>
-                <th class="tableCol">Stadium</th>
-              </tr>
-              <tr>
-                <td>{{team.team.code}}</td>
-                <td>{{team.team.country}}</td>
-                <td>{{team.venue.city}}</td>
-                <td>{{team.team.founded}}</td>
-                <td>{{team.venue.name}}</td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Filters column (Desktop) -->
-      <div class="col-md-3 col-12">
-        <app-team-filters
-          [selectedSeason]="selectedSeason"
-          [seasons]="seasons"
-          [leagues]="leagues"
-          [selectedLeagues]="selectedLeagues"
-          [leagueNames]="leagueNames"
-          (seasonChange)="selectSeason($event)"
-          (leagueToggle)="selectLeague($event)">
-        </app-team-filters>
       </div>
     </div>
 
-    <!-- Mobile Layout: Tabs -->
-    <div class="tab-content row m-auto d-md-none mt-3" id="nav-tab-team">
-      <!-- Stats information column -->
-      <div class="tab-pane show col-12" id="nav-stats" role="tabpanel" aria-labelledby="nav-stats-tab">
-        <div class="informationColumn">
-          <div class="text-center">
-            <h2 class="m-auto"><u>Stats</u></h2>
-            <h3 class="m-auto">Total views:</h3>
-          </div>
+    <div class="tab-content row" id="team-tab-content">
+      <div class="tab-pane fade col-12" 
+           [class.col-md-3]="viewMode !== 'allMatches'"
+           [class.show]="viewMode !== 'allMatches'"
+           [class.hide-on-all-matches]="viewMode === 'allMatches'"
+           [class.d-none]="viewMode === 'allMatches'"
+           id="team-insights-pane" 
+           role="tabpanel" 
+           aria-labelledby="team-insights-tab">
+        <div class="insights-sidebar">
+          <app-favourite-team-card
+            [teamStats]="favouriteTeamStats"
+            [isLoading]="!favouriteTeamLoaded"
+            [interactable]="false"
+            [showHeader]="false">
+          </app-favourite-team-card>
         </div>
       </div>
 
-      <!-- Team main information column -->
-      <div class="tab-pane show active col-12" id="nav-team" role="tabpanel" aria-labelledby="nav-team-tab">
-        <div class="centralTeamInformation">
-          <div class="row">
-            <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
+      <div class="tab-pane fade show active" 
+           [class.col-md-6]="viewMode !== 'allMatches'"
+           [class.col-md-9]="viewMode === 'allMatches'"
+           class="col-12" 
+           id="team-main-pane" 
+           role="tabpanel" 
+           aria-labelledby="team-matches-tab">
+        @if (viewMode === 'insights') {
+          <div class="insights-view">
+            @if (!insightsLoaded) {
+              <div class="spinner-wrapper">
+                <mat-spinner></mat-spinner>
+              </div>
+            } @else if (filteredInsightsMatches.length === 0) {
+              <app-general-card customClass="insights-card">
+                <div class="insights-empty">
+                  <h3>No matches selected</h3>
+                  <p>Switch to another season or mark matches as viewed to see insights here.</p>
+                </div>
+              </app-general-card>
+            } @else {
+              <app-general-card customClass="insights-card">
+                <div class="insights-header">
+                  <div>
+                    <h3>Performance Overview</h3>
+                    <p class="insights-subtitle">All metrics are calculated from your watched matches.</p>
+                  </div>
+                  <div class="insights-filter">
+                    <label for="insights-season-select">Season</label>
+                    <select id="insights-season-select" class="form-select" [(ngModel)]="insightsSeasonFilter" (ngModelChange)="onInsightsSeasonChange($event)">
+                      <option [ngValue]="'all'">All seasons</option>
+                      @for (season of seasons; track season.id) {
+                        <option [ngValue]="season.id">{{ season.text }}</option>
+                      }
+                    </select>
+                  </div>
+                </div>
+
+                <div class="insights-summary-grid">
+                  <div class="summary-tile">
+                    <span class="summary-label">Matches</span>
+                    <span class="summary-value">{{ insightsSummary.totalWatched }}</span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Wins</span>
+                    <span class="summary-value">{{ insightsSummary.wins }}</span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Draws</span>
+                    <span class="summary-value">{{ insightsSummary.draws }}</span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Losses</span>
+                    <span class="summary-value">{{ insightsSummary.losses }}</span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Win rate</span>
+                    <span class="summary-value">{{ insightsSummary.winRate }}%</span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Clean sheets</span>
+                    <span class="summary-value">{{ insightsSummary.cleanSheets }}</span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Goals for</span>
+                    <span class="summary-value">{{ insightsSummary.goalsFor }}</span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Goals against</span>
+                    <span class="summary-value">{{ insightsSummary.goalsAgainst }}</span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Goal diff.</span>
+                    <span class="summary-value" [class.positive]="insightsSummary.goalDifference >= 0" [class.negative]="insightsSummary.goalDifference < 0">
+                      {{ insightsSummary.goalDifference >= 0 ? '+' : '' }}{{ insightsSummary.goalDifference }}
+                    </span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Avg goals for</span>
+                    <span class="summary-value">{{ insightsSummary.averageGoalsFor }}</span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Avg goals against</span>
+                    <span class="summary-value">{{ insightsSummary.averageGoalsAgainst }}</span>
+                  </div>
+                  <div class="summary-tile">
+                    <span class="summary-label">Competitions</span>
+                    <span class="summary-value">{{ insightsSummary.uniqueCompetitions }}</span>
+                  </div>
+                </div>
+              </app-general-card>
+
+              <div class="insights-grid">
+                <app-general-card customClass="insights-card">
+                  <div class="insights-card-header">
+                    <h3>Season Performance</h3>
+                  </div>
+                  @if (seasonBreakdownFiltered.length > 0) {
+                    <table class="insights-table">
+                      <thead>
+                        <tr>
+                          <th>Season</th>
+                          <th>Matches</th>
+                          <th>Wins</th>
+                          <th>Draws</th>
+                          <th>Losses</th>
+                          <th>Win %</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of seasonBreakdownFiltered; track trackBySeason($index, item)) {
+                          <tr>
+                            <td>{{ formatSeason(item.season) }}</td>
+                            <td>{{ item.matches }}</td>
+                            <td>{{ item.wins }}</td>
+                            <td>{{ item.draws }}</td>
+                            <td>{{ item.losses }}</td>
+                            <td>{{ item.winRate }}%</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  } @else {
+                    <p class="insights-empty-text">No season insights available for the selected filters.</p>
+                  }
+                </app-general-card>
+
+                <app-general-card customClass="insights-card">
+                  <div class="insights-card-header">
+                    <h3>Competition Breakdown</h3>
+                  </div>
+                  @if (competitionBreakdown.length > 0) {
+                    <div class="competition-list">
+                      @for (competition of competitionBreakdown; track trackByCompetition($index, competition)) {
+                        <div class="competition-item">
+                          <div>
+                            <p class="competition-name">{{ competition.leagueName }}</p>
+                            <p class="competition-meta">{{ competition.matches }} watched • {{ competition.wins }} wins</p>
+                          </div>
+                          <span class="competition-rate">{{ competition.winRate }}%</span>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <p class="insights-empty-text">No competition data for this selection.</p>
+                  }
+                </app-general-card>
+
+                <app-general-card customClass="insights-card">
+                  <div class="insights-card-header">
+                    <h3>Recent Form</h3>
+                  </div>
+                  @if (recentForm.length > 0) {
+                    <div class="form-strip">
+                      @for (item of recentForm; track item.fixtureId) {
+                        <div class="form-pill" [class.win]="item.result === 'W'" [class.draw]="item.result === 'D'" [class.loss]="item.result === 'L'">
+                          <span class="form-result">{{ item.result }}</span>
+                          <span class="form-opponent">{{ item.opponent }}</span>
+                          <span class="form-score">{{ item.score }}</span>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <p class="insights-empty-text">Watch more matches to build form history.</p>
+                  }
+                </app-general-card>
+              </div>
+            }
           </div>
-          <div class="row text-center">
-            <h1 class="teamNameText">{{team.team.name}}</h1>
+        } @else if (viewMode === 'yourMatches') {
+          <div class="matches-view personal-matches">
+
+            @if (!yourMatchesLoaded) {
+              <div class="spinner-wrapper">
+                <mat-spinner></mat-spinner>
+              </div>
+            } @else if (filteredPersonalMatches.length === 0) {
+              <app-general-card customClass="insights-card">
+                <div class="insights-empty">
+                  <h3>No watched matches</h3>
+                  <p>Mark matches as viewed to build your personal history.</p>
+                </div>
+              </app-general-card>
+            } @else {
+              <div class="matches-list">
+                @for (match of personalMatchesPageMatches; track match.fixture.id) {
+                  <div class="matchCardAdapter">
+                    <app-real-match-card 
+                      [match]="match"
+                      [watched]="true"
+                      [locations]="locations">
+                    </app-real-match-card>
+                  </div>
+                }
+              </div>
+
+              <div class="paginationDiv mt-3">
+                <app-pagination 
+                  [elements]="filteredPersonalMatches" 
+                  [elementsPerPage]="personalMatchesPerPage" 
+                  [(elementsFiltered)]="personalMatchesPageMatches">
+                </app-pagination>
+              </div>
+            }
           </div>
-          <div class="row text-center">
-            <table class="informationTable">
-              <tr>
-                <th class="tableCol" scope="col">Code</th>
-                <th class="tableCol" scope="col">Country</th>
-                <th class="tableCol">City</th>
-                <th class="tableCol">Founded</th>
-                <th class="tableCol">Stadium</th>
-              </tr>
-              <tr>
-                <td>{{team.team.code}}</td>
-                <td>{{team.team.country}}</td>
-                <td>{{team.venue.city}}</td>
-                <td>{{team.team.founded}}</td>
-                <td>{{team.venue.name}}</td>
-              </tr>
-            </table>
+        } @else {
+          <div class="matches-view">
+            @if (selectedSeason.id == seasons[0].id) {
+              <div class="matches-section">
+
+                <div class="matches-tabs d-md-none">
+                  <div class="nav nav-tabs" id="team-matches-mobile" role="tablist">
+                    <button class="nav-link active" id="team-last-tab" data-bs-toggle="tab" data-bs-target="#team-last-pane" type="button" role="tab" aria-controls="team-last-pane" aria-selected="true">Last played</button>
+                    <button class="nav-link" id="team-next-tab" data-bs-toggle="tab" data-bs-target="#team-next-pane" type="button" role="tab" aria-controls="team-next-pane" aria-selected="false">Next matches</button>
+                  </div>
+                </div>
+
+                <div class="row g-3 d-none d-md-flex">
+                  <div class="col-md-6">
+                    <h3 class="section-subtitle">Last played</h3>
+                    @for (match of filterStartedRealMatches(); track $index) {
+                      <div class="matchCardAdapter matchCardAdapterTwoColumns">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                  <div class="col-md-6">
+                    <h3 class="section-subtitle">Next matches</h3>
+                    @for (match of filterNotStartedRealMatches(); track $index) {
+                      <div class="matchCardAdapter matchCardAdapterTwoColumns">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="tab-content d-md-none mt-3" id="team-matches-mobile-content">
+                  <div class="tab-pane fade show active" id="team-last-pane" role="tabpanel" aria-labelledby="team-last-tab">
+                    @for (match of filterStartedRealMatches(); track $index) {
+                      <div class="matchCardAdapter">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                  <div class="tab-pane fade" id="team-next-pane" role="tabpanel" aria-labelledby="team-next-tab">
+                    @for (match of filterNotStartedRealMatches(); track $index) {
+                      <div class="matchCardAdapter">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div class="matches-section">
+                <div class="row g-3 d-none d-md-flex">
+                  <div class="col-md-6">
+                    @for (match of filterHalfRealMatches(showRealMatches, 0); track trackByMatchId($index, match)) {
+                      <div class="matchCardAdapter matchCardAdapterTwoColumns">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                  <div class="col-md-6">
+                    @for (match of filterHalfRealMatches(showRealMatches, 1); track trackByMatchId($index, match)) {
+                      <div class="matchCardAdapter matchCardAdapterTwoColumns">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                </div>
+                <div class="d-md-none">
+                  @for (match of showRealMatches; track trackByMatchId($index, match)) {
+                    <div class="matchCardAdapter">
+                      <app-real-match-card 
+                        [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                        [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                        [locations]="locations">
+                      </app-real-match-card>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
           </div>
-        </div>
+        }
       </div>
 
-      <!-- Filters column (Mobile) -->
-      <div class="tab-pane show col-12" id="nav-competitions" role="tabpanel" aria-labelledby="nav-competitions-tab">
-        <app-team-filters
-          [selectedSeason]="selectedSeason"
+      <div class="tab-pane fade show col-md-3 col-12" id="team-filters-pane" role="tabpanel" aria-labelledby="team-filters-tab">
+        <app-filters-home
+          [filterPanelChipSelected]="filterPanelChipSelected"
+          [filterLeagueSelected]="filterLeagueSelectedNumeric"
+          [filterSeasonSelected]="selectedSeason"
+          [filterLocationSelected]="filterLocationSelected"
           [seasons]="seasons"
-          [leagues]="leagues"
-          [selectedLeagues]="selectedLeagues"
-          [leagueNames]="leagueNames"
-          (seasonChange)="selectSeason($event)"
-          (leagueToggle)="selectLeague($event)">
-        </app-team-filters>
+          [locations]="locations"
+          [leaguesViewed]="leaguesFiltered"
+          [leaguesLoaded]="leaguesFilteredLoaded"
+          [showPanelChips]="false"
+          (filterPanelChipSelectedChange)="onFilterPanelChipSelectedChange($event)"
+          (filterLeagueSelectedChange)="onFilterLeagueSelectedChange($event)"
+          (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"
+          (filterLocationSelectedChange)="onFilterLocationSelectedChange($event)"
+          (resetFiltersChange)="resetFilters()">
+        </app-filters-home>
       </div>
     </div>
-    
-    @if (selectedSeason.id == seasons[0].id) {
-
-      <nav class="nav-class">
-        <div class="nav nav-tabs d-md-none" id="nav-tab-matches" role="tablist">
-          <button class="nav-link active" id="nav-last-tab" data-bs-toggle="tab" data-bs-target="#nav-last" type="button" role="tab" aria-controls="nav-last" aria-selected="true">Last played</button>
-          <button class="nav-link" id="nav-next-tab" data-bs-toggle="tab" data-bs-target="#nav-next" type="button" role="tab" aria-controls="nav-next" aria-selected="false">Next matches</button>
-        </div>
-      </nav>
-
-
-      <div class="tab-content row m-auto" id="nav-team-matches">
-
-        <div class="tab-pane show active col-12 col-lg-6" id="nav-last" role="tabpanel" aria-labelledby="nav-last-tab">
-
-          <div class="text-center d-none d-md-flex">
-            <h2 class="m-auto"><u>Last played</u></h2>
-          </div>
-          
-          @for (match of filterStartedRealMatches(); track $index) {
-            <div class="matchCardAdapter matchCardAdapterTwoColumns">
-              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-              [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-              [locations]="locations"></app-real-match-card>
-            </div>
-          }
-        </div>
-
-        <div class="tab-pane show col-12 col-lg-6" id="nav-next" role="tabpanel" aria-labelledby="nav-next-tab">
-
-          <div class="text-center d-none d-md-flex">
-            <h2 class="m-auto"><u>Next matches</u></h2>
-          </div>
-
-          @for (match of filterNotStartedRealMatches(); track $index) {
-            <div class="matchCardAdapter matchCardAdapterTwoColumns">
-              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-              [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-              [locations]="locations"></app-real-match-card>
-            </div>
-          }
-        </div>
-        
-      </div>
-    } @else {
-      <div class="row d-none d-md-flex">
-        <div class="col-12 col-lg-6">
-          <div class="matchCardAdapter matchCardAdapterTwoColumns"
-            *ngFor="let match of filterHalfRealMatches(showRealMatches, 0); trackBy: trackByMatchId">
-            <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-            [locations]="locations"></app-real-match-card>
-          </div>
-        </div>
-        <div class="col-12 col-lg-6 mt-4">
-          <div class="matchCardAdapter matchCardAdapterTwoColumns"
-            *ngFor="let match of filterHalfRealMatches(showRealMatches, 1); trackBy: trackByMatchId">
-            <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-            [locations]="locations"></app-real-match-card>
-          </div>
-        </div>
-      </div>
-
-      <div class="row d-md-none">
-        <div class="col-12 col-lg-6">
-          <div class="matchCardAdapter matchCardAdapterTwoColumns"
-            *ngFor="let match of showRealMatches; trackBy: trackByMatchId">
-            <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-            [locations]="locations"></app-real-match-card>
-          </div>
-        </div>
-      </div>
-    }
 
   </div>
-
 }

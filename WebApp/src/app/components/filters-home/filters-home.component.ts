@@ -36,6 +36,7 @@ export class FiltersHomeComponent {
   @Input() locations: Location[] = [];
   @Input() leaguesViewed: LeagueStats[] = [];
   @Input() leaguesLoaded: boolean = false;
+  @Input() showPanelChips: boolean = true;
 
   @Output() filterPanelChipSelectedChange = new EventEmitter<number>();
   @Output() filterLeagueSelectedChange = new EventEmitter<number[]>();

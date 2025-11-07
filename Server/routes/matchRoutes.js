@@ -1,9 +1,10 @@
 import express from 'express';
-import { getMatches, createMatch, deleteMatch, changeLocation, getLandingPageInfo } from '../controllers/matchController.js';
+import { getMatches, getMatchesByTeamId, createMatch, deleteMatch, changeLocation, getLandingPageInfo } from '../controllers/matchController.js';
 
 const router = express.Router();
 
 router.get('/', getMatches);
+router.get('/team/:teamId', getMatchesByTeamId);
 router.get('/landing-info', getLandingPageInfo); // Public endpoint for landing page
 router.post('/', createMatch);
 router.delete('/:fixtureId', deleteMatch);

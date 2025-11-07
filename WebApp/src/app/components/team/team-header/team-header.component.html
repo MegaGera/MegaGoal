@@ -1,0 +1,39 @@
+<div class="team-header-card">
+  <div class="team-header-top">
+    <div class="team-avatar">
+      <img
+        [ngSrc]="images.getRouteImageTeam(team.team.id)"
+        [alt]="team.team.name"
+        width="112"
+        height="112"
+        priority="true"
+      />
+    </div>
+
+    <div class="team-main">
+      <div class="team-name-row">
+        <h1 class="team-name">{{ team.team.name }}</h1>
+      </div>
+      <div class="team-meta">
+        <span>{{ team.team.country }}</span>
+        <span class="dot" aria-hidden="true">•</span>
+        <span>{{ team.venue.city }}</span>
+        <span class="dot" aria-hidden="true">•</span>
+        <span>Founded {{ team.team.founded }}</span>
+      </div>
+
+      <div class="team-secondary">
+        <div class="info-chip">
+          <span class="chip-label">Home stadium</span>
+          <span class="chip-value">{{ team.venue.name }}</span>
+        </div>
+        <div class="info-chip">
+          <span class="chip-label">Capacity</span>
+          <span class="chip-value">{{ team.venue.capacity | number }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
