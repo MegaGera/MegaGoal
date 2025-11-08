@@ -133,9 +133,14 @@ class FavouriteTeamStatsAPIView(APIView):
         location_stats = self._calculate_location_stats(matches_df, team_id, locations_df)
 
         # Player stats from events and lineups (only for this team)
-        top_goalscorer = self._find_top_goalscorer(matches_df, team_id)
-        top_assist_provider = self._find_top_assist_provider(matches_df, team_id)
-        most_watched_player = self._find_most_watched_player(matches_df, team_id)
+        player_insights = self._collect_player_insights(matches_df, team_id)
+        top_goalscorer = player_insights.get('top_goalscorer')
+        top_assist_provider = player_insights.get('top_assist_provider')
+        most_watched_player = player_insights.get('most_watched_player')
+        goalscorers = player_insights.get('goalscorers', [])
+        assist_providers = player_insights.get('assist_providers', [])
+        watched_players = player_insights.get('watched_players', [])
+        team_totals = player_insights.get('team_totals', {})
 
         # Get team name
         team_name = matches_df.iloc[0]['teams']['home']['name'] if matches_df.iloc[0]['teams']['home']['id'] == int(team_id) else matches_df.iloc[0]['teams']['away']['name']
@@ -156,7 +161,15 @@ class FavouriteTeamStatsAPIView(APIView):
             'total_away_stadium_visits': location_stats.get('total_away_stadium_visits'),
             'top_goalscorer': top_goalscorer,
             'top_assist_provider': top_assist_provider,
-            'most_watched_player': most_watched_player
+            'most_watched_player': most_watched_player,
+            'goalscorers': goalscorers,
+            'assist_providers': assist_providers,
+            'watched_players': watched_players,
+            'total_yellow_cards': team_totals.get('yellow_cards'),
+            'total_red_cards': team_totals.get('red_cards'),
+            'total_fouls': team_totals.get('fouls'),
+            'average_possession': team_totals.get('average_possession'),
+            'total_corner_kicks': team_totals.get('corner_kicks')
         }
 
     def _calculate_location_stats(self, matches_df, team_id, locations_df):
@@ -290,17 +303,20 @@ class FavouriteTeamStatsAPIView(APIView):
             'matches_played': int(matches_played)
         }
 
-    def _find_top_goalscorer(self, matches_df, team_id):
-        """Find player with most goals for the favourite team - OPTIMIZED"""
-        collection_real_matches = settings.MONGO_DB['real_matches']
-        player_goals = {}
-        
-        # OPTIMIZATION 1: Batch fetch all real_matches - need lineups + all events for match counting, and goal events for goal counting
+    def _collect_player_insights(self, matches_df, team_id):
+        """Aggregate player goals, assists, and appearances in a single pass."""
         fixture_ids = matches_df['fixture'].apply(lambda x: x['id']).tolist()
         if not fixture_ids:
-            return None
-        
-        # Fetch lineups (startXI only) and substitution events (for counting total matches) + goal events (for counting goals)
+            return {
+                'top_goalscorer': None,
+                'top_assist_provider': None,
+                'most_watched_player': None,
+                'goalscorers': [],
+                'assist_providers': [],
+                'watched_players': []
+            }
+
+        collection_real_matches = settings.MONGO_DB['real_matches']
         pipeline = [
             {'$match': {'fixture.id': {'$in': fixture_ids}}},
             {'$project': {
@@ -312,7 +328,7 @@ class FavouriteTeamStatsAPIView(APIView):
                         'cond': {'$eq': ['$$lineup.team.id', int(team_id)]}
                     }
                 },
-                'events': {
+                'substitution_events': {
                     '$filter': {
                         'input': {'$ifNull': ['$events', []]},
                         'as': 'event',
@@ -336,321 +352,220 @@ class FavouriteTeamStatsAPIView(APIView):
                             ]
                         }
                     }
+                },
+                'card_events': {
+                    '$filter': {
+                        'input': {'$ifNull': ['$events', []]},
+                        'as': 'event',
+                        'cond': {
+                            '$and': [
+                                {'$eq': ['$$event.team.id', int(team_id)]},
+                                {'$eq': [{'$toLower': '$$event.type'}, 'card']}
+                            ]
+                        }
+                    }
+                },
+                'team_statistics': {
+                    '$filter': {
+                        'input': {'$ifNull': ['$statistics', []]},
+                        'as': 'team_stats',
+                        'cond': {'$eq': ['$$team_stats.team.id', int(team_id)]}
+                    }
                 }
             }}
         ]
-        
-        real_matches_dict = {
-            rm['fixture']['id']: rm 
-            for rm in collection_real_matches.aggregate(pipeline)
-        }
-        
-        # OPTIMIZATION 2: Process lineups and events to count total matches, and goal_events to count goals
-        for fixture_id, real_match in real_matches_dict.items():
-            # Track which players appeared in this match (from startXI or substitution events)
-            players_in_match = set()
-            
-            # Count players from startXI only (not substitutes from lineup)
-            if 'lineups' in real_match and real_match['lineups']:
-                for lineup in real_match['lineups']:
-                    # Count startXI players
-                    if 'startXI' in lineup:
-                        for player_info in lineup['startXI']:
-                            player_id = player_info.get('player', {}).get('id')
-                            player_name = player_info.get('player', {}).get('name')
-                            if player_id and player_name:
-                                if player_id not in player_goals:
-                                    player_goals[player_id] = {
-                                        'name': player_name,
-                                        'goals': 0,
-                                        'matches': 0
-                                    }
-                                players_in_match.add(player_id)
-            
-            # Count players from substitution events (event.type == "subst")
-            # The player that enters is in event.assist
-            if 'events' in real_match and real_match['events']:
-                for event in real_match['events']:
-                    # Only process substitution events
-                    if event.get('type', '').lower() == 'subst':
-                        assist = event.get('assist')  # Player entering the game
-                        if assist and assist.get('id') and assist.get('name'):
-                            player_id = assist['id']
-                            player_name = assist['name']
-                            if player_id not in player_goals:
-                                player_goals[player_id] = {
-                                    'name': player_name,
-                                    'goals': 0,
-                                    'matches': 0
-                                }
-                            players_in_match.add(player_id)
-            
-            # Count goals from goal_events
-            if 'goal_events' in real_match and real_match['goal_events']:
-                for event in real_match['goal_events']:
-                    player_id = event.get('player', {}).get('id')
-                    player_name = event.get('player', {}).get('name')
-                    if player_id and player_name:
-                        if player_id not in player_goals:
-                            player_goals[player_id] = {
-                                'name': player_name,
-                                'goals': 0,
-                                'matches': 0
-                            }
-                        player_goals[player_id]['goals'] += 1
-            
-            # Increment match count for all players that appeared in this match
-            for player_id in players_in_match:
-                player_goals[player_id]['matches'] += 1
-        
-        if not player_goals:
-            return None
-        
-        # Find top goalscorer
-        top_scorer = max(player_goals.values(), key=lambda x: x['goals'])
-        top_scorer_id = next(k for k, v in player_goals.items() if v == top_scorer)
-        
-        return {
-            'player_id': top_scorer_id,
-            'player_name': top_scorer['name'],
-            'goals': top_scorer['goals'],
-            'matches': top_scorer['matches']
-        }
 
-    def _find_top_assist_provider(self, matches_df, team_id):
-        """Find player with most assists for the favourite team - OPTIMIZED"""
-        collection_real_matches = settings.MONGO_DB['real_matches']
-        player_assists = {}
-        
-        # OPTIMIZATION 1: Batch fetch all real_matches - need lineups + all events for match counting, and assist events for assist counting
-        fixture_ids = matches_df['fixture'].apply(lambda x: x['id']).tolist()
-        if not fixture_ids:
-            return None
-        
-        # Fetch lineups (startXI only) and substitution events (for counting total matches) + goal events with assists (for counting assists)
-        pipeline = [
-            {'$match': {'fixture.id': {'$in': fixture_ids}}},
-            {'$project': {
-                'fixture.id': 1,
-                'lineups': {
-                    '$filter': {
-                        'input': {'$ifNull': ['$lineups', []]},
-                        'as': 'lineup',
-                        'cond': {'$eq': ['$$lineup.team.id', int(team_id)]}
-                    }
-                },
-                'events': {
-                    '$filter': {
-                        'input': {'$ifNull': ['$events', []]},
-                        'as': 'event',
-                        'cond': {
-                            '$and': [
-                                {'$eq': ['$$event.team.id', int(team_id)]},
-                                {'$eq': [{'$toLower': '$$event.type'}, 'subst']},
-                                {'$ne': ['$$event.assist', None]}
-                            ]
-                        }
-                    }
-                },
-                'assist_events': {
-                    '$filter': {
-                        'input': {'$ifNull': ['$events', []]},
-                        'as': 'event',
-                        'cond': {
-                            '$and': [
-                                {'$eq': [{'$toLower': '$$event.type'}, 'goal']},
-                                {'$eq': ['$$event.team.id', int(team_id)]},
-                                {'$ne': ['$$event.assist', None]}
-                            ]
-                        }
-                    }
-                }
-            }}
-        ]
-        
-        real_matches_dict = {
-            rm['fixture']['id']: rm 
-            for rm in collection_real_matches.aggregate(pipeline)
-        }
-        
-        # OPTIMIZATION 2: Process lineups and events to count total matches, and assist_events to count assists
-        for fixture_id, real_match in real_matches_dict.items():
-            # Track which players appeared in this match (from startXI or substitution events)
-            players_in_match = set()
-            
-            # Count players from startXI only (not substitutes from lineup)
-            if 'lineups' in real_match and real_match['lineups']:
-                for lineup in real_match['lineups']:
-                    # Count startXI players
-                    if 'startXI' in lineup:
-                        for player_info in lineup['startXI']:
-                            player_id = player_info.get('player', {}).get('id')
-                            player_name = player_info.get('player', {}).get('name')
-                            if player_id and player_name:
-                                if player_id not in player_assists:
-                                    player_assists[player_id] = {
-                                        'name': player_name,
-                                        'assists': 0,
-                                        'matches': 0
-                                    }
-                                players_in_match.add(player_id)
-            
-            # Count players from substitution events (event.type == "subst")
-            # The player that enters is in event.assist
-            if 'events' in real_match and real_match['events']:
-                for event in real_match['events']:
-                    # Only process substitution events
-                    if event.get('type', '').lower() == 'subst':
-                        assist = event.get('assist')  # Player entering the game
-                        if assist and assist.get('id') and assist.get('name'):
-                            player_id = assist['id']
-                            player_name = assist['name']
-                            if player_id not in player_assists:
-                                player_assists[player_id] = {
-                                    'name': player_name,
-                                    'assists': 0,
-                                    'matches': 0
-                                }
-                            players_in_match.add(player_id)
-            
-            # Count assists from assist_events
-            if 'assist_events' in real_match and real_match['assist_events']:
-                for event in real_match['assist_events']:
-                    assist = event.get('assist')
-                    if assist and assist.get('id') and assist.get('name'):
-                        player_id = assist['id']
-                        player_name = assist['name']
-                        if player_id not in player_assists:
-                            player_assists[player_id] = {
-                                'name': player_name,
-                                'assists': 0,
-                                'matches': 0
-                            }
-                        player_assists[player_id]['assists'] += 1
-            
-            # Increment match count for all players that appeared in this match
-            for player_id in players_in_match:
-                player_assists[player_id]['matches'] += 1
-        
-        if not player_assists:
-            return None
-        
-        # Find top assist provider
-        top_assist = max(player_assists.values(), key=lambda x: x['assists'])
-        top_assist_id = next(k for k, v in player_assists.items() if v == top_assist)
-        
-        return {
-            'player_id': top_assist_id,
-            'player_name': top_assist['name'],
-            'assists': top_assist['assists'],
-            'matches': top_assist['matches']
-        }
+        real_matches = list(collection_real_matches.aggregate(pipeline))
+        if not real_matches:
+            return {
+                'top_goalscorer': None,
+                'top_assist_provider': None,
+                'most_watched_player': None,
+                'goalscorers': [],
+                'assist_providers': [],
+                'watched_players': []
+            }
 
-    def _find_most_watched_player(self, matches_df, team_id):
-        """Find player from favourite team appearing in most matches - OPTIMIZED"""
-        collection_real_matches = settings.MONGO_DB['real_matches']
-        player_matches = {}
-        
-        # OPTIMIZATION 1: Batch fetch all real_matches with aggregation - filter by favourite team_id directly in MongoDB
-        fixture_ids = matches_df['fixture'].apply(lambda x: x['id']).tolist()
-        if not fixture_ids:
-            return None
-        
-        # Single batch aggregation query - filter lineups and substitution events by favourite team_id directly in MongoDB
-        # Since all fixtures are for the same favourite team, we can use team_id directly
-        pipeline = [
-            {'$match': {'fixture.id': {'$in': fixture_ids}}},
-            {'$project': {
-                'fixture.id': 1,
-                'lineups': {
-                    '$filter': {
-                        'input': {'$ifNull': ['$lineups', []]},
-                        'as': 'lineup',
-                        'cond': {'$eq': ['$$lineup.team.id', int(team_id)]}
-                    }
-                },
-                'events': {
-                    '$filter': {
-                        'input': {'$ifNull': ['$events', []]},
-                        'as': 'event',
-                        'cond': {
-                            '$and': [
-                                {'$eq': ['$$event.team.id', int(team_id)]},
-                                {'$eq': [{'$toLower': '$$event.type'}, 'subst']},
-                                {'$ne': ['$$event.assist', None]}
-                            ]
-                        }
-                    }
+        def _ensure_player_entry(container, player_id, player_name):
+            if player_id not in container:
+                container[player_id] = {
+                    'name': player_name,
+                    'goals': 0,
+                    'assists': 0,
+                    'matches': 0,
+                    'startXI_matches': 0
                 }
-            }}
-        ]
-        
-        real_matches_dict = {
-            rm['fixture']['id']: rm 
-            for rm in collection_real_matches.aggregate(pipeline)
-        }
-        
-        # OPTIMIZATION 2: Process lineups and events (already filtered by team_id in database)
-        for fixture_id, real_match in real_matches_dict.items():
-            # Track which players appeared in this match to count matches
+            return container[player_id]
+
+        player_stats = {}
+        total_yellow_cards = 0
+        total_red_cards = 0
+        total_fouls = 0
+        total_corner_kicks = 0
+        possession_total = 0.0
+        possession_matches = 0
+
+        for real_match in real_matches:
             players_in_match = set()
-            # Track which players started in startXI
             players_started = set()
-            
-            # Count players from startXI only (not substitutes from lineup)
-            if 'lineups' in real_match and real_match['lineups']:
-                for lineup in real_match['lineups']:
-                    # Count startXI players
-                    if 'startXI' in lineup:
-                        for player_info in lineup['startXI']:
-                            player_id = player_info.get('player', {}).get('id')
-                            player_name = player_info.get('player', {}).get('name')
-                            if player_id and player_name:
-                                if player_id not in player_matches:
-                                    player_matches[player_id] = {
-                                        'name': player_name,
-                                        'matches': 0,
-                                        'startXI_matches': 0
-                                    }
-                                players_in_match.add(player_id)
-                                players_started.add(player_id)
-            
-            # Count players from substitution events (event.type == "subst")
-            # The player that enters is in event.assist
-            if 'events' in real_match and real_match['events']:
-                for event in real_match['events']:
-                    # Only process substitution events
-                    if event.get('type', '').lower() == 'subst':
-                        assist = event.get('assist')  # Player entering the game
-                        if assist and assist.get('id') and assist.get('name'):
-                            player_id = assist['id']
-                            player_name = assist['name']
-                            if player_id not in player_matches:
-                                player_matches[player_id] = {
-                                    'name': player_name,
-                                    'matches': 0,
-                                    'startXI_matches': 0
-                                }
-                            players_in_match.add(player_id)
-            
-            # Increment match count for all players that appeared in this match
+
+            for lineup in real_match.get('lineups', []):
+                for player_info in lineup.get('startXI', []):
+                    player = player_info.get('player', {})
+                    player_id = player.get('id')
+                    player_name = player.get('name')
+                    if player_id and player_name:
+                        _ensure_player_entry(player_stats, player_id, player_name)
+                        players_in_match.add(player_id)
+                        players_started.add(player_id)
+
+            for event in real_match.get('substitution_events', []):
+                assist = event.get('assist', {})
+                player_id = assist.get('id')
+                player_name = assist.get('name')
+                if player_id and player_name:
+                    _ensure_player_entry(player_stats, player_id, player_name)
+                    players_in_match.add(player_id)
+
+            for event in real_match.get('goal_events', []):
+                scorer = event.get('player', {})
+                scorer_id = scorer.get('id')
+                scorer_name = scorer.get('name')
+                if scorer_id and scorer_name:
+                    player_entry = _ensure_player_entry(player_stats, scorer_id, scorer_name)
+                    player_entry['goals'] += 1
+                    players_in_match.add(scorer_id)
+
+                assist = event.get('assist', {})
+                assist_id = assist.get('id')
+                assist_name = assist.get('name')
+                if assist_id and assist_name:
+                    assist_entry = _ensure_player_entry(player_stats, assist_id, assist_name)
+                    assist_entry['assists'] += 1
+                    players_in_match.add(assist_id)
+
+            for event in real_match.get('card_events', []):
+                detail = (event.get('detail') or '').lower()
+                if 'red' in detail:
+                    total_red_cards += 1
+                elif 'yellow' in detail:
+                    total_yellow_cards += 1
+
+            for team_stat in real_match.get('team_statistics', []):
+                for stat in team_stat.get('statistics', []):
+                    stat_type = (stat.get('type') or '').lower()
+                    value = stat.get('value')
+
+                    numeric_value = None
+                    if isinstance(value, (int, float)):
+                        numeric_value = float(value)
+                    elif isinstance(value, str):
+                        stripped = value.strip()
+                        if stripped.endswith('%'):
+                            stripped = stripped[:-1].strip()
+                        try:
+                            numeric_value = float(stripped)
+                        except ValueError:
+                            numeric_value = None
+
+                    if 'possession' in stat_type and numeric_value is not None:
+                        possession_total += numeric_value
+                        possession_matches += 1
+                    elif ('foul' in stat_type or 'fault' in stat_type) and numeric_value is not None:
+                        total_fouls += numeric_value
+                    elif 'corner' in stat_type and numeric_value is not None:
+                        total_corner_kicks += numeric_value
+
             for player_id in players_in_match:
-                player_matches[player_id]['matches'] += 1
-            
-            # Increment startXI match count for players that started
+                player_stats[player_id]['matches'] += 1
+
             for player_id in players_started:
-                player_matches[player_id]['startXI_matches'] += 1
-        
-        if not player_matches:
-            return None
-        
-        # Find most watched player
-        most_watched = max(player_matches.values(), key=lambda x: x['matches'])
-        most_watched_id = next(k for k, v in player_matches.items() if v == most_watched)
-        
+                player_stats[player_id]['startXI_matches'] += 1
+
+        if not player_stats:
+            return {
+                'top_goalscorer': None,
+                'top_assist_provider': None,
+                'most_watched_player': None,
+                'goalscorers': [],
+                'assist_providers': [],
+                'watched_players': []
+            }
+
+        def _sorted_projection(filter_fn, key_name):
+            items = [
+                {
+                    'player_id': player_id,
+                    'player_name': stats['name'],
+                    key_name: stats[key_name],
+                    'matches': stats['matches']
+                }
+                for player_id, stats in player_stats.items()
+                if filter_fn(stats)
+            ]
+            items.sort(key=lambda x: (-x[key_name], -x['matches'], x['player_name']))
+            return items
+
+        goalscorers = _sorted_projection(lambda stats: stats['goals'] > 0, 'goals')
+        assist_providers = _sorted_projection(lambda stats: stats['assists'] > 0, 'assists')
+        watched_players = [
+            {
+                'player_id': player_id,
+                'player_name': stats['name'],
+                'matches': stats['matches'],
+                'startXI_matches': stats['startXI_matches']
+            }
+            for player_id, stats in player_stats.items()
+            if stats['matches'] > 0
+        ]
+        watched_players.sort(key=lambda x: (-x['matches'], -x['startXI_matches'], x['player_name']))
+
+        top_goalscorer = None
+        top_assist_provider = None
+        most_watched_player = None
+
+        if player_stats:
+            top_scorer_id, top_scorer_stats = max(player_stats.items(), key=lambda item: item[1]['goals'])
+            if top_scorer_stats['goals'] > 0:
+                top_goalscorer = {
+                    'player_id': top_scorer_id,
+                    'player_name': top_scorer_stats['name'],
+                    'goals': top_scorer_stats['goals'],
+                    'matches': top_scorer_stats['matches']
+                }
+
+            top_assist_id, top_assist_stats = max(player_stats.items(), key=lambda item: item[1]['assists'])
+            if top_assist_stats['assists'] > 0:
+                top_assist_provider = {
+                    'player_id': top_assist_id,
+                    'player_name': top_assist_stats['name'],
+                    'assists': top_assist_stats['assists'],
+                    'matches': top_assist_stats['matches']
+                }
+
+            top_watched_id, top_watched_stats = max(player_stats.items(), key=lambda item: item[1]['matches'])
+            if top_watched_stats['matches'] > 0:
+                most_watched_player = {
+                    'player_id': top_watched_id,
+                    'player_name': top_watched_stats['name'],
+                    'matches': top_watched_stats['matches'],
+                    'startXI_matches': top_watched_stats['startXI_matches']
+                }
+
+        team_totals = {
+            'yellow_cards': int(total_yellow_cards),
+            'red_cards': int(total_red_cards),
+            'fouls': int(total_fouls),
+            'corner_kicks': int(total_corner_kicks),
+            'average_possession': round(possession_total / possession_matches, 2) if possession_matches else None
+        }
+
         return {
-            'player_id': most_watched_id,
-            'player_name': most_watched['name'],
-            'matches': most_watched['matches'],
-            'startXI_matches': most_watched['startXI_matches']
-        } 
+            'top_goalscorer': top_goalscorer,
+            'top_assist_provider': top_assist_provider,
+            'most_watched_player': most_watched_player,
+            'goalscorers': goalscorers,
+            'assist_providers': assist_providers,
+            'watched_players': watched_players,
+            'team_totals': team_totals
+        }

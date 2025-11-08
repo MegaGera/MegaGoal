@@ -42,43 +42,87 @@
     }
 
     <!-- Stats Grid -->
-    <div class="stats-grid">
-      <!-- Views -->
-      <div class="stat-item">
-        <ng-icon name="jamEyeF" class="stat-icon"></ng-icon>
-        <div class="stat-content">
-          <span class="stat-value">{{ teamStats.views_count }}</span>
-          <span class="stat-label">Views</span>
-        </div>
-      </div>
+      <div class="stats-grid">
+        <!-- Views -->
+        <app-basic-stat-card
+          label="Views"
+          [value]="teamStats.views_count"
+          icon="jamEyeF"
+          iconClass="views">
+        </app-basic-stat-card>
 
-      <!-- Win Rate -->
-      <div class="stat-item">
-        <ng-icon name="jamTarget" class="stat-icon" [style.color]="getWinRateColor(teamStats.win_rate)"></ng-icon>
-        <div class="stat-content">
-          <span class="stat-value">{{ teamStats.win_rate }}%</span>
-          <span class="stat-label">Win Rate</span>
-        </div>
-      </div>
+        <!-- Win Rate -->
+        <app-basic-stat-card
+          label="Win Rate"
+          [value]="teamStats.win_rate"
+          valueSuffix="%"
+          icon="jamTarget"
+          iconClass="win-rate">
+        </app-basic-stat-card>
 
-      <!-- Goals Scored -->
-      <div class="stat-item">
-        <ng-icon name="ionFootball" class="stat-icon goals-scored"></ng-icon>
-        <div class="stat-content">
-          <span class="stat-value">{{ teamStats.goals_scored }}</span>
-          <span class="stat-label">Scored</span>
-        </div>
-      </div>
+        <!-- Goals Scored -->
+        <app-basic-stat-card
+          label="Scored"
+          [value]="teamStats.goals_scored"
+          [subValue]="teamStats.matches_watched ? teamStats.goals_scored / teamStats.matches_watched : 0"
+          icon="ionFootball"
+          iconClass="goals-scored">
+        </app-basic-stat-card>
 
-      <!-- Goals Conceded -->
-      <div class="stat-item">
-        <ng-icon name="ionFootball" class="stat-icon goals-conceded"></ng-icon>
-        <div class="stat-content">
-          <span class="stat-value">{{ teamStats.goals_conceded }}</span>
-          <span class="stat-label">Conceded</span>
-        </div>
+        <!-- Goals Conceded -->
+        <app-basic-stat-card
+          label="Conceded"
+          [value]="teamStats.goals_conceded"
+          [subValue]="teamStats.matches_watched ? teamStats.goals_conceded / teamStats.matches_watched : 0"
+          icon="ionFootball"
+          iconClass="goals-conceded">
+        </app-basic-stat-card>
+
+        <!-- Yellow Cards -->
+        <app-basic-stat-card
+          label="Yellow Cards"
+          [value]="teamStats.total_yellow_cards ?? 0"
+          [subValue]="teamStats.matches_watched ? (teamStats.total_yellow_cards ?? 0) / teamStats.matches_watched : 0"
+          icon="jamWarning"
+          iconClass="cards-yellow">
+        </app-basic-stat-card>
+
+        <!-- Red Cards -->
+        <app-basic-stat-card
+          label="Red Cards"
+          [value]="teamStats.total_red_cards ?? 0"
+          [subValue]="teamStats.matches_watched ? (teamStats.total_red_cards ?? 0) / teamStats.matches_watched : 0"
+          icon="jamStopSign"
+          iconClass="cards-red">
+        </app-basic-stat-card>
+
+        <!-- Fouls Committed -->
+        <app-basic-stat-card
+          label="Fouls Committed"
+          [value]="teamStats.total_fouls ?? 0"
+          [subValue]="teamStats.matches_watched ? (teamStats.total_fouls ?? 0) / teamStats.matches_watched : 0"
+          icon="jamHand"
+          iconClass="fouls">
+        </app-basic-stat-card>
+
+        <!-- Average Possession -->
+        <app-basic-stat-card
+          label="Possession"
+          [value]="teamStats.average_possession ?? 0"
+          valueSuffix="%"
+          icon="jamChartPie"
+          iconClass="possession">
+        </app-basic-stat-card>
+
+        <!-- Corner Kicks -->
+        <app-basic-stat-card
+          label="Corner Kicks"
+          [value]="teamStats.total_corner_kicks ?? 0"
+          [subValue]="teamStats.matches_watched ? (teamStats.total_corner_kicks ?? 0) / teamStats.matches_watched : 0"
+          icon="jamFlag"
+          iconClass="corners">
+        </app-basic-stat-card>
       </div>
-    </div>
 
     <!-- Additional Stats -->
     <div class="additional-stats">

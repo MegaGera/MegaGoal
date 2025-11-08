@@ -78,4 +78,27 @@ export interface FavouriteTeamStats {
     matches: number;
     startXI_matches: number;
   };
+  goalscorers?: Array<{
+    player_id: number;
+    player_name: string;
+    goals: number;
+    matches: number;
+  }>;
+  assist_providers?: Array<{
+    player_id: number;
+    player_name: string;
+    assists: number;
+    matches: number;
+  }>;
+  watched_players?: Array<{
+    player_id: number;
+    player_name: string;
+    matches: number;
+    startXI_matches: number;
+  }>;
+  total_yellow_cards?: number;
+  total_red_cards?: number;
+  total_fouls?: number;
+  average_possession?: number | null;
+  total_corner_kicks?: number;
 } 
