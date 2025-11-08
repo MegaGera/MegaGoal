@@ -343,6 +343,10 @@
   font-weight: 600;
 }
 
+.insights-sidebar-placeholder {
+  min-height: 1rem;
+}
+
 .paginationDiv {
   display: flex;
   justify-content: center;

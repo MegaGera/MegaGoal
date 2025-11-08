@@ -73,11 +73,13 @@ interface TeamInsightsSummary {
 export class TeamComponent {
 
   /* Seasons */
+  readonly allTimeSeasonOption: SeasonInfo = { id: 0, text: 'All time' };
   seasons: SeasonInfo[] = [];
-  selectedSeason!: SeasonInfo;
+  seasonOptions: SeasonInfo[] = [];
+  statsSeasonOptions: SeasonInfo[] = [this.allTimeSeasonOption];
+  selectedSeason!: SeasonInfo; // Season used for All Matches API calls
+  filterSeasonSelected: SeasonInfo = this.allTimeSeasonOption; // Season selected in filters (includes All time)
 
-  leagues: string[] = [];
-  selectedLeagues: string[] = [];
   leagueNames: Map<string, string> = new Map();
 
   /* 
@@ -100,13 +102,16 @@ export class TeamComponent {
   insightsLoaded: boolean = false;
   yourMatchesLoaded: boolean = false;
   viewMode: 'insights' | 'yourMatches' | 'allMatches' = 'insights';
-  insightsSeasonFilter: 'all' | number = 'all';
   personalMatchesPerPage: number = 10;
   personalMatchesPageMatches: Match[] = [];
   filterPanelChipSelected: number = 1;
   filterLocationSelected: string = '';
-  leaguesFiltered: LeagueStats[] = [];
-  leaguesFilteredLoaded: boolean = false;
+  filterLeagueSelected: number[] = [];
+  leaguesStats: LeagueStats[] = [];
+  leaguesAllMatches: LeagueStats[] = [];
+  leaguesLoaded: boolean = false;
+  currentLeagues: LeagueStats[] = [];
+  statsLocations: Location[] = [];
 
   insightsSummary: TeamInsightsSummary = this.resetInsightsSummary();
 
@@ -187,33 +192,27 @@ export class TeamComponent {
       })
       .sort((a, b) => b.id - a.id); // Sort in descending order (newest first)
     
-    // Set default selected season - if no season provided (querySeasonId is 0), use the most recent season
+    this.seasonOptions = [this.allTimeSeasonOption, ...this.seasons];
+    this.statsSeasonOptions = [this.allTimeSeasonOption];
+ 
+     // Determine selected season for API calls and filters
     if (this.querySeasonId === 0) {
       this.selectedSeason = this.seasons[0]; // Most recent season
     } else {
       this.selectedSeason = this.seasons.find(season => season.id == this.querySeasonId) || this.seasons[0];
     }
-  }
 
-  /*
-    Get different leagues from the team
-  */
-  getDifferentLeagues(): string[] {
-    // Extract league numbers from the season array of the team
-    const leagueIDs: string[] = this.team.seasons.filter(season => +season.season === this.selectedSeason.id)
-      .map(season => season.league);
-
-    // Use Set to get unique league numbers
-    const uniqueLeagues: Set<string> = new Set(leagueIDs);
-
-    // Convert Set back to array
-    this.leagues = Array.from(uniqueLeagues);
-    this.selectedLeagues = this.selectedLeagues.filter(league => this.leagues.includes(league));
-    if (this.allWatchedMatches.length > 0) {
-      this.updateFilteredPersonalMatches();
-      this.updateInsightsData();
+    const previousSelection = this.filterSeasonSelected;
+    if (previousSelection && previousSelection.id === 0) {
+      this.filterSeasonSelected = this.allTimeSeasonOption;
+    } else if (this.querySeasonId === 0 && previousSelection && previousSelection.id !== 0) {
+      // Keep previous non-zero selection if navigating without explicit season change
+      this.filterSeasonSelected = this.seasonOptions.find(option => option.id === previousSelection.id) || this.seasonOptions[0];
+    } else if (this.querySeasonId === 0) {
+      this.filterSeasonSelected = this.allTimeSeasonOption;
+    } else {
+      this.filterSeasonSelected = this.seasonOptions.find(option => option.id === this.selectedSeason.id) || this.seasonOptions[0];
     }
-    return this.leagues;
   }
 
   /*
@@ -230,18 +229,6 @@ export class TeamComponent {
   }
 
   /*
-    Select League
-  */
-  selectLeague(league: string): void {
-    if (this.selectedLeagues.includes(league)) {
-      this.selectedLeagues = this.selectedLeagues.filter(l => l !== league);
-    } else {
-      this.selectedLeagues.push(league);
-    }
-    this.filterMatches();
-  }
-
-  /*
     Get Real Matches by team_id and season
   */
   getRealMatches() {
@@ -254,17 +241,19 @@ export class TeamComponent {
       this.realMatches.forEach(match => {
         this.leagueNames.set(match.league.id.toString(), match.league.name);
       });
-      this.getDifferentLeagues();
+      this.updateLeaguesForAllMatches();
       this.filterMatches();
+      this.updateCurrentLeagues();
     })
   }
 
   filterMatches() {
-    if (this.selectedLeagues.length === 0) {
+    if (this.filterLeagueSelected.length === 0) {
       this.showRealMatches = [...this.realMatches];
       return;
     }
-    this.showRealMatches = this.realMatches.filter(match => this.selectedLeagues.includes(match.league.id.toString()));
+    const selectedSet = new Set(this.filterLeagueSelected);
+    this.showRealMatches = this.realMatches.filter(match => selectedSet.has(match.league.id));
   }
 
   /*
@@ -307,6 +296,13 @@ export class TeamComponent {
   getLocations() {
     this.megagoal.getLocationsCounts().subscribe(result => {
       this.locations = <Location[]>result;
+      this.updateStatsLocations();
+      const locationChanged = this.ensureFilterLocationValidForStats();
+      if (locationChanged && this.viewMode !== 'allMatches') {
+        this.updateFilteredPersonalMatches();
+        this.updateInsightsData();
+        this.updateLeaguesForStats();
+      }
     })
   }
 
@@ -317,7 +313,8 @@ export class TeamComponent {
     this.megagoal.getMatchesByTeam(this.team.team.id).subscribe({
       next: matches => {
         this.allWatchedMatches = [...matches].sort((a, b) => (b.fixture.timestamp ?? 0) - (a.fixture.timestamp ?? 0));
-        this.updateLeaguesFiltered();
+        this.updateStatsSeasonOptions();
+        this.updateLeaguesForStats();
         this.updateFilteredPersonalMatches();
         this.yourMatchesLoaded = true;
         this.updateInsightsData();
@@ -326,7 +323,8 @@ export class TeamComponent {
         this.allWatchedMatches = [];
         this.filteredPersonalMatches = [];
         this.personalMatchesPageMatches = [];
-        this.updateLeaguesFiltered();
+        this.updateStatsSeasonOptions();
+        this.updateLeaguesForStats();
         this.yourMatchesLoaded = true;
         this.updateInsightsData();
       }
@@ -335,12 +333,20 @@ export class TeamComponent {
 
   setView(mode: 'insights' | 'yourMatches' | 'allMatches'): void {
     this.viewMode = mode;
-  }
 
-  get filterLeagueSelectedNumeric(): number[] {
-    return this.selectedLeagues
-      .map(id => parseInt(id, 10))
-      .filter(id => !Number.isNaN(id));
+    if (mode !== 'allMatches') {
+      const seasonChanged = this.ensureFilterSeasonValidForStats();
+      this.updateStatsLocations();
+      const locationChanged = this.ensureFilterLocationValidForStats();
+
+      if (seasonChanged || locationChanged) {
+        this.updateLeaguesForStats();
+        this.updateFilteredPersonalMatches();
+        this.updateInsightsData();
+      }
+    }
+
+    this.updateCurrentLeagues();
   }
 
   onFilterPanelChipSelectedChange(chip: number): void {
@@ -348,38 +354,68 @@ export class TeamComponent {
   }
 
   onFilterLeagueSelectedChange(leagues: number[]): void {
-    this.selectedLeagues = leagues.map(id => id.toString());
+    this.filterLeagueSelected = leagues;
     this.filterMatches();
     this.updateFilteredPersonalMatches();
     this.updateInsightsData();
   }
 
   onFilterSeasonSelectedChange(season: SeasonInfo): void {
-    this.selectSeason(season);
+    this.filterSeasonSelected = season;
+
+    const targetSeason = season.id === 0 ? this.seasons[0] : this.seasons.find(item => item.id === season.id) || this.seasons[0];
+    const previousSeasonId = this.selectedSeason?.id;
+    this.selectedSeason = targetSeason;
+
+    if (season.id === 0) {
+      // Keep All Matches on latest season while keeping filter selection as All time
+      if (previousSeasonId !== this.selectedSeason.id) {
+        this.selectSeason(this.selectedSeason);
+      } else {
+        this.getRealMatches();
+        this.getMatches();
+      }
+    } else if (previousSeasonId !== this.selectedSeason.id) {
+      this.selectSeason(this.selectedSeason);
+    }
+
+    this.updateStatsLocations();
+    this.ensureFilterLocationValidForStats();
+
+    this.updateLeaguesForStats();
+    this.updateFilteredPersonalMatches();
+    this.updateInsightsData();
+    this.updateCurrentLeagues();
   }
 
   onFilterLocationSelectedChange(location: string): void {
     this.filterLocationSelected = location;
+    this.updateLeaguesForStats();
     this.updateFilteredPersonalMatches();
-    this.updateInsightsData();
-  }
-
-  onInsightsSeasonChange(value: 'all' | number): void {
-    this.insightsSeasonFilter = value;
     this.updateInsightsData();
   }
 
   resetFilters(): void {
-    this.filterPanelChipSelected = 1;
+    this.filterLeagueSelected = [];
     this.filterLocationSelected = '';
-    this.selectedLeagues = [];
+    this.filterSeasonSelected = this.allTimeSeasonOption;
+    this.selectedSeason = this.seasons[0];
+
+    this.filterPanelChipSelected = 1;
+
+    if (this.seasons.length > 0) {
+      this.selectSeason(this.selectedSeason);
+    }
+
+    this.updateStatsLocations();
+    this.ensureFilterLocationValidForStats();
+
+    this.updateLeaguesForAllMatches();
+    this.updateLeaguesForStats();
     this.filterMatches();
     this.updateFilteredPersonalMatches();
     this.updateInsightsData();
-    this.updateLeaguesFiltered();
-    if (this.seasons.length > 0) {
-      this.selectSeason(this.seasons[0]);
-    }
+    this.updateCurrentLeagues();
   }
 
   private updateInsightsData(): void {
@@ -395,15 +431,15 @@ export class TeamComponent {
   }
 
   private getMatchesForInsights(): Match[] {
-    const base = this.filteredPersonalMatches.length > 0 || this.filterLocationSelected || this.selectedLeagues.length === 0
-      ? this.filteredPersonalMatches
-      : this.getFilteredPersonalMatchesBase();
+    const base = this.getFilteredPersonalMatchesBase();
 
-    if (this.insightsSeasonFilter === 'all') {
+    // If "All time" is selected (id: 0), return all matches
+    if (this.filterSeasonSelected?.id === 0) {
       return [...base];
     }
 
-    return base.filter(match => match.league.season === this.insightsSeasonFilter);
+    // Otherwise filter by the selected season
+    return base.filter(match => match.league.season === this.filterSeasonSelected?.id);
   }
 
   private buildInsightsSummary(matches: Match[]): TeamInsightsSummary {
@@ -544,13 +580,8 @@ export class TeamComponent {
       return;
     }
 
-    const leaguesFilter = this.selectedLeagues
-      .map(id => Number(id))
-      .filter(id => !Number.isNaN(id));
-
-    const seasonFilter = this.insightsSeasonFilter === 'all'
-      ? 0
-      : this.insightsSeasonFilter;
+    const leaguesFilter = this.filterLeagueSelected;
+    const seasonFilter = this.filterSeasonSelected?.id ?? 0; // 0 means "All time"
 
     this.favouriteTeamLoaded = false;
 
@@ -587,30 +618,40 @@ export class TeamComponent {
 
   private getFilteredPersonalMatchesBase(): Match[] {
     const matches = this.allWatchedMatches.filter(match => {
-      const matchesLeague = this.selectedLeagues.length === 0 || this.selectedLeagues.includes(match.league.id.toString());
+      const matchesLeague = this.filterLeagueSelected.length === 0 || this.filterLeagueSelected.includes(match.league.id);
       const matchesLocation = !this.filterLocationSelected || match.location === this.filterLocationSelected;
-      return matchesLeague && matchesLocation;
+      const matchesSeason = !this.filterSeasonSelected || this.filterSeasonSelected.id === 0 || match.league.season === this.filterSeasonSelected.id;
+      return matchesLeague && matchesLocation && matchesSeason;
     });
 
     return matches.sort((a, b) => (b.fixture.timestamp ?? 0) - (a.fixture.timestamp ?? 0));
   }
 
-  private updateLeaguesFiltered(): void {
+  private updateLeaguesForStats(): void {
     if (!this.allWatchedMatches || this.allWatchedMatches.length === 0) {
-      this.leaguesFiltered = [];
-      this.leaguesFilteredLoaded = true;
+      this.leaguesStats = [];
+      if (this.viewMode !== 'allMatches') {
+        this.updateCurrentLeagues();
+      }
+      this.leaguesLoaded = true;
       return;
     }
 
+    const baseMatches = this.allWatchedMatches.filter(match => {
+      const matchesLocation = !this.filterLocationSelected || match.location === this.filterLocationSelected;
+      const matchesSeason = !this.filterSeasonSelected || this.filterSeasonSelected.id === 0 || match.league.season === this.filterSeasonSelected.id;
+      return matchesLocation && matchesSeason;
+    });
+
     const leagueCounts = new Map<number, { name: string; count: number }>();
-    this.allWatchedMatches.forEach(match => {
+    baseMatches.forEach(match => {
       const leagueId = match.league.id;
       const entry = leagueCounts.get(leagueId) || { name: match.league.name, count: 0 };
       entry.count += 1;
       leagueCounts.set(leagueId, entry);
     });
 
-    this.leaguesFiltered = Array.from(leagueCounts.entries())
+    this.leaguesStats = Array.from(leagueCounts.entries())
       .map(([leagueId, data]) => ({
         league_id: leagueId,
         league_name: data.name,
@@ -618,7 +659,163 @@ export class TeamComponent {
       }))
       .sort((a, b) => b.count - a.count);
 
-    this.leaguesFilteredLoaded = true;
+    if (this.viewMode !== 'allMatches') {
+      this.updateCurrentLeagues();
+    }
+    this.leaguesLoaded = true;
+  }
+
+  private updateLeaguesForAllMatches(): void {
+    if (!this.realMatches || this.realMatches.length === 0) {
+      this.leaguesAllMatches = [];
+      if (this.viewMode === 'allMatches') {
+        this.updateCurrentLeagues();
+      }
+      this.leaguesLoaded = true;
+      return;
+    }
+
+    const leagueCounts = new Map<number, { name: string; count: number }>();
+    this.realMatches.forEach(match => {
+      const leagueId = match.league.id;
+      const entry = leagueCounts.get(leagueId) || { name: match.league.name, count: 0 };
+      entry.count += 1;
+      leagueCounts.set(leagueId, entry);
+    });
+
+    this.leaguesAllMatches = Array.from(leagueCounts.entries())
+      .map(([leagueId, data]) => ({
+        league_id: leagueId,
+        league_name: data.name,
+        count: data.count
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    if (this.viewMode === 'allMatches') {
+      this.updateCurrentLeagues();
+    }
+    this.leaguesLoaded = true;
+  }
+
+  private updateCurrentLeagues(): void {
+    this.currentLeagues = this.viewMode === 'allMatches' ? this.leaguesAllMatches : this.leaguesStats;
+    this.leaguesLoaded = true;
+
+    const availableIds = new Set(this.currentLeagues.map(league => league.league_id));
+    const filtered = this.filterLeagueSelected.filter(id => availableIds.has(id));
+
+    if (filtered.length !== this.filterLeagueSelected.length) {
+      this.filterLeagueSelected = filtered;
+      this.filterMatches();
+      this.updateFilteredPersonalMatches();
+      this.updateInsightsData();
+    }
+  }
+
+  private updateStatsSeasonOptions(): void {
+    const uniqueSeasons = new Set<number>();
+    this.allWatchedMatches.forEach(match => {
+      const season = match.league?.season;
+      if (typeof season === 'number' && !Number.isNaN(season)) {
+        uniqueSeasons.add(season);
+      }
+    });
+
+    const watchedSeasons = Array.from(uniqueSeasons)
+      .sort((a, b) => b - a)
+      .map(seasonId => this.seasonOptions.find(option => option.id === seasonId) || {
+        id: seasonId,
+        text: `${seasonId}-${seasonId + 1}`
+      });
+
+    this.statsSeasonOptions = [this.allTimeSeasonOption, ...watchedSeasons];
+
+    const seasonChanged = this.ensureFilterSeasonValidForStats();
+    this.updateStatsLocations();
+    const locationChanged = this.ensureFilterLocationValidForStats();
+
+    if (this.viewMode !== 'allMatches' && (seasonChanged || locationChanged)) {
+      this.updateFilteredPersonalMatches();
+      this.updateInsightsData();
+      this.updateLeaguesForStats();
+    }
+  }
+
+  private ensureFilterSeasonValidForStats(): boolean {
+    const availableOptions = this.statsSeasonOptions.length ? this.statsSeasonOptions : [this.allTimeSeasonOption];
+
+    if (!this.filterSeasonSelected) {
+      this.filterSeasonSelected = availableOptions[0];
+      return true;
+    }
+
+    const match = availableOptions.find(option => option.id === this.filterSeasonSelected.id);
+
+    if (!match) {
+      this.filterSeasonSelected = availableOptions[0];
+      return true;
+    }
+
+    if (this.filterSeasonSelected !== match) {
+      this.filterSeasonSelected = match;
+    }
+
+    return false;
+  }
+
+  private updateStatsLocations(): void {
+    if (!this.locations || this.locations.length === 0) {
+      this.statsLocations = [];
+      return;
+    }
+
+    const seasonId = this.filterSeasonSelected?.id ?? 0;
+    const matches = seasonId === 0
+      ? this.allWatchedMatches
+      : this.allWatchedMatches.filter(match => match.league?.season === seasonId);
+
+    const locationIds = new Set<string>();
+    matches.forEach(match => {
+      const locationId = match.location;
+      if (locationId) {
+        locationIds.add(locationId);
+      }
+    });
+
+    const availableLocations: Location[] = this.locations.filter(location => locationIds.has(location.id));
+
+    if (availableLocations.length === locationIds.size) {
+      this.statsLocations = availableLocations;
+      return;
+    }
+
+    const missingLocations = Array.from(locationIds).filter(id => !availableLocations.some(loc => loc.id === id));
+    const generatedLocations = missingLocations.map(id => ({
+      id,
+      name: id,
+      user: { username: '' },
+      private: false,
+      stadium: false,
+      official: false,
+      matchCount: 0
+    } as Location));
+
+    this.statsLocations = [...availableLocations, ...generatedLocations];
+  }
+
+  private ensureFilterLocationValidForStats(): boolean {
+    if (!this.filterLocationSelected) {
+      return false;
+    }
+
+    const hasLocation = this.statsLocations.some(location => location.id === this.filterLocationSelected);
+
+    if (!hasLocation) {
+      this.filterLocationSelected = '';
+      return true;
+    }
+
+    return false;
   }
 
   private resetInsightsSummary(): TeamInsightsSummary {
@@ -637,6 +834,22 @@ export class TeamComponent {
       uniqueSeasons: 0,
       uniqueCompetitions: 0
     };
+  }
+
+  get showFavouriteTeamColumn(): boolean {
+    return this.viewMode !== 'allMatches';
+  }
+
+  get showFavouriteTeamCard(): boolean {
+    if (!this.showFavouriteTeamColumn) {
+      return false;
+    }
+
+    if (!this.insightsLoaded || !this.yourMatchesLoaded) {
+      return true;
+    }
+
+    return this.filteredPersonalMatches.length > 0 || this.filteredInsightsMatches.length > 0;
   }
 
   get insightsReady(): boolean {

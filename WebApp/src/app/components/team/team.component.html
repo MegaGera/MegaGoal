@@ -26,7 +26,7 @@
       <div class="col-12">
         <div class="view-toggle-card">
           <div class="view-toggle">
-            <button class="toggle-btn" [class.active]="viewMode === 'insights'" (click)="setView('insights')">Insights</button>
+            <button class="toggle-btn" [class.active]="viewMode === 'insights'" (click)="setView('insights')">Stats</button>
             <button class="toggle-btn" [class.active]="viewMode === 'yourMatches'" (click)="setView('yourMatches')">Your Matches</button>
             <button class="toggle-btn" [class.active]="viewMode === 'allMatches'" (click)="setView('allMatches')">All Matches</button>
           </div>
@@ -36,20 +36,24 @@
 
     <div class="tab-content row" id="team-tab-content">
       <div class="tab-pane fade col-12" 
-           [class.col-md-3]="viewMode !== 'allMatches'"
-           [class.show]="viewMode !== 'allMatches'"
-           [class.hide-on-all-matches]="viewMode === 'allMatches'"
-           [class.d-none]="viewMode === 'allMatches'"
+           [class.col-md-3]="showFavouriteTeamColumn"
+           [class.show]="showFavouriteTeamColumn"
+           [class.hide-on-all-matches]="!showFavouriteTeamColumn"
+           [class.d-none]="!showFavouriteTeamColumn"
            id="team-insights-pane" 
            role="tabpanel" 
            aria-labelledby="team-insights-tab">
         <div class="insights-sidebar">
-          <app-favourite-team-card
-            [teamStats]="favouriteTeamStats"
-            [isLoading]="!favouriteTeamLoaded"
-            [interactable]="false"
-            [showHeader]="false">
-          </app-favourite-team-card>
+          @if (showFavouriteTeamCard) {
+            <app-favourite-team-card
+              [teamStats]="favouriteTeamStats"
+              [isLoading]="!favouriteTeamLoaded"
+              [interactable]="true"
+              [showHeader]="false">
+            </app-favourite-team-card>
+          } @else {
+            <div class="insights-sidebar-placeholder" aria-hidden="true"></div>
+          }
         </div>
       </div>
 
@@ -70,7 +74,7 @@
               <app-general-card customClass="insights-card">
                 <div class="insights-empty">
                   <h3>No matches selected</h3>
-                  <p>Switch to another season or mark matches as viewed to see insights here.</p>
+                  <p>Switch to another season or mark matches as viewed to see insights here</p>
                 </div>
               </app-general-card>
             } @else {
@@ -79,15 +83,6 @@
                   <div>
                     <h3>Performance Overview</h3>
                     <p class="insights-subtitle">All metrics are calculated from your watched matches.</p>
-                  </div>
-                  <div class="insights-filter">
-                    <label for="insights-season-select">Season</label>
-                    <select id="insights-season-select" class="form-select" [(ngModel)]="insightsSeasonFilter" (ngModelChange)="onInsightsSeasonChange($event)">
-                      <option [ngValue]="'all'">All seasons</option>
-                      @for (season of seasons; track season.id) {
-                        <option [ngValue]="season.id">{{ season.text }}</option>
-                      }
-                    </select>
                   </div>
                 </div>
 
@@ -232,8 +227,8 @@
             } @else if (filteredPersonalMatches.length === 0) {
               <app-general-card customClass="insights-card">
                 <div class="insights-empty">
-                  <h3>No watched matches</h3>
-                  <p>Mark matches as viewed to build your personal history.</p>
+                  <h3>No matches selected</h3>
+                  <p>Switch to another season or mark matches as viewed to see insights here</p>
                 </div>
               </app-general-card>
             } @else {
@@ -368,14 +363,16 @@
       <div class="tab-pane fade show col-md-3 col-12" id="team-filters-pane" role="tabpanel" aria-labelledby="team-filters-tab">
         <app-filters-home
           [filterPanelChipSelected]="filterPanelChipSelected"
-          [filterLeagueSelected]="filterLeagueSelectedNumeric"
-          [filterSeasonSelected]="selectedSeason"
+          [filterLeagueSelected]="filterLeagueSelected"
+          [filterSeasonSelected]="filterSeasonSelected"
           [filterLocationSelected]="filterLocationSelected"
-          [seasons]="seasons"
-          [locations]="locations"
-          [leaguesViewed]="leaguesFiltered"
-          [leaguesLoaded]="leaguesFilteredLoaded"
+          [seasons]="viewMode === 'allMatches' ? seasonOptions : statsSeasonOptions"
+          [locations]="viewMode === 'allMatches' ? locations : statsLocations"
+          [leaguesViewed]="currentLeagues"
+          [leaguesLoaded]="leaguesLoaded"
           [showPanelChips]="false"
+          [showLeagues]="currentLeagues.length > 0 || !leaguesLoaded"
+          [showLocations]="viewMode !== 'allMatches'"
           (filterPanelChipSelectedChange)="onFilterPanelChipSelectedChange($event)"
           (filterLeagueSelectedChange)="onFilterLeagueSelectedChange($event)"
           (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, NgClass, NgOptimizedImage } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule } from '@angular/forms';
@@ -37,6 +37,8 @@ export class FiltersHomeComponent {
   @Input() leaguesViewed: LeagueStats[] = [];
   @Input() leaguesLoaded: boolean = false;
   @Input() showPanelChips: boolean = true;
+  @Input() showLeagues: boolean = true;
+  @Input() showLocations: boolean = true;
 
   @Output() filterPanelChipSelectedChange = new EventEmitter<number>();
   @Output() filterLeagueSelectedChange = new EventEmitter<number[]>();

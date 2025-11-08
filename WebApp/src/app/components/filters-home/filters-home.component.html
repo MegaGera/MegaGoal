@@ -32,39 +32,39 @@
   }
 
   <!-- Filter league selection row -->
-  <div class="filter-section">
-    <div class="section-header">
-      <h5 class="section-title">Leagues</h5>
-      <button class="toggle-button" (click)="toggleLeaguesVisibility()">
-        <ng-icon [name]="showAllLeagues ? 'jamChevronUp' : 'jamChevronDown'"></ng-icon>
-        <span>{{ showAllLeagues ? 'Show Less' : 'Show More' }}</span>
-      </button>
-    </div>
-    <div class="league-grid">
-      @if (!leaguesLoaded) {
-        <div class="league-item-skeleton" aria-hidden="true"></div>
-        <div class="league-item-skeleton" aria-hidden="true"></div>
-        <div class="league-item-skeleton" aria-hidden="true"></div>
-        <div class="league-item-skeleton" aria-hidden="true"></div>
-      } @else {
-        @for (league of filteredLeagues; track league.league_id) {
-          <div class="league-item" 
-               (click)="changeFilterLeagueSelected(league.league_id)"
-               [ngClass]="{'league-item-selected': filterLeagueSelected.includes(league.league_id)}"
-               [attr.data-league-name]="league.league_name">
-            <img class="league-icon" 
-                 [ngSrc]="images.getRouteImageLeagueSm(league.league_id)" 
-                 [alt]="league.league_name" 
-                 width="40" 
-                 height="40" 
-                 priority="false">
-          </div>
-        } @empty {
+  @if (showLeagues && (!leaguesLoaded || filteredLeagues.length > 0)) {
+    <div class="filter-section">
+      <div class="section-header">
+        <h5 class="section-title">Leagues</h5>
+        <button class="toggle-button" (click)="toggleLeaguesVisibility()">
+          <ng-icon [name]="showAllLeagues ? 'jamChevronUp' : 'jamChevronDown'"></ng-icon>
+          <span>{{ showAllLeagues ? 'Show Less' : 'Show More' }}</span>
+        </button>
+      </div>
+      <div class="league-grid">
+        @if (!leaguesLoaded) {
           <div class="league-item-skeleton" aria-hidden="true"></div>
+          <div class="league-item-skeleton" aria-hidden="true"></div>
+          <div class="league-item-skeleton" aria-hidden="true"></div>
+          <div class="league-item-skeleton" aria-hidden="true"></div>
+        } @else {
+          @for (league of filteredLeagues; track league.league_id) {
+            <div class="league-item" 
+                 (click)="changeFilterLeagueSelected(league.league_id)"
+                 [ngClass]="{'league-item-selected': filterLeagueSelected.includes(league.league_id)}"
+                 [attr.data-league-name]="league.league_name">
+              <img class="league-icon" 
+                   [ngSrc]="images.getRouteImageLeagueSm(league.league_id)" 
+                   [alt]="league.league_name" 
+                   width="40" 
+                   height="40" 
+                   priority="false">
+            </div>
+          }
         }
-      }
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Season select form -->
   <div class="filter-section">
@@ -80,23 +80,25 @@
   </div>
 
   <!-- Location select form -->
-  <div class="filter-section">
-    <h5 class="section-title">Location</h5>
-    <select 
-      class="season-select" 
-      [(ngModel)]="filterLocationSelected" 
-      (change)="changeFilterLocationSelected(filterLocationSelected)">
-      <option value="">All locations</option>
-      @for (location of locations; track location.id) {
-        <option [value]="location.id">
-          @if (location.stadium) {
-            🏟️
-          }
-          {{location.name}}
-        </option>
-      }
-    </select>
-  </div>
+  @if (showLocations) {
+    <div class="filter-section">
+      <h5 class="section-title">Location</h5>
+      <select 
+        class="season-select" 
+        [(ngModel)]="filterLocationSelected" 
+        (change)="changeFilterLocationSelected(filterLocationSelected)">
+        <option value="">All locations</option>
+        @for (location of locations; track location.id) {
+          <option [value]="location.id">
+            @if (location.stadium) {
+              🏟️
+            }
+            {{location.name}}
+          </option>
+        }
+      </select>
+    </div>
+  }
 
   <!-- Reset Filters Button -->
   <div class="filter-section">
