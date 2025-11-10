@@ -36,6 +36,7 @@ export interface FavouriteTeamStats {
   matches_watched: number;
   win_rate: number;
   crazy_match?: PartialMatchData | Match; // Match with most goals (can be partial or full)
+  biggest_win?: PartialMatchData | Match;
   biggest_rival?: {
     team_id: number;
     team_name: string;
@@ -73,6 +74,18 @@ export interface FavouriteTeamStats {
     matches: number;
   };
   most_watched_player?: {
+    player_id: number;
+    player_name: string;
+    matches: number;
+    startXI_matches: number;
+  };
+  top_rival_scorer?: {
+    player_id: number;
+    player_name: string;
+    goals: number;
+    matches: number;
+  };
+  most_watched_rival_player?: {
     player_id: number;
     player_name: string;
     matches: number;

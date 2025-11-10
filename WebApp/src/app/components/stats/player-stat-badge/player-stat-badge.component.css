@@ -1,0 +1,49 @@
+.stat-mini-badge {
+  background: linear-gradient(135deg, #dc143c 0%, #ff6b6b 100%);
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: none;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 8px rgba(220, 20, 60, 0.3);
+}
+
+.stat-mini-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(220, 20, 60, 0.4);
+}
+
+.stat-icon {
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .stat-mini-badge {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .stat-icon {
+    font-size: 12px;
+  }
+
+  .stat-value {
+    font-size: 10px;
+  }
+}
+

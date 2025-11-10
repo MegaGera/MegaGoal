@@ -1,0 +1,22 @@
+<a class="player-card" [routerLink]="['/app/player']" [queryParams]="{ id: playerId }">
+  <div class="player-card__content">
+    <div class="player-card__avatar">
+      <img *ngIf="avatarUrl; else placeholder" [src]="avatarUrl" [alt]="playerName" />
+      <ng-template #placeholder>
+        <div class="player-card__placeholder">
+          {{ playerName | slice:0:1 }}
+        </div>
+      </ng-template>
+    </div>
+    <div class="player-card__details">
+      <span class="player-card__name">{{ playerName }}</span>
+      <div class="player-card__badges">
+        <app-player-stat-badge *ngFor="let badge of badges"
+                               [icon]="badge.icon"
+                               [value]="badge.value">
+        </app-player-stat-badge>
+      </div>
+    </div>
+  </div>
+</a>
+

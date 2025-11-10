@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './player-stat-badge.component.html',
-  styleUrl: './player-stat-badge.component.css'
+  styleUrls: ['./player-stat-badge.component.css']
 })
 export class PlayerStatBadgeComponent {
   @Input() icon!: string;

@@ -85,7 +85,6 @@
   line-height: 1.2;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .player-stat-card {
     padding: 0.5rem 0.75rem;

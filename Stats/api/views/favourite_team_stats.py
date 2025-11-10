@@ -1,4 +1,5 @@
 from typing import Any
+import random
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -123,8 +124,13 @@ class FavouriteTeamStatsAPIView(APIView):
 
         # Find crazy match (highest total goals)
         matches_df['total_goals'] = matches_df.apply(lambda x: x['goals']['home'] + x['goals']['away'], axis=1)
-        crazy_match_row = matches_df.loc[matches_df['total_goals'].idxmax()]
+        max_total_goals = matches_df['total_goals'].max()
+        crazy_match_candidates = matches_df[matches_df['total_goals'] == max_total_goals]
+        crazy_match_row = crazy_match_candidates.sample(n=1).iloc[0]
         crazy_match = self._format_match_for_response(crazy_match_row)
+
+        # Find biggest win (largest positive goal difference)
+        biggest_win = self._find_biggest_win(matches_df, team_id)
 
         # Find biggest rival (team played against most)
         rival_stats = self._find_biggest_rival(matches_df, team_id)
@@ -137,6 +143,8 @@ class FavouriteTeamStatsAPIView(APIView):
         top_goalscorer = player_insights.get('top_goalscorer')
         top_assist_provider = player_insights.get('top_assist_provider')
         most_watched_player = player_insights.get('most_watched_player')
+        top_rival_scorer = player_insights.get('top_rival_scorer')
+        most_watched_rival_player = player_insights.get('most_watched_rival_player')
         goalscorers = player_insights.get('goalscorers', [])
         assist_providers = player_insights.get('assist_providers', [])
         watched_players = player_insights.get('watched_players', [])
@@ -154,6 +162,7 @@ class FavouriteTeamStatsAPIView(APIView):
             'matches_watched': int(total_matches),
             'win_rate': int(win_rate),
             'crazy_match': crazy_match,
+            'biggest_win': biggest_win,
             'biggest_rival': rival_stats,
             'most_viewed_location': location_stats.get('most_viewed_location'),
             'home_stadium_times': location_stats.get('home_stadium_times'),
@@ -162,6 +171,8 @@ class FavouriteTeamStatsAPIView(APIView):
             'top_goalscorer': top_goalscorer,
             'top_assist_provider': top_assist_provider,
             'most_watched_player': most_watched_player,
+            'top_rival_scorer': top_rival_scorer,
+            'most_watched_rival_player': most_watched_rival_player,
             'goalscorers': goalscorers,
             'assist_providers': assist_providers,
             'watched_players': watched_players,
@@ -303,18 +314,52 @@ class FavouriteTeamStatsAPIView(APIView):
             'matches_played': int(matches_played)
         }
 
+    def _find_biggest_win(self, matches_df, team_id):
+        """Find the match with the largest goal difference won by the team."""
+        if len(matches_df) == 0:
+            return None
+
+        team_id_int = int(team_id)
+
+        def extract_scores(row):
+            if row['teams']['home']['id'] == team_id_int:
+                return row['goals']['home'], row['goals']['away']
+            return row['goals']['away'], row['goals']['home']
+
+        team_goals = matches_df.apply(lambda row: extract_scores(row)[0], axis=1)
+        opponent_goals = matches_df.apply(lambda row: extract_scores(row)[1], axis=1)
+        goal_diff = team_goals - opponent_goals
+        winning_mask = goal_diff > 0
+
+        if not winning_mask.any():
+            return None
+
+        winning_goal_diff = goal_diff.where(winning_mask)
+        max_diff = winning_goal_diff.max()
+        biggest_win_candidates = matches_df[winning_goal_diff == max_diff]
+        biggest_win_row = biggest_win_candidates.sample(n=1).iloc[0]
+
+        return self._format_match_for_response(biggest_win_row)
+
     def _collect_player_insights(self, matches_df, team_id):
         """Aggregate player goals, assists, and appearances in a single pass."""
         fixture_ids = matches_df['fixture'].apply(lambda x: x['id']).tolist()
+        team_id_int = int(team_id)
+
+        result_template = {
+            'top_goalscorer': None,
+            'top_assist_provider': None,
+            'most_watched_player': None,
+            'top_rival_scorer': None,
+            'most_watched_rival_player': None,
+            'goalscorers': [],
+            'assist_providers': [],
+            'watched_players': [],
+            'team_totals': {}
+        }
+
         if not fixture_ids:
-            return {
-                'top_goalscorer': None,
-                'top_assist_provider': None,
-                'most_watched_player': None,
-                'goalscorers': [],
-                'assist_providers': [],
-                'watched_players': []
-            }
+            return result_template
 
         collection_real_matches = settings.MONGO_DB['real_matches']
         pipeline = [
@@ -325,7 +370,14 @@ class FavouriteTeamStatsAPIView(APIView):
                     '$filter': {
                         'input': {'$ifNull': ['$lineups', []]},
                         'as': 'lineup',
-                        'cond': {'$eq': ['$$lineup.team.id', int(team_id)]}
+                        'cond': {'$eq': ['$$lineup.team.id', team_id_int]}
+                    }
+                },
+                'opponent_lineups': {
+                    '$filter': {
+                        'input': {'$ifNull': ['$lineups', []]},
+                        'as': 'lineup',
+                        'cond': {'$ne': ['$$lineup.team.id', team_id_int]}
                     }
                 },
                 'substitution_events': {
@@ -334,7 +386,20 @@ class FavouriteTeamStatsAPIView(APIView):
                         'as': 'event',
                         'cond': {
                             '$and': [
-                                {'$eq': ['$$event.team.id', int(team_id)]},
+                                {'$eq': ['$$event.team.id', team_id_int]},
+                                {'$eq': [{'$toLower': '$$event.type'}, 'subst']},
+                                {'$ne': ['$$event.assist', None]}
+                            ]
+                        }
+                    }
+                },
+                'opponent_substitution_events': {
+                    '$filter': {
+                        'input': {'$ifNull': ['$events', []]},
+                        'as': 'event',
+                        'cond': {
+                            '$and': [
+                                {'$ne': ['$$event.team.id', team_id_int]},
                                 {'$eq': [{'$toLower': '$$event.type'}, 'subst']},
                                 {'$ne': ['$$event.assist', None]}
                             ]
@@ -348,7 +413,19 @@ class FavouriteTeamStatsAPIView(APIView):
                         'cond': {
                             '$and': [
                                 {'$eq': [{'$toLower': '$$event.type'}, 'goal']},
-                                {'$eq': ['$$event.team.id', int(team_id)]}
+                                {'$eq': ['$$event.team.id', team_id_int]}
+                            ]
+                        }
+                    }
+                },
+                'opponent_goal_events': {
+                    '$filter': {
+                        'input': {'$ifNull': ['$events', []]},
+                        'as': 'event',
+                        'cond': {
+                            '$and': [
+                                {'$eq': [{'$toLower': '$$event.type'}, 'goal']},
+                                {'$ne': ['$$event.team.id', team_id_int]}
                             ]
                         }
                     }
@@ -359,7 +436,7 @@ class FavouriteTeamStatsAPIView(APIView):
                         'as': 'event',
                         'cond': {
                             '$and': [
-                                {'$eq': ['$$event.team.id', int(team_id)]},
+                                {'$eq': ['$$event.team.id', team_id_int]},
                                 {'$eq': [{'$toLower': '$$event.type'}, 'card']}
                             ]
                         }
@@ -369,7 +446,7 @@ class FavouriteTeamStatsAPIView(APIView):
                     '$filter': {
                         'input': {'$ifNull': ['$statistics', []]},
                         'as': 'team_stats',
-                        'cond': {'$eq': ['$$team_stats.team.id', int(team_id)]}
+                        'cond': {'$eq': ['$$team_stats.team.id', team_id_int]}
                     }
                 }
             }}
@@ -377,14 +454,7 @@ class FavouriteTeamStatsAPIView(APIView):
 
         real_matches = list(collection_real_matches.aggregate(pipeline))
         if not real_matches:
-            return {
-                'top_goalscorer': None,
-                'top_assist_provider': None,
-                'most_watched_player': None,
-                'goalscorers': [],
-                'assist_providers': [],
-                'watched_players': []
-            }
+            return result_template
 
         def _ensure_player_entry(container, player_id, player_name):
             if player_id not in container:
@@ -397,7 +467,18 @@ class FavouriteTeamStatsAPIView(APIView):
                 }
             return container[player_id]
 
+        def _ensure_opponent_entry(container, player_id, player_name):
+            if player_id not in container:
+                container[player_id] = {
+                    'name': player_name,
+                    'goals_against': 0,
+                    'matches': 0,
+                    'startXI_matches': 0
+                }
+            return container[player_id]
+
         player_stats = {}
+        opponent_player_stats = {}
         total_yellow_cards = 0
         total_red_cards = 0
         total_fouls = 0
@@ -408,6 +489,8 @@ class FavouriteTeamStatsAPIView(APIView):
         for real_match in real_matches:
             players_in_match = set()
             players_started = set()
+            opponent_players_in_match = set()
+            opponent_players_started = set()
 
             for lineup in real_match.get('lineups', []):
                 for player_info in lineup.get('startXI', []):
@@ -419,6 +502,16 @@ class FavouriteTeamStatsAPIView(APIView):
                         players_in_match.add(player_id)
                         players_started.add(player_id)
 
+            for lineup in real_match.get('opponent_lineups', []):
+                for player_info in lineup.get('startXI', []):
+                    player = player_info.get('player', {})
+                    player_id = player.get('id')
+                    player_name = player.get('name')
+                    if player_id and player_name:
+                        _ensure_opponent_entry(opponent_player_stats, player_id, player_name)
+                        opponent_players_in_match.add(player_id)
+                        opponent_players_started.add(player_id)
+
             for event in real_match.get('substitution_events', []):
                 assist = event.get('assist', {})
                 player_id = assist.get('id')
@@ -426,6 +519,14 @@ class FavouriteTeamStatsAPIView(APIView):
                 if player_id and player_name:
                     _ensure_player_entry(player_stats, player_id, player_name)
                     players_in_match.add(player_id)
+
+            for event in real_match.get('opponent_substitution_events', []):
+                assist = event.get('assist', {})
+                player_id = assist.get('id')
+                player_name = assist.get('name')
+                if player_id and player_name:
+                    _ensure_opponent_entry(opponent_player_stats, player_id, player_name)
+                    opponent_players_in_match.add(player_id)
 
             for event in real_match.get('goal_events', []):
                 scorer = event.get('player', {})
@@ -443,6 +544,15 @@ class FavouriteTeamStatsAPIView(APIView):
                     assist_entry = _ensure_player_entry(player_stats, assist_id, assist_name)
                     assist_entry['assists'] += 1
                     players_in_match.add(assist_id)
+
+            for event in real_match.get('opponent_goal_events', []):
+                scorer = event.get('player', {})
+                scorer_id = scorer.get('id')
+                scorer_name = scorer.get('name')
+                if scorer_id and scorer_name:
+                    opponent_entry = _ensure_opponent_entry(opponent_player_stats, scorer_id, scorer_name)
+                    opponent_entry['goals_against'] += 1
+                    opponent_players_in_match.add(scorer_id)
 
             for event in real_match.get('card_events', []):
                 detail = (event.get('detail') or '').lower()
@@ -482,15 +592,11 @@ class FavouriteTeamStatsAPIView(APIView):
             for player_id in players_started:
                 player_stats[player_id]['startXI_matches'] += 1
 
-        if not player_stats:
-            return {
-                'top_goalscorer': None,
-                'top_assist_provider': None,
-                'most_watched_player': None,
-                'goalscorers': [],
-                'assist_providers': [],
-                'watched_players': []
-            }
+            for player_id in opponent_players_in_match:
+                opponent_player_stats[player_id]['matches'] += 1
+
+            for player_id in opponent_players_started:
+                opponent_player_stats[player_id]['startXI_matches'] += 1
 
         def _sorted_projection(filter_fn, key_name):
             items = [
@@ -520,37 +626,35 @@ class FavouriteTeamStatsAPIView(APIView):
         ]
         watched_players.sort(key=lambda x: (-x['matches'], -x['startXI_matches'], x['player_name']))
 
-        top_goalscorer = None
-        top_assist_provider = None
-        most_watched_player = None
+        top_goalscorer = self._choose_random_top_candidate(goalscorers, 'goals', ['matches'])
+        top_assist_provider = self._choose_random_top_candidate(assist_providers, 'assists', ['matches'])
+        most_watched_player = self._choose_random_top_candidate(watched_players, 'matches', ['startXI_matches'])
 
-        if player_stats:
-            top_scorer_id, top_scorer_stats = max(player_stats.items(), key=lambda item: item[1]['goals'])
-            if top_scorer_stats['goals'] > 0:
-                top_goalscorer = {
-                    'player_id': top_scorer_id,
-                    'player_name': top_scorer_stats['name'],
-                    'goals': top_scorer_stats['goals'],
-                    'matches': top_scorer_stats['matches']
-                }
+        rival_scorers = [
+            {
+                'player_id': player_id,
+                'player_name': stats['name'],
+                'goals': stats['goals_against'],
+                'matches': stats['matches']
+            }
+            for player_id, stats in opponent_player_stats.items()
+            if stats['goals_against'] > 0
+        ]
+        rival_scorers.sort(key=lambda x: (-x['goals'], -x['matches'], x['player_name']))
+        top_rival_scorer = self._choose_random_top_candidate(rival_scorers, 'goals', ['matches'])
 
-            top_assist_id, top_assist_stats = max(player_stats.items(), key=lambda item: item[1]['assists'])
-            if top_assist_stats['assists'] > 0:
-                top_assist_provider = {
-                    'player_id': top_assist_id,
-                    'player_name': top_assist_stats['name'],
-                    'assists': top_assist_stats['assists'],
-                    'matches': top_assist_stats['matches']
-                }
-
-            top_watched_id, top_watched_stats = max(player_stats.items(), key=lambda item: item[1]['matches'])
-            if top_watched_stats['matches'] > 0:
-                most_watched_player = {
-                    'player_id': top_watched_id,
-                    'player_name': top_watched_stats['name'],
-                    'matches': top_watched_stats['matches'],
-                    'startXI_matches': top_watched_stats['startXI_matches']
-                }
+        rival_watchers = [
+            {
+                'player_id': player_id,
+                'player_name': stats['name'],
+                'matches': stats['matches'],
+                'startXI_matches': stats['startXI_matches']
+            }
+            for player_id, stats in opponent_player_stats.items()
+            if stats['matches'] > 0
+        ]
+        rival_watchers.sort(key=lambda x: (-x['matches'], -x['startXI_matches'], x['player_name']))
+        most_watched_rival_player = self._choose_random_top_candidate(rival_watchers, 'matches', ['startXI_matches'])
 
         team_totals = {
             'yellow_cards': int(total_yellow_cards),
@@ -564,8 +668,38 @@ class FavouriteTeamStatsAPIView(APIView):
             'top_goalscorer': top_goalscorer,
             'top_assist_provider': top_assist_provider,
             'most_watched_player': most_watched_player,
+            'top_rival_scorer': top_rival_scorer,
+            'most_watched_rival_player': most_watched_rival_player,
             'goalscorers': goalscorers,
             'assist_providers': assist_providers,
             'watched_players': watched_players,
             'team_totals': team_totals
         }
+
+    def _choose_random_top_candidate(self, items, primary_key, secondary_keys=None):
+        """Select a random candidate among the highest-ranked items.
+
+        The `primary_key` is required and is used to find the best value.
+        Optional `secondary_keys` allow preserving previous tiebreak ordering.
+        Random choice happens only when all considered keys remain tied.
+        """
+        if not items:
+            return None
+
+        if secondary_keys is None:
+            secondary_keys = []
+
+        def filter_by_key(current_items, key):
+            if not current_items:
+                return current_items
+            top_value = max(item.get(key) for item in current_items)
+            return [item for item in current_items if item.get(key) == top_value]
+
+        top_candidates = filter_by_key(items, primary_key)
+
+        for key in secondary_keys:
+            if len(top_candidates) <= 1:
+                break
+            top_candidates = filter_by_key(top_candidates, key)
+
+        return random.choice(top_candidates)

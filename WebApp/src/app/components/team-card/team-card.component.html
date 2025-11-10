@@ -1,0 +1,44 @@
+<a
+  class="team-card"
+  [ngClass]="{'team-card--player': isPlayer}"
+  [routerLink]="routerLink"
+  routerLinkActive="active"
+  ariaCurrentWhenActive="page"
+  [queryParams]="queryParams"
+  [attr.aria-label]="computedAriaLabel">
+  @if (isTeam) {
+    <img
+      class="team-logo"
+      [src]="logoUrl"
+      [alt]="(teamName ?? 'Team') + ' logo'">
+    <p class="team-name">{{ teamName }}</p>
+
+    @if (showMatchesBadge && matchesWatched !== undefined && matchesWatched !== null) {
+      <div class="team-card-badge">
+        <app-player-stat-badge icon="👁️" [value]="matchesWatched"></app-player-stat-badge>
+      </div>
+    }
+  } @else {
+    <div class="team-card__avatar">
+      @if (playerAvatarUrl) {
+        <img
+          [src]="playerAvatarUrl"
+          [alt]="playerName ?? 'Player avatar'">
+      } @else {
+        <div class="team-card__placeholder">
+          {{ playerName | slice: 0:1 }}
+        </div>
+      }
+    </div>
+    <p class="team-name">{{ playerName }}</p>
+    @if (playerBadges.length > 0) {
+      <div class="team-card-badges">
+        @for (badge of playerBadges; track badge) {
+          <app-player-stat-badge [icon]="badge.icon" [value]="badge.value"></app-player-stat-badge>
+        }
+      </div>
+    }
+  }
+</a>
+
+

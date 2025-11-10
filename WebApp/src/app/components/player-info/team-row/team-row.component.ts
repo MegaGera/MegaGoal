@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ImagesService } from '../../../services/images.service';
 import { TeamSeasonStats } from '../../../models/playerStats';
 import { MatchRowComponent } from './match-row/match-row.component';
-import { PlayerStatBadgeComponent } from './player-stat-badge/player-stat-badge.component';
+import { PlayerStatBadgeComponent } from '../../stats/player-stat-badge/player-stat-badge.component';
 
 @Component({
   selector: 'app-team-row',

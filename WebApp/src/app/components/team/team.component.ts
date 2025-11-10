@@ -3,7 +3,7 @@
 */
 
 import { Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgClass, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -22,14 +22,18 @@ import { Match } from '../../models/match';
 import { isNotStartedStatus } from '../../config/matchStatus';
 import { Location } from '../../models/location';
 import { FavouriteTeamCardComponent } from '../stats/favourite-team-card/favourite-team-card.component';
+import { BasicStatCardComponent } from '../stats/basic-stat-card/basic-stat-card.component';
 import { GeneralCardComponent } from '../general-card/general-card.component';
+import { TeamCardComponent } from '../team-card/team-card.component';
 import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { TeamHeaderComponent } from './team-header/team-header.component';
 import { StatsService } from '../../services/stats.service';
-import { provideNgIconsConfig } from '@ng-icons/core';
+import { provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { LeagueStats } from '../../models/league';
+import { jamFlag, jamInfoF, jamStopSign, jamTrophy, jamEyeCloseF } from '@ng-icons/jam-icons';
+import { BasicPlayerStatCardComponent } from '../stats/basic-player-stat-card/basic-player-stat-card.component';
 
 interface TeamInsightsSummary {
   totalWatched: number;
@@ -58,17 +62,25 @@ interface TeamInsightsSummary {
     NgClass, 
     NgFor,
     FavouriteTeamCardComponent,
+    BasicStatCardComponent,
+    BasicPlayerStatCardComponent,
+    RouterLink,
     PaginationComponent,
     FiltersHomeComponent,
     GeneralCardComponent,
     MatProgressSpinnerModule,
-    TeamHeaderComponent
+    TeamHeaderComponent,
+    TeamCardComponent
   ],
   templateUrl: './team.component.html',
   styleUrl: './team.component.css',
-  providers: [ImagesService, provideNgIconsConfig({
-    size: '1.2rem',
-  })]
+  providers: [
+    ImagesService,
+    provideNgIconsConfig({
+      size: '1.2rem',
+    }),
+    provideIcons({ jamTrophy, jamStopSign, jamEyeCloseF, jamInfoF, jamFlag })
+  ]
 })
 export class TeamComponent {
 
@@ -119,6 +131,15 @@ export class TeamComponent {
   seasonBreakdownFiltered: Array<{ season: number; matches: number; wins: number; draws: number; losses: number; winRate: number; }> = [];
   competitionBreakdown: Array<{ leagueId: number; leagueName: string; matches: number; wins: number; winRate: number; }> = [];
   recentForm: Array<{ fixtureId: number; result: 'W' | 'D' | 'L'; opponent: string; score: string; timestamp: number; }> = [];
+  crazyMatchCard: Match | null = null;
+  topGoalscorers: Array<{ player_id: number; player_name: string; goals: number; matches: number; }> = [];
+  topAssistProviders: Array<{ player_id: number; player_name: string; assists: number; matches: number; }> = [];
+  topWatchedPlayers: Array<{ player_id: number; player_name: string; matches: number; startXI_matches: number; }> = [];
+  biggestRival: FavouriteTeamStats['biggest_rival'] | null = null;
+  biggestWinMatch: Match | null = null;
+  biggestWinGoalDifference: number | null = null;
+  topRivalScorer: FavouriteTeamStats['top_rival_scorer'] | null = null;
+  mostWatchedRivalPlayer: FavouriteTeamStats['most_watched_rival_player'] | null = null;
 
   constructor(private megagoal: MegaGoalService, private router: Router, public images: ImagesService,
     private statsService: StatsService,
@@ -593,11 +614,36 @@ export class TeamComponent {
     ).subscribe({
       next: (stats: FavouriteTeamStats) => {
         this.favouriteTeamStats = stats;
+        this.crazyMatchCard = this.resolveCrazyMatch(stats);
+        this.biggestWinMatch = this.resolveBiggestWin(stats);
+        this.biggestWinGoalDifference = this.computeGoalDifference(stats.biggest_win ?? null);
+        this.topGoalscorers = (stats.goalscorers ?? []).slice(0, 5);
+        this.topAssistProviders = (stats.assist_providers ?? []).slice(0, 5);
+        this.topWatchedPlayers = (stats.watched_players ?? []).slice(0, 5);
+        this.biggestRival = stats.biggest_rival ?? null;
+        this.topRivalScorer = stats.top_rival_scorer && stats.top_rival_scorer.player_id
+          ? stats.top_rival_scorer
+          : null;
+        this.mostWatchedRivalPlayer = stats.most_watched_rival_player && stats.most_watched_rival_player.player_id
+          ? {
+              ...stats.most_watched_rival_player,
+              startXI_matches: stats.most_watched_rival_player.startXI_matches ?? 0
+            }
+          : null;
         this.favouriteTeamLoaded = true;
       },
       error: (error: any) => {
         console.error('Error fetching favourite team stats:', error);
         this.favouriteTeamStats = null;
+        this.crazyMatchCard = null;
+        this.biggestWinMatch = null;
+        this.biggestWinGoalDifference = null;
+        this.topGoalscorers = [];
+        this.topAssistProviders = [];
+        this.topWatchedPlayers = [];
+        this.biggestRival = null;
+        this.topRivalScorer = null;
+        this.mostWatchedRivalPlayer = null;
         this.favouriteTeamLoaded = true;
       }
     });
@@ -663,6 +709,94 @@ export class TeamComponent {
       this.updateCurrentLeagues();
     }
     this.leaguesLoaded = true;
+  }
+
+  private resolveCrazyMatch(stats: FavouriteTeamStats): Match | null {
+    const crazyMatch = stats.crazy_match;
+    const fixtureId = crazyMatch?.fixture?.id;
+    if (!fixtureId) {
+      return null;
+    }
+
+    const watchedMatch =
+      this.allWatchedMatches.find(match => match.fixture.id === fixtureId) ||
+      this.matches.find(match => match.fixture.id === fixtureId);
+    if (watchedMatch) {
+      return watchedMatch;
+    }
+
+    const realMatch = this.realMatches.find(match => match.fixture.id === fixtureId);
+    if (realMatch) {
+      const storedMatch = this.matches.find(match => match.fixture.id === fixtureId);
+      return this.matchParser.realMatchToMatch(realMatch, storedMatch);
+    }
+
+    return null;
+  }
+
+  private resolveBiggestWin(stats: FavouriteTeamStats): Match | null {
+    const biggestWin = stats.biggest_win;
+    const fixtureId = biggestWin?.fixture?.id;
+    if (!fixtureId) {
+      return null;
+    }
+
+    const watchedMatch =
+      this.allWatchedMatches.find(match => match.fixture.id === fixtureId) ||
+      this.matches.find(match => match.fixture.id === fixtureId);
+    if (watchedMatch) {
+      return watchedMatch;
+    }
+
+    const realMatch = this.realMatches.find(match => match.fixture.id === fixtureId);
+    if (realMatch) {
+      const storedMatch = this.matches.find(match => match.fixture.id === fixtureId);
+      return this.matchParser.realMatchToMatch(realMatch, storedMatch);
+    }
+
+    return null;
+  }
+
+  private computeGoalDifference(matchData: FavouriteTeamStats['biggest_win'] | null): number | null {
+    if (!matchData || !matchData.teams || !matchData.goals || !this.team?.team?.id) {
+      return null;
+    }
+
+    const teamId = this.team.team.id;
+    const isHome = matchData.teams.home.id === teamId;
+    const teamGoals = isHome ? matchData.goals.home : matchData.goals.away;
+    const opponentGoals = isHome ? matchData.goals.away : matchData.goals.home;
+
+    if (typeof teamGoals !== 'number' || typeof opponentGoals !== 'number') {
+      return null;
+    }
+
+    return teamGoals - opponentGoals;
+  }
+
+  calculateCrazyMatchTotalGoals(goals?: { home: number; away: number; } | null): number {
+    const home = typeof goals?.home === 'number' ? goals.home : 0;
+    const away = typeof goals?.away === 'number' ? goals.away : 0;
+    return home + away;
+  }
+
+  getPerMatchValue(total?: number | null): number | null {
+    if (!this.favouriteTeamStats || this.favouriteTeamStats.matches_watched === 0) {
+      return null;
+    }
+    if (total === undefined || total === null) {
+      return null;
+    }
+    return parseFloat((total / this.favouriteTeamStats.matches_watched).toFixed(2));
+  }
+
+  isMatchWatched(fixtureId: number): boolean {
+    return this.allWatchedMatches.some(match => match.fixture.id === fixtureId) ||
+      this.matches.some(match => match.fixture.id === fixtureId);
+  }
+
+  trackByPlayerId(_: number, player: { player_id: number }): number {
+    return player.player_id;
   }
 
   private updateLeaguesForAllMatches(): void {
@@ -858,6 +992,11 @@ export class TeamComponent {
 
   formatSeason(season: number): string {
     const next = season + 1;
+    return `${season}-${next}`;
+  }
+
+  formatSeasonShort(season: number): string {
+    const next = (season + 1).toString().slice(-2);
     return `${season}-${next}`;
   }
 
