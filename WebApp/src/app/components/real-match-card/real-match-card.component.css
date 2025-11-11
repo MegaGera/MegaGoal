@@ -70,7 +70,8 @@
     height: 14vh;
   }
 
-	.matchCard:hover {
+	.matchCard:hover,
+	.matchCard.expanded {
 		height: 20vh;
 
 		.generalMatchCard {
@@ -106,7 +107,8 @@
 		height: 20vh;
 	}
 	
-	.matchCard:hover {
+	.matchCard:hover,
+	.matchCard.expanded {
 		height: 35vh;
 
 		.generalMatchCard {
@@ -118,7 +120,8 @@
 		}
 	}
 	
-	.matchCardMd:hover {
+	.matchCardMd:hover,
+	.matchCardMd.expanded {
 		height: 25vh;
 
 		.generalMatchCard {
@@ -146,7 +149,8 @@
   transition: 0.2s;
 }
 
-.matchCard:hover {
+.matchCard:hover,
+.matchCard.expanded {
   background-color: #e2e8f0;
   transition: 0.2s;
 

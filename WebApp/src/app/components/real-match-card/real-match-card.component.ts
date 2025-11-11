@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -27,15 +27,60 @@ import { MatchParserService } from '../../services/match-parser.service';
     size: window.innerWidth < 769 ? '1.2em' : '1.5em',
   }), provideIcons({ jamEyeCloseF, jamEyeF, jamInfoF })]
 })
-export class RealMatchCardComponent {
+export class RealMatchCardComponent implements OnInit {
   @Input() match!: Match;
   @Input() watched: boolean = false;
   @Input() locations!: Location[];
   @Input() size: string = 'lg';
   @Input() interactable: boolean = true;
 
-  constructor(public images: ImagesService, private megaGoal: MegaGoalService, public matchParser: MatchParserService, private router: Router) {
+  isCardExpanded = false;
+  private isMobileView = false;
+
+  constructor(
+    public images: ImagesService,
+    private megaGoal: MegaGoalService,
+    public matchParser: MatchParserService,
+    private router: Router,
+    private host: ElementRef<HTMLElement>,
+  ) {
     this.orderLocations();
+  }
+
+  ngOnInit(): void {
+    this.updateViewportFlags();
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateViewportFlags();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    if (!this.isMobileView || !this.isCardExpanded) {
+      return;
+    }
+
+    if (!this.host.nativeElement.contains(event.target as Node)) {
+      this.isCardExpanded = false;
+    }
+  }
+
+  handleTeamClick(teamId: number, event: Event): void {
+    if (!this.interactable) {
+      return;
+    }
+
+    if (this.isMobileView && !this.isCardExpanded) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.isCardExpanded = true;
+      return;
+    }
+
+    this.isCardExpanded = false;
+    this.navigateToTeam(teamId);
   }
 
   getDate(timestamp: number) {
@@ -167,6 +212,7 @@ export class RealMatchCardComponent {
   }
 
   navigateToTeam(teamId: number) {
+    this.isCardExpanded = false;
     this.router.navigate(['/app/team'], { queryParams: { id: teamId, season: this.match.league.season } }).then(() => {
       window.scrollTo(0, 0);
     });
@@ -176,5 +222,13 @@ export class RealMatchCardComponent {
     this.router.navigate(['/app/match'], { queryParams: { id: this.match.fixture.id } }).then(() => {
       window.scrollTo(0, 0);
     });
+  }
+
+  private updateViewportFlags(): void {
+    const previousMobileView = this.isMobileView;
+    this.isMobileView = window.innerWidth < 769;
+    if (!this.isMobileView && previousMobileView) {
+      this.isCardExpanded = false;
+    }
   }
 }
