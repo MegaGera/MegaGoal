@@ -1,202 +1,634 @@
 
 @if (team !== undefined) {
-  <div class="container">
+  <div class="container team-page">
 
-    <nav class="nav-class">
-      <div class="nav nav-tabs d-md-none" id="nav-tab-team" role="tablist">
-        <button class="nav-link" id="nav-stats-tab" data-bs-toggle="tab" data-bs-target="#nav-stats" type="button" role="tab" aria-controls="nav-stats" aria-selected="true">Stats</button>
-        <button class="nav-link active" id="nav-team-tab" data-bs-toggle="tab" data-bs-target="#nav-team" type="button" role="tab" aria-controls="nav-team" aria-selected="false">Team</button>
-        <button class="nav-link" id="nav-competitions-tab" data-bs-toggle="tab" data-bs-target="#nav-competitions" type="button" role="tab" aria-controls="nav-competitions" aria-selected="false">Filters</button>
-      </div>
-    </nav>
+    <app-team-header
+      [team]="team">
+    </app-team-header>
 
-    <!-- Desktop Layout: Side by side -->
-    <div class="row m-auto d-none d-md-flex mt-4">
-      <!-- Stats information column -->
-      <div class="col-md-3 col-12">
-        <div class="informationColumn">
-          <div class="text-center">
-            <h2 class="m-auto"><u>Stats</u></h2>
-            <h3 class="m-auto">Total views:</h3>
+    <div class="row">
+      <div class="col-12">
+        <div class="view-toggle-card">
+          <div class="view-toggle">
+            <button class="toggle-btn" [class.active]="viewMode === 'insights'" (click)="setView('insights')">Stats</button>
+            <button class="toggle-btn" [class.active]="viewMode === 'yourMatches'" (click)="setView('yourMatches')">Your Matches</button>
+            <button class="toggle-btn" [class.active]="viewMode === 'allMatches'" (click)="setView('allMatches')">All Matches</button>
           </div>
         </div>
-      </div>
-
-      <!-- Team main information column -->
-      <div class="col-md-6 col-12">
-        <div class="centralTeamInformation">
-          <div class="row">
-            <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
-          </div>
-          <div class="row text-center">
-            <h1 class="teamNameText">{{team.team.name}}</h1>
-          </div>
-          <div class="row text-center">
-            <table class="informationTable">
-              <tr>
-                <th class="tableCol" scope="col">Code</th>
-                <th class="tableCol" scope="col">Country</th>
-                <th class="tableCol">City</th>
-                <th class="tableCol">Founded</th>
-                <th class="tableCol">Stadium</th>
-              </tr>
-              <tr>
-                <td>{{team.team.code}}</td>
-                <td>{{team.team.country}}</td>
-                <td>{{team.venue.city}}</td>
-                <td>{{team.team.founded}}</td>
-                <td>{{team.venue.name}}</td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Filters column (Desktop) -->
-      <div class="col-md-3 col-12">
-        <app-team-filters
-          [selectedSeason]="selectedSeason"
-          [seasons]="seasons"
-          [leagues]="leagues"
-          [selectedLeagues]="selectedLeagues"
-          [leagueNames]="leagueNames"
-          (seasonChange)="selectSeason($event)"
-          (leagueToggle)="selectLeague($event)">
-        </app-team-filters>
       </div>
     </div>
 
-    <!-- Mobile Layout: Tabs -->
-    <div class="tab-content row m-auto d-md-none mt-3" id="nav-tab-team">
-      <!-- Stats information column -->
-      <div class="tab-pane show col-12" id="nav-stats" role="tabpanel" aria-labelledby="nav-stats-tab">
-        <div class="informationColumn">
-          <div class="text-center">
-            <h2 class="m-auto"><u>Stats</u></h2>
-            <h3 class="m-auto">Total views:</h3>
-          </div>
+    <div class="row d-md-none">
+      <div class="col-12">
+        <div class="mobile-filters-wrapper">
+          <app-filters-home
+            class="team-filters-mobile"
+            [filterPanelChipSelected]="filterPanelChipSelected"
+            [filterLeagueSelected]="filterLeagueSelected"
+            [filterSeasonSelected]="filterSeasonSelected"
+            [filterLocationSelected]="filterLocationSelected"
+            [seasons]="viewMode === 'allMatches' ? seasonOptions : statsSeasonOptions"
+            [locations]="viewMode === 'allMatches' ? locations : statsLocations"
+            [leaguesViewed]="currentLeagues"
+            [leaguesLoaded]="leaguesLoaded"
+            [showPanelChips]="false"
+            [showLeagues]="currentLeagues.length > 0 || !leaguesLoaded"
+            [showLocations]="viewMode !== 'allMatches'"
+            [collapsed]="!mobileFiltersExpanded"
+            (collapseToggle)="toggleMobileFilters()"
+            (filterPanelChipSelectedChange)="onFilterPanelChipSelectedChange($event)"
+            (filterLeagueSelectedChange)="onFilterLeagueSelectedChange($event)"
+            (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"
+            (filterLocationSelectedChange)="onFilterLocationSelectedChange($event)"
+            (resetFiltersChange)="resetFilters()">
+          </app-filters-home>
         </div>
-      </div>
-
-      <!-- Team main information column -->
-      <div class="tab-pane show active col-12" id="nav-team" role="tabpanel" aria-labelledby="nav-team-tab">
-        <div class="centralTeamInformation">
-          <div class="row">
-            <img class="teamImage" [src]="images.getRouteImageTeam(team.team.id)">
-          </div>
-          <div class="row text-center">
-            <h1 class="teamNameText">{{team.team.name}}</h1>
-          </div>
-          <div class="row text-center">
-            <table class="informationTable">
-              <tr>
-                <th class="tableCol" scope="col">Code</th>
-                <th class="tableCol" scope="col">Country</th>
-                <th class="tableCol">City</th>
-                <th class="tableCol">Founded</th>
-                <th class="tableCol">Stadium</th>
-              </tr>
-              <tr>
-                <td>{{team.team.code}}</td>
-                <td>{{team.team.country}}</td>
-                <td>{{team.venue.city}}</td>
-                <td>{{team.team.founded}}</td>
-                <td>{{team.venue.name}}</td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Filters column (Mobile) -->
-      <div class="tab-pane show col-12" id="nav-competitions" role="tabpanel" aria-labelledby="nav-competitions-tab">
-        <app-team-filters
-          [selectedSeason]="selectedSeason"
-          [seasons]="seasons"
-          [leagues]="leagues"
-          [selectedLeagues]="selectedLeagues"
-          [leagueNames]="leagueNames"
-          (seasonChange)="selectSeason($event)"
-          (leagueToggle)="selectLeague($event)">
-        </app-team-filters>
       </div>
     </div>
-    
-    @if (selectedSeason.id == seasons[0].id) {
 
-      <nav class="nav-class">
-        <div class="nav nav-tabs d-md-none" id="nav-tab-matches" role="tablist">
-          <button class="nav-link active" id="nav-last-tab" data-bs-toggle="tab" data-bs-target="#nav-last" type="button" role="tab" aria-controls="nav-last" aria-selected="true">Last played</button>
-          <button class="nav-link" id="nav-next-tab" data-bs-toggle="tab" data-bs-target="#nav-next" type="button" role="tab" aria-controls="nav-next" aria-selected="false">Next matches</button>
-        </div>
-      </nav>
+    <div class="tab-content row" id="team-tab-content">
+      <div class="tab-pane fade col-12 d-none" 
+           [class.col-md-3]="showFavouriteTeamColumn"
+           [class.d-md-block]="showFavouriteTeamColumn"
+           [class.show]="showFavouriteTeamColumn"
+           [class.hide-on-all-matches]="!showFavouriteTeamColumn"
+           id="team-insights-pane" 
+           role="tabpanel" 
+           aria-labelledby="team-insights-tab">
+        <div class="insights-sidebar">
+          @if (showFavouriteTeamCard) {
+            <app-favourite-team-card
+              [teamStats]="favouriteTeamStats"
+              [isLoading]="!favouriteTeamLoaded"
+              [interactable]="true"
+              [showHeader]="false">
+            </app-favourite-team-card>
 
+            @if (viewMode === 'insights') {
+              <app-general-card customClass="insights-card">
+                  <div class="insights-card-header">
+                    <h3>📈 Performance Overview</h3>
+                  </div>
 
-      <div class="tab-content row m-auto" id="nav-team-matches">
-
-        <div class="tab-pane show active col-12 col-lg-6" id="nav-last" role="tabpanel" aria-labelledby="nav-last-tab">
-
-          <div class="text-center d-none d-md-flex">
-            <h2 class="m-auto"><u>Last played</u></h2>
-          </div>
-          
-          @for (match of filterStartedRealMatches(); track $index) {
-            <div class="matchCardAdapter matchCardAdapterTwoColumns">
-              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-              [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-              [locations]="locations"></app-real-match-card>
-            </div>
+                <div class="insights-summary-grid performance-stats-grid">
+                  @if (favouriteTeamLoaded && favouriteTeamStats) {
+                    <app-basic-stat-card
+                      label="Yellow Cards"
+                      [value]="favouriteTeamStats.total_yellow_cards ?? 0"
+                      [subValue]="getPerMatchValue(favouriteTeamStats.total_yellow_cards ?? 0)"
+                      icon="🟨"
+                      iconClass="cards-yellow">
+                    </app-basic-stat-card>
+                    <app-basic-stat-card
+                      label="Red Cards"
+                      [value]="favouriteTeamStats.total_red_cards ?? 0"
+                      [subValue]="getPerMatchValue(favouriteTeamStats.total_red_cards ?? 0)"
+                      icon="🟥"
+                      iconClass="cards-red">
+                    </app-basic-stat-card>
+                    <app-basic-stat-card
+                      label="Fouls Committed"
+                      [value]="favouriteTeamStats.total_fouls ?? 0"
+                      [subValue]="getPerMatchValue(favouriteTeamStats.total_fouls ?? 0)"
+                      icon="🚫"
+                      iconClass="fouls">
+                    </app-basic-stat-card>
+                    <app-basic-stat-card
+                      label="Shots"
+                      [value]="favouriteTeamStats.total_shots ?? 0"
+                      [subValue]="getPerMatchValue(favouriteTeamStats.total_shots ?? 0)"
+                      icon="🎯"
+                      iconClass="shots">
+                    </app-basic-stat-card>
+                    <app-basic-stat-card
+                      label="Avg Possession"
+                      [value]="favouriteTeamStats.average_possession ?? 0"
+                      [valueSuffix]="'%'"
+                      icon="📊"
+                      iconClass="possession">
+                    </app-basic-stat-card>
+                    <app-basic-stat-card
+                      label="Corner Kicks"
+                      [value]="favouriteTeamStats.total_corner_kicks ?? 0"
+                      [subValue]="getPerMatchValue(favouriteTeamStats.total_corner_kicks ?? 0)"
+                      icon="🚩"
+                      iconClass="corners">
+                    </app-basic-stat-card>
+                  } @else {
+                    <div class="summary-tile performance-placeholder">
+                      <span class="summary-label">Team stats</span>
+                      <span class="summary-value">Loading…</span>
+                    </div>
+                  }
+                </div>
+              </app-general-card>
+            }
+          } @else {
+            <div class="insights-sidebar-placeholder" aria-hidden="true"></div>
           }
         </div>
-
-        <div class="tab-pane show col-12 col-lg-6" id="nav-next" role="tabpanel" aria-labelledby="nav-next-tab">
-
-          <div class="text-center d-none d-md-flex">
-            <h2 class="m-auto"><u>Next matches</u></h2>
-          </div>
-
-          @for (match of filterNotStartedRealMatches(); track $index) {
-            <div class="matchCardAdapter matchCardAdapterTwoColumns">
-              <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-              [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-              [locations]="locations"></app-real-match-card>
-            </div>
-          }
-        </div>
-        
-      </div>
-    } @else {
-      <div class="row d-none d-md-flex">
-        <div class="col-12 col-lg-6">
-          <div class="matchCardAdapter matchCardAdapterTwoColumns"
-            *ngFor="let match of filterHalfRealMatches(showRealMatches, 0); trackBy: trackByMatchId">
-            <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-            [locations]="locations"></app-real-match-card>
-          </div>
-        </div>
-        <div class="col-12 col-lg-6 mt-4">
-          <div class="matchCardAdapter matchCardAdapterTwoColumns"
-            *ngFor="let match of filterHalfRealMatches(showRealMatches, 1); trackBy: trackByMatchId">
-            <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-            [locations]="locations"></app-real-match-card>
-          </div>
-        </div>
       </div>
 
-      <div class="row d-md-none">
-        <div class="col-12 col-lg-6">
-          <div class="matchCardAdapter matchCardAdapterTwoColumns"
-            *ngFor="let match of showRealMatches; trackBy: trackByMatchId">
-            <app-real-match-card [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-            [locations]="locations"></app-real-match-card>
+      <div class="tab-pane fade show active" 
+           [class.col-md-6]="viewMode !== 'allMatches'"
+           [class.col-md-9]="viewMode === 'allMatches'"
+           class="col-12" 
+           id="team-main-pane" 
+           role="tabpanel" 
+           aria-labelledby="team-matches-tab">
+        @if (viewMode === 'insights') {
+          <div class="insights-view">
+            @if (!insightsLoaded) {
+              <div class="spinner-wrapper">
+                <mat-spinner></mat-spinner>
+              </div>
+            } @else if (filteredInsightsMatches.length === 0) {
+              <app-general-card customClass="insights-card">
+                <div class="insights-empty">
+                  <h3>No matches selected</h3>
+                  <p>Switch to another season or mark matches as viewed to see insights here</p>
+                </div>
+              </app-general-card>
+            } @else {
+              <div class="insights-grid">
+
+                <!-- Favourite Team Card - Mobile-->
+                <div class="insights-mobile-header d-md-none">
+                  @if (showFavouriteTeamCard) {
+                    <app-favourite-team-card
+                      [teamStats]="favouriteTeamStats"
+                      [isLoading]="!favouriteTeamLoaded"
+                      [interactable]="true"
+                      [showHeader]="false">
+                    </app-favourite-team-card>
+                  } @else {
+                    <div class="insights-sidebar-placeholder" aria-hidden="true"></div>
+                  }
+                </div>
+
+                <!-- Biggest Win -->
+                @if (biggestWinMatch && favouriteTeamStats?.biggest_win) {
+                  <div class="insights-grid-item insights-grid-item--full">
+                    <app-general-card customClass="insights-card">
+                      <div class="insights-card-header">
+                        <h3>🏆 Biggest Win</h3>
+                        @if (biggestWinGoalDifference !== null) {
+                          <span class="highlight-badge">
+                            +{{ biggestWinGoalDifference }} GD
+                          </span>
+                        }
+                      </div>
+                      <div class="crazy-match-card">
+                        <app-real-match-card
+                          [match]="biggestWinMatch"
+                          [watched]="isMatchWatched(biggestWinMatch.fixture.id)"
+                          [locations]="locations"
+                          [interactable]="true">
+                        </app-real-match-card>
+                      </div>
+                    </app-general-card>
+                  </div>
+                }
+
+                <!-- Top Goalscorers -->
+                @if (topGoalscorers.length > 0) {
+                  <div class="insights-grid-item insights-grid-item--full">
+                    <app-general-card customClass="insights-card">
+                      <div class="insights-card-header">
+                        <h3>⚽ Top Goalscorers</h3>
+                      </div>
+                      <div class="player-list">
+                        @for (player of topGoalscorers; track trackByPlayerId) {
+                          <app-basic-player-stat-card
+                            [playerId]="player.player_id"
+                            [avatarUrl]="images.getRouteImagePlayer(player.player_id)"
+                            [playerName]="player.player_name"
+                            [badges]="[
+                              { icon: '⚽', value: player.goals },
+                              { icon: '👁️', value: player.matches }
+                            ]">
+                          </app-basic-player-stat-card>
+                        }
+                      </div>
+                    </app-general-card>
+                  </div>
+                }
+
+                <!-- Crazy Match -->
+                @if (crazyMatchCard) {
+                  <div class="insights-grid-item insights-grid-item--full">
+                    <app-general-card customClass="insights-card">
+                      <div class="insights-card-header">
+                        <h3>🔥 Crazy Match</h3>
+                        @if (favouriteTeamStats?.crazy_match?.goals) {
+                          <span class="highlight-badge">
+                            {{ calculateCrazyMatchTotalGoals(favouriteTeamStats?.crazy_match?.goals) }} Goals
+                          </span>
+                        }
+                      </div>
+                      <div class="crazy-match-card">
+                        <app-real-match-card
+                          [match]="crazyMatchCard"
+                          [watched]="isMatchWatched(crazyMatchCard.fixture.id)"
+                          [locations]="locations"
+                          [interactable]="true">
+                        </app-real-match-card>
+                      </div>
+                    </app-general-card>
+                  </div>
+                }
+
+                <!-- Most Watched Players -->
+                @if (topWatchedPlayers.length > 0) {
+                  <div class="insights-grid-item insights-grid-item--full">
+                    <app-general-card customClass="insights-card">
+                      <div class="insights-card-header">
+                        <h3>👁️ Most Watched Players</h3>
+                      </div>
+                      <div class="player-list">
+                        @for (player of topWatchedPlayers; track trackByPlayerId) {
+                          <app-basic-player-stat-card
+                            [playerId]="player.player_id"
+                            [avatarUrl]="images.getRouteImagePlayer(player.player_id)"
+                            [playerName]="player.player_name"
+                            [badges]="[
+                              { icon: '👁️', value: player.matches },
+                              { icon: '', value: 'XI ' + player.startXI_matches }
+                            ]">
+                          </app-basic-player-stat-card>
+                        }
+                      </div>
+                    </app-general-card>
+                  </div>
+                }
+
+                <!-- Biggest Rival -->
+                @if (biggestRival) {
+                  <div class="insights-grid-item insights-grid-item--third">
+                    <app-general-card customClass="insights-card">
+                      <div class="insights-card-header">
+                        <h3>🤝 Biggest Rival</h3>
+                      </div>
+                      <app-team-card
+                        [teamId]="biggestRival.team_id"
+                        [teamName]="biggestRival.team_name"
+                        [logoUrl]="images.getRouteImageTeam(biggestRival.team_id)"
+                        [matchesWatched]="biggestRival.matches_played">
+                      </app-team-card>
+                    </app-general-card>
+                  </div>
+                }
+
+                <!-- Rival Top Scorer -->
+                @if (topRivalScorer) {
+                  <div class="insights-grid-item insights-grid-item--third">
+                    <app-general-card customClass="insights-card">
+                      <div class="insights-card-header">
+                        <h3>🎯 Rival Top Scorer</h3>
+                      </div>
+                      <app-team-card
+                        entityType="player"
+                        [playerId]="topRivalScorer.player_id"
+                        [playerName]="topRivalScorer.player_name"
+                        [playerAvatarUrl]="images.getRouteImagePlayer(topRivalScorer.player_id)"
+                        [playerBadges]="[
+                          { icon: '⚽', value: topRivalScorer.goals },
+                          { icon: '👁️', value: topRivalScorer.matches }
+                        ]">
+                      </app-team-card>
+                    </app-general-card>
+                  </div>
+                }
+
+                <!-- Rival Top Watch -->
+                @if (mostWatchedRivalPlayer) {
+                  <div class="insights-grid-item insights-grid-item--third">
+                    <app-general-card customClass="insights-card">
+                      <div class="insights-card-header">
+                        <h3>👀 Rival Top Watch</h3>
+                      </div>
+                      <app-team-card
+                        entityType="player"
+                        [playerId]="mostWatchedRivalPlayer.player_id"
+                        [playerName]="mostWatchedRivalPlayer.player_name"
+                        [playerAvatarUrl]="images.getRouteImagePlayer(mostWatchedRivalPlayer.player_id)"
+                        [playerBadges]="[
+                          { icon: '👁️', value: mostWatchedRivalPlayer.matches },
+                          { icon: '', value: 'XI ' + mostWatchedRivalPlayer.startXI_matches }
+                        ]">
+                      </app-team-card>
+                    </app-general-card>
+                  </div>
+                }
+
+                <!-- Top Assist Providers -->
+                @if (topAssistProviders.length > 0) {
+                  <div class="insights-grid-item insights-grid-item--full">
+                    <app-general-card customClass="insights-card">
+                      <div class="insights-card-header">
+                        <h3>🎯 Top Assist Providers</h3>
+                      </div>
+                      <div class="player-list">
+                        @for (player of topAssistProviders; track trackByPlayerId) {
+                          <app-basic-player-stat-card
+                            [playerId]="player.player_id"
+                            [avatarUrl]="images.getRouteImagePlayer(player.player_id)"
+                            [playerName]="player.player_name"
+                            [badges]="[
+                              { icon: '🎯', value: player.assists },
+                              { icon: '👁️', value: player.matches }
+                            ]">
+                          </app-basic-player-stat-card>
+                        }
+                      </div>
+                    </app-general-card>
+                  </div>
+                }
+
+
+                <!-- Season Performance -->
+                <div class="insights-grid-item insights-grid-item--half">
+                  <app-general-card customClass="insights-card">
+                    <div class="insights-card-header">
+                      <h3>📅 Season Performance</h3>
+                    </div>
+                    @if (seasonBreakdownFiltered.length > 0) {
+                      <table class="insights-table">
+                        <thead>
+                          <tr>
+                          <th>Season</th>
+                          <th>M</th>
+                            <th>W</th>
+                            <th>D</th>
+                            <th>L</th>
+                            <th>Win %</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (item of seasonBreakdownFiltered; track trackBySeason($index, item)) {
+                            <tr>
+                            <td>{{ formatSeasonShort(item.season) }}</td>
+                              <td>{{ item.matches }}</td>
+                              <td>{{ item.wins }}</td>
+                              <td>{{ item.draws }}</td>
+                              <td>{{ item.losses }}</td>
+                              <td>{{ item.winRate }}%</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    } @else {
+                      <p class="insights-empty-text">No season insights available for the selected filters.</p>
+                    }
+                  </app-general-card>
+                </div>
+
+                <!-- Competition Breakdown -->
+                <div class="insights-grid-item insights-grid-item--half">
+                  <app-general-card customClass="insights-card">
+                    <div class="insights-card-header">
+                      <h3>🗺️ Competition Breakdown</h3>
+                    </div>
+                    @if (competitionBreakdown.length > 0) {
+                      <div class="competition-list">
+                        @for (competition of competitionBreakdown; track trackByCompetition($index, competition)) {
+                          <div class="competition-item">
+                            <div class="competition-info">
+                              <img class="competition-league-img" [src]="images.getRouteImageLeagueSm(competition.leagueId)" [alt]="competition.leagueName">
+                              <div>
+                                <p class="competition-name">{{ competition.leagueName }}</p>
+                                <p class="competition-meta">{{ competition.matches }} watched • {{ competition.wins }} wins</p>
+                              </div>
+                            </div>
+                            <span class="competition-rate">{{ competition.winRate }}%</span>
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <p class="insights-empty-text">No competition data for this selection.</p>
+                    }
+                  </app-general-card>
+                </div>
+                <div class="insights-mobile-performance d-md-none">
+                  <app-general-card customClass="insights-card">
+                    <div class="insights-card-header">
+                      <h3>📈 Performance Overview</h3>
+                    </div>
+  
+                    <div class="insights-summary-grid performance-stats-grid">
+                      @if (favouriteTeamLoaded && favouriteTeamStats) {
+                        <app-basic-stat-card
+                          label="Yellow Cards"
+                          [value]="favouriteTeamStats.total_yellow_cards ?? 0"
+                          [subValue]="getPerMatchValue(favouriteTeamStats.total_yellow_cards ?? 0)"
+                          icon="🟨"
+                          iconClass="cards-yellow">
+                        </app-basic-stat-card>
+                        <app-basic-stat-card
+                          label="Red Cards"
+                          [value]="favouriteTeamStats.total_red_cards ?? 0"
+                          [subValue]="getPerMatchValue(favouriteTeamStats.total_red_cards ?? 0)"
+                          icon="🟥"
+                          iconClass="cards-red">
+                        </app-basic-stat-card>
+                        <app-basic-stat-card
+                          label="Fouls Committed"
+                          [value]="favouriteTeamStats.total_fouls ?? 0"
+                          [subValue]="getPerMatchValue(favouriteTeamStats.total_fouls ?? 0)"
+                          icon="🚫"
+                          iconClass="fouls">
+                        </app-basic-stat-card>
+                        <app-basic-stat-card
+                          label="Avg Possession"
+                          [value]="favouriteTeamStats.average_possession ?? 0"
+                          [valueSuffix]="'%'"
+                          icon="📊"
+                          iconClass="possession">
+                        </app-basic-stat-card>
+                        <app-basic-stat-card
+                          label="Corner Kicks"
+                          [value]="favouriteTeamStats.total_corner_kicks ?? 0"
+                          [subValue]="getPerMatchValue(favouriteTeamStats.total_corner_kicks ?? 0)"
+                          icon="🚩"
+                          iconClass="corners">
+                        </app-basic-stat-card>
+                      } @else {
+                        <div class="summary-tile performance-placeholder">
+                          <span class="summary-label">Team stats</span>
+                          <span class="summary-value">Loading…</span>
+                        </div>
+                      }
+                    </div>
+                  </app-general-card>
+                </div>
+              </div>
+            }
           </div>
-        </div>
+        } @else if (viewMode === 'yourMatches') {
+          <div class="matches-view personal-matches">
+
+            @if (!yourMatchesLoaded) {
+              <div class="spinner-wrapper">
+                <mat-spinner></mat-spinner>
+              </div>
+            } @else if (filteredPersonalMatches.length === 0) {
+              <app-general-card customClass="insights-card">
+                <div class="insights-empty">
+                  <h3>No matches selected</h3>
+                  <p>Switch to another season or mark matches as viewed to see insights here</p>
+                </div>
+              </app-general-card>
+            } @else {
+              <div class="matches-list">
+                @for (match of personalMatchesPageMatches; track match.fixture.id) {
+                  <div class="matchCardAdapter">
+                    <app-real-match-card 
+                      [match]="match"
+                      [watched]="true"
+                      [locations]="locations">
+                    </app-real-match-card>
+                  </div>
+                }
+              </div>
+
+              <div class="paginationDiv mt-3">
+                <app-pagination 
+                  [elements]="filteredPersonalMatches" 
+                  [elementsPerPage]="personalMatchesPerPage" 
+                  [(elementsFiltered)]="personalMatchesPageMatches">
+                </app-pagination>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="matches-view">
+            @if (selectedSeason.id == seasons[0].id) {
+              <div class="matches-section">
+
+                <div class="matches-tabs d-md-none">
+                  <div class="nav nav-tabs" id="team-matches-mobile" role="tablist">
+                    <button class="nav-link active" id="team-last-tab" data-bs-toggle="tab" data-bs-target="#team-last-pane" type="button" role="tab" aria-controls="team-last-pane" aria-selected="true">Last played</button>
+                    <button class="nav-link" id="team-next-tab" data-bs-toggle="tab" data-bs-target="#team-next-pane" type="button" role="tab" aria-controls="team-next-pane" aria-selected="false">Next matches</button>
+                  </div>
+                </div>
+
+                <div class="row g-3 d-none d-md-flex">
+                  <div class="col-md-6">
+                    <h3 class="section-subtitle">Last played</h3>
+                    @for (match of filterStartedRealMatches(); track $index) {
+                      <div class="matchCardAdapter matchCardAdapterTwoColumns">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                  <div class="col-md-6">
+                    <h3 class="section-subtitle">Next matches</h3>
+                    @for (match of filterNotStartedRealMatches(); track $index) {
+                      <div class="matchCardAdapter matchCardAdapterTwoColumns">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="tab-content d-md-none mt-3" id="team-matches-mobile-content">
+                  <div class="tab-pane fade show active" id="team-last-pane" role="tabpanel" aria-labelledby="team-last-tab">
+                    @for (match of filterStartedRealMatches(); track $index) {
+                      <div class="matchCardAdapter">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                  <div class="tab-pane fade" id="team-next-pane" role="tabpanel" aria-labelledby="team-next-tab">
+                    @for (match of filterNotStartedRealMatches(); track $index) {
+                      <div class="matchCardAdapter">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div class="matches-section">
+                <div class="row g-3 d-none d-md-flex">
+                  <div class="col-md-6">
+                    @for (match of filterHalfRealMatches(showRealMatches, 0); track trackByMatchId($index, match)) {
+                      <div class="matchCardAdapter matchCardAdapterTwoColumns">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                  <div class="col-md-6">
+                    @for (match of filterHalfRealMatches(showRealMatches, 1); track trackByMatchId($index, match)) {
+                      <div class="matchCardAdapter matchCardAdapterTwoColumns">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    }
+                  </div>
+                </div>
+                <div class="d-md-none">
+                  @for (match of showRealMatches; track trackByMatchId($index, match)) {
+                    <div class="matchCardAdapter">
+                      <app-real-match-card 
+                        [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                        [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                        [locations]="locations">
+                      </app-real-match-card>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
       </div>
-    }
+
+      <div class="tab-pane fade show col-md-3 col-12 d-none d-md-block" id="team-filters-pane" role="tabpanel" aria-labelledby="team-filters-tab">
+        <app-filters-home
+          class="team-filters-sticky"
+          [filterPanelChipSelected]="filterPanelChipSelected"
+          [filterLeagueSelected]="filterLeagueSelected"
+          [filterSeasonSelected]="filterSeasonSelected"
+          [filterLocationSelected]="filterLocationSelected"
+          [seasons]="viewMode === 'allMatches' ? seasonOptions : statsSeasonOptions"
+          [locations]="viewMode === 'allMatches' ? locations : statsLocations"
+          [leaguesViewed]="currentLeagues"
+          [leaguesLoaded]="leaguesLoaded"
+          [showPanelChips]="false"
+          [showLeagues]="currentLeagues.length > 0 || !leaguesLoaded"
+          [showLocations]="viewMode !== 'allMatches'"
+          (filterPanelChipSelectedChange)="onFilterPanelChipSelectedChange($event)"
+          (filterLeagueSelectedChange)="onFilterLeagueSelectedChange($event)"
+          (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"
+          (filterLocationSelectedChange)="onFilterLocationSelectedChange($event)"
+          (resetFiltersChange)="resetFilters()">
+        </app-filters-home>
+      </div>
+    </div>
 
   </div>
-
 }

@@ -176,8 +176,15 @@ export class MegaGoalService {
     Method to get all the Matches by team and season from the API
   */
   getMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<Match[]> {
-    let params = new HttpParams().set('team_id', team_id).set('season', season); 
-    return this.http.get<Match[]>(this.url + '/match', { ...this.options, params: params });
+    const params = new HttpParams().set('season', season); 
+    return this.http.get<Match[]>(`${this.url}/match/team/${team_id}`, { ...this.options, params });
+  }
+
+  /*
+    Method to get all matches watched for a team
+  */
+  getMatchesByTeam(team_id: number): Observable<Match[]> {
+    return this.http.get<Match[]>(`${this.url}/match/team/${team_id}`, this.options);
   }
 
   /*

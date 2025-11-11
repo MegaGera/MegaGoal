@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserStats } from '../../../models/userStats';
 import { QuickStatCardComponent } from './quick-stat-card/quick-stat-card.component';
@@ -20,6 +20,8 @@ interface StatCard {
   styleUrl: './quick-stats.component.css'
 })
 export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('carousel', { static: false }) carouselRef?: ElementRef<HTMLDivElement>;
+
   private _userStats: UserStats | null = null;
   @Input() set userStats(value: UserStats | null) {
     this._userStats = value;
@@ -34,6 +36,8 @@ export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   
   @Input() userStatsLoaded: boolean = false;
+  @Input() containerWidth: string | null = '300px';
+  @Input() showFadeEdges: boolean = false;
 
   statCards: StatCard[] = [];
   private scrollContainer: HTMLElement | null = null;
@@ -45,6 +49,14 @@ export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
   private isDragging = false;
   private startX = 0;
   private scrollLeft = 0;
+  private boundContainer: HTMLElement | null = null;
+
+  private readonly mouseDownHandler = (event: MouseEvent) => this.onMouseDown(event);
+  private readonly mouseMoveHandler = (event: MouseEvent) => this.onMouseMove(event);
+  private readonly mouseUpHandler = () => this.onMouseUp();
+  private readonly touchStartHandler = (event: TouchEvent) => this.onTouchStart(event);
+  private readonly touchMoveHandler = (event: TouchEvent) => this.onTouchMove(event);
+  private readonly touchEndHandler = () => this.onTouchEnd();
 
   ngOnInit() {
     this.generateStatCards();
@@ -56,6 +68,7 @@ export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.stopAutoScroll();
+    this.teardownDragEvents();
   }
 
   private generateStatCards() {
@@ -237,26 +250,57 @@ export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private initCarousel() {
-    this.scrollContainer = document.querySelector('.stats-carousel');
-    if (this.scrollContainer && this.statCards.length > 2) {
-      this.setupDragEvents();
-      this.startAutoScroll();
+    this.stopAutoScroll();
+    this.scrollContainer = this.carouselRef?.nativeElement || null;
+
+    if (!this.scrollContainer || this.statCards.length <= 2) {
+      this.stopAutoScroll();
+      this.teardownDragEvents();
+      this.boundContainer = null;
+      return;
     }
+
+    if (this.boundContainer !== this.scrollContainer) {
+      this.teardownDragEvents();
+      this.setupDragEvents(this.scrollContainer);
+      this.boundContainer = this.scrollContainer;
+    }
+
+    if (this.scrollContainer) {
+      this.scrollContainer.style.cursor = 'grab';
+    }
+
+    this.startAutoScroll();
   }
 
-  private setupDragEvents() {
-    if (!this.scrollContainer) return;
-
+  private setupDragEvents(container: HTMLElement) {
     // Mouse events for desktop
-    this.scrollContainer.addEventListener('mousedown', this.onMouseDown.bind(this));
-    this.scrollContainer.addEventListener('mousemove', this.onMouseMove.bind(this));
-    this.scrollContainer.addEventListener('mouseup', this.onMouseUp.bind(this));
-    this.scrollContainer.addEventListener('mouseleave', this.onMouseUp.bind(this));
+    container.addEventListener('mousedown', this.mouseDownHandler);
+    container.addEventListener('mousemove', this.mouseMoveHandler);
+    container.addEventListener('mouseup', this.mouseUpHandler);
+    container.addEventListener('mouseleave', this.mouseUpHandler);
 
-    // Touch events for mobile (already working)
-    this.scrollContainer.addEventListener('touchstart', this.onTouchStart.bind(this));
-    this.scrollContainer.addEventListener('touchmove', this.onTouchMove.bind(this));
-    this.scrollContainer.addEventListener('touchend', this.onTouchEnd.bind(this));
+    // Touch events for mobile
+    container.addEventListener('touchstart', this.touchStartHandler, { passive: false });
+    container.addEventListener('touchmove', this.touchMoveHandler, { passive: false });
+    container.addEventListener('touchend', this.touchEndHandler);
+  }
+
+  private teardownDragEvents() {
+    if (!this.boundContainer) {
+      this.stopAutoScroll();
+      return;
+    }
+    this.boundContainer.removeEventListener('mousedown', this.mouseDownHandler);
+    this.boundContainer.removeEventListener('mousemove', this.mouseMoveHandler);
+    this.boundContainer.removeEventListener('mouseup', this.mouseUpHandler);
+    this.boundContainer.removeEventListener('mouseleave', this.mouseUpHandler);
+    this.boundContainer.removeEventListener('touchstart', this.touchStartHandler);
+    this.boundContainer.removeEventListener('touchmove', this.touchMoveHandler);
+    this.boundContainer.removeEventListener('touchend', this.touchEndHandler);
+    this.boundContainer.style.cursor = '';
+    this.boundContainer.style.userSelect = '';
+    this.boundContainer = null;
   }
 
   private onMouseDown(e: MouseEvent) {
@@ -367,5 +411,12 @@ export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   trackByIndex(index: number): number {
     return index;
+  }
+
+  getCarouselStyles(): { [key: string]: string } {
+    if (!this.containerWidth) {
+      return {};
+    }
+    return { width: this.containerWidth };
   }
 } 

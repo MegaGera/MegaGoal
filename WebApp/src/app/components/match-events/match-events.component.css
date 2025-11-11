@@ -266,6 +266,36 @@
     border-width: 2px;
   }
 
+  .event-main {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "icon type"
+      "player player";
+    column-gap: 0.5rem;
+    row-gap: 0.25rem;
+    align-items: center;
+    max-width: 100%;
+  }
+
+  .event-icon {
+    grid-area: icon;
+    align-self: flex-start;
+  }
+
+  .event-details {
+    display: contents;
+  }
+
+  .event-type {
+    grid-area: type;
+    margin-bottom: 0;
+  }
+
+  .event-player {
+    grid-area: player;
+  }
+
   /* Goal events mobile - bigger than rest */
   .event-card.event-goal .event-main {
     padding: 8px 12px;

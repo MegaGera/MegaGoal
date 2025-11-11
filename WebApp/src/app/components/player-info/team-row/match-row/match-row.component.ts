@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ImagesService } from '../../../../services/images.service';
 import { Match } from '../../../../models/match';
-import { PlayerStatBadgeComponent } from '../player-stat-badge/player-stat-badge.component';
+import { PlayerStatBadgeComponent } from '../../../stats/player-stat-badge/player-stat-badge.component';
 
 @Component({
   selector: 'app-match-row',

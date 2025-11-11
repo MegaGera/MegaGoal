@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, NgClass, NgOptimizedImage } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule } from '@angular/forms';
@@ -36,12 +36,17 @@ export class FiltersHomeComponent {
   @Input() locations: Location[] = [];
   @Input() leaguesViewed: LeagueStats[] = [];
   @Input() leaguesLoaded: boolean = false;
+  @Input() showPanelChips: boolean = true;
+  @Input() showLeagues: boolean = true;
+  @Input() showLocations: boolean = true;
+  @Input() collapsed: boolean = false;
 
   @Output() filterPanelChipSelectedChange = new EventEmitter<number>();
   @Output() filterLeagueSelectedChange = new EventEmitter<number[]>();
   @Output() filterSeasonSelectedChange = new EventEmitter<SeasonInfo>();
   @Output() filterLocationSelectedChange = new EventEmitter<string>();
   @Output() resetFiltersChange = new EventEmitter<void>();
+  @Output() collapseToggle = new EventEmitter<void>();
 
   showAllLeagues = false;
 
@@ -91,5 +96,9 @@ export class FiltersHomeComponent {
 
   resetFilters() {
     this.resetFiltersChange.emit();
+  }
+
+  onCollapseToggle(): void {
+    this.collapseToggle.emit();
   }
 } 

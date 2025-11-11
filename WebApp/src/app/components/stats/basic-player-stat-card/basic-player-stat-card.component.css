@@ -1,0 +1,113 @@
+.player-card {
+  position: relative;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  width: 188px;
+  padding: 0.85rem 0.95rem;
+  border-radius: 16px;
+  background: white;
+  border: 2px solid #e9ecef;
+  box-shadow: 0 8px 16px rgba(31, 41, 55, 0.08);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  flex-shrink: 0;
+}
+
+.player-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: calc(100% - 12px);
+  height: 3px;
+  background: linear-gradient(90deg, #dc143c, #ff6b6b);
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  transition: transform 200ms ease;
+  border-radius: 999px;
+}
+
+.player-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(50, 60, 90, 0.14);
+  border-color: #dc143c;
+}
+
+.player-card:hover::before {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.player-card__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.player-card__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #eef2ff, #dbeafe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(99, 102, 241, 0.16);
+}
+
+.player-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #4b4f72;
+  letter-spacing: 0.04em;
+}
+
+.player-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  text-align: center;
+}
+
+.player-card__name {
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: #1f2937;
+}
+
+.player-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+@media (max-width: 768px) {
+  .player-card {
+    width: 180px;
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  }
+
+  .player-card__avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .player-card__name {
+    font-size: 0.95rem;
+  }
+}
+

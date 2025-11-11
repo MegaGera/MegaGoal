@@ -1,0 +1,29 @@
+<div class="stat-item" [ngClass]="iconClass">
+  <div class="stat-icon-wrapper">
+    <ng-container *ngIf="shouldRenderNgIcon(icon); else emojiIcon">
+      <ng-icon [name]="icon" class="stat-icon"></ng-icon>
+    </ng-container>
+    <ng-template #emojiIcon>
+      <span class="stat-icon stat-icon-emoji" aria-hidden="true">{{ icon }}</span>
+    </ng-template>
+  </div>
+  <div class="stat-body">
+    <span class="stat-label">{{ label }}</span>
+    <span class="stat-value">
+      <ng-container *ngIf="isNumber(value); else textValue">
+        {{ value | number:valueFormat }}
+      </ng-container>
+      <ng-template #textValue>{{ value }}</ng-template>
+      <span *ngIf="valueSuffix">{{ valueSuffix }}</span>
+      <span *ngIf="subValue !== null && subValue !== undefined" class="stat-inline-subvalue">
+        (
+        <ng-container *ngIf="isNumber(subValue); else textSubValue">
+          {{ subValue | number:subValueFormat }}
+        </ng-container>
+        <ng-template #textSubValue>{{ subValue }}</ng-template>
+        )
+      </span>
+    </span>
+  </div>
+</div>
+
