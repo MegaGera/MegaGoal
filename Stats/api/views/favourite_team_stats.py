@@ -1,5 +1,6 @@
 from typing import Any
 import random
+import math
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -81,6 +82,7 @@ class FavouriteTeamStatsAPIView(APIView):
 
         # Calculate stats for favourite team
         favourite_team_stats = self._calculate_favourite_team_stats(favourite_team_matches, team_id, locations)
+        favourite_team_stats = self._sanitize_for_json(favourite_team_stats)
         
         return Response(favourite_team_stats, status=status.HTTP_200_OK)
 
@@ -180,7 +182,8 @@ class FavouriteTeamStatsAPIView(APIView):
             'total_red_cards': team_totals.get('red_cards'),
             'total_fouls': team_totals.get('fouls'),
             'average_possession': team_totals.get('average_possession'),
-            'total_corner_kicks': team_totals.get('corner_kicks')
+            'total_corner_kicks': team_totals.get('corner_kicks'),
+            'total_shots': team_totals.get('shots')
         }
 
     def _calculate_location_stats(self, matches_df, team_id, locations_df):
@@ -483,6 +486,7 @@ class FavouriteTeamStatsAPIView(APIView):
         total_red_cards = 0
         total_fouls = 0
         total_corner_kicks = 0
+        total_shots = 0
         possession_total = 0.0
         possession_matches = 0
 
@@ -578,12 +582,21 @@ class FavouriteTeamStatsAPIView(APIView):
                         except ValueError:
                             numeric_value = None
 
-                    if 'possession' in stat_type and numeric_value is not None:
+                    if numeric_value is None or not math.isfinite(numeric_value):
+                        continue
+
+                    if 'possession' in stat_type:
                         possession_total += numeric_value
                         possession_matches += 1
-                    elif ('foul' in stat_type or 'fault' in stat_type) and numeric_value is not None:
+                    elif 'foul' in stat_type or 'fault' in stat_type:
                         total_fouls += numeric_value
-                    elif 'corner' in stat_type and numeric_value is not None:
+                    elif (
+                        'shots on goal' in stat_type
+                        or 'shots off goal' in stat_type
+                        or 'blocked shots' in stat_type
+                    ):
+                        total_shots += numeric_value
+                    elif 'corner' in stat_type:
                         total_corner_kicks += numeric_value
 
             for player_id in players_in_match:
@@ -657,10 +670,11 @@ class FavouriteTeamStatsAPIView(APIView):
         most_watched_rival_player = self._choose_random_top_candidate(rival_watchers, 'matches', ['startXI_matches'])
 
         team_totals = {
-            'yellow_cards': int(total_yellow_cards),
-            'red_cards': int(total_red_cards),
-            'fouls': int(total_fouls),
-            'corner_kicks': int(total_corner_kicks),
+            'yellow_cards': int(total_yellow_cards) if math.isfinite(total_yellow_cards) else None,
+            'red_cards': int(total_red_cards) if math.isfinite(total_red_cards) else None,
+            'fouls': int(total_fouls) if math.isfinite(total_fouls) else None,
+            'corner_kicks': int(total_corner_kicks) if math.isfinite(total_corner_kicks) else None,
+            'shots': int(total_shots) if math.isfinite(total_shots) else None,
             'average_possession': round(possession_total / possession_matches, 2) if possession_matches else None
         }
 
@@ -675,6 +689,22 @@ class FavouriteTeamStatsAPIView(APIView):
             'watched_players': watched_players,
             'team_totals': team_totals
         }
+
+    def _sanitize_for_json(self, value: Any) -> Any:
+        """Recursively replace non-JSON-compliant float values with None."""
+        if isinstance(value, dict):
+            return {key: self._sanitize_for_json(val) for key, val in value.items()}
+        if isinstance(value, list):
+            return [self._sanitize_for_json(item) for item in value]
+        if isinstance(value, tuple):
+            return tuple(self._sanitize_for_json(item) for item in value)
+        if isinstance(value, float):
+            return value if math.isfinite(value) else None
+        if isinstance(value, (pd.Series, pd.DataFrame)):
+            return self._sanitize_for_json(value.to_dict())
+        if hasattr(value, 'to_dict'):
+            return self._sanitize_for_json(value.to_dict())
+        return value
 
     def _choose_random_top_candidate(self, items, primary_key, secondary_keys=None):
         """Select a random candidate among the highest-ranked items.

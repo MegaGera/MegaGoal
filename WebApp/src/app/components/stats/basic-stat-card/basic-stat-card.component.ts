@@ -22,5 +22,13 @@ export class BasicStatCardComponent {
   isNumber(value: unknown): value is number {
     return typeof value === 'number' && !Number.isNaN(value);
   }
+
+  shouldRenderNgIcon(icon: string | undefined): boolean {
+    if (!icon) {
+      return false;
+    }
+
+    return /^[a-zA-Z][\w:-]*$/.test(icon);
+  }
 }
 

@@ -20,6 +20,31 @@
   margin: 0;
 }
 
+.collapse-toggle-btn {
+  margin-left: auto;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  padding: 6px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.collapse-toggle-btn:hover,
+.collapse-toggle-btn:focus-visible {
+  background: #f1f5f9;
+  color: #475569;
+  outline: none;
+}
+
+.collapse-toggle-btn ng-icon {
+  --ng-icon__size: 1.1rem;
+}
+
 /* Filter Sections */
 .filter-section {
   margin-bottom: 24px;
@@ -219,6 +244,10 @@
 
   .filter-title {
     font-size: 16px;
+  }
+
+  .collapse-toggle-btn {
+    display: inline-flex;
   }
 
   .section-title {

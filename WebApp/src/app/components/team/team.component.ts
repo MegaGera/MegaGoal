@@ -28,11 +28,10 @@ import { TeamCardComponent } from '../team-card/team-card.component';
 import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { TeamHeaderComponent } from './team-header/team-header.component';
 import { StatsService } from '../../services/stats.service';
-import { provideIcons, provideNgIconsConfig } from '@ng-icons/core';
+import { provideNgIconsConfig } from '@ng-icons/core';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { LeagueStats } from '../../models/league';
-import { jamFlag, jamInfoF, jamStopSign, jamTrophy, jamEyeCloseF } from '@ng-icons/jam-icons';
 import { BasicPlayerStatCardComponent } from '../stats/basic-player-stat-card/basic-player-stat-card.component';
 
 interface TeamInsightsSummary {
@@ -78,8 +77,7 @@ interface TeamInsightsSummary {
     ImagesService,
     provideNgIconsConfig({
       size: '1.2rem',
-    }),
-    provideIcons({ jamTrophy, jamStopSign, jamEyeCloseF, jamInfoF, jamFlag })
+    })
   ]
 })
 export class TeamComponent {
@@ -124,6 +122,7 @@ export class TeamComponent {
   leaguesLoaded: boolean = false;
   currentLeagues: LeagueStats[] = [];
   statsLocations: Location[] = [];
+  mobileFiltersExpanded: boolean = false;
 
   insightsSummary: TeamInsightsSummary = this.resetInsightsSummary();
 
@@ -298,6 +297,10 @@ export class TeamComponent {
 
   trackByMatchId(index: number, match: any): number {
     return match.fixture.id; // Ensure each match has a unique identifier
+  }
+
+  toggleMobileFilters(): void {
+    this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
   }
 
   /*

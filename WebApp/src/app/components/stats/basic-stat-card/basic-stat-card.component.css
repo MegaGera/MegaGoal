@@ -51,6 +51,11 @@
   --ng-icon__size: 1rem;
 }
 
+.stat-icon-emoji {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 .stat-body {
   display: flex;
   flex-direction: column;

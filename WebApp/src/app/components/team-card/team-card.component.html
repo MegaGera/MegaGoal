@@ -7,32 +7,42 @@
   [queryParams]="queryParams"
   [attr.aria-label]="computedAriaLabel">
   @if (isTeam) {
-    <img
-      class="team-logo"
-      [src]="logoUrl"
-      [alt]="(teamName ?? 'Team') + ' logo'">
-    <p class="team-name">{{ teamName }}</p>
+    <div class="team-card__media">
+      <img
+        class="team-logo"
+        [src]="logoUrl"
+        [alt]="(teamName ?? 'Team') + ' logo'">
+    </div>
+    <div class="team-card__body">
+      <p class="team-name">{{ teamName }}</p>
+    </div>
 
     @if (showMatchesBadge && matchesWatched !== undefined && matchesWatched !== null) {
-      <div class="team-card-badge">
-        <app-player-stat-badge icon="👁️" [value]="matchesWatched"></app-player-stat-badge>
+      <div class="team-card__badges">
+        <div class="team-card-badge">
+          <app-player-stat-badge icon="👁️" [value]="matchesWatched"></app-player-stat-badge>
+        </div>
       </div>
     }
   } @else {
-    <div class="team-card__avatar">
-      @if (playerAvatarUrl) {
-        <img
-          [src]="playerAvatarUrl"
-          [alt]="playerName ?? 'Player avatar'">
-      } @else {
-        <div class="team-card__placeholder">
-          {{ playerName | slice: 0:1 }}
-        </div>
-      }
+    <div class="team-card__media">
+      <div class="team-card__avatar">
+        @if (playerAvatarUrl) {
+          <img
+            [src]="playerAvatarUrl"
+            [alt]="playerName ?? 'Player avatar'">
+        } @else {
+          <div class="team-card__placeholder">
+            {{ playerName | slice: 0:1 }}
+          </div>
+        }
+      </div>
     </div>
-    <p class="team-name">{{ playerName }}</p>
+    <div class="team-card__body">
+      <p class="team-name">{{ playerName }}</p>
+    </div>
     @if (playerBadges.length > 0) {
-      <div class="team-card-badges">
+      <div class="team-card__badges team-card-badges">
         @for (badge of playerBadges; track badge) {
           <app-player-stat-badge [icon]="badge.icon" [value]="badge.value"></app-player-stat-badge>
         }

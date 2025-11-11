@@ -3,108 +3,120 @@
   <div class="filter-header">
     <ng-icon name="jamFilterF" class="filter-icon"></ng-icon>
     <h4 class="filter-title">Filters</h4>
+    <button
+      type="button"
+      class="collapse-toggle-btn"
+      (click)="onCollapseToggle()"
+      [attr.aria-expanded]="!collapsed"
+      aria-label="Toggle filters">
+      <ng-icon [name]="collapsed ? 'jamChevronDown' : 'jamChevronUp'"></ng-icon>
+    </button>
   </div>
 
-  <!-- Filter team selection row -->
-  @if (showPanelChips) {
-    <div class="filter-section">
-      <div class="filter-chips">
-        <mat-chip 
-          class="filter-chip" 
-          [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 0}"
-          (click)="changeFilterPanelChipSelected(0)">
-          All
-        </mat-chip>
-        <mat-chip 
-          class="filter-chip" 
-          [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 1}"
-          (click)="changeFilterPanelChipSelected(1)">
-          Clubs
-        </mat-chip>
-        <mat-chip 
-          class="filter-chip" 
-          [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 2}"
-          (click)="changeFilterPanelChipSelected(2)">
-          Nations
-        </mat-chip>
+  @if (!collapsed) {
+    <!-- Filter team selection row -->
+    @if (showPanelChips) {
+      <div class="filter-section">
+        <div class="filter-chips">
+          <mat-chip 
+            class="filter-chip" 
+            [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 0}"
+            (click)="changeFilterPanelChipSelected(0)">
+            All
+          </mat-chip>
+          <mat-chip 
+            class="filter-chip" 
+            [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 1}"
+            (click)="changeFilterPanelChipSelected(1)">
+            Clubs
+          </mat-chip>
+          <mat-chip 
+            class="filter-chip" 
+            [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 2}"
+            (click)="changeFilterPanelChipSelected(2)">
+            Nations
+          </mat-chip>
+        </div>
       </div>
-    </div>
-  }
+    }
 
-  <!-- Filter league selection row -->
-  @if (showLeagues && (!leaguesLoaded || filteredLeagues.length > 0)) {
-    <div class="filter-section">
-      <div class="section-header">
-        <h5 class="section-title">Leagues</h5>
-        <button class="toggle-button" (click)="toggleLeaguesVisibility()">
-          <ng-icon [name]="showAllLeagues ? 'jamChevronUp' : 'jamChevronDown'"></ng-icon>
-          <span>{{ showAllLeagues ? 'Show Less' : 'Show More' }}</span>
-        </button>
-      </div>
-      <div class="league-grid">
-        @if (!leaguesLoaded) {
-          <div class="league-item-skeleton" aria-hidden="true"></div>
-          <div class="league-item-skeleton" aria-hidden="true"></div>
-          <div class="league-item-skeleton" aria-hidden="true"></div>
-          <div class="league-item-skeleton" aria-hidden="true"></div>
-        } @else {
-          @for (league of filteredLeagues; track league.league_id) {
-            <div class="league-item" 
-                 (click)="changeFilterLeagueSelected(league.league_id)"
-                 [ngClass]="{'league-item-selected': filterLeagueSelected.includes(league.league_id)}"
-                 [attr.data-league-name]="league.league_name">
-              <img class="league-icon" 
-                   [ngSrc]="images.getRouteImageLeagueSm(league.league_id)" 
-                   [alt]="league.league_name" 
-                   width="40" 
-                   height="40" 
-                   priority="false">
-            </div>
+    <!-- Filter league selection row -->
+    @if (showLeagues && (!leaguesLoaded || filteredLeagues.length > 0)) {
+      <div class="filter-section">
+        <div class="section-header">
+          <h5 class="section-title">Leagues</h5>
+          @if (leaguesLoaded && leaguesViewed.length > 4) {
+            <button class="toggle-button" (click)="toggleLeaguesVisibility()">
+              <ng-icon [name]="showAllLeagues ? 'jamChevronUp' : 'jamChevronDown'"></ng-icon>
+              <span>{{ showAllLeagues ? 'Show Less' : 'Show More' }}</span>
+            </button>
           }
-        }
+        </div>
+        <div class="league-grid">
+          @if (!leaguesLoaded) {
+            <div class="league-item-skeleton" aria-hidden="true"></div>
+            <div class="league-item-skeleton" aria-hidden="true"></div>
+            <div class="league-item-skeleton" aria-hidden="true"></div>
+            <div class="league-item-skeleton" aria-hidden="true"></div>
+          } @else {
+            @for (league of filteredLeagues; track league.league_id) {
+              <div class="league-item" 
+                   (click)="changeFilterLeagueSelected(league.league_id)"
+                   [ngClass]="{'league-item-selected': filterLeagueSelected.includes(league.league_id)}"
+                   [attr.data-league-name]="league.league_name">
+                <img class="league-icon" 
+                     [ngSrc]="images.getRouteImageLeagueSm(league.league_id)" 
+                     [alt]="league.league_name" 
+                     width="40" 
+                     height="40" 
+                     priority="false">
+              </div>
+            }
+          }
+        </div>
       </div>
-    </div>
-  }
+    }
 
-  <!-- Season select form -->
-  <div class="filter-section">
-    <h5 class="section-title">Season</h5>
-    <select 
-      class="season-select" 
-      [(ngModel)]="filterSeasonSelected" 
-      (change)="changeFilterSeasonSelected(filterSeasonSelected)">
-      @for (season of seasons; track $index) {
-        <option [ngValue]="season">{{season.text}}</option>
-      }
-    </select>
-  </div>
-
-  <!-- Location select form -->
-  @if (showLocations) {
+    <!-- Season select form -->
     <div class="filter-section">
-      <h5 class="section-title">Location</h5>
+      <h5 class="section-title">Season</h5>
       <select 
         class="season-select" 
-        [(ngModel)]="filterLocationSelected" 
-        (change)="changeFilterLocationSelected(filterLocationSelected)">
-        <option value="">All locations</option>
-        @for (location of locations; track location.id) {
-          <option [value]="location.id">
-            @if (location.stadium) {
-              🏟️
-            }
-            {{location.name}}
-          </option>
+        [(ngModel)]="filterSeasonSelected" 
+        (change)="changeFilterSeasonSelected(filterSeasonSelected)">
+        @for (season of seasons; track $index) {
+          <option [ngValue]="season">{{season.text}}</option>
         }
       </select>
     </div>
-  }
 
-  <!-- Reset Filters Button -->
-  <div class="filter-section">
-    <button class="reset-filters-btn" (click)="resetFilters()">
-      <ng-icon name="jamFilterF"></ng-icon>
-      Reset Filters
-    </button>
-  </div>
+    <!-- Location select form -->
+    @if (showLocations) {
+      <div class="filter-section">
+        <h5 class="section-title">Location</h5>
+        <select 
+          class="season-select" 
+          [(ngModel)]="filterLocationSelected" 
+          (change)="changeFilterLocationSelected(filterLocationSelected)">
+          <option value="">All locations</option>
+          @for (location of locations; track location.id) {
+            <option [value]="location.id">
+              @if (location.stadium) {
+                🏟️
+              }
+              {{location.name}}
+            </option>
+          }
+        </select>
+      </div>
+    }
+
+    <!-- Reset Filters Button -->
+    <div class="filter-section">
+      <button class="reset-filters-btn" (click)="resetFilters()">
+        <ng-icon name="jamFilterF"></ng-icon>
+        Reset Filters
+      </button>
+    </div>
+  }
 </app-general-card> 

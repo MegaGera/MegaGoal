@@ -6,22 +6,6 @@
       [team]="team">
     </app-team-header>
 
-    <nav class="nav-class">
-      <div class="nav nav-tabs d-md-none" id="team-nav-tabs" role="tablist">
-        <button class="nav-link" 
-                id="team-insights-tab" 
-                data-bs-toggle="tab" 
-                data-bs-target="#team-insights-pane" 
-                type="button" 
-                role="tab" 
-                aria-controls="team-insights-pane" 
-                aria-selected="true"
-                [class.d-none]="viewMode === 'allMatches'">Stats</button>
-        <button class="nav-link active" id="team-matches-tab" data-bs-toggle="tab" data-bs-target="#team-main-pane" type="button" role="tab" aria-controls="team-main-pane" aria-selected="false">Matches</button>
-        <button class="nav-link" id="team-filters-tab" data-bs-toggle="tab" data-bs-target="#team-filters-pane" type="button" role="tab" aria-controls="team-filters-pane" aria-selected="false">Filters</button>
-      </div>
-    </nav>
-
     <div class="row">
       <div class="col-12">
         <div class="view-toggle-card">
@@ -34,12 +18,40 @@
       </div>
     </div>
 
+    <div class="row d-md-none">
+      <div class="col-12">
+        <div class="mobile-filters-wrapper">
+          <app-filters-home
+            class="team-filters-mobile"
+            [filterPanelChipSelected]="filterPanelChipSelected"
+            [filterLeagueSelected]="filterLeagueSelected"
+            [filterSeasonSelected]="filterSeasonSelected"
+            [filterLocationSelected]="filterLocationSelected"
+            [seasons]="viewMode === 'allMatches' ? seasonOptions : statsSeasonOptions"
+            [locations]="viewMode === 'allMatches' ? locations : statsLocations"
+            [leaguesViewed]="currentLeagues"
+            [leaguesLoaded]="leaguesLoaded"
+            [showPanelChips]="false"
+            [showLeagues]="currentLeagues.length > 0 || !leaguesLoaded"
+            [showLocations]="viewMode !== 'allMatches'"
+            [collapsed]="!mobileFiltersExpanded"
+            (collapseToggle)="toggleMobileFilters()"
+            (filterPanelChipSelectedChange)="onFilterPanelChipSelectedChange($event)"
+            (filterLeagueSelectedChange)="onFilterLeagueSelectedChange($event)"
+            (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"
+            (filterLocationSelectedChange)="onFilterLocationSelectedChange($event)"
+            (resetFiltersChange)="resetFilters()">
+          </app-filters-home>
+        </div>
+      </div>
+    </div>
+
     <div class="tab-content row" id="team-tab-content">
-      <div class="tab-pane fade col-12" 
+      <div class="tab-pane fade col-12 d-none" 
            [class.col-md-3]="showFavouriteTeamColumn"
+           [class.d-md-block]="showFavouriteTeamColumn"
            [class.show]="showFavouriteTeamColumn"
            [class.hide-on-all-matches]="!showFavouriteTeamColumn"
-           [class.d-none]="!showFavouriteTeamColumn"
            id="team-insights-pane" 
            role="tabpanel" 
            aria-labelledby="team-insights-tab">
@@ -54,6 +66,9 @@
 
             @if (viewMode === 'insights') {
               <app-general-card customClass="insights-card">
+                  <div class="insights-card-header">
+                    <h3>📈 Performance Overview</h3>
+                  </div>
 
                 <div class="insights-summary-grid performance-stats-grid">
                   @if (favouriteTeamLoaded && favouriteTeamStats) {
@@ -61,35 +76,42 @@
                       label="Yellow Cards"
                       [value]="favouriteTeamStats.total_yellow_cards ?? 0"
                       [subValue]="getPerMatchValue(favouriteTeamStats.total_yellow_cards ?? 0)"
-                      icon="jamTrophy"
+                      icon="🟨"
                       iconClass="cards-yellow">
                     </app-basic-stat-card>
                     <app-basic-stat-card
                       label="Red Cards"
                       [value]="favouriteTeamStats.total_red_cards ?? 0"
                       [subValue]="getPerMatchValue(favouriteTeamStats.total_red_cards ?? 0)"
-                      icon="jamStopSign"
+                      icon="🟥"
                       iconClass="cards-red">
                     </app-basic-stat-card>
                     <app-basic-stat-card
                       label="Fouls Committed"
                       [value]="favouriteTeamStats.total_fouls ?? 0"
                       [subValue]="getPerMatchValue(favouriteTeamStats.total_fouls ?? 0)"
-                      icon="jamEyeCloseF"
+                      icon="🚫"
                       iconClass="fouls">
+                    </app-basic-stat-card>
+                    <app-basic-stat-card
+                      label="Shots"
+                      [value]="favouriteTeamStats.total_shots ?? 0"
+                      [subValue]="getPerMatchValue(favouriteTeamStats.total_shots ?? 0)"
+                      icon="🎯"
+                      iconClass="shots">
                     </app-basic-stat-card>
                     <app-basic-stat-card
                       label="Avg Possession"
                       [value]="favouriteTeamStats.average_possession ?? 0"
                       [valueSuffix]="'%'"
-                      icon="jamInfoF"
+                      icon="📊"
                       iconClass="possession">
                     </app-basic-stat-card>
                     <app-basic-stat-card
                       label="Corner Kicks"
                       [value]="favouriteTeamStats.total_corner_kicks ?? 0"
                       [subValue]="getPerMatchValue(favouriteTeamStats.total_corner_kicks ?? 0)"
-                      icon="jamFlag"
+                      icon="🚩"
                       iconClass="corners">
                     </app-basic-stat-card>
                   } @else {
@@ -129,6 +151,20 @@
               </app-general-card>
             } @else {
               <div class="insights-grid">
+
+                <!-- Favourite Team Card - Mobile-->
+                <div class="insights-mobile-header d-md-none">
+                  @if (showFavouriteTeamCard) {
+                    <app-favourite-team-card
+                      [teamStats]="favouriteTeamStats"
+                      [isLoading]="!favouriteTeamLoaded"
+                      [interactable]="true"
+                      [showHeader]="false">
+                    </app-favourite-team-card>
+                  } @else {
+                    <div class="insights-sidebar-placeholder" aria-hidden="true"></div>
+                  }
+                </div>
 
                 <!-- Biggest Win -->
                 @if (biggestWinMatch && favouriteTeamStats?.biggest_win) {
@@ -231,7 +267,7 @@
                   <div class="insights-grid-item insights-grid-item--third">
                     <app-general-card customClass="insights-card">
                       <div class="insights-card-header">
-                        <h3>Biggest Rival</h3>
+                        <h3>🤝 Biggest Rival</h3>
                       </div>
                       <app-team-card
                         [teamId]="biggestRival.team_id"
@@ -248,7 +284,7 @@
                   <div class="insights-grid-item insights-grid-item--third">
                     <app-general-card customClass="insights-card">
                       <div class="insights-card-header">
-                        <h3>Rival Top Scorer</h3>
+                        <h3>🎯 Rival Top Scorer</h3>
                       </div>
                       <app-team-card
                         entityType="player"
@@ -264,12 +300,12 @@
                   </div>
                 }
 
-                <!-- Rival Top Watched -->
+                <!-- Rival Top Watch -->
                 @if (mostWatchedRivalPlayer) {
                   <div class="insights-grid-item insights-grid-item--third">
                     <app-general-card customClass="insights-card">
                       <div class="insights-card-header">
-                        <h3>Rival Top Watched</h3>
+                        <h3>👀 Rival Top Watch</h3>
                       </div>
                       <app-team-card
                         entityType="player"
@@ -314,7 +350,7 @@
                 <div class="insights-grid-item insights-grid-item--half">
                   <app-general-card customClass="insights-card">
                     <div class="insights-card-header">
-                      <h3>Season Performance</h3>
+                      <h3>📅 Season Performance</h3>
                     </div>
                     @if (seasonBreakdownFiltered.length > 0) {
                       <table class="insights-table">
@@ -351,7 +387,7 @@
                 <div class="insights-grid-item insights-grid-item--half">
                   <app-general-card customClass="insights-card">
                     <div class="insights-card-header">
-                      <h3>Competition Breakdown</h3>
+                      <h3>🗺️ Competition Breakdown</h3>
                     </div>
                     @if (competitionBreakdown.length > 0) {
                       <div class="competition-list">
@@ -371,6 +407,58 @@
                     } @else {
                       <p class="insights-empty-text">No competition data for this selection.</p>
                     }
+                  </app-general-card>
+                </div>
+                <div class="insights-mobile-performance d-md-none">
+                  <app-general-card customClass="insights-card">
+                    <div class="insights-card-header">
+                      <h3>📈 Performance Overview</h3>
+                    </div>
+  
+                    <div class="insights-summary-grid performance-stats-grid">
+                      @if (favouriteTeamLoaded && favouriteTeamStats) {
+                        <app-basic-stat-card
+                          label="Yellow Cards"
+                          [value]="favouriteTeamStats.total_yellow_cards ?? 0"
+                          [subValue]="getPerMatchValue(favouriteTeamStats.total_yellow_cards ?? 0)"
+                          icon="🟨"
+                          iconClass="cards-yellow">
+                        </app-basic-stat-card>
+                        <app-basic-stat-card
+                          label="Red Cards"
+                          [value]="favouriteTeamStats.total_red_cards ?? 0"
+                          [subValue]="getPerMatchValue(favouriteTeamStats.total_red_cards ?? 0)"
+                          icon="🟥"
+                          iconClass="cards-red">
+                        </app-basic-stat-card>
+                        <app-basic-stat-card
+                          label="Fouls Committed"
+                          [value]="favouriteTeamStats.total_fouls ?? 0"
+                          [subValue]="getPerMatchValue(favouriteTeamStats.total_fouls ?? 0)"
+                          icon="🚫"
+                          iconClass="fouls">
+                        </app-basic-stat-card>
+                        <app-basic-stat-card
+                          label="Avg Possession"
+                          [value]="favouriteTeamStats.average_possession ?? 0"
+                          [valueSuffix]="'%'"
+                          icon="📊"
+                          iconClass="possession">
+                        </app-basic-stat-card>
+                        <app-basic-stat-card
+                          label="Corner Kicks"
+                          [value]="favouriteTeamStats.total_corner_kicks ?? 0"
+                          [subValue]="getPerMatchValue(favouriteTeamStats.total_corner_kicks ?? 0)"
+                          icon="🚩"
+                          iconClass="corners">
+                        </app-basic-stat-card>
+                      } @else {
+                        <div class="summary-tile performance-placeholder">
+                          <span class="summary-label">Team stats</span>
+                          <span class="summary-value">Loading…</span>
+                        </div>
+                      }
+                    </div>
                   </app-general-card>
                 </div>
               </div>
@@ -519,7 +607,7 @@
         }
       </div>
 
-      <div class="tab-pane fade show col-md-3 col-12" id="team-filters-pane" role="tabpanel" aria-labelledby="team-filters-tab">
+      <div class="tab-pane fade show col-md-3 col-12 d-none d-md-block" id="team-filters-pane" role="tabpanel" aria-labelledby="team-filters-tab">
         <app-filters-home
           class="team-filters-sticky"
           [filterPanelChipSelected]="filterPanelChipSelected"

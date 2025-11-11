@@ -6,6 +6,25 @@
   position: relative;
 }
 
+.stats-carousel-container .fade-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 32px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.stats-carousel-container .fade-left {
+  left: 0;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.stats-carousel-container .fade-right {
+  right: 0;
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
 /* Stats Carousel */
 .stats-carousel {
   display: flex;

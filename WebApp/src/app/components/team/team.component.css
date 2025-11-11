@@ -86,6 +86,11 @@
   border: 1px solid #dee2e6;
   padding: 0.25rem;
   background: #f8f9fa;
+  gap: 0.5rem;
+}
+
+.mobile-filters-wrapper {
+  margin-bottom: 1.5rem;
 }
 
 .toggle-btn {
@@ -207,6 +212,11 @@
 
 .performance-overview-card {
   grid-column: span 1;
+}
+
+.insights-mobile-header,
+.insights-mobile-performance {
+  display: none;
 }
 
 @media (min-width: 992px) {
@@ -586,6 +596,23 @@
 
 .matchCardAdapterTwoColumns {
   width: 100%;
+}
+
+@media (max-width: 768px) {
+  .insights-mobile-header,
+  .insights-mobile-performance {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .insights-mobile-performance {
+    margin-top: 0.5rem;
+  }
+
+  .insights-mobile-header .insights-sidebar-placeholder {
+    min-height: 1rem;
+  }
 }
 
 @media (min-width: 768px) {

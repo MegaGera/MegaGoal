@@ -114,4 +114,5 @@ export interface FavouriteTeamStats {
   total_fouls?: number;
   average_possession?: number | null;
   total_corner_kicks?: number;
+  total_shots?: number;
 } 

@@ -56,6 +56,14 @@ export class StatsService {
   }
 
   /*
+    Method to get general statistics for a specific team
+  */
+  getTeamGeneralStats(teamId: number): Observable<UserStats> {
+    const params = new HttpParams().set('team_id', teamId.toString());
+    return this.http.get<UserStats>(this.url + '/team-general-stats/', { ...this.options, params });
+  }
+
+  /*
     Method to get favourite team statistics based on current filters
   */
   getFavouriteTeamStats(

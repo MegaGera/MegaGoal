@@ -296,6 +296,10 @@
   .stat-label {
     font-size: 9px;
   }
+
+  .additional-stats {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
