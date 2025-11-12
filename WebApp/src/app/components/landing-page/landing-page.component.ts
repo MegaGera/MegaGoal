@@ -70,33 +70,33 @@ export class LandingPageComponent implements OnInit {
     {
       icon: 'ionFootball',
       title: 'Match Tracking',
-      description: 'Track every football match you watch with detailed statistics and location data.',
+      description: 'Track every football match you watch with detailed statistics and location data',
       color: '#4CAF50'
     },
     {
       icon: 'ionStatsChart',
       title: 'Advanced Analytics',
-      description: 'Get stats into your viewing habits and favorite teams.',
+      description: 'Get stats into your viewing habits and favorite teams',
       color: '#2196F3'
     },
     {
       icon: 'ionLocation',
       title: 'Location Tracking',
-      description: 'Remember where you watched each match.',
+      description: 'Remember where you watched each match',
       color: '#FF9800'
     },
     {
       icon: 'ionTrophy',
       title: 'League Management',
-      description: 'Follow multiple leagues and competitions with personalized statistics.',
+      description: 'Follow multiple leagues and competitions with personalized statistics',
       color: '#9C27B0'
     },
   ];
 
   stats = [
-    { number: '65K+', label: 'Matches' },
+    { number: '70K+', label: 'Matches' },
     { number: '6k+', label: 'Teams' },
-    { number: '99%', label: 'User Satisfaction' }
+    { number: '50k+', label: 'Players' }
   ];
 
   testimonials = [
@@ -147,7 +147,7 @@ export class LandingPageComponent implements OnInit {
     // Set keywords
     this.meta.updateTag({ 
       name: 'keywords', 
-      content: 'football analytics, match tracking, sports statistics, football fans, match analysis, football data, sports analytics, football platform' 
+      content: 'football analytics, match tracking, sports statistics, football fans, match analysis, football data, sports analytics, football platform, megagoal, mega, goal, megagera' 
     });
     
     // Set Open Graph tags
@@ -173,7 +173,7 @@ export class LandingPageComponent implements OnInit {
       "@type": "WebApplication",
       "name": "MegaGoal",
       "alternateName": "MegaGoal Football Analytics Platform",
-      "description": "MegaGoal is the ultimate platform for football fans to track matches, analyze statistics, and discover viewing patterns.",
+      "description": "MegaGoal is the ultimate platform for football fans to track matches, analyze statistics, and discover viewing patterns",
       "url": "https://megagoal.com",
       "applicationCategory": "SportsApplication",
       "operatingSystem": "Web Browser",
@@ -190,7 +190,7 @@ export class LandingPageComponent implements OnInit {
         "Location Tracking",
         "League Management"
       ],
-      "keywords": "football analytics, match tracking, sports statistics, football fans, match analysis, football data, sports analytics, football platform"
+      "keywords": "football analytics, match tracking, sports statistics, football fans, match analysis, football data, sports analytics, football platform, megagoal, mega, goal, megagera"
     };
 
     // Remove existing structured data if any
@@ -253,6 +253,28 @@ export class LandingPageComponent implements OnInit {
   goToApp(): void {
     // Navigate to the main app
     window.location.href = '/app';
+  }
+
+  goToLoginTestUser(): void {
+    // Navigate to the main app
+    // Make a POST request to the test login endpoint and redirect on success
+    fetch('https://megaauth.megagera.com/login/test', {
+      method: 'POST',
+      credentials: 'include' // include cookies if needed
+    })
+    .then(response => {
+      if (response.redirected) {
+        window.location.href = response.url;
+      } else if (response.ok) {
+        // Assume API provides URL in response or just reload
+        window.location.href = '/app';
+      } else {
+        alert('Test user login failed.');
+      }
+    })
+    .catch(() => {
+      alert('Error during test user login.');
+    });
   }
 
 }
