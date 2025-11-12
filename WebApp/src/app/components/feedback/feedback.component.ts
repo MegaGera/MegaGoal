@@ -16,8 +16,6 @@ export class FeedbackComponent {
   featureOptions = [
     'Rate matches and teams and get recommended matches based on your votes and the ones of other users',
     'Map of where the users watch the matches and get insights (e.g. pub in Liverpool where users watch Real Madrid)',
-    'Players stats',
-    'Add events of the matches (goals, cards, etc.)',
     'Dedicated stats page',
     'Dark mode',
   ];
