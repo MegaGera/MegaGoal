@@ -33,6 +33,15 @@
         </div>
       </div>
     </div>
+
+    <div class="player-header-stats">
+      <app-quick-stats
+        [userStats]="playerGeneralStats"
+        [userStatsLoaded]="playerGeneralStatsLoaded"
+        [containerWidth]="'100%'"
+        [showFadeEdges]="true">
+      </app-quick-stats>
+    </div>
   </div>
 </div>
 

@@ -11,11 +11,14 @@ export interface UserStats {
     topGoalsTeams: TopGoalsTeamStats[];
     totalGoals: number;
     lastMatchDate: string | null;
+    totalAssists?: number;
 }
 
 export interface SeasonStats {
     season: number;
     matches: number;
+    goals?: number;
+    assists?: number;
 }
 
 export interface MonthlyStats {

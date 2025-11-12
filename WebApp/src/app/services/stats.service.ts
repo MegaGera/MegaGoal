@@ -120,4 +120,12 @@ export class StatsService {
     return this.http.get<PlayerStats>(this.url + '/player-stats/', { ...this.options, params: params });
   }
 
+  /*
+    Method to get general statistics for a specific player
+  */
+  getPlayerGeneralStats(playerId: number): Observable<UserStats> {
+    const params = new HttpParams().set('player_id', playerId.toString());
+    return this.http.get<UserStats>(this.url + '/player-general-stats/', { ...this.options, params });
+  }
+
 }

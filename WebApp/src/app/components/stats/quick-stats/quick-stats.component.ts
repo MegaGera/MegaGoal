@@ -103,6 +103,14 @@ export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     ];
 
+    if (this.userStats.totalAssists && this.userStats.totalAssists > 0) {
+      baseStats.push({
+        value: this.userStats.totalAssists,
+        label: 'Assists',
+        subtitle: 'All time'
+      });
+    }
+
     // Generate season stats for all available seasons
     const seasonStats = this.generateSeasonStats();
 
@@ -200,14 +208,36 @@ export class QuickStatsComponent implements OnInit, OnDestroy, AfterViewInit {
       return [];
     }
 
-    return this.userStats.matchesBySeason.map((season) => {
+    return this.userStats.matchesBySeason.flatMap((season) => {
       const seasonLabel = `${season.season} - ${season.season + 1}`;
-      
-      return {
-        value: season.matches,
-        label: "Matches",
-        subtitle: seasonLabel
-      };
+
+      const cards: StatCard[] = [];
+
+      if (season.matches > 0) {
+        cards.push({
+          value: season.matches,
+          label: "Matches",
+          subtitle: seasonLabel
+        });
+      }
+
+      if (season.goals && season.goals > 0) {
+        cards.push({
+          value: season.goals,
+          label: "Goals",
+          subtitle: seasonLabel
+        });
+      }
+
+      if (season.assists && season.assists > 0) {
+        cards.push({
+          value: season.assists,
+          label: "Assists",
+          subtitle: seasonLabel
+        });
+      }
+
+      return cards;
     });
   }
 

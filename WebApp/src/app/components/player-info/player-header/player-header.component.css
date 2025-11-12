@@ -27,7 +27,7 @@
 .player-header-top {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.75rem;
+  column-gap: 1.75rem;
   align-items: stretch;
   position: relative;
   z-index: 1;
@@ -39,6 +39,19 @@
   align-items: center;
   flex: 1 1 360px;
   min-width: min(360px, 100%);
+}
+
+.player-header-stats {
+  flex: 1 1 420px;
+  min-width: min(340px, 100%);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.player-header-stats app-quick-stats {
+  width: 100%;
+  max-width: 520px;
+  margin-left: auto;
 }
 
 .player-avatar {
@@ -137,6 +150,18 @@
     text-align: center;
   }
 
+  .player-header-stats {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+  }
+
+  .player-header-stats app-quick-stats {
+    max-width: 100%;
+  }
+
   .player-avatar {
     width: 92px;
     height: 92px;
@@ -167,6 +192,11 @@
 
 @media (min-width: 1024px) {
   .player-header-info {
+    flex: 1 1 calc(50% - 0.875rem);
+    max-width: calc(50% - 0.875rem);
+  }
+
+  .player-header-stats {
     flex: 1 1 calc(50% - 0.875rem);
     max-width: calc(50% - 0.875rem);
   }
