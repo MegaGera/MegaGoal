@@ -17,52 +17,59 @@
         *ngIf="!statsLoading && playerStats"
         customClass="player-stats-card">
         <div class="stats-grid">
-          <app-player-stat
+          <app-basic-stat-card
             icon="👁️"
-            label="Matches Viewed"
+            label="Views"
             [value]="playerStats.matches_viewed"
-            [subValue]="playerStats.matches_startXI > 0 ? playerStats.matches_startXI + ' start XI' : undefined">
-          </app-player-stat>
-          <app-player-stat
+            [subValue]="playerStats.matches_startXI > 0 ? playerStats.matches_startXI + ' start XI' : null">
+          </app-basic-stat-card>
+          <app-basic-stat-card
             icon="⚽"
             label="Goals"
-            [value]="playerStats.total_goals">
-          </app-player-stat>
-          <app-player-stat
+            [value]="playerStats.total_goals"
+            [subValue]="playerStats.matches_viewed ? playerStats.total_goals / playerStats.matches_viewed : 0">
+          </app-basic-stat-card>
+          <app-basic-stat-card
             icon="🎯"
             label="Assists"
-            [value]="playerStats.total_assists">
-          </app-player-stat>
-          <app-player-stat
+            [value]="playerStats.total_assists"
+            [subValue]="playerStats.matches_viewed ? playerStats.total_assists / playerStats.matches_viewed : 0">
+          </app-basic-stat-card>
+          <app-basic-stat-card
             icon="✅"
             label="Wins"
-            [value]="playerStats.wins + ' - ' + playerStats.win_percentage + '%'">
-          </app-player-stat>
-          <app-player-stat
+            [value]="playerStats.wins"
+            [subValue]="playerStats.win_percentage + '%'">
+          </app-basic-stat-card>
+          <app-basic-stat-card
             icon="🤝"
             label="Draws"
-            [value]="playerStats.draws + ' - ' + playerStats.draw_percentage + '%'">
-          </app-player-stat>
-          <app-player-stat
+            [value]="playerStats.draws"
+            [subValue]="playerStats.draw_percentage + '%'">
+          </app-basic-stat-card>
+          <app-basic-stat-card
             icon="❌"
             label="Losses"
-            [value]="playerStats.losses + ' - ' + playerStats.loss_percentage + '%'">
-          </app-player-stat>
-          <app-player-stat
+            [value]="playerStats.losses"
+            [subValue]="playerStats.loss_percentage + '%'">
+          </app-basic-stat-card>
+          <app-basic-stat-card
             icon="🟨"
             label="Yellow Cards"
-            [value]="playerStats.yellow_cards">
-          </app-player-stat>
-          <app-player-stat
+            [value]="playerStats.yellow_cards"
+            [subValue]="playerStats.matches_viewed ? playerStats.yellow_cards / playerStats.matches_viewed : 0">
+          </app-basic-stat-card>
+          <app-basic-stat-card
             icon="🟥"
             label="Red Cards"
-            [value]="playerStats.red_cards">
-          </app-player-stat>
-          <app-player-stat
+            [value]="playerStats.red_cards"
+            [subValue]="playerStats.matches_viewed ? playerStats.red_cards / playerStats.matches_viewed : 0">
+          </app-basic-stat-card>
+          <app-basic-stat-card
             icon="👥"
             label="Teams Watched"
             [value]="playerStats.different_teams_watched">
-          </app-player-stat>
+          </app-basic-stat-card>
         </div>
       </app-general-card>
 
@@ -70,8 +77,8 @@
       <app-general-card
         *ngIf="hasTeams()"
         customClass="teams-seasons-card">
-        <div class="teams-card-header">
-          <h2 class="section-title">Teams & Seasons</h2>
+        <div class="teams-card-header insights-card-header">
+          <h3>🏆 Teams & Seasons</h3>
         </div>
         <div class="teams-list">
           <app-team-row 

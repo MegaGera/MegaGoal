@@ -13,13 +13,13 @@ import { Player } from '../../models/player';
 import { PlayerStats } from '../../models/playerStats';
 import { TeamRowComponent } from './team-row/team-row.component';
 import { PlayerHeaderComponent } from './player-header/player-header.component';
-import { PlayerStatComponent } from '../stats/player-stat/player-stat.component';
+import { BasicStatCardComponent } from '../stats/basic-stat-card/basic-stat-card.component';
 import { GeneralCardComponent } from '../general-card/general-card.component';
 
 @Component({
   selector: 'app-player-info',
   standalone: true,
-  imports: [CommonModule, TeamRowComponent, PlayerStatComponent, PlayerHeaderComponent, GeneralCardComponent],
+  imports: [CommonModule, TeamRowComponent, BasicStatCardComponent, PlayerHeaderComponent, GeneralCardComponent],
   templateUrl: './player-info.component.html',
   styleUrl: './player-info.component.css',
   providers: [ImagesService]
