@@ -56,7 +56,6 @@ class PlayerGeneralStatsAPIView(APIView):
                     'fixture.id': {'$in': fixture_ids},
                     '$or': [
                         {'lineups.startXI.player.id': player_id},
-                        {'lineups.substitutes.player.id': player_id},
                         {
                             'events.type': {'$regex': 'subst', '$options': 'i'},
                             '$or': [
@@ -268,17 +267,11 @@ class PlayerGeneralStatsAPIView(APIView):
                 if player_info_data.get('id') == player_id:
                     return team_id, True
 
-            for player_info in lineup.get('substitutes', []) or []:
-                player_info_data = player_info.get('player', {}) if isinstance(player_info.get('player'), dict) else {}
-                if player_info_data.get('id') == player_id:
-                    return team_id, True
-
         for event in real_match.get('events', []) or []:
             event_type = (event.get('type') or '').lower()
             if event_type == 'subst':
                 assist = event.get('assist', {}) if isinstance(event.get('assist'), dict) else {}
-                player_out = event.get('player', {}) if isinstance(event.get('player'), dict) else {}
-                if assist.get('id') == player_id or player_out.get('id') == player_id:
+                if assist.get('id') == player_id:
                     team = event.get('team', {}) if isinstance(event.get('team'), dict) else {}
                     return team.get('id'), True
 
