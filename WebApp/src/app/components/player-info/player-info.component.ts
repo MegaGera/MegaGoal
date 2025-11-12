@@ -12,12 +12,14 @@ import { StatsService } from '../../services/stats.service';
 import { Player } from '../../models/player';
 import { PlayerStats } from '../../models/playerStats';
 import { TeamRowComponent } from './team-row/team-row.component';
+import { PlayerHeaderComponent } from './player-header/player-header.component';
 import { PlayerStatComponent } from '../stats/player-stat/player-stat.component';
+import { GeneralCardComponent } from '../general-card/general-card.component';
 
 @Component({
   selector: 'app-player-info',
   standalone: true,
-  imports: [CommonModule, TeamRowComponent, PlayerStatComponent],
+  imports: [CommonModule, TeamRowComponent, PlayerStatComponent, PlayerHeaderComponent, GeneralCardComponent],
   templateUrl: './player-info.component.html',
   styleUrl: './player-info.component.css',
   providers: [ImagesService]
@@ -31,12 +33,12 @@ export class PlayerInfoComponent {
   statsLoading: boolean = true;
   
   teamsSeasonsList: any[] = [];
-  profileExpanded: boolean = false;
+  playerAge: number | null = null;
+  playerBirthPlace: string | null = null;
 
   constructor(
     private megagoal: MegaGoalService, 
     private router: Router, 
-    public images: ImagesService,
     private activatedRoute: ActivatedRoute,
     private statsService: StatsService
   ) {
@@ -53,6 +55,8 @@ export class PlayerInfoComponent {
     this.megagoal.getPlayerById(this.queryPlayerId).subscribe(result => {
       if (result != undefined) {
         this.player = result;
+        this.playerAge = this.calculatePlayerAge(this.player.player?.birth?.date);
+        this.playerBirthPlace = this.buildBirthPlace(this.player.player?.birth);
         this.loading = false;
         this.loadPlayerStats();
       } else {
@@ -92,21 +96,37 @@ export class PlayerInfoComponent {
     this.teamsSeasonsList = flatList.sort((a, b) => b.season - a.season);
   }
 
-  getPlayerImageUrl(): string {
-    return this.images.getRouteImagePlayer(this.player.player.id);
-  }
-
-  onImageError(event: Event): void {
-    const target = event.target as HTMLImageElement;
-    if (target) {
-      target.src = 'assets/img/default-player.png';
-    }
-  }
-
   formatDate(dateString: string | null): string {
     if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  private calculatePlayerAge(birthDateString?: string | null): number | null {
+    if (!birthDateString) return null;
+
+    const birthDate = new Date(birthDateString);
+    if (isNaN(birthDate.getTime())) return null;
+
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age >= 0 ? age : null;
+  }
+
+  private buildBirthPlace(birth?: { place?: string | null; country?: string | null } | null): string | null {
+    if (!birth) return null;
+
+    const parts = [birth.place, birth.country].filter((value): value is string => !!value?.trim());
+    return parts.length ? parts.join(', ') : null;
   }
 
   hasTeams(): boolean {
@@ -127,18 +147,6 @@ export class PlayerInfoComponent {
     // Find the team in that season
     return seasonData.teams.find(t => t.team_id === teamId);
   }
-
-  toggleProfile(): void {
-    this.profileExpanded = !this.profileExpanded;
-  }
-
-  hasAdditionalProfileInfo(): boolean {
-    return !!(this.player?.player?.birth?.date || 
-              this.player?.player?.birth?.place || 
-              this.player?.player?.birth?.country || 
-              this.player?.player?.height || 
-              this.player?.player?.weight || 
-              this.player?.player?.position);
-  }
+  
 }
 

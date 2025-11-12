@@ -1,4 +1,4 @@
-.team-header-card {
+.player-header-card {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -14,7 +14,7 @@
   margin: 1.5rem 0 2rem;
 }
 
-.team-header-card::after {
+.player-header-card::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -24,16 +24,16 @@
   mix-blend-mode: screen;
 }
 
-.team-header-top {
+.player-header-top {
   display: flex;
   flex-wrap: wrap;
-  column-gap: 1.75rem;
+  gap: 1.75rem;
   align-items: stretch;
   position: relative;
   z-index: 1;
 }
 
-.team-header-info {
+.player-header-info {
   display: flex;
   gap: 1.5rem;
   align-items: center;
@@ -41,20 +41,7 @@
   min-width: min(360px, 100%);
 }
 
-.team-header-stats {
-  flex: 1 1 420px;
-  min-width: min(340px, 100%);
-  display: flex;
-  justify-content: flex-end;
-}
-
-.team-header-stats app-quick-stats {
-  width: 100%;
-  max-width: 520px;
-  margin-left: auto;
-}
-
-.team-avatar {
+.player-avatar {
   width: 116px;
   height: 116px;
   display: grid;
@@ -66,28 +53,29 @@
     inset 0 0 0 1px rgba(255, 255, 255, 0.65);
 }
 
-.team-avatar img {
+.player-avatar-img {
   width: 82px;
   height: 82px;
-  object-fit: contain;
+  object-fit: cover;
+  border-radius: 28px;
   filter: drop-shadow(0 14px 20px rgba(220, 20, 60, 0.3));
 }
 
-.team-main {
+.player-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
 }
 
-.team-name-row {
+.player-name-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.8rem;
 }
 
-.team-name {
+.player-name {
   margin: 0;
   font-size: clamp(1.8rem, 2vw, 2.3rem);
   font-weight: 700;
@@ -95,7 +83,27 @@
   color: #101828;
 }
 
-.team-meta {
+.player-basic-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.info-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(16, 24, 40, 0.04);
+  border: 1px solid rgba(16, 24, 40, 0.08);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.player-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -108,50 +116,18 @@
   color: rgba(71, 84, 103, 0.7);
 }
 
-.team-secondary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.info-chip {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
-  background: rgba(16, 24, 40, 0.04);
-  border: 1px solid rgba(16, 24, 40, 0.08);
-}
-
-.chip-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(16, 24, 40, 0.55);
-}
-
-.chip-value {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #0f172a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 @media (max-width: 768px) {
-  .team-header-card {
+  .player-header-card {
     padding: 1.25rem;
     gap: 1rem;
   }
 
-  .team-header-top {
+  .player-header-top {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .team-header-info {
+  .player-header-info {
     width: 100%;
     max-width: 100%;
     flex: 1 1 100%;
@@ -161,67 +137,38 @@
     text-align: center;
   }
 
-  .team-header-stats {
-    width: 100%;
-    max-width: 100%;
-    flex: 1 1 100%;
-    justify-content: flex-start;
-    margin-top: 0.5rem;
-  }
-
-  .team-avatar {
+  .player-avatar {
     width: 92px;
     height: 92px;
   }
 
-  .team-avatar img {
+  .player-avatar-img {
     width: 64px;
     height: 64px;
   }
 
-  .team-name {
-    font-size: 1.8rem;
-  }
-
-  .team-main {
+  .player-main {
     align-items: center;
   }
 
-  .team-name-row {
+  .player-name-row {
     justify-content: center;
   }
 
-  .team-meta {
+  .player-meta {
     justify-content: center;
-  }
-
-  .team-secondary {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .chip-value {
-    max-width: 100%;
-  }
-
-  .team-header-bottom {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-.team-header-top::after {
+.player-header-top::after {
   content: '';
   flex: auto;
 }
 
 @media (min-width: 1024px) {
-  .team-header-info,
-  .team-header-stats {
+  .player-header-info {
     flex: 1 1 calc(50% - 0.875rem);
     max-width: calc(50% - 0.875rem);
   }
-}
-
-@media (max-width: 480px) {
 }
 

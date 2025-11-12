@@ -1,149 +1,95 @@
-<div class="player-info-container" *ngIf="!loading && player">
-  
-  <!-- Player Header Section -->
-  <div class="player-header">
-    <div class="player-header-left">
-      <div class="player-image-container">
-        <img 
-          [src]="getPlayerImageUrl()" 
-          [alt]="player.player.name"
-          class="player-image"
-          (error)="onImageError($event)">
-      </div>
-      <div class="player-header-info">
-        <h1 class="player-name">{{ player.player.name }}</h1>
-        <div class="player-basic-info">
-          <span class="info-badge" *ngIf="player.player.position">
-            {{ player.player.position }}
-          </span>
-          <span class="info-badge" *ngIf="player.player.number">
-            #{{ player.player.number }}
-          </span>
-          <span class="info-badge info-badge-nationality" *ngIf="player.player.nationality">
-            {{ player.player.nationality }}
-          </span>
+<div class="player-info-container container" *ngIf="!loading && player">
+  <div class="player-info-layout">
+
+    <!-- Player Header -->
+    <app-player-header
+      [player]="player"
+      [playerAge]="playerAge"
+      [playerBirthPlace]="playerBirthPlace">
+    </app-player-header>
+
+    <div 
+      class="player-main-grid"
+      *ngIf="(!statsLoading && playerStats) || hasTeams()">
+      
+      <!-- Player Stats Section -->
+      <app-general-card
+        *ngIf="!statsLoading && playerStats"
+        customClass="player-stats-card">
+        <div class="stats-grid">
+          <app-player-stat
+            icon="👁️"
+            label="Matches Viewed"
+            [value]="playerStats.matches_viewed"
+            [subValue]="playerStats.matches_startXI > 0 ? playerStats.matches_startXI + ' start XI' : undefined">
+          </app-player-stat>
+          <app-player-stat
+            icon="⚽"
+            label="Goals"
+            [value]="playerStats.total_goals">
+          </app-player-stat>
+          <app-player-stat
+            icon="🎯"
+            label="Assists"
+            [value]="playerStats.total_assists">
+          </app-player-stat>
+          <app-player-stat
+            icon="✅"
+            label="Wins"
+            [value]="playerStats.wins + ' - ' + playerStats.win_percentage + '%'">
+          </app-player-stat>
+          <app-player-stat
+            icon="🤝"
+            label="Draws"
+            [value]="playerStats.draws + ' - ' + playerStats.draw_percentage + '%'">
+          </app-player-stat>
+          <app-player-stat
+            icon="❌"
+            label="Losses"
+            [value]="playerStats.losses + ' - ' + playerStats.loss_percentage + '%'">
+          </app-player-stat>
+          <app-player-stat
+            icon="🟨"
+            label="Yellow Cards"
+            [value]="playerStats.yellow_cards">
+          </app-player-stat>
+          <app-player-stat
+            icon="🟥"
+            label="Red Cards"
+            [value]="playerStats.red_cards">
+          </app-player-stat>
+          <app-player-stat
+            icon="👥"
+            label="Teams Watched"
+            [value]="playerStats.different_teams_watched">
+          </app-player-stat>
         </div>
-      </div>
-    </div>
-    
-    <!-- Player Stats Section -->
-    <div class="player-stats-section" *ngIf="!statsLoading && playerStats">
-      <div class="stats-grid">
-        <app-player-stat
-          icon="👁️"
-          label="Matches Viewed"
-          [value]="playerStats.matches_viewed"
-          [subValue]="playerStats.matches_startXI > 0 ? playerStats.matches_startXI + ' start XI' : undefined">
-        </app-player-stat>
-        <app-player-stat
-          icon="⚽"
-          label="Goals"
-          [value]="playerStats.total_goals">
-        </app-player-stat>
-        <app-player-stat
-          icon="🎯"
-          label="Assists"
-          [value]="playerStats.total_assists">
-        </app-player-stat>
-        <app-player-stat
-          icon="✅"
-          label="Wins"
-          [value]="playerStats.wins + ' - ' + playerStats.win_percentage + '%'">
-        </app-player-stat>
-        <app-player-stat
-          icon="🤝"
-          label="Draws"
-          [value]="playerStats.draws + ' - ' + playerStats.draw_percentage + '%'">
-        </app-player-stat>
-        <app-player-stat
-          icon="❌"
-          label="Losses"
-          [value]="playerStats.losses + ' - ' + playerStats.loss_percentage + '%'">
-        </app-player-stat>
-        <app-player-stat
-          icon="🟨"
-          label="Yellow Cards"
-          [value]="playerStats.yellow_cards">
-        </app-player-stat>
-        <app-player-stat
-          icon="🟥"
-          label="Red Cards"
-          [value]="playerStats.red_cards">
-        </app-player-stat>
-        <app-player-stat
-          icon="👥"
-          label="Teams Watched"
-          [value]="playerStats.different_teams_watched">
-        </app-player-stat>
-      </div>
-    </div>
-  </div>
+      </app-general-card>
 
-  <!-- Player Profile Section -->
-  <div class="player-profile-section">
-    <h2 class="section-title">Profile</h2>
-    <div class="profile-grid">
-      <div class="profile-item" *ngIf="player.player.age">
-        <span class="profile-label">Age</span>
-        <span class="profile-value">{{ player.player.age }} years</span>
-      </div>
-      <div class="profile-item" *ngIf="player.player.nationality">
-        <span class="profile-label">Nationality</span>
-        <span class="profile-value">{{ player.player.nationality }}</span>
-      </div>
-      <!-- Expandable profile items -->
-      <div class="profile-item profile-item-expandable" *ngIf="player.player.birth?.date" [class.profile-expanded]="profileExpanded">
-        <span class="profile-label">Date of Birth</span>
-        <span class="profile-value">{{ formatDate(player.player.birth.date) }}</span>
-      </div>
-      <div class="profile-item profile-item-expandable" *ngIf="player.player.birth?.place" [class.profile-expanded]="profileExpanded">
-        <span class="profile-label">Place of Birth</span>
-        <span class="profile-value">{{ player.player.birth.place }}</span>
-      </div>
-      <div class="profile-item profile-item-expandable" *ngIf="player.player.birth?.country" [class.profile-expanded]="profileExpanded">
-        <span class="profile-label">Country of Birth</span>
-        <span class="profile-value">{{ player.player.birth.country }}</span>
-      </div>
-      <div class="profile-item profile-item-expandable" *ngIf="player.player.height" [class.profile-expanded]="profileExpanded">
-        <span class="profile-label">Height</span>
-        <span class="profile-value">{{ player.player.height }}</span>
-      </div>
-      <div class="profile-item profile-item-expandable" *ngIf="player.player.weight" [class.profile-expanded]="profileExpanded">
-        <span class="profile-label">Weight</span>
-        <span class="profile-value">{{ player.player.weight }}</span>
-      </div>
-      <div class="profile-item profile-item-expandable" *ngIf="player.player.position" [class.profile-expanded]="profileExpanded">
-        <span class="profile-label">Position</span>
-        <span class="profile-value">{{ player.player.position }}</span>
-      </div>
+      <!-- Teams and Seasons Section -->
+      <app-general-card
+        *ngIf="hasTeams()"
+        customClass="teams-seasons-card">
+        <div class="teams-card-header">
+          <h2 class="section-title">Teams & Seasons</h2>
+        </div>
+        <div class="teams-list">
+          <app-team-row 
+            *ngFor="let item of getTeamsAndSeasonsFlat()"
+            [teamData]="item.team"
+            [season]="item.season"
+            [teamStats]="item.teamStats">
+          </app-team-row>
+        </div>
+      </app-general-card>
     </div>
-    <!-- More button for mobile -->
-    <button 
-      class="profile-more-btn" 
-      (click)="toggleProfile()"
-      *ngIf="hasAdditionalProfileInfo()">
-      {{ profileExpanded ? 'Less -' : 'More +' }}
-    </button>
-  </div>
 
-  <!-- Teams and Seasons Section -->
-  <div class="teams-seasons-section" *ngIf="hasTeams()">
-    <h2 class="section-title">Teams & Seasons</h2>
-    <div class="teams-list">
-      <app-team-row 
-        *ngFor="let item of getTeamsAndSeasonsFlat()"
-        [teamData]="item.team"
-        [season]="item.season"
-        [teamStats]="item.teamStats">
-      </app-team-row>
+    <!-- No Teams Message -->
+    <div class="no-teams-message" *ngIf="!loading && !hasTeams()">
+      <p>No team information available for this player.</p>
     </div>
-  </div>
 
-  <!-- No Teams Message -->
-  <div class="no-teams-message" *ngIf="!loading && !hasTeams()">
-    <p>No team information available for this player.</p>
   </div>
-
 </div>
 
 <!-- Loading State -->

@@ -1,71 +1,29 @@
 /* Player Info Container */
 .player-info-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  padding: 0 0 3rem;
+}
+
+.player-info-layout {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-}
-
-/* Player Header Section */
-.player-header {
-  background: white;
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: flex-start;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.player-header-left {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  flex: 1;
-  min-width: 250px;
-}
-
-.player-image-container {
-  flex-shrink: 0;
-}
-
-.player-image {
-  width: 200px;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 3px solid #f0f0f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.player-header-info {
-  flex: 1;
-}
-
-.player-name {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 1rem 0;
-}
-
-.player-basic-info {
-  display: flex;
-  flex-wrap: wrap;
   gap: 0.75rem;
 }
 
-.info-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.player-main-grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.player-main-grid > app-general-card:first-child .general-card {
+  height: 100%;
+  margin-bottom: 0;
+}
+
+.player-main-grid > app-general-card:last-child .general-card {
+  height: 100%;
+  margin-bottom: 0;
 }
 
 .profile-more-btn {
@@ -90,14 +48,13 @@
 
 
 /* Player Stats Section */
-.player-stats-section {
-  flex: 1;
-  min-width: 300px;
+.general-card.player-stats-card {
+  padding: 1.75rem;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.75rem;
 }
 
@@ -147,11 +104,17 @@
 }
 
 /* Teams and Seasons Section */
-.teams-seasons-section {
-  background: white;
-  border-radius: 16px;
+.general-card.teams-seasons-card {
   padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.teams-card-header .section-title {
+  margin: 0;
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .teams-list {
@@ -198,51 +161,28 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .player-info-container {
-    padding: 0.5rem;
-    gap: 1rem;
+    padding: 0 0 2rem;
   }
 
-  .teams-seasons-section {
-    padding: 1rem;
+  .player-info-layout {
+    gap: 0.75rem;
   }
 
-  .player-header {
-    flex-direction: column;
-    text-align: center;
-    padding: 1.5rem;
-  }
-
-  .player-header-left {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .player-image {
-    width: 150px;
-    height: 150px;
-  }
-
-  .player-name {
-    font-size: 2rem;
-  }
-
-  .player-basic-info {
-    justify-content: center;
-    align-items: center;
-  }
-
-  .info-badge-nationality {
-    width: 100%;
-    text-align: center;
-  }
-
-  .player-stats-section {
-    width: 100%;
-    min-width: 100%;
+  .general-card.player-stats-card {
+    padding: 1.25rem;
   }
 
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
+  }
+
+  .general-card.teams-seasons-card {
+    padding: 1.5rem;
+    gap: 1.25rem;
+  }
+
+  .player-main-grid {
+    grid-template-columns: 1fr;
   }
 
   .profile-grid {
@@ -272,8 +212,5 @@
     display: flex;
   }
 
-  .profile-more-btn {
-    display: block;
-  }
 }
 
