@@ -3,15 +3,25 @@
   <!-- Hero Section -->
   <app-hero-section [userStats]="userStats" [userStatsLoaded]="userStatsLoaded"></app-hero-section>
 
-  <nav class="nav-class">
-    <div class="nav nav-tabs d-md-none" id="nav-tab" role="tablist">
-      <button class="nav-link" id="nav-stats-tab" data-bs-toggle="tab" data-bs-target="#nav-stats" type="button" role="tab" aria-controls="nav-stats" aria-selected="true">Stats</button>
-      <button class="nav-link active" id="nav-matches-tab" data-bs-toggle="tab" data-bs-target="#nav-matches" type="button" role="tab" aria-controls="nav-matches" aria-selected="false">Matches</button>
-      <button class="nav-link" id="nav-filters-tab" data-bs-toggle="tab" data-bs-target="#nav-filters" type="button" role="tab" aria-controls="nav-filters" aria-selected="false">Filters</button>
+  <!-- View Toggle -->
+  <div class="row">
+    <div class="col-12">
+      <div class="view-toggle-card">
+        <div class="view-toggle">
+          <button class="toggle-btn" [class.active]="viewMode === 'stats'" (click)="setView('stats')">Stats</button>
+          <button class="toggle-btn" [class.active]="viewMode === 'matches'" (click)="setView('matches')">Matches</button>
+          <button class="toggle-btn" [class.active]="viewMode === 'filters'" (click)="setView('filters')">Filters</button>
+        </div>
+      </div>
     </div>
-  </nav>
+  </div>
+
   <div class="tab-content row m-auto" id="nav-tabContent">
-    <div class="tab-pane fade show col-md-3 col-12" id="nav-stats" role="tabpanel" aria-labelledby="nav-home-tab">
+    <div class="tab-pane col-md-3 col-12" 
+         [class.show]="viewMode === 'stats'"
+         [class.d-md-block]="true"
+         id="nav-stats" 
+         role="tabpanel">
       
       <!-- Left column: Stats information column -->
       @if (this.matchesLoaded && this.matchesOriginal.length > 0) {
@@ -45,7 +55,11 @@
       }
 
     </div>
-    <div class="tab-pane fade show active col-md-6 col-12" id="nav-matches" role="tabpanel" aria-labelledby="nav-profile-tab">
+    <div class="tab-pane col-md-6 col-12" 
+         [class.show]="viewMode === 'matches'"
+         [class.d-md-block]="true"
+         id="nav-matches" 
+         role="tabpanel">
       
       <!-- Center column: Matches -->
       @if (this.matchesLoaded && this.matches.length > 0) {
@@ -90,7 +104,11 @@
       }
 
     </div>
-    <div class="tab-pane fade show col-md-3 col-12" id="nav-filters" role="tabpanel" aria-labelledby="nav-contact-tab">
+    <div class="tab-pane col-md-3 col-12" 
+         [class.show]="viewMode === 'filters'"
+         [class.d-md-block]="true"
+         id="nav-filters" 
+         role="tabpanel">
       
       <!-- Filters Component -->
       @if (this.matchesLoaded && this.matchesOriginal.length > 0) {

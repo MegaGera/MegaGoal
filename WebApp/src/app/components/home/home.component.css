@@ -1,11 +1,51 @@
+/* View Toggle Styles */
+.view-toggle-card {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* Hide toggle on desktop, show only on mobile */
+@media (min-width: 768px) {
+  .view-toggle-card {
+    display: none;
+  }
+}
+
+.view-toggle {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid #dee2e6;
+  padding: 0.25rem;
+  background: #f8f9fa;
+  gap: 0.5rem;
+}
+
+.toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 0.45rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #495057;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.toggle-btn.active {
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  color: #0d6efd;
+}
+
 /* Custom styling for large screens to show columns */
 @media (min-width: 768px) {
   .tab-content > .tab-pane {
       display: block !important; /* Make all tab panes visible */
-  }
-
-  .nav-tabs {
-      display: none;
   }
 
   /* Add top margin for left and right columns */
@@ -15,13 +55,18 @@
   }
 }
 
-@media only screen and (max-width: 768px) {
-  .matchCardAdapter {
-    margin: 5% auto;
+/* Mobile: Show only active tab */
+@media only screen and (max-width: 767px) {
+  .tab-content > .tab-pane {
+      display: none !important;
   }
 
-  .nav-class {
-    margin-top: 3% !important;
+  .tab-content > .tab-pane.show {
+      display: block !important;
+  }
+
+  .matchCardAdapter {
+    margin: 5% auto;
   }
 
   /* Add top margin for mobile view due to column selector */

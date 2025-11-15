@@ -81,8 +81,15 @@ export class HomeComponent implements OnInit {
   /* Dynamic Filter Arrays */
   leaguesFiltered: LeagueStats[] = [];
 
+  /* View Mode */
+  viewMode: 'stats' | 'matches' | 'filters' = 'matches';
+
   constructor(private megagoal: MegaGoalService, public images: ImagesService, private changeDetectorRef: ChangeDetectorRef,
     private statsService: StatsService) { }
+
+  setView(mode: 'stats' | 'matches' | 'filters'): void {
+    this.viewMode = mode;
+  }
 
   ngOnInit(): void {
     this.getAllMatches();
