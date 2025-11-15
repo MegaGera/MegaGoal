@@ -37,4 +37,25 @@ export class TopMenuComponent implements OnInit {
       this.isUserMenuOpen = false;
     }
   }
+
+  logout(): void {
+    // Make a POST request to the logout endpoint
+    fetch('https://megaauth.megagera.com/logout', {
+      method: 'POST',
+      credentials: 'include' // include cookies if needed
+    })
+    .then(response => {
+      if (response.redirected) {
+        window.location.href = response.url;
+      } else if (response.ok) {
+        // Redirect to landing page or login page after successful logout
+        window.location.href = '/';
+      } else {
+        alert('Logout failed. Please try again.');
+      }
+    })
+    .catch(() => {
+      alert('Error during logout.');
+    });
+  }
 }

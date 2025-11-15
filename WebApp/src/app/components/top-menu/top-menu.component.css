@@ -244,6 +244,19 @@
   z-index: 1;
 }
 
+.user-panel-button {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.user-panel-button:focus {
+  outline: none;
+}
+
 /* Desktop hover functionality */
 @media (hover: hover) and (pointer: fine) {
   .user-dropdown:hover .user-panel {
