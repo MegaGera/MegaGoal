@@ -25,6 +25,7 @@ export class FavouriteTeamCardComponent {
   @Input() selectedTeamId: number | null = null;
   @Input() interactable: boolean = true;
   @Input() showHeader: boolean = true;
+  @Input() showAllStatsOnMobile: boolean = false;
   @Output() teamSelected = new EventEmitter<number>();
 
   constructor(public images: ImagesService) {}

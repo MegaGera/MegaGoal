@@ -300,6 +300,10 @@
   .additional-stats {
     display: none;
   }
+
+  .additional-stats.show-on-mobile {
+    display: flex;
+  }
 }
 
 @media (max-width: 480px) {

@@ -81,7 +81,7 @@
       </div>
 
     <!-- Additional Stats -->
-    <div class="additional-stats">
+    <div class="additional-stats" [class.show-on-mobile]="showAllStatsOnMobile">
       <!-- Crazy Match -->
       @if (teamStats.crazy_match) {
         <app-mini-stat-card
