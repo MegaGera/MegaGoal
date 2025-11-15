@@ -31,20 +31,25 @@
                 
                 <div class="user-panel" [class.open]="isUserMenuOpen">
                     <a class="user-panel-link" href="https://megaauth.megagera.com" target="_blank">
+                        <ng-icon name="jamUser" class="user-panel-icon" size="18"></ng-icon>
                         <span class="user-panel-text">Profile</span>
                     </a>
                     <a class="user-panel-link" routerLink="/app/feedback" routerLinkActive="active">
+                        <ng-icon name="jamMessage" class="user-panel-icon" size="18"></ng-icon>
                         <span class="user-panel-text">Feedback</span>
                     </a>
                     <a class="user-panel-link" routerLink="/app/locations" routerLinkActive="active">
+                        <ng-icon name="ionLocation" class="user-panel-icon" size="18"></ng-icon>
                         <span class="user-panel-text">Locations</span>
                     </a>
                     @if (isAdmin) {
                         <a class="user-panel-link" routerLink="/app/admin" routerLinkActive="active">
+                            <ng-icon name="jamSettingsAlt" class="user-panel-icon" size="18"></ng-icon>
                             <span class="user-panel-text">Admin</span>
                         </a>
                     }
-                    <button class="user-panel-link user-panel-button" (click)="logout()">
+                    <button class="user-panel-link user-panel-button user-panel-signout" (click)="logout()">
+                        <ng-icon name="jamLogOut" class="user-panel-icon" size="18"></ng-icon>
                         <span class="user-panel-text">Sign Out</span>
                     </button>
                 </div>

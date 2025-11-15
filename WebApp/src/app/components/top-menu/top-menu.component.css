@@ -209,7 +209,9 @@
 }
 
 .user-panel-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 16px 20px;
   color: #333;
   text-decoration: none;
@@ -239,22 +241,66 @@
   transform: scale(1);
 }
 
+.user-panel-icon {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px;
+  min-height: 18px;
+  max-width: 18px;
+  max-height: 18px;
+  color: #666;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  display: block;
+  overflow: visible;
+  box-sizing: content-box;
+}
+
+.user-panel-icon svg {
+  width: 18px !important;
+  height: 18px !important;
+  display: block;
+}
+
 .user-panel-text {
   position: relative;
   z-index: 1;
+}
+
+.user-panel-link:hover .user-panel-icon {
+  color: #dc143c;
+}
+
+.user-panel-link.active .user-panel-icon {
+  color: #dc143c;
 }
 
 .user-panel-button {
   width: 100%;
   background: none;
   border: none;
-  text-align: left;
   cursor: pointer;
   font-family: inherit;
 }
 
 .user-panel-button:focus {
   outline: none;
+}
+
+/* Sign Out button special styling */
+.user-panel-signout {
+  border-radius: 0 0 16px 16px;
+}
+
+.user-panel-signout:hover {
+  background: rgba(220, 53, 69, 1) !important;
+  color: #fff !important;
+  transform: scale(1) !important;
+}
+
+.user-panel-signout:hover .user-panel-icon,
+.user-panel-signout:hover .user-panel-text {
+  color: #fff !important;
 }
 
 /* Desktop hover functionality */
@@ -332,6 +378,20 @@
   .user-button {
     padding-left: 0.1em; /* Small devices: small left padding */
   }
+
+  .user-panel-signout {
+    border-radius: 0 0 16px 16px;
+    background: rgba(220, 53, 69, 1) !important;
+    color: #fff !important;
+  }
+
+  .user-panel-signout:text {
+    color: #fff !important;
+  }
+
+  .user-panel-signout .user-panel-icon {
+    color: #fff !important;
+  }
 }
 
 /* Animation for menu items */
@@ -350,6 +410,9 @@
   animation: slideIn 0.3s ease forwards;
 }
 
-.user-panel.open .user-panel-link:nth-child(1) { animation-delay: 0.1s; }
-.user-panel.open .user-panel-link:nth-child(2) { animation-delay: 0.2s; }
-.user-panel.open .user-panel-link:nth-child(3) { animation-delay: 0.3s; }
+.user-panel.open .user-panel-link:nth-child(1) { animation-delay: 0.05s; }
+.user-panel.open .user-panel-link:nth-child(2) { animation-delay: 0.1s; }
+.user-panel.open .user-panel-link:nth-child(3) { animation-delay: 0.15s; }
+.user-panel.open .user-panel-link:nth-child(4) { animation-delay: 0.2s; }
+.user-panel.open .user-panel-link:nth-child(5) { animation-delay: 0.25s; }
+.user-panel.open .user-panel-link:nth-child(6) { animation-delay: 0.3s; }
