@@ -2,6 +2,10 @@
 
 html, body { height: 100%; background-color: #FAFAFA; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+app-root {
+  display: block;
+  min-height: 100vh;
+}
 
 @font-face {
   font-family: 'Poppins-Regular';
