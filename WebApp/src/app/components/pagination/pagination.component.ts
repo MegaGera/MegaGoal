@@ -1,4 +1,4 @@
-import { Component, Input, model, ModelSignal, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, HostListener, Input, model, ModelSignal, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 
 @Component({
   selector: 'app-pagination',
@@ -7,15 +7,38 @@ import { Component, Input, model, ModelSignal, OnChanges, SimpleChanges } from '
   templateUrl: './pagination.component.html',
   styleUrl: './pagination.component.css'
 })
-export class PaginationComponent implements OnChanges {
+export class PaginationComponent implements OnInit, OnChanges {
 
   @Input() elements: any[] = [];
   elementsFiltered: ModelSignal<any[]> = model<any[]>([]);
   @Input() elementsPerPage: number = 20;
   pages: number = 1;
   pageSelected: number = 1;
+  maxPagesToShow: number = 10;
 
   constructor() { }
+
+  ngOnInit() {
+    this.updateMaxPagesToShow();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.updateMaxPagesToShow();
+  }
+
+  updateMaxPagesToShow() {
+    if (window.innerWidth < 768) {
+      // Mobile view: show fewer pages
+      this.maxPagesToShow = 5;
+    } else if (window.innerWidth < 1024) {
+      // Tablet view: show medium number of pages
+      this.maxPagesToShow = 7;
+    } else {
+      // Desktop view: show full number of pages
+      this.maxPagesToShow = 10;
+    }
+  }
   
   ngOnChanges(changes: SimpleChanges) {
     if (changes['elementsPerPage'] || changes['elements']) {
@@ -30,17 +53,18 @@ export class PaginationComponent implements OnChanges {
   }
 
   getArrayPages() {
-    if (this.pages <= 10) {
+    if (this.pages <= this.maxPagesToShow) {
       return new Array(this.pages).fill(0).map((x, i) => i + 1);
     } else {
+      const halfPages = Math.floor(this.maxPagesToShow / 2);
       let startIndex = 0;
-      let endIndex = 10;
-      if (this.pageSelected > 5) {
-        startIndex = this.pageSelected - 5;
-        endIndex = this.pageSelected + 5;
+      let endIndex = this.maxPagesToShow;
+      if (this.pageSelected > halfPages) {
+        startIndex = this.pageSelected - halfPages;
+        endIndex = this.pageSelected + halfPages;
       }
-      if (this.pageSelected > this.pages - 5) {
-        startIndex = this.pages - 10;
+      if (this.pageSelected > this.pages - halfPages) {
+        startIndex = this.pages - this.maxPagesToShow;
         endIndex = this.pages;
       }
       return new Array(this.pages).fill(0).map((x, i) => i + 1).slice(startIndex, endIndex);
