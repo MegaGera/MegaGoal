@@ -166,7 +166,6 @@ export class TeamComponent {
         this.team = result;
         this.initializeSeasons();
         this.getRealMatches();
-        this.getMatches();
         this.getLocations();
         this.loadAllWatchedMatches();
       } else {
@@ -262,16 +261,6 @@ export class TeamComponent {
     this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
   }
 
-  /*
-    Get Matches by team_id and season
-  */
-  getMatches() {
-    this.megagoal.getMatchesByTeamIDAndSeason(this.team.team.id, this.selectedSeason.id).subscribe(result => {
-      this.matches = result;
-      this.updateRecentFormFromSeasonMatches();
-    })
-  }
-
   findRealMatchInMatches(id: number) {
     return this.matches.find(match => match.fixture.id === id);
   }
@@ -350,7 +339,6 @@ export class TeamComponent {
     this.selectedSeason = targetSeason;
 
     this.getRealMatches();
-    this.getMatches();
 
     this.updateStatsLocations();
     this.ensureFilterLocationValidForStats();
