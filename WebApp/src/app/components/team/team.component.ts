@@ -2,7 +2,7 @@
   Team component to display information about a team
 */
 
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgClass, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -80,7 +80,10 @@ interface TeamInsightsSummary {
     })
   ]
 })
-export class TeamComponent {
+export class TeamComponent implements OnInit, OnDestroy {
+
+  /* Screen size detection */
+  isMobileView: boolean = false;
 
   /* Seasons */
   readonly allTimeSeasonOption: SeasonInfo = { id: 0, text: 'All time' };
@@ -160,6 +163,24 @@ export class TeamComponent {
 
   }
 
+  ngOnInit(): void {
+    this.updateScreenSize();
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup if needed
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(): void {
+    this.updateScreenSize();
+  }
+
+  private updateScreenSize(): void {
+    // Bootstrap's md breakpoint is 768px
+    this.isMobileView = window.innerWidth < 768;
+  }
+
   init() {
     this.megagoal.getTeamById(this.queryTeamId).subscribe(result => {
       if (result != undefined) {
@@ -220,12 +241,12 @@ export class TeamComponent {
         this.leagueNames.set(match.league.id.toString(), match.league.name);
       });
       this.updateLeaguesForAllMatches();
-      this.filterMatches();
-      this.updateCurrentLeagues();
+      this.filterRealMatches();
+      this.filterCurrentLeagues();
     })
   }
 
-  filterMatches() {
+  filterRealMatches() {
     if (this.filterLeagueSelected.length === 0) {
       this.showRealMatches = [...this.realMatches];
       return;
@@ -268,13 +289,9 @@ export class TeamComponent {
   getLocations() {
     this.megagoal.getLocationsCounts().subscribe(result => {
       this.locations = <Location[]>result;
-      this.updateStatsLocations();
-      const locationChanged = this.ensureFilterLocationValidForStats();
-      if (locationChanged && this.viewMode !== 'allMatches') {
-        this.updateFilteredPersonalMatches();
-        this.updateInsightsData();
-        this.updateLeaguesForStats();
-      }
+      
+      // Could be race condition this is why is called twice here and in updateStatsSeasonOptions()
+      this.filterStatsLocations();
     })
   }
 
@@ -287,9 +304,9 @@ export class TeamComponent {
         this.allWatchedMatches = [...matches].sort((a, b) => (b.fixture.timestamp ?? 0) - (a.fixture.timestamp ?? 0));
         this.updateStatsSeasonOptions();
         this.updateLeaguesForStats();
-        this.updateFilteredPersonalMatches();
+        this.filterMatches();
         this.yourMatchesLoaded = true;
-        this.updateInsightsData();
+        this.filterInsightsData();
       },
       error: () => {
         this.allWatchedMatches = [];
@@ -298,7 +315,7 @@ export class TeamComponent {
         this.updateStatsSeasonOptions();
         this.updateLeaguesForStats();
         this.yourMatchesLoaded = true;
-        this.updateInsightsData();
+        this.filterInsightsData();
       }
     });
   }
@@ -308,17 +325,17 @@ export class TeamComponent {
 
     if (mode !== 'allMatches') {
       const seasonChanged = this.ensureFilterSeasonValidForStats();
-      this.updateStatsLocations();
+      this.filterStatsLocations();
       const locationChanged = this.ensureFilterLocationValidForStats();
 
       if (seasonChanged || locationChanged) {
         this.updateLeaguesForStats();
-        this.updateFilteredPersonalMatches();
-        this.updateInsightsData();
+        this.filterMatches();
+        this.filterInsightsData();
       }
     }
 
-    this.updateCurrentLeagues();
+    this.filterCurrentLeagues();
   }
 
   onFilterPanelChipSelectedChange(chip: number): void {
@@ -327,9 +344,9 @@ export class TeamComponent {
 
   onFilterLeagueSelectedChange(leagues: number[]): void {
     this.filterLeagueSelected = leagues;
+    this.filterRealMatches();
     this.filterMatches();
-    this.updateFilteredPersonalMatches();
-    this.updateInsightsData();
+    this.filterInsightsData();
   }
 
   onFilterSeasonSelectedChange(season: SeasonInfo): void {
@@ -340,20 +357,20 @@ export class TeamComponent {
 
     this.getRealMatches();
 
-    this.updateStatsLocations();
+    this.filterStatsLocations();
     this.ensureFilterLocationValidForStats();
 
     this.updateLeaguesForStats();
-    this.updateFilteredPersonalMatches();
-    this.updateInsightsData();
-    this.updateCurrentLeagues();
+    this.filterMatches();
+    this.filterInsightsData();
+    this.filterCurrentLeagues();
   }
 
   onFilterLocationSelectedChange(location: string): void {
     this.filterLocationSelected = location;
     this.updateLeaguesForStats();
-    this.updateFilteredPersonalMatches();
-    this.updateInsightsData();
+    this.filterMatches();
+    this.filterInsightsData();
   }
 
   resetFilters(): void {
@@ -364,18 +381,18 @@ export class TeamComponent {
 
     this.filterPanelChipSelected = 1;
 
-    this.updateStatsLocations();
+    this.filterStatsLocations();
     this.ensureFilterLocationValidForStats();
 
     this.updateLeaguesForAllMatches();
     this.updateLeaguesForStats();
+    this.filterRealMatches();
     this.filterMatches();
-    this.updateFilteredPersonalMatches();
-    this.updateInsightsData();
-    this.updateCurrentLeagues();
+    this.filterInsightsData();
+    this.filterCurrentLeagues();
   }
 
-  private updateInsightsData(): void {
+  private filterInsightsData(): void {
     const matches = this.getMatchesForInsights();
     this.filteredInsightsMatches = matches;
     this.insightsSummary = this.buildInsightsSummary(matches);
@@ -585,14 +602,7 @@ export class TeamComponent {
     });
   }
 
-  private updateRecentFormFromSeasonMatches(): void {
-    if (this.viewMode === 'allMatches') {
-      // When in matches view we still want to track watch history; insights uses global matches
-      this.recentForm = this.buildRecentForm(this.filteredInsightsMatches.length ? this.filteredInsightsMatches : this.allWatchedMatches);
-    }
-  }
-
-  private updateFilteredPersonalMatches(): void {
+  private filterMatches(): void {
     const base = this.getFilteredPersonalMatchesBase();
     this.filteredPersonalMatches = base;
     this.personalMatchesPageMatches = base.slice(0, this.personalMatchesPerPage);
@@ -613,7 +623,7 @@ export class TeamComponent {
     if (!this.allWatchedMatches || this.allWatchedMatches.length === 0) {
       this.leaguesStats = [];
       if (this.viewMode !== 'allMatches') {
-        this.updateCurrentLeagues();
+        this.filterCurrentLeagues();
       }
       this.leaguesLoaded = true;
       return;
@@ -642,7 +652,7 @@ export class TeamComponent {
       .sort((a, b) => b.count - a.count);
 
     if (this.viewMode !== 'allMatches') {
-      this.updateCurrentLeagues();
+      this.filterCurrentLeagues();
     }
     this.leaguesLoaded = true;
   }
@@ -739,7 +749,7 @@ export class TeamComponent {
     if (!this.realMatches || this.realMatches.length === 0) {
       this.leaguesAllMatches = [];
       if (this.viewMode === 'allMatches') {
-        this.updateCurrentLeagues();
+        this.filterCurrentLeagues();
       }
       this.leaguesLoaded = true;
       return;
@@ -762,12 +772,12 @@ export class TeamComponent {
       .sort((a, b) => b.count - a.count);
 
     if (this.viewMode === 'allMatches') {
-      this.updateCurrentLeagues();
+      this.filterCurrentLeagues();
     }
     this.leaguesLoaded = true;
   }
 
-  private updateCurrentLeagues(): void {
+  private filterCurrentLeagues(): void {
     this.currentLeagues = this.viewMode === 'allMatches' ? this.leaguesAllMatches : this.leaguesStats;
     this.leaguesLoaded = true;
 
@@ -776,9 +786,9 @@ export class TeamComponent {
 
     if (filtered.length !== this.filterLeagueSelected.length) {
       this.filterLeagueSelected = filtered;
+      this.filterRealMatches();
       this.filterMatches();
-      this.updateFilteredPersonalMatches();
-      this.updateInsightsData();
+      this.filterInsightsData();
     }
   }
 
@@ -800,15 +810,8 @@ export class TeamComponent {
 
     this.statsSeasonOptions = [this.allTimeSeasonOption, ...watchedSeasons];
 
-    const seasonChanged = this.ensureFilterSeasonValidForStats();
-    this.updateStatsLocations();
-    const locationChanged = this.ensureFilterLocationValidForStats();
-
-    if (this.viewMode !== 'allMatches' && (seasonChanged || locationChanged)) {
-      this.updateFilteredPersonalMatches();
-      this.updateInsightsData();
-      this.updateLeaguesForStats();
-    }
+    // Could be race condition this is why is called twice here and in getLocations()
+    this.filterStatsLocations();
   }
 
   private ensureFilterSeasonValidForStats(): boolean {
@@ -833,7 +836,7 @@ export class TeamComponent {
     return false;
   }
 
-  private updateStatsLocations(): void {
+  private filterStatsLocations(): void {
     if (!this.locations || this.locations.length === 0) {
       this.statsLocations = [];
       return;
