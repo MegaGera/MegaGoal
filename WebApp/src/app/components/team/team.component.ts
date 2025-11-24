@@ -96,7 +96,6 @@ export class TeamComponent {
     Selected team shared with Leagues components
   */
   queryTeamId!: number;
-  querySeasonId!: number;
   team!: Team;
   realMatches: RealMatch[] = [];
   showRealMatches: RealMatch[] = [];
@@ -148,26 +147,14 @@ export class TeamComponent {
 
     this.Activatedroute.queryParamMap.subscribe(params => {
       const newTeamId = +params.get('id')! || 0;
-      const newSeasonId = +params.get('season')! || 0;
       
       const teamChanged = this.queryTeamId !== newTeamId;
-      const seasonChanged = this.querySeasonId !== newSeasonId;
       
       this.queryTeamId = newTeamId;
-      this.querySeasonId = newSeasonId;
       
       if (teamChanged || !this.team) {
         // Team changed or first load - reload everything
         this.init();
-      } else if (seasonChanged && this.team) {
-        // Only season changed - just update season and reload matches
-        if (this.querySeasonId === 0) {
-          this.selectedSeason = this.seasons[0]; // Most recent season
-        } else {
-          this.selectedSeason = this.seasons.find(season => season.id == this.querySeasonId) || this.seasons[0];
-        }
-        this.getRealMatches();
-        this.getMatches();
       }
     });
 
@@ -215,37 +202,9 @@ export class TeamComponent {
     this.seasonOptions = [this.allTimeSeasonOption, ...this.seasons];
     this.statsSeasonOptions = [this.allTimeSeasonOption];
  
-     // Determine selected season for API calls and filters
-    if (this.querySeasonId === 0) {
-      this.selectedSeason = this.seasons[0]; // Most recent season
-    } else {
-      this.selectedSeason = this.seasons.find(season => season.id == this.querySeasonId) || this.seasons[0];
-    }
-
-    const previousSelection = this.filterSeasonSelected;
-    if (previousSelection && previousSelection.id === 0) {
-      this.filterSeasonSelected = this.allTimeSeasonOption;
-    } else if (this.querySeasonId === 0 && previousSelection && previousSelection.id !== 0) {
-      // Keep previous non-zero selection if navigating without explicit season change
-      this.filterSeasonSelected = this.seasonOptions.find(option => option.id === previousSelection.id) || this.seasonOptions[0];
-    } else if (this.querySeasonId === 0) {
-      this.filterSeasonSelected = this.allTimeSeasonOption;
-    } else {
-      this.filterSeasonSelected = this.seasonOptions.find(option => option.id === this.selectedSeason.id) || this.seasonOptions[0];
-    }
-  }
-
-  /*
-    Select Season
-  */
-  selectSeason(season: SeasonInfo): void {
-    // Update URL with new season parameter
-    // The queryParamMap subscription will handle updating the data
-    this.router.navigate([], {
-      relativeTo: this.Activatedroute,
-      queryParams: { id: this.queryTeamId, season: season.id },
-      queryParamsHandling: 'merge'
-    });
+    // Determine selected season for API calls and filters
+    this.selectedSeason = this.seasons[0]; // Most recent season
+    this.filterSeasonSelected = this.allTimeSeasonOption;
   }
 
   /*
@@ -388,20 +347,10 @@ export class TeamComponent {
     this.filterSeasonSelected = season;
 
     const targetSeason = season.id === 0 ? this.seasons[0] : this.seasons.find(item => item.id === season.id) || this.seasons[0];
-    const previousSeasonId = this.selectedSeason?.id;
     this.selectedSeason = targetSeason;
 
-    if (season.id === 0) {
-      // Keep All Matches on latest season while keeping filter selection as All time
-      if (previousSeasonId !== this.selectedSeason.id) {
-        this.selectSeason(this.selectedSeason);
-      } else {
-        this.getRealMatches();
-        this.getMatches();
-      }
-    } else if (previousSeasonId !== this.selectedSeason.id) {
-      this.selectSeason(this.selectedSeason);
-    }
+    this.getRealMatches();
+    this.getMatches();
 
     this.updateStatsLocations();
     this.ensureFilterLocationValidForStats();
@@ -426,10 +375,6 @@ export class TeamComponent {
     this.selectedSeason = this.seasons[0];
 
     this.filterPanelChipSelected = 1;
-
-    if (this.seasons.length > 0) {
-      this.selectSeason(this.selectedSeason);
-    }
 
     this.updateStatsLocations();
     this.ensureFilterLocationValidForStats();
