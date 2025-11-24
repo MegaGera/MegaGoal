@@ -574,7 +574,7 @@
                 @if (!isMobileView) {
                   <div class="row g-3">
                     <div class="col-md-6">
-                      @for (match of filterHalfRealMatches(showRealMatches, 0); track trackByMatchId($index, match)) {
+                      @for (match of filterHalfRealMatches(allMatchesPageMatches, 0); track trackByMatchId($index, match)) {
                         <div class="matchCardAdapter matchCardAdapterTwoColumns">
                           <app-real-match-card 
                             [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
@@ -585,7 +585,7 @@
                       }
                     </div>
                     <div class="col-md-6">
-                      @for (match of filterHalfRealMatches(showRealMatches, 1); track trackByMatchId($index, match)) {
+                      @for (match of filterHalfRealMatches(allMatchesPageMatches, 1); track trackByMatchId($index, match)) {
                         <div class="matchCardAdapter matchCardAdapterTwoColumns">
                           <app-real-match-card 
                             [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
@@ -598,7 +598,7 @@
                   </div>
                 } @else {
                   <div>
-                    @for (match of showRealMatches; track trackByMatchId($index, match)) {
+                    @for (match of allMatchesPageMatches; track trackByMatchId($index, match)) {
                       <div class="matchCardAdapter">
                         <app-real-match-card 
                           [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
@@ -609,6 +609,14 @@
                     }
                   </div>
                 }
+
+                <div class="paginationDiv mt-3">
+                  <app-pagination 
+                    [elements]="showRealMatches" 
+                    [elementsPerPage]="allMatchesPerPage" 
+                    [(elementsFiltered)]="allMatchesPageMatches">
+                  </app-pagination>
+                </div>
               </div>
             }
           </div>

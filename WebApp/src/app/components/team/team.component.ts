@@ -116,6 +116,8 @@ export class TeamComponent implements OnInit, OnDestroy {
   viewMode: 'insights' | 'yourMatches' | 'allMatches' = 'insights';
   personalMatchesPerPage: number = 10;
   personalMatchesPageMatches: Match[] = [];
+  allMatchesPerPage: number = 10;
+  allMatchesPageMatches: RealMatch[] = [];
   filterPanelChipSelected: number = 1;
   filterLocationSelected: string = '';
   filterLeagueSelected: number[] = [];
@@ -249,10 +251,12 @@ export class TeamComponent implements OnInit, OnDestroy {
   filterRealMatches() {
     if (this.filterLeagueSelected.length === 0) {
       this.showRealMatches = [...this.realMatches];
-      return;
+    } else {
+      const selectedSet = new Set(this.filterLeagueSelected);
+      this.showRealMatches = this.realMatches.filter(match => selectedSet.has(match.league.id));
     }
-    const selectedSet = new Set(this.filterLeagueSelected);
-    this.showRealMatches = this.realMatches.filter(match => selectedSet.has(match.league.id));
+    // Initialize paginated matches
+    this.allMatchesPageMatches = this.showRealMatches.slice(0, this.allMatchesPerPage);
   }
 
   /*
