@@ -508,64 +508,58 @@
           <div class="matches-view">
             @if (selectedSeason.id == seasons[0].id) {
               <div class="matches-section">
-                @if (isMobileView) {
-                  <div class="matches-tabs">
-                    <div class="nav nav-tabs" id="team-matches-mobile" role="tablist">
-                      <button class="nav-link active" id="team-last-tab" data-bs-toggle="tab" data-bs-target="#team-last-pane" type="button" role="tab" aria-controls="team-last-pane" aria-selected="true">Last played</button>
-                      <button class="nav-link" id="team-next-tab" data-bs-toggle="tab" data-bs-target="#team-next-pane" type="button" role="tab" aria-controls="team-next-pane" aria-selected="false">Next matches</button>
+                <div class="row mb-0">
+                  <div class="col-12">
+                    <div class="view-toggle-card mb-0">
+                      <div class="view-toggle">
+                        <button class="toggle-btn" [class.active]="matchViewMode === 'lastPlayed'" (click)="setMatchView('lastPlayed')">Last played</button>
+                        <button class="toggle-btn" [class.active]="matchViewMode === 'nextMatches'" (click)="setMatchView('nextMatches')">Next matches</button>
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <div class="tab-content mt-3" id="team-matches-mobile-content">
-                    <div class="tab-pane fade show active" id="team-last-pane" role="tabpanel" aria-labelledby="team-last-tab">
-                      @for (match of filterStartedRealMatches(); track $index) {
-                        <div class="matchCardAdapter">
+                @if (matchViewMode === 'lastPlayed') {
+                  <div class="row g-3 mt-0">
+                    @for (match of lastPlayedPageMatches; track trackByMatchId($index, match)) {
+                      <div class="col-12 col-md-6">
+                        <div class="matchCardAdapter" [class.matchCardAdapterTwoColumns]="!isMobileView">
                           <app-real-match-card 
                             [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
                             [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
                             [locations]="locations">
                           </app-real-match-card>
                         </div>
-                      }
-                    </div>
-                    <div class="tab-pane fade" id="team-next-pane" role="tabpanel" aria-labelledby="team-next-tab">
-                      @for (match of filterNotStartedRealMatches(); track $index) {
-                        <div class="matchCardAdapter">
-                          <app-real-match-card 
-                            [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-                            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-                            [locations]="locations">
-                          </app-real-match-card>
-                        </div>
-                      }
-                    </div>
+                      </div>
+                    }
+                  </div>
+                  <div class="paginationDiv mt-3">
+                    <app-pagination 
+                      [elements]="startedRealMatches" 
+                      [elementsPerPage]="currentSeasonMatchesPerPage" 
+                      [(elementsFiltered)]="lastPlayedPageMatches">
+                    </app-pagination>
                   </div>
                 } @else {
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <h3 class="section-subtitle">Last played</h3>
-                      @for (match of filterStartedRealMatches(); track $index) {
-                        <div class="matchCardAdapter matchCardAdapterTwoColumns">
+                  <div class="row g-3 mt-0">
+                    @for (match of nextMatchesPageMatches; track trackByMatchId($index, match)) {
+                      <div class="col-12 col-md-6">
+                        <div class="matchCardAdapter" [class.matchCardAdapterTwoColumns]="!isMobileView">
                           <app-real-match-card 
                             [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
                             [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
                             [locations]="locations">
                           </app-real-match-card>
                         </div>
-                      }
-                    </div>
-                    <div class="col-md-6">
-                      <h3 class="section-subtitle">Next matches</h3>
-                      @for (match of filterNotStartedRealMatches(); track $index) {
-                        <div class="matchCardAdapter matchCardAdapterTwoColumns">
-                          <app-real-match-card 
-                            [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-                            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-                            [locations]="locations">
-                          </app-real-match-card>
-                        </div>
-                      }
-                    </div>
+                      </div>
+                    }
+                  </div>
+                  <div class="paginationDiv mt-3">
+                    <app-pagination 
+                      [elements]="notStartedRealMatches" 
+                      [elementsPerPage]="currentSeasonMatchesPerPage" 
+                      [(elementsFiltered)]="nextMatchesPageMatches">
+                    </app-pagination>
                   </div>
                 }
               </div>

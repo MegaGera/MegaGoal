@@ -114,10 +114,16 @@ export class TeamComponent implements OnInit, OnDestroy {
   insightsLoaded: boolean = false;
   yourMatchesLoaded: boolean = false;
   viewMode: 'insights' | 'yourMatches' | 'allMatches' = 'insights';
+  matchViewMode: 'lastPlayed' | 'nextMatches' = 'lastPlayed';
   personalMatchesPerPage: number = 10;
   personalMatchesPageMatches: Match[] = [];
   allMatchesPerPage: number = 10;
   allMatchesPageMatches: RealMatch[] = [];
+  currentSeasonMatchesPerPage: number = 10;
+  lastPlayedPageMatches: RealMatch[] = [];
+  nextMatchesPageMatches: RealMatch[] = [];
+  startedRealMatches: RealMatch[] = [];
+  notStartedRealMatches: RealMatch[] = [];
   filterPanelChipSelected: number = 1;
   filterLocationSelected: string = '';
   filterLeagueSelected: number[] = [];
@@ -257,6 +263,14 @@ export class TeamComponent implements OnInit, OnDestroy {
     }
     // Initialize paginated matches
     this.allMatchesPageMatches = this.showRealMatches.slice(0, this.allMatchesPerPage);
+    this.updateCurrentSeasonPaginatedMatches();
+  }
+
+  updateCurrentSeasonPaginatedMatches() {
+    this.startedRealMatches = this.filterStartedRealMatches();
+    this.notStartedRealMatches = this.filterNotStartedRealMatches();
+    this.lastPlayedPageMatches = this.startedRealMatches.slice(0, this.currentSeasonMatchesPerPage);
+    this.nextMatchesPageMatches = this.notStartedRealMatches.slice(0, this.currentSeasonMatchesPerPage);
   }
 
   /*
@@ -340,6 +354,10 @@ export class TeamComponent implements OnInit, OnDestroy {
     }
 
     this.filterCurrentLeagues();
+  }
+
+  setMatchView(mode: 'lastPlayed' | 'nextMatches'): void {
+    this.matchViewMode = mode;
   }
 
   onFilterPanelChipSelectedChange(chip: number): void {
