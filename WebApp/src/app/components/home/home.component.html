@@ -117,6 +117,7 @@
           [filterLeagueSelected]="filterLeagueSelected"
           [filterSeasonSelected]="filterSeasonSelected"
           [filterLocationSelected]="filterLocationSelected"
+          [filterOrder]="filterOrder"
           [seasons]="seasonsFiltered"
           [locations]="locationsFiltered"
           [leaguesViewed]="leaguesFiltered"
@@ -125,6 +126,7 @@
           (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"
           (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
           (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
+          (filterOrderChange)="changeFilterOrder($event)"
           (resetFiltersChange)="resetFilters()">
         </app-filters-home>
       }

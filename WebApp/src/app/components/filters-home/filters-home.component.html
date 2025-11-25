@@ -111,6 +111,18 @@
       </div>
     }
 
+    <!-- Order select form -->
+    <div class="filter-section">
+      <h5 class="section-title">Order</h5>
+      <select 
+        class="season-select" 
+        [(ngModel)]="filterOrder" 
+        (change)="changeFilterOrder(filterOrder)">
+        <option value="desc">Newest First</option>
+        <option value="asc">Oldest First</option>
+      </select>
+    </div>
+
     <!-- Reset Filters Button -->
     <div class="filter-section">
       <button class="reset-filters-btn" (click)="resetFilters()">

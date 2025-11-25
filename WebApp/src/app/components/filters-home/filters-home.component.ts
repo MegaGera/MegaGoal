@@ -32,6 +32,7 @@ export class FiltersHomeComponent {
   @Input() filterLeagueSelected: number[] = [];
   @Input() filterSeasonSelected!: SeasonInfo;
   @Input() filterLocationSelected: string = '';
+  @Input() filterOrder: 'asc' | 'desc' = 'desc';
   @Input() seasons: SeasonInfo[] = [];
   @Input() locations: Location[] = [];
   @Input() leaguesViewed: LeagueStats[] = [];
@@ -45,6 +46,7 @@ export class FiltersHomeComponent {
   @Output() filterLeagueSelectedChange = new EventEmitter<number[]>();
   @Output() filterSeasonSelectedChange = new EventEmitter<SeasonInfo>();
   @Output() filterLocationSelectedChange = new EventEmitter<string>();
+  @Output() filterOrderChange = new EventEmitter<'asc' | 'desc'>();
   @Output() resetFiltersChange = new EventEmitter<void>();
   @Output() collapseToggle = new EventEmitter<void>();
 
@@ -88,6 +90,11 @@ export class FiltersHomeComponent {
   changeFilterLocationSelected(location: string) {
     this.filterLocationSelected = location;
     this.filterLocationSelectedChange.emit(location);
+  }
+
+  changeFilterOrder(order: 'asc' | 'desc') {
+    this.filterOrder = order;
+    this.filterOrderChange.emit(order);
   }
 
   toggleLeaguesVisibility() {

@@ -72,6 +72,7 @@ export class HomeComponent implements OnInit {
   filterPanelChipSelected: number = 0; // 0 All, 1 Watched, 2 Not Watched
   filterLeagueSelected: number[] = []; // 40: Premier League, 140: La Liga, 141: La Liga 2, 2: Champions League
   filterLocationSelected: string = ''; // Location filter
+  filterOrder: 'asc' | 'desc' = 'desc'; // Order: 'asc' for ascending, 'desc' for descending
 
   /* Seasons */
   seasons: SeasonInfo[] = [{id: 0, text: "All time"}];
@@ -384,6 +385,15 @@ export class HomeComponent implements OnInit {
       this.matches = this.matches.filter(match => match.location === this.filterLocationSelected);
     }
 
+    // Sort by order (create new array to trigger change detection)
+    this.matches = [...this.matches].sort((x, y) => {
+      if (this.filterOrder === 'desc') {
+        return y.fixture.timestamp - x.fixture.timestamp; // Descending (newest first)
+      } else {
+        return x.fixture.timestamp - y.fixture.timestamp; // Ascending (oldest first)
+      }
+    });
+
     this.changeDetectorRef.detectChanges();
     this.matchesLoaded = true;
     this.getStats();
@@ -413,11 +423,17 @@ export class HomeComponent implements OnInit {
     this.filterMatches();
   }
 
+  changeFilterOrder(order: 'asc' | 'desc') {
+    this.filterOrder = order;
+    this.filterMatches();
+  }
+
   resetFilters() {
     this.filterPanelChipSelected = 0; // All
     this.filterLeagueSelected = []; // No leagues selected
     this.filterSeasonSelected = this.seasons[0]; // All time
     this.filterLocationSelected = ''; // All locations
+    this.filterOrder = 'desc'; // Reset to descending (newest first)
     this.updateFilteredArrays();
     this.filterMatches();
   }
