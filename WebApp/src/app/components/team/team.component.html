@@ -28,6 +28,7 @@
               [filterLeagueSelected]="filterLeagueSelected"
               [filterSeasonSelected]="filterSeasonSelected"
               [filterLocationSelected]="filterLocationSelected"
+              [filterOrder]="filterOrder"
               [seasons]="viewMode === 'allMatches' ? seasonOptions : statsSeasonOptions"
               [locations]="viewMode === 'allMatches' ? locations : statsLocations"
               [leaguesViewed]="currentLeagues"
@@ -41,6 +42,7 @@
               (filterLeagueSelectedChange)="onFilterLeagueSelectedChange($event)"
               (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"
               (filterLocationSelectedChange)="onFilterLocationSelectedChange($event)"
+              (filterOrderChange)="onFilterOrderChange($event)"
               (resetFiltersChange)="resetFilters()">
             </app-filters-home>
           </div>
@@ -625,6 +627,7 @@
             [filterLeagueSelected]="filterLeagueSelected"
             [filterSeasonSelected]="filterSeasonSelected"
             [filterLocationSelected]="filterLocationSelected"
+            [filterOrder]="filterOrder"
             [seasons]="viewMode === 'allMatches' ? seasonOptions : statsSeasonOptions"
             [locations]="viewMode === 'allMatches' ? locations : statsLocations"
             [leaguesViewed]="currentLeagues"
@@ -636,6 +639,7 @@
             (filterLeagueSelectedChange)="onFilterLeagueSelectedChange($event)"
             (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"
             (filterLocationSelectedChange)="onFilterLocationSelectedChange($event)"
+            (filterOrderChange)="onFilterOrderChange($event)"
             (resetFiltersChange)="resetFilters()">
           </app-filters-home>
         </div>

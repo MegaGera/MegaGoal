@@ -127,6 +127,7 @@ export class TeamComponent implements OnInit, OnDestroy {
   filterPanelChipSelected: number = 1;
   filterLocationSelected: string = '';
   filterLeagueSelected: number[] = [];
+  filterOrder: 'asc' | 'desc' = 'desc'; // Order: 'asc' for ascending, 'desc' for descending
   leaguesStats: LeagueStats[] = [];
   leaguesAllMatches: LeagueStats[] = [];
   leaguesLoaded: boolean = false;
@@ -261,6 +262,16 @@ export class TeamComponent implements OnInit, OnDestroy {
       const selectedSet = new Set(this.filterLeagueSelected);
       this.showRealMatches = this.realMatches.filter(match => selectedSet.has(match.league.id));
     }
+    
+    // Sort by order (create new array to trigger change detection)
+    this.showRealMatches = [...this.showRealMatches].sort((x, y) => {
+      if (this.filterOrder === 'desc') {
+        return y.fixture.timestamp - x.fixture.timestamp; // Descending (newest first)
+      } else {
+        return x.fixture.timestamp - y.fixture.timestamp; // Ascending (oldest first)
+      }
+    });
+    
     // Initialize paginated matches
     this.allMatchesPageMatches = this.showRealMatches.slice(0, this.allMatchesPerPage);
     this.updateCurrentSeasonPaginatedMatches();
@@ -277,11 +288,19 @@ export class TeamComponent implements OnInit, OnDestroy {
     This methods filter Real Matches by status to show them in two columns
   */
   filterStartedRealMatches() {
+    // showRealMatches is already sorted in filterRealMatches(), so we just filter
     return this.showRealMatches.filter(match => !isNotStartedStatus(match.fixture.status.short));
   }
   filterNotStartedRealMatches() {
-    return this.showRealMatches.filter(match => isNotStartedStatus(match.fixture.status.short)).sort(function (x, y) {
-      return x.fixture.timestamp - y.fixture.timestamp;
+    const notStarted = this.showRealMatches.filter(match => isNotStartedStatus(match.fixture.status.short));
+    // Sort by order (create new array to trigger change detection)
+    // Sort contrary order
+    return [...notStarted].sort((x, y) => {
+      if (this.filterOrder === 'asc') {
+        return y.fixture.timestamp - x.fixture.timestamp; // Descending (newest first)
+      } else {
+        return x.fixture.timestamp - y.fixture.timestamp; // Ascending (oldest first)
+      }
     });
   }
 
@@ -395,11 +414,18 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterInsightsData();
   }
 
+  onFilterOrderChange(order: 'asc' | 'desc'): void {
+    this.filterOrder = order;
+    this.filterRealMatches();
+    this.filterMatches();
+  }
+
   resetFilters(): void {
     this.filterLeagueSelected = [];
     this.filterLocationSelected = '';
     this.filterSeasonSelected = this.allTimeSeasonOption;
     this.selectedSeason = this.seasons[0];
+    this.filterOrder = 'desc'; // Reset to descending (newest first)
 
     this.filterPanelChipSelected = 1;
 
@@ -638,7 +664,16 @@ export class TeamComponent implements OnInit, OnDestroy {
       return matchesLeague && matchesLocation && matchesSeason;
     });
 
-    return matches.sort((a, b) => (b.fixture.timestamp ?? 0) - (a.fixture.timestamp ?? 0));
+    // Sort by order (create new array to trigger change detection)
+    return [...matches].sort((a, b) => {
+      const timestampA = a.fixture.timestamp ?? 0;
+      const timestampB = b.fixture.timestamp ?? 0;
+      if (this.filterOrder === 'desc') {
+        return timestampB - timestampA; // Descending (newest first)
+      } else {
+        return timestampA - timestampB; // Ascending (oldest first)
+      }
+    });
   }
 
   private updateLeaguesForStats(): void {
