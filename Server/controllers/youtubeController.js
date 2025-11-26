@@ -72,6 +72,32 @@ const searchMatchHighlights = async (req, res) => {
     if (data.items && data.items.length > 0) {
       const video = data.items[0];
       const videoId = video.id.videoId;
+      
+      // Get origin from request headers for proper Referer identification
+      // This is required by YouTube API to avoid Error 153
+      // YouTube requires the origin parameter to match the domain embedding the player
+      let originDomain = 'https://megagoal.megagera.com'; // Default fallback
+      
+      if (req.headers.origin) {
+        try {
+          const originUrl = new URL(req.headers.origin);
+          originDomain = originUrl.origin;
+        } catch (e) {
+          // If origin is not a valid URL, use default
+        }
+      } else if (req.headers.referer) {
+        try {
+          const refererUrl = new URL(req.headers.referer);
+          originDomain = refererUrl.origin;
+        } catch (e) {
+          // If referer is not a valid URL, use default
+        }
+      }
+      
+      // Build embed URL with origin parameter (required for Error 153 fix)
+      // The origin parameter is required by YouTube API to identify the embedding site
+      const embedUrl = `https://www.youtube.com/embed/${videoId}?origin=${encodeURIComponent(originDomain)}`;
+      
       const videoTitle = video.snippet.title;
       const videoThumbnail = video.snippet.thumbnails.medium?.url || video.snippet.thumbnails.default?.url;
       const channelTitle = video.snippet.channelTitle;
@@ -83,7 +109,7 @@ const searchMatchHighlights = async (req, res) => {
         thumbnail: videoThumbnail,
         channelTitle,
         publishedAt,
-        embedUrl: `https://www.youtube.com/embed/${videoId}`,
+        embedUrl: embedUrl,
         watchUrl: `https://www.youtube.com/watch?v=${videoId}`
       });
     } else {
