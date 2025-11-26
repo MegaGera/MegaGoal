@@ -385,6 +385,18 @@ export class HomeComponent implements OnInit {
       this.matches = this.matches.filter(match => match.location === this.filterLocationSelected);
     }
 
+    // Sort by order
+    this.sortMatches();
+
+    this.changeDetectorRef.detectChanges();
+    this.matchesLoaded = true;
+    this.getStats();
+  }
+
+  /*
+    Sort matches by the current filterOrder without triggering stats updates
+  */
+  private sortMatches() {
     // Sort by order (create new array to trigger change detection)
     this.matches = [...this.matches].sort((x, y) => {
       if (this.filterOrder === 'date_desc') {
@@ -409,10 +421,6 @@ export class HomeComponent implements OnInit {
         return totalGoalsX - totalGoalsY; // Ascending (least goals first)
       }
     });
-
-    this.changeDetectorRef.detectChanges();
-    this.matchesLoaded = true;
-    this.getStats();
   }
 
   changeFilterPanelChipSelected(chip: number) {
@@ -441,7 +449,9 @@ export class HomeComponent implements OnInit {
 
   changeFilterOrder(order: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc') {
     this.filterOrder = order;
-    this.filterMatches();
+    // Only sort matches, don't recalculate stats since filtered matches are the same
+    this.sortMatches();
+    this.changeDetectorRef.detectChanges();
   }
 
   resetFilters() {
