@@ -364,4 +364,23 @@ export class MegaGoalService {
   getPlayerById(playerId: number): Observable<Player> {
     return this.http.get<Player>(this.url + '/players/' + playerId, this.options);
   }
+
+  /**
+   * Get match highlights video from YouTube
+   */
+  getMatchHighlights(homeTeam: string, awayTeam: string, homeScore?: number, awayScore?: number, date?: string): Observable<any> {
+    let params = new HttpParams()
+      .set('homeTeam', homeTeam)
+      .set('awayTeam', awayTeam);
+    
+    if (homeScore !== undefined && awayScore !== undefined) {
+      params = params.set('homeScore', homeScore.toString()).set('awayScore', awayScore.toString());
+    }
+    
+    if (date) {
+      params = params.set('date', date);
+    }
+    
+    return this.http.get<any>(this.url + '/youtube/highlights', { ...this.options, params: params });
+  }
 }

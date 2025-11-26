@@ -68,6 +68,50 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Highlights Section */
+.highlights-section {
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.video-container {
+  width: 100%;
+}
+
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #000;
+}
+
+.youtube-embed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.video-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.video-loading .spinner {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .stats-lineups-container {
@@ -79,5 +123,9 @@
   .match-info-container {
     padding: 1rem;
     gap: 1.5rem;
+  }
+
+  .highlights-section {
+    max-width: 100%;
   }
 }

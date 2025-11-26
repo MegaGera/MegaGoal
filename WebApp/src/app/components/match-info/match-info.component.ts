@@ -5,6 +5,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -35,6 +36,8 @@ export class MatchInfoComponent {
   loading: boolean = true;
   isAdmin: boolean = false;
   isUpdating: boolean = false;
+  highlightsVideo: any = null;
+  loadingVideo: boolean = false;
 
   constructor(
     private megagoal: MegaGoalService, 
@@ -42,7 +45,8 @@ export class MatchInfoComponent {
     public images: ImagesService,
     private activatedRoute: ActivatedRoute,
     private authService: AuthService,
-    private updater: UpdaterService
+    private updater: UpdaterService,
+    private sanitizer: DomSanitizer
   ) {
     this.activatedRoute.queryParamMap.subscribe(params => {
       this.queryMatchId = +params.get('id')! || 0;
@@ -64,11 +68,37 @@ export class MatchInfoComponent {
           this.awayStatistics = this.match.statistics[1];
         }
         this.loading = false;
+        // Load highlights video if match is finished
+        if (this.isFinished()) {
+          this.loadHighlights();
+        }
       } else {
         this.router.navigate(["/app/matches"]);
       }
     }, error => {
       this.router.navigate(["/app/matches"]);
+    });
+  }
+
+  loadHighlights(): void {
+    if (!this.match) return;
+    
+    this.loadingVideo = true;
+    const homeTeam = this.match.teams.home.name;
+    const awayTeam = this.match.teams.away.name;
+    const homeScore = this.match.goals.home;
+    const awayScore = this.match.goals.away;
+    const date = this.match.fixture.date;
+
+    this.megagoal.getMatchHighlights(homeTeam, awayTeam, homeScore, awayScore, date).subscribe({
+      next: (video) => {
+        this.highlightsVideo = video;
+        this.loadingVideo = false;
+      },
+      error: (error) => {
+        console.error('Error loading highlights:', error);
+        this.loadingVideo = false;
+      }
     });
   }
 
@@ -78,6 +108,10 @@ export class MatchInfoComponent {
 
   isFinished(): boolean {
     return isFinishedStatus(this.match?.fixture.status?.short);
+  }
+
+  getSafeUrl(url: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   updateStatistics(): void {

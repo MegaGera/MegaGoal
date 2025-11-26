@@ -23,6 +23,24 @@
     </div>
   </div>
 
+  <!-- Match Highlights Video Section -->
+  <div class="highlights-section" *ngIf="isFinished()">
+    <div class="video-container" *ngIf="loadingVideo">
+      <div class="video-loading">
+        <div class="spinner"></div>
+      </div>
+    </div>
+    <div class="video-wrapper" *ngIf="!loadingVideo && highlightsVideo && highlightsVideo.videoId">
+      <iframe 
+        [src]="getSafeUrl(highlightsVideo.embedUrl)" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        allowfullscreen
+        class="youtube-embed">
+      </iframe>
+    </div>
+  </div>
+
   <!-- Match Events Section -->
   <app-match-events 
     *ngIf="match.events"

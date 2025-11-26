@@ -17,6 +17,7 @@ import locationRoutes from './routes/locationRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import playersRoutes from './routes/playersRoutes.js';
+import youtubeRoutes from './routes/youtubeRoutes.js';
 
 
 const app = express();
@@ -128,6 +129,7 @@ app.use('/location', locationRoutes);
 app.use('/admin', validateAdmin, adminRoutes);
 app.use('/feedback', feedbackRoutes);
 app.use('/players', playersRoutes);
+app.use('/youtube', youtubeRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3150;
