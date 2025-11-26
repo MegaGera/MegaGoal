@@ -118,8 +118,10 @@
         class="season-select" 
         [(ngModel)]="filterOrder" 
         (change)="changeFilterOrder(filterOrder)">
-        <option value="desc">Newest First</option>
-        <option value="asc">Oldest First</option>
+        <option value="date_desc">Newest First</option>
+        <option value="date_asc">Oldest First</option>
+        <option value="goals_desc">Most Goals</option>
+        <option value="goals_asc">Least Goals</option>
       </select>
     </div>
 

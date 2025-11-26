@@ -72,7 +72,7 @@ export class HomeComponent implements OnInit {
   filterPanelChipSelected: number = 0; // 0 All, 1 Watched, 2 Not Watched
   filterLeagueSelected: number[] = []; // 40: Premier League, 140: La Liga, 141: La Liga 2, 2: Champions League
   filterLocationSelected: string = ''; // Location filter
-  filterOrder: 'asc' | 'desc' = 'desc'; // Order: 'asc' for ascending, 'desc' for descending
+  filterOrder: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc' = 'date_desc'; // Order: date_desc (newest first), date_asc (oldest first), goals_desc (most goals), goals_asc (least goals)
 
   /* Seasons */
   seasons: SeasonInfo[] = [{id: 0, text: "All time"}];
@@ -387,10 +387,26 @@ export class HomeComponent implements OnInit {
 
     // Sort by order (create new array to trigger change detection)
     this.matches = [...this.matches].sort((x, y) => {
-      if (this.filterOrder === 'desc') {
+      if (this.filterOrder === 'date_desc') {
         return y.fixture.timestamp - x.fixture.timestamp; // Descending (newest first)
-      } else {
+      } else if (this.filterOrder === 'date_asc') {
         return x.fixture.timestamp - y.fixture.timestamp; // Ascending (oldest first)
+      } else if (this.filterOrder === 'goals_desc') {
+        const totalGoalsX = (x.goals?.home ?? 0) + (x.goals?.away ?? 0);
+        const totalGoalsY = (y.goals?.home ?? 0) + (y.goals?.away ?? 0);
+        // If goals are equal, sort by date (newest first) as secondary sort
+        if (totalGoalsY === totalGoalsX) {
+          return y.fixture.timestamp - x.fixture.timestamp;
+        }
+        return totalGoalsY - totalGoalsX; // Descending (most goals first)
+      } else { // goals_asc
+        const totalGoalsX = (x.goals?.home ?? 0) + (x.goals?.away ?? 0);
+        const totalGoalsY = (y.goals?.home ?? 0) + (y.goals?.away ?? 0);
+        // If goals are equal, sort by date (newest first) as secondary sort
+        if (totalGoalsY === totalGoalsX) {
+          return y.fixture.timestamp - x.fixture.timestamp;
+        }
+        return totalGoalsX - totalGoalsY; // Ascending (least goals first)
       }
     });
 
@@ -423,7 +439,7 @@ export class HomeComponent implements OnInit {
     this.filterMatches();
   }
 
-  changeFilterOrder(order: 'asc' | 'desc') {
+  changeFilterOrder(order: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc') {
     this.filterOrder = order;
     this.filterMatches();
   }
@@ -433,7 +449,7 @@ export class HomeComponent implements OnInit {
     this.filterLeagueSelected = []; // No leagues selected
     this.filterSeasonSelected = this.seasons[0]; // All time
     this.filterLocationSelected = ''; // All locations
-    this.filterOrder = 'desc'; // Reset to descending (newest first)
+    this.filterOrder = 'date_desc'; // Reset to descending (newest first)
     this.updateFilteredArrays();
     this.filterMatches();
   }

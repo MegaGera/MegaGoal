@@ -32,7 +32,7 @@ export class FiltersHomeComponent {
   @Input() filterLeagueSelected: number[] = [];
   @Input() filterSeasonSelected!: SeasonInfo;
   @Input() filterLocationSelected: string = '';
-  @Input() filterOrder: 'asc' | 'desc' = 'desc';
+  @Input() filterOrder: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc' = 'date_desc';
   @Input() seasons: SeasonInfo[] = [];
   @Input() locations: Location[] = [];
   @Input() leaguesViewed: LeagueStats[] = [];
@@ -46,7 +46,7 @@ export class FiltersHomeComponent {
   @Output() filterLeagueSelectedChange = new EventEmitter<number[]>();
   @Output() filterSeasonSelectedChange = new EventEmitter<SeasonInfo>();
   @Output() filterLocationSelectedChange = new EventEmitter<string>();
-  @Output() filterOrderChange = new EventEmitter<'asc' | 'desc'>();
+  @Output() filterOrderChange = new EventEmitter<'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc'>();
   @Output() resetFiltersChange = new EventEmitter<void>();
   @Output() collapseToggle = new EventEmitter<void>();
 
@@ -92,7 +92,7 @@ export class FiltersHomeComponent {
     this.filterLocationSelectedChange.emit(location);
   }
 
-  changeFilterOrder(order: 'asc' | 'desc') {
+  changeFilterOrder(order: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc') {
     this.filterOrder = order;
     this.filterOrderChange.emit(order);
   }

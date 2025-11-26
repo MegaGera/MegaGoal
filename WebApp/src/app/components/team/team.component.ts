@@ -127,7 +127,7 @@ export class TeamComponent implements OnInit, OnDestroy {
   filterPanelChipSelected: number = 1;
   filterLocationSelected: string = '';
   filterLeagueSelected: number[] = [];
-  filterOrder: 'asc' | 'desc' = 'desc'; // Order: 'asc' for ascending, 'desc' for descending
+  filterOrder: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc' = 'date_desc'; // Order: date_desc (newest first), date_asc (oldest first), goals_desc (most goals), goals_asc (least goals)
   leaguesStats: LeagueStats[] = [];
   leaguesAllMatches: LeagueStats[] = [];
   leaguesLoaded: boolean = false;
@@ -265,10 +265,26 @@ export class TeamComponent implements OnInit, OnDestroy {
     
     // Sort by order (create new array to trigger change detection)
     this.showRealMatches = [...this.showRealMatches].sort((x, y) => {
-      if (this.filterOrder === 'desc') {
+      if (this.filterOrder === 'date_desc') {
         return y.fixture.timestamp - x.fixture.timestamp; // Descending (newest first)
-      } else {
+      } else if (this.filterOrder === 'date_asc') {
         return x.fixture.timestamp - y.fixture.timestamp; // Ascending (oldest first)
+      } else if (this.filterOrder === 'goals_desc') {
+        const totalGoalsX = (x.goals?.home ?? 0) + (x.goals?.away ?? 0);
+        const totalGoalsY = (y.goals?.home ?? 0) + (y.goals?.away ?? 0);
+        // If goals are equal, sort by date (newest first) as secondary sort
+        if (totalGoalsY === totalGoalsX) {
+          return y.fixture.timestamp - x.fixture.timestamp;
+        }
+        return totalGoalsY - totalGoalsX; // Descending (most goals first)
+      } else { // goals_asc
+        const totalGoalsX = (x.goals?.home ?? 0) + (x.goals?.away ?? 0);
+        const totalGoalsY = (y.goals?.home ?? 0) + (y.goals?.away ?? 0);
+        // If goals are equal, sort by date (newest first) as secondary sort
+        if (totalGoalsY === totalGoalsX) {
+          return y.fixture.timestamp - x.fixture.timestamp;
+        }
+        return totalGoalsX - totalGoalsY; // Ascending (least goals first)
       }
     });
     
@@ -294,12 +310,18 @@ export class TeamComponent implements OnInit, OnDestroy {
   filterNotStartedRealMatches() {
     const notStarted = this.showRealMatches.filter(match => isNotStartedStatus(match.fixture.status.short));
     // Sort by order (create new array to trigger change detection)
-    // Sort contrary order
+    // Sort contrary order for next matches (show earliest upcoming first)
+    // For goal-based orders, fall back to date_asc since not started matches don't have goals
     return [...notStarted].sort((x, y) => {
-      if (this.filterOrder === 'asc') {
-        return y.fixture.timestamp - x.fixture.timestamp; // Descending (newest first)
-      } else {
-        return x.fixture.timestamp - y.fixture.timestamp; // Ascending (oldest first)
+      // If goal-based order is selected, treat as date_asc (earliest first)
+      const effectiveOrder = (this.filterOrder === 'goals_desc' || this.filterOrder === 'goals_asc') 
+        ? 'date_desc' 
+        : this.filterOrder;
+      
+      if (effectiveOrder === 'date_desc') {
+        return x.fixture.timestamp - y.fixture.timestamp;
+      } else { // date_asc
+        return y.fixture.timestamp - x.fixture.timestamp;
       }
     });
   }
@@ -414,7 +436,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterInsightsData();
   }
 
-  onFilterOrderChange(order: 'asc' | 'desc'): void {
+  onFilterOrderChange(order: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc'): void {
     this.filterOrder = order;
     this.filterRealMatches();
     this.filterMatches();
@@ -425,7 +447,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterLocationSelected = '';
     this.filterSeasonSelected = this.allTimeSeasonOption;
     this.selectedSeason = this.seasons[0];
-    this.filterOrder = 'desc'; // Reset to descending (newest first)
+    this.filterOrder = 'date_desc'; // Reset to descending (newest first)
 
     this.filterPanelChipSelected = 1;
 
@@ -668,10 +690,26 @@ export class TeamComponent implements OnInit, OnDestroy {
     return [...matches].sort((a, b) => {
       const timestampA = a.fixture.timestamp ?? 0;
       const timestampB = b.fixture.timestamp ?? 0;
-      if (this.filterOrder === 'desc') {
+      if (this.filterOrder === 'date_desc') {
         return timestampB - timestampA; // Descending (newest first)
-      } else {
+      } else if (this.filterOrder === 'date_asc') {
         return timestampA - timestampB; // Ascending (oldest first)
+      } else if (this.filterOrder === 'goals_desc') {
+        const totalGoalsA = (a.goals?.home ?? 0) + (a.goals?.away ?? 0);
+        const totalGoalsB = (b.goals?.home ?? 0) + (b.goals?.away ?? 0);
+        // If goals are equal, sort by date (newest first) as secondary sort
+        if (totalGoalsB === totalGoalsA) {
+          return timestampB - timestampA;
+        }
+        return totalGoalsB - totalGoalsA; // Descending (most goals first)
+      } else { // goals_asc
+        const totalGoalsA = (a.goals?.home ?? 0) + (a.goals?.away ?? 0);
+        const totalGoalsB = (b.goals?.home ?? 0) + (b.goals?.away ?? 0);
+        // If goals are equal, sort by date (newest first) as secondary sort
+        if (totalGoalsB === totalGoalsA) {
+          return timestampB - timestampA;
+        }
+        return totalGoalsA - totalGoalsB; // Ascending (least goals first)
       }
     });
   }
