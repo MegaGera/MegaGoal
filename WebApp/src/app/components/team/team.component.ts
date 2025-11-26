@@ -342,7 +342,8 @@ export class TeamComponent implements OnInit, OnDestroy {
   }
 
   findRealMatchInMatches(id: number) {
-    return this.matches.find(match => match.fixture.id === id);
+    // Check in allWatchedMatches to see if the match has been watched
+    return this.allWatchedMatches.find(match => match.fixture.id === id);
   }
 
   getLocations() {
