@@ -1,6 +1,6 @@
 import { Component, ElementRef, HostListener, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
 import { FormsModule } from '@angular/forms';
@@ -20,7 +20,7 @@ import { MatchParserService } from '../../services/match-parser.service';
 @Component({
   selector: 'app-real-match-card',
   standalone: true,
-  imports: [NgIconComponent, CommonModule, MatFormFieldModule, MatSelectModule, FormsModule],
+  imports: [NgIconComponent, CommonModule, MatFormFieldModule, MatSelectModule, FormsModule, RouterLink],
   templateUrl: './real-match-card.component.html',
   styleUrl: './real-match-card.component.css',
   providers: [ImagesService, MegaGoalService, provideNgIconsConfig({

@@ -42,9 +42,9 @@
                     <ng-icon name="jamEyeCloseF"></ng-icon>
                   }
                 </div>
-                <div class="match-info-button" (click)="navigateToMatchInfo()">
+                <a class="match-info-button" [routerLink]="['/app/match']" [queryParams]="{id: match.fixture.id}">
                   <ng-icon name="jamInfoF"></ng-icon>
-                </div>
+                </a>
             </div>
           }
 
