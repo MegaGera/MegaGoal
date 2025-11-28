@@ -1,4 +1,4 @@
-import { Component, HostListener, Input, model, ModelSignal, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, HostListener, Input, model, ModelSignal, OnChanges, OnInit, SimpleChanges, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-pagination',
@@ -12,6 +12,8 @@ export class PaginationComponent implements OnInit, OnChanges {
   @Input() elements: any[] = [];
   elementsFiltered: ModelSignal<any[]> = model<any[]>([]);
   @Input() elementsPerPage: number = 20;
+  @Input() initialPage: number = 1; // Allow external control of initial page
+  @Output() pageChange = new EventEmitter<number>(); // Emit page changes
   pages: number = 1;
   pageSelected: number = 1;
   maxPagesToShow: number = 10;
@@ -20,6 +22,10 @@ export class PaginationComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.updateMaxPagesToShow();
+    if (this.initialPage > 1) {
+      this.pageSelected = this.initialPage;
+      this.filterElements();
+    }
   }
 
   @HostListener('window:resize', ['$event'])
@@ -43,13 +49,24 @@ export class PaginationComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['elementsPerPage'] || changes['elements']) {
       this.pages = Math.ceil(this.elements.length / this.elementsPerPage);
-      this.changePageSelected(1);
+      // Only reset to page 1 if initialPage is not set or is 1
+      if (this.initialPage && this.initialPage > 1 && this.initialPage <= this.pages) {
+        this.pageSelected = this.initialPage;
+      } else {
+        this.pageSelected = 1;
+      }
+      this.filterElements();
+    }
+    if (changes['initialPage'] && this.initialPage && this.initialPage > 0 && this.initialPage <= this.pages) {
+      this.pageSelected = this.initialPage;
+      this.filterElements();
     }
   }
 
   changePageSelected(page: number) {
     this.pageSelected = page;
     this.filterElements();
+    this.pageChange.emit(page);
   }
 
   getArrayPages() {

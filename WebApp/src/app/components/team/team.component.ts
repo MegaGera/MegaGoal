@@ -100,6 +100,9 @@ export class TeamComponent implements OnInit, OnDestroy {
   */
   queryTeamId!: number;
   team!: Team;
+  
+  // Store restored state before data loads
+  private restoredSeasonId: number | null = null;
   realMatches: RealMatch[] = [];
   showRealMatches: RealMatch[] = [];
   matches: Match[] = [];
@@ -117,11 +120,15 @@ export class TeamComponent implements OnInit, OnDestroy {
   matchViewMode: 'lastPlayed' | 'nextMatches' = 'lastPlayed';
   personalMatchesPerPage: number = 10;
   personalMatchesPageMatches: Match[] = [];
+  personalMatchesCurrentPage: number = 1;
   allMatchesPerPage: number = 10;
   allMatchesPageMatches: RealMatch[] = [];
+  allMatchesCurrentPage: number = 1;
   currentSeasonMatchesPerPage: number = 10;
   lastPlayedPageMatches: RealMatch[] = [];
+  lastPlayedCurrentPage: number = 1;
   nextMatchesPageMatches: RealMatch[] = [];
+  nextMatchesCurrentPage: number = 1;
   startedRealMatches: RealMatch[] = [];
   notStartedRealMatches: RealMatch[] = [];
   filterPanelChipSelected: number = 1;
@@ -159,14 +166,19 @@ export class TeamComponent implements OnInit, OnDestroy {
 
     this.Activatedroute.queryParamMap.subscribe(params => {
       const newTeamId = +params.get('id')! || 0;
+      const hasViewParam = params.has('view');
       
       const teamChanged = this.queryTeamId !== newTeamId;
       
       this.queryTeamId = newTeamId;
       
       if (teamChanged || !this.team) {
-        // Team changed or first load - reload everything
-        this.init();
+        // Team changed or first load - restore state from query params and reload everything
+        this.restoreStateFromQueryParams(params);
+        this.init(hasViewParam);
+      } else {
+        // Same team - just restore state (e.g., when navigating back)
+        this.restoreStateFromQueryParams(params);
       }
     });
 
@@ -190,7 +202,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.isMobileView = window.innerWidth < 768;
   }
 
-  init() {
+  init(hasViewParam: boolean = false) {
     this.megagoal.getTeamById(this.queryTeamId).subscribe(result => {
       if (result != undefined) {
         this.team = result;
@@ -198,6 +210,14 @@ export class TeamComponent implements OnInit, OnDestroy {
         this.getRealMatches();
         this.getLocations();
         this.loadAllWatchedMatches();
+        
+        // Update URL with view parameter if it wasn't present initially
+        // This ensures the URL reflects the current state (defaults to 'insights')
+        if (!hasViewParam) {
+          setTimeout(() => {
+            this.updateQueryParams();
+          }, 0);
+        }
       } else {
         this.router.navigate(["/app/leagues"]);
       }
@@ -232,8 +252,34 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.statsSeasonOptions = [this.allTimeSeasonOption];
  
     // Determine selected season for API calls and filters
-    this.selectedSeason = this.seasons[0]; // Most recent season
-    this.filterSeasonSelected = this.allTimeSeasonOption;
+    // Restore from query params if available, otherwise use defaults
+    if (this.restoredSeasonId !== null) {
+      // Try to find the restored season in the available seasons
+      const restoredSeason = this.seasonOptions.find(s => s.id === this.restoredSeasonId);
+      if (restoredSeason) {
+        this.filterSeasonSelected = restoredSeason;
+        this.selectedSeason = restoredSeason.id === 0 ? this.seasons[0] : restoredSeason;
+      } else {
+        // If restored season not found, use default
+        this.selectedSeason = this.seasons[0];
+        this.filterSeasonSelected = this.allTimeSeasonOption;
+      }
+      this.restoredSeasonId = null; // Clear after use
+    } else if (this.filterSeasonSelected && this.filterSeasonSelected.id !== 0) {
+      // Try to find the restored season in the available seasons
+      const restoredSeason = this.seasonOptions.find(s => s.id === this.filterSeasonSelected.id);
+      if (restoredSeason) {
+        this.filterSeasonSelected = restoredSeason;
+        this.selectedSeason = restoredSeason.id === 0 ? this.seasons[0] : restoredSeason;
+      } else {
+        // If restored season not found, use default
+        this.selectedSeason = this.seasons[0];
+        this.filterSeasonSelected = this.allTimeSeasonOption;
+      }
+    } else {
+      this.selectedSeason = this.seasons[0]; // Most recent season
+      this.filterSeasonSelected = this.allTimeSeasonOption;
+    }
   }
 
   /*
@@ -288,16 +334,25 @@ export class TeamComponent implements OnInit, OnDestroy {
       }
     });
     
-    // Initialize paginated matches
-    this.allMatchesPageMatches = this.showRealMatches.slice(0, this.allMatchesPerPage);
+    // Initialize paginated matches with restored page state
+    const startIndex = (this.allMatchesCurrentPage - 1) * this.allMatchesPerPage;
+    const endIndex = startIndex + this.allMatchesPerPage;
+    this.allMatchesPageMatches = this.showRealMatches.slice(startIndex, endIndex);
     this.updateCurrentSeasonPaginatedMatches();
   }
 
   updateCurrentSeasonPaginatedMatches() {
     this.startedRealMatches = this.filterStartedRealMatches();
     this.notStartedRealMatches = this.filterNotStartedRealMatches();
-    this.lastPlayedPageMatches = this.startedRealMatches.slice(0, this.currentSeasonMatchesPerPage);
-    this.nextMatchesPageMatches = this.notStartedRealMatches.slice(0, this.currentSeasonMatchesPerPage);
+    
+    // Apply restored pagination state
+    const lastPlayedStartIndex = (this.lastPlayedCurrentPage - 1) * this.currentSeasonMatchesPerPage;
+    const lastPlayedEndIndex = lastPlayedStartIndex + this.currentSeasonMatchesPerPage;
+    this.lastPlayedPageMatches = this.startedRealMatches.slice(lastPlayedStartIndex, lastPlayedEndIndex);
+    
+    const nextMatchesStartIndex = (this.nextMatchesCurrentPage - 1) * this.currentSeasonMatchesPerPage;
+    const nextMatchesEndIndex = nextMatchesStartIndex + this.currentSeasonMatchesPerPage;
+    this.nextMatchesPageMatches = this.notStartedRealMatches.slice(nextMatchesStartIndex, nextMatchesEndIndex);
   }
 
   /*
@@ -382,6 +437,7 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   setView(mode: 'insights' | 'yourMatches' | 'allMatches'): void {
     this.viewMode = mode;
+    this.updateQueryParams();
 
     if (mode !== 'allMatches') {
       const seasonChanged = this.ensureFilterSeasonValidForStats();
@@ -400,6 +456,7 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   setMatchView(mode: 'lastPlayed' | 'nextMatches'): void {
     this.matchViewMode = mode;
+    this.updateQueryParams();
   }
 
   onFilterPanelChipSelectedChange(chip: number): void {
@@ -411,6 +468,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterRealMatches();
     this.filterMatches();
     this.filterInsightsData();
+    this.updateQueryParams();
   }
 
   onFilterSeasonSelectedChange(season: SeasonInfo): void {
@@ -419,15 +477,27 @@ export class TeamComponent implements OnInit, OnDestroy {
     const targetSeason = season.id === 0 ? this.seasons[0] : this.seasons.find(item => item.id === season.id) || this.seasons[0];
     this.selectedSeason = targetSeason;
 
-    this.getRealMatches();
+    // Reset all filters and pagination when season changes (except view mode)
+    this.filterLocationSelected = '';
+    this.filterLeagueSelected = [];
+    this.filterOrder = 'date_desc';
+    
+    // Reset all pagination states
+    this.personalMatchesCurrentPage = 1;
+    this.allMatchesCurrentPage = 1;
+    this.lastPlayedCurrentPage = 1;
+    this.nextMatchesCurrentPage = 1;
 
     this.filterStatsLocations();
     this.ensureFilterLocationValidForStats();
+
+    this.getRealMatches();
 
     this.updateLeaguesForStats();
     this.filterMatches();
     this.filterInsightsData();
     this.filterCurrentLeagues();
+    this.updateQueryParams();
   }
 
   onFilterLocationSelectedChange(location: string): void {
@@ -435,12 +505,14 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.updateLeaguesForStats();
     this.filterMatches();
     this.filterInsightsData();
+    this.updateQueryParams();
   }
 
   onFilterOrderChange(order: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc'): void {
     this.filterOrder = order;
     this.filterRealMatches();
     this.filterMatches();
+    this.updateQueryParams();
   }
 
   resetFilters(): void {
@@ -452,6 +524,12 @@ export class TeamComponent implements OnInit, OnDestroy {
 
     this.filterPanelChipSelected = 1;
 
+    // Reset pagination
+    this.personalMatchesCurrentPage = 1;
+    this.allMatchesCurrentPage = 1;
+    this.lastPlayedCurrentPage = 1;
+    this.nextMatchesCurrentPage = 1;
+
     this.filterStatsLocations();
     this.ensureFilterLocationValidForStats();
 
@@ -461,6 +539,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterMatches();
     this.filterInsightsData();
     this.filterCurrentLeagues();
+    this.updateQueryParams();
   }
 
   private filterInsightsData(): void {
@@ -676,7 +755,11 @@ export class TeamComponent implements OnInit, OnDestroy {
   private filterMatches(): void {
     const base = this.getFilteredPersonalMatchesBase();
     this.filteredPersonalMatches = base;
-    this.personalMatchesPageMatches = base.slice(0, this.personalMatchesPerPage);
+    
+    // Apply restored pagination state
+    const startIndex = (this.personalMatchesCurrentPage - 1) * this.personalMatchesPerPage;
+    const endIndex = startIndex + this.personalMatchesPerPage;
+    this.personalMatchesPageMatches = base.slice(startIndex, endIndex);
   }
 
   private getFilteredPersonalMatchesBase(): Match[] {
@@ -1041,6 +1124,138 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   trackBySeason(index: number, item: { season: number }): number {
     return item.season;
+  }
+
+  /**
+   * Save current state to query parameters
+   */
+  private updateQueryParams(): void {
+    // Build clean query params object - only include what we want
+    const queryParams: any = {
+      id: this.queryTeamId,
+      view: this.viewMode
+    };
+
+    // Save filters (only if not at default values)
+    if (this.filterSeasonSelected && this.filterSeasonSelected.id !== 0) {
+      queryParams.season = this.filterSeasonSelected.id;
+    }
+    
+    if (this.filterLocationSelected) {
+      queryParams.location = this.filterLocationSelected;
+    }
+    
+    if (this.filterLeagueSelected.length > 0) {
+      queryParams.leagues = this.filterLeagueSelected.join(',');
+    }
+    
+    if (this.filterOrder !== 'date_desc') {
+      queryParams.order = this.filterOrder;
+    }
+
+    // Save pagination state
+    if (this.viewMode === 'yourMatches' && this.personalMatchesCurrentPage > 1) {
+      queryParams.pagePersonal = this.personalMatchesCurrentPage;
+    }
+    
+    if (this.viewMode === 'allMatches') {
+      if (this.matchViewMode === 'lastPlayed' && this.lastPlayedCurrentPage > 1) {
+        queryParams.pageLastPlayed = this.lastPlayedCurrentPage;
+      } else if (this.matchViewMode === 'nextMatches' && this.nextMatchesCurrentPage > 1) {
+        queryParams.pageNextMatches = this.nextMatchesCurrentPage;
+      } else if (this.selectedSeason.id !== this.seasons[0]?.id && this.allMatchesCurrentPage > 1) {
+        queryParams.pageAllMatches = this.allMatchesCurrentPage;
+      }
+    }
+
+    // Update URL without reloading
+    // By only including params we want, others will be removed from URL
+    this.router.navigate([], {
+      relativeTo: this.Activatedroute,
+      queryParams: queryParams,
+      replaceUrl: true // Replace current history entry instead of creating new one
+    });
+  }
+
+  /**
+   * Restore state from query parameters
+   */
+  private restoreStateFromQueryParams(params: any): void {
+    // Restore view mode (default to 'insights' if not specified)
+    const viewMode = params.get('view');
+    if (viewMode === 'yourMatches' || viewMode === 'allMatches' || viewMode === 'insights') {
+      this.viewMode = viewMode;
+    } else {
+      // Default to insights if no view parameter
+      this.viewMode = 'insights';
+    }
+
+    // Restore filters
+    const seasonId = params.get('season');
+    if (seasonId) {
+      const seasonIdNum = +seasonId;
+      // Store for later use when seasons are loaded
+      this.restoredSeasonId = seasonIdNum;
+    }
+
+    const location = params.get('location');
+    if (location) {
+      this.filterLocationSelected = location;
+    }
+
+    const leagues = params.get('leagues');
+    if (leagues) {
+      this.filterLeagueSelected = leagues.split(',').map((id: string) => +id).filter((id: number) => !isNaN(id));
+    }
+
+    const order = params.get('order');
+    if (order && ['date_asc', 'goals_desc', 'goals_asc'].includes(order)) {
+      this.filterOrder = order as 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc';
+    }
+
+    // Restore pagination state
+    const pagePersonal = params.get('pagePersonal');
+    if (pagePersonal) {
+      this.personalMatchesCurrentPage = +pagePersonal || 1;
+    }
+
+    const pageAllMatches = params.get('pageAllMatches');
+    if (pageAllMatches) {
+      this.allMatchesCurrentPage = +pageAllMatches || 1;
+    }
+
+    const pageLastPlayed = params.get('pageLastPlayed');
+    if (pageLastPlayed) {
+      this.lastPlayedCurrentPage = +pageLastPlayed || 1;
+    }
+
+    const pageNextMatches = params.get('pageNextMatches');
+    if (pageNextMatches) {
+      this.nextMatchesCurrentPage = +pageNextMatches || 1;
+    }
+  }
+
+  /**
+   * Handle pagination page changes
+   */
+  onPersonalMatchesPageChange(page: number): void {
+    this.personalMatchesCurrentPage = page;
+    this.updateQueryParams();
+  }
+
+  onAllMatchesPageChange(page: number): void {
+    this.allMatchesCurrentPage = page;
+    this.updateQueryParams();
+  }
+
+  onLastPlayedPageChange(page: number): void {
+    this.lastPlayedCurrentPage = page;
+    this.updateQueryParams();
+  }
+
+  onNextMatchesPageChange(page: number): void {
+    this.nextMatchesCurrentPage = page;
+    this.updateQueryParams();
   }
 
 }

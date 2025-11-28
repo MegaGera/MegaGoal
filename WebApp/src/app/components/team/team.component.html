@@ -501,7 +501,9 @@
                 <app-pagination 
                   [elements]="filteredPersonalMatches" 
                   [elementsPerPage]="personalMatchesPerPage" 
-                  [(elementsFiltered)]="personalMatchesPageMatches">
+                  [initialPage]="personalMatchesCurrentPage"
+                  [(elementsFiltered)]="personalMatchesPageMatches"
+                  (pageChange)="onPersonalMatchesPageChange($event)">
                 </app-pagination>
               </div>
             }
@@ -539,7 +541,9 @@
                     <app-pagination 
                       [elements]="startedRealMatches" 
                       [elementsPerPage]="currentSeasonMatchesPerPage" 
-                      [(elementsFiltered)]="lastPlayedPageMatches">
+                      [initialPage]="lastPlayedCurrentPage"
+                      [(elementsFiltered)]="lastPlayedPageMatches"
+                      (pageChange)="onLastPlayedPageChange($event)">
                     </app-pagination>
                   </div>
                 } @else {
@@ -560,7 +564,9 @@
                     <app-pagination 
                       [elements]="notStartedRealMatches" 
                       [elementsPerPage]="currentSeasonMatchesPerPage" 
-                      [(elementsFiltered)]="nextMatchesPageMatches">
+                      [initialPage]="nextMatchesCurrentPage"
+                      [(elementsFiltered)]="nextMatchesPageMatches"
+                      (pageChange)="onNextMatchesPageChange($event)">
                     </app-pagination>
                   </div>
                 }
@@ -610,7 +616,9 @@
                   <app-pagination 
                     [elements]="showRealMatches" 
                     [elementsPerPage]="allMatchesPerPage" 
-                    [(elementsFiltered)]="allMatchesPageMatches">
+                    [initialPage]="allMatchesCurrentPage"
+                    [(elementsFiltered)]="allMatchesPageMatches"
+                    (pageChange)="onAllMatchesPageChange($event)">
                   </app-pagination>
                 </div>
               </div>
