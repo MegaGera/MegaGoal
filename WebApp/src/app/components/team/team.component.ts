@@ -173,11 +173,30 @@ export class TeamComponent implements OnInit, OnDestroy {
       this.queryTeamId = newTeamId;
       
       if (teamChanged || !this.team) {
-        // Team changed or first load - restore state from query params and reload everything
-        this.restoreStateFromQueryParams(params);
+        // Team changed or first load
+        // Check if there are filter query params in the URL - if yes, restore them; if no, reset to defaults
+        const hasFilterParams = params.has('season') || params.has('location') || 
+                                params.has('leagues') || params.has('order') ||
+                                params.has('pagePersonal') || params.has('pageAllMatches') ||
+                                params.has('pageLastPlayed') || params.has('pageNextMatches');
+        
+        if (hasFilterParams) {
+          // URL has filter params - restore them (user navigated directly with filters)
+          this.restoreStateFromQueryParams(params);
+        } else {
+          // No filter params in URL - reset to defaults (user clicked team link without filters)
+          this.resetFiltersToDefaults();
+          // Only restore view mode if present
+          const viewMode = params.get('view');
+          if (viewMode === 'yourMatches' || viewMode === 'allMatches' || viewMode === 'insights') {
+            this.viewMode = viewMode;
+          } else {
+            this.viewMode = 'insights';
+          }
+        }
         this.init(hasViewParam);
       } else {
-        // Same team - just restore state (e.g., when navigating back)
+        // Same team - restore state from query params (e.g., when navigating back or changing filters)
         this.restoreStateFromQueryParams(params);
       }
     });
@@ -252,7 +271,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.statsSeasonOptions = [this.allTimeSeasonOption];
  
     // Determine selected season for API calls and filters
-    // Restore from query params if available, otherwise use defaults
+    // Restore from query params if available (restoredSeasonId), otherwise use defaults
     if (this.restoredSeasonId !== null) {
       // Try to find the restored season in the available seasons
       const restoredSeason = this.seasonOptions.find(s => s.id === this.restoredSeasonId);
@@ -265,18 +284,8 @@ export class TeamComponent implements OnInit, OnDestroy {
         this.filterSeasonSelected = this.allTimeSeasonOption;
       }
       this.restoredSeasonId = null; // Clear after use
-    } else if (this.filterSeasonSelected && this.filterSeasonSelected.id !== 0) {
-      // Try to find the restored season in the available seasons
-      const restoredSeason = this.seasonOptions.find(s => s.id === this.filterSeasonSelected.id);
-      if (restoredSeason) {
-        this.filterSeasonSelected = restoredSeason;
-        this.selectedSeason = restoredSeason.id === 0 ? this.seasons[0] : restoredSeason;
-      } else {
-        // If restored season not found, use default
-        this.selectedSeason = this.seasons[0];
-        this.filterSeasonSelected = this.allTimeSeasonOption;
-      }
     } else {
+      // No restored season - use defaults (team changed or first load)
       this.selectedSeason = this.seasons[0]; // Most recent season
       this.filterSeasonSelected = this.allTimeSeasonOption;
     }
@@ -540,6 +549,26 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterInsightsData();
     this.filterCurrentLeagues();
     this.updateQueryParams();
+  }
+
+  /**
+   * Reset filters to defaults without triggering updates (used when team changes)
+   */
+  private resetFiltersToDefaults(): void {
+    this.filterLeagueSelected = [];
+    this.filterLocationSelected = '';
+    this.filterSeasonSelected = this.allTimeSeasonOption;
+    this.filterOrder = 'date_desc';
+    this.filterPanelChipSelected = 1;
+    
+    // Reset pagination
+    this.personalMatchesCurrentPage = 1;
+    this.allMatchesCurrentPage = 1;
+    this.lastPlayedCurrentPage = 1;
+    this.nextMatchesCurrentPage = 1;
+    
+    // Clear restored season id
+    this.restoredSeasonId = null;
   }
 
   private filterInsightsData(): void {

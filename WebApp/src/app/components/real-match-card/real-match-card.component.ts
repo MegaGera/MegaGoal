@@ -213,7 +213,7 @@ export class RealMatchCardComponent implements OnInit {
 
   navigateToTeam(teamId: number) {
     this.isCardExpanded = false;
-    this.router.navigate(['/app/team'], { queryParams: { id: teamId, season: this.match.league.season } }).then(() => {
+    this.router.navigate(['/app/team'], { queryParams: { id: teamId } }).then(() => {
       window.scrollTo(0, 0);
     });
   }
