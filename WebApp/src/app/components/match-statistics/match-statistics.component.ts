@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { TeamStatistics } from '../../models/realMatch';
 import { ImagesService } from '../../services/images.service';
 
 @Component({
   selector: 'app-match-statistics',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './match-statistics.component.html',
   styleUrl: './match-statistics.component.css'
 })

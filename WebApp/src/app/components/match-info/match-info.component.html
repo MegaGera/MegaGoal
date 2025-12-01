@@ -24,7 +24,7 @@
   </div>
 
   <!-- Match Highlights Video Section -->
-  <div class="highlights-section" *ngIf="isFinished()">
+  <div class="highlights-section" *ngIf="isFinished() && highlightsVideo && highlightsVideo.videoId">
     <div class="video-container" *ngIf="loadingVideo">
       <div class="video-loading">
         <div class="spinner"></div>

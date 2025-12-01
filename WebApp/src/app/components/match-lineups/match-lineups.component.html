@@ -5,12 +5,16 @@
     <!-- Home Team -->
     <div class="team-lineup" *ngIf="getHomeLineup()">
       <div class="team-header">
-        <img 
-          [src]="images.getRouteImageTeam(getHomeLineup()!.team.id)" 
-          [alt]="getHomeLineup()!.team.name" 
-          class="team-logo-large"
-          onerror="this.src='assets/default-team.png'">
-        <h3 class="team-name">{{ getHomeLineup()!.team.name }}</h3>
+        <a [routerLink]="['/app/team']" [queryParams]="{ id: getHomeLineup()!.team.id }" class="team-link">
+          <img 
+            [src]="images.getRouteImageTeam(getHomeLineup()!.team.id)" 
+            [alt]="getHomeLineup()!.team.name" 
+            class="team-logo-large"
+            onerror="this.src='assets/default-team.png'">
+        </a>
+        <a [routerLink]="['/app/team']" [queryParams]="{ id: getHomeLineup()!.team.id }" class="team-link">
+          <h3 class="team-name">{{ getHomeLineup()!.team.name }}</h3>
+        </a>
         <div class="formation" *ngIf="getHomeLineup()!.formation">
           {{ getHomeLineup()!.formation }}
         </div>
@@ -52,12 +56,16 @@
     <!-- Away Team -->
     <div class="team-lineup" *ngIf="getAwayLineup()">
       <div class="team-header">
-        <img 
-          [src]="images.getRouteImageTeam(getAwayLineup()!.team.id)" 
-          [alt]="getAwayLineup()!.team.name" 
-          class="team-logo-large"
-          onerror="this.src='assets/default-team.png'">
-        <h3 class="team-name">{{ getAwayLineup()!.team.name }}</h3>
+        <a [routerLink]="['/app/team']" [queryParams]="{ id: getAwayLineup()!.team.id }" class="team-link">
+          <img 
+            [src]="images.getRouteImageTeam(getAwayLineup()!.team.id)" 
+            [alt]="getAwayLineup()!.team.name" 
+            class="team-logo-large"
+            onerror="this.src='assets/default-team.png'">
+        </a>
+        <a [routerLink]="['/app/team']" [queryParams]="{ id: getAwayLineup()!.team.id }" class="team-link">
+          <h3 class="team-name">{{ getAwayLineup()!.team.name }}</h3>
+        </a>
         <div class="formation" *ngIf="getAwayLineup()!.formation">
           {{ getAwayLineup()!.formation }}
         </div>

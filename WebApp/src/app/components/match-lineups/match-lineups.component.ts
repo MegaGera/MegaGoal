@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { LineupData } from '../../models/realMatch';
 import { ImagesService } from '../../services/images.service';
 import { PlayerItemComponent } from './player-item/player-item.component';
@@ -7,7 +8,7 @@ import { PlayerItemComponent } from './player-item/player-item.component';
 @Component({
   selector: 'app-match-lineups',
   standalone: true,
-  imports: [CommonModule, PlayerItemComponent],
+  imports: [CommonModule, RouterLink, PlayerItemComponent],
   templateUrl: './match-lineups.component.html',
   styleUrl: './match-lineups.component.css'
 })

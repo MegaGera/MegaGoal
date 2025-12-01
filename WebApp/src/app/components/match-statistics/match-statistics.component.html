@@ -4,21 +4,29 @@
   <!-- Team Headers -->
   <div class="teams-header">
     <div class="team-header">
-      <img 
-        [src]="images.getRouteImageTeam(homeStatistics.team.id)" 
-        [alt]="homeStatistics.team.name" 
-        class="team-logo-large"
-        onerror="this.src='assets/default-team.png'">
-      <h3 class="team-name">{{ homeStatistics.team.name }}</h3>
+      <a [routerLink]="['/app/team']" [queryParams]="{ id: homeStatistics.team.id }" class="team-link">
+        <img 
+          [src]="images.getRouteImageTeam(homeStatistics.team.id)" 
+          [alt]="homeStatistics.team.name" 
+          class="team-logo-large"
+          onerror="this.src='assets/default-team.png'">
+      </a>
+      <a [routerLink]="['/app/team']" [queryParams]="{ id: homeStatistics.team.id }" class="team-link">
+        <h3 class="team-name">{{ homeStatistics.team.name }}</h3>
+      </a>
     </div>
     
     <div class="team-header">
-      <img 
-        [src]="images.getRouteImageTeam(awayStatistics.team.id)" 
-        [alt]="awayStatistics.team.name" 
-        class="team-logo-large"
-        onerror="this.src='assets/default-team.png'">
-      <h3 class="team-name">{{ awayStatistics.team.name }}</h3>
+      <a [routerLink]="['/app/team']" [queryParams]="{ id: awayStatistics.team.id }" class="team-link">
+        <img 
+          [src]="images.getRouteImageTeam(awayStatistics.team.id)" 
+          [alt]="awayStatistics.team.name" 
+          class="team-logo-large"
+          onerror="this.src='assets/default-team.png'">
+      </a>
+      <a [routerLink]="['/app/team']" [queryParams]="{ id: awayStatistics.team.id }" class="team-link">
+        <h3 class="team-name">{{ awayStatistics.team.name }}</h3>
+      </a>
     </div>
   </div>
   

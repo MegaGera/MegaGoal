@@ -31,6 +31,17 @@
   gap: 0.75rem;
 }
 
+.team-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.team-link:hover {
+  transform: scale(1.05);
+}
+
 .team-logo-large {
   width: 64px;
   height: 64px;
@@ -73,12 +84,12 @@
 
 .stat-value.home {
   text-align: right;
-  color: #667eea;
+  color: #dc143c;
 }
 
 .stat-value.away {
   text-align: left;
-  color: #764ba2;
+  color: #dc143c;
 }
 
 /* Progress Bars */
@@ -112,11 +123,11 @@
 }
 
 .home-bar {
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, #dc143c, #ff6b6b);
 }
 
 .away-bar {
-  background: linear-gradient(90deg, #764ba2, #f093fb);
+  background: linear-gradient(90deg, #ff6b6b, #dc143c);
 }
 
 /* No Statistics */

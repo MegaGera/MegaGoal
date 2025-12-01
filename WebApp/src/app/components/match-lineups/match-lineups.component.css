@@ -18,12 +18,17 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .team-lineup {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .team-header {
@@ -31,8 +36,19 @@
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid #f0f0f0;
+  width: 100%;
+  min-width: 0;
+}
+
+.team-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.team-link:hover {
+  transform: scale(1.05);
 }
 
 .team-logo-large {
@@ -47,12 +63,15 @@
   color: #333;
   margin: 0;
   text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .formation {
   font-size: 1rem;
   font-weight: 600;
-  color: #667eea;
+  color: #dc143c;
   padding: 0.5rem 1rem;
   background: #f0f0f0;
   border-radius: 6px;
@@ -71,12 +90,15 @@
   margin: 0;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #e5e7eb;
+  text-align: center;
 }
 
 .players-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .player-item {
@@ -88,6 +110,9 @@
   background: #f9f9f9;
   border-radius: 6px;
   transition: background 0.2s ease;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .player-item:hover {

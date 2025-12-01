@@ -1,8 +1,24 @@
 <div class="events-section" *ngIf="events && events.length > 0">
-  <h2 class="section-title">Match Events</h2>
+  <div class="section-header">
+    <h2 class="section-title">Match Events</h2>
+    <button 
+      class="filter-toggle-btn"
+      (click)="toggleEventFilter()"
+      [attr.aria-label]="showAllEvents ? 'Show only important events' : 'Show all events'">
+      {{ showAllEvents ? 'Show Less Events' : 'Show All Events' }}
+    </button>
+  </div>
   
   <div class="timeline-container">
     <div class="timeline-vertical">
+      <!-- No Important Events Message -->
+      <div class="event-card no-important-events-card" *ngIf="hasNoImportantEvents()">
+        <div class="no-important-events-content">
+          <p>There were no goals and red cards, boring match</p>
+        </div>
+      </div>
+      
+      <!-- Events Timeline -->
       <div 
         class="event-card" 
         *ngFor="let event of getSortedEvents()"
@@ -10,30 +26,42 @@
         
         <!-- Home Team Event (Left Side) -->
         <div class="event-content-home" *ngIf="isHomeTeam(event)">
-          <div class="event-main">
-            <div class="event-icon">{{ getEventIcon(event) }}</div>
-            <div class="event-details">
-              <div class="event-type" *ngIf="getEventDetailDisplay(event)">{{ getEventDetailDisplay(event) }}</div>
-              <div class="event-player">{{ getEventDescription(event) }}</div>
+          <a [routerLink]="['/app/player']" [queryParams]="{id: getEventPlayerId(event)}" class="event-link">
+            <div class="event-main">
+              <img 
+                [src]="getPlayerImageUrl(getEventPlayerId(event))" 
+                [alt]="getEventDescription(event)"
+                class="event-player-image"
+                (error)="onImageError($event)">
+              <div class="event-details">
+                <div class="event-player">{{ getEventDescription(event) }}</div>
+                <div class="event-type">{{ getEventDetailDisplay(event) }}</div>
+              </div>
+              <div class="event-icon">{{ getEventIcon(event) }}</div>
             </div>
-          </div>
-          <div class="event-time">{{ formatTime(event) }}</div>
+          </a>
         </div>
 
         <!-- Away Team Event (Right Side) -->
         <div class="event-content-away" *ngIf="!isHomeTeam(event)">
-          <div class="event-time">{{ formatTime(event) }}</div>
-          <div class="event-main">
-            <div class="event-icon">{{ getEventIcon(event) }}</div>
-            <div class="event-details">
-              <div class="event-type" *ngIf="getEventDetailDisplay(event)">{{ getEventDetailDisplay(event) }}</div>
-              <div class="event-player">{{ getEventDescription(event) }}</div>
+          <a [routerLink]="['/app/player']" [queryParams]="{id: getEventPlayerId(event)}" class="event-link">
+            <div class="event-main">
+              <div class="event-icon">{{ getEventIcon(event) }}</div>
+              <div class="event-details">
+                <div class="event-player">{{ getEventDescription(event) }}</div>
+                <div class="event-type">{{ getEventDetailDisplay(event) }}</div>
+              </div>
+              <img 
+                [src]="getPlayerImageUrl(getEventPlayerId(event))" 
+                [alt]="getEventDescription(event)"
+                class="event-player-image"
+                (error)="onImageError($event)">
             </div>
-          </div>
+          </a>
         </div>
 
-        <!-- Timeline Dot -->
-        <div class="timeline-dot"></div>
+        <!-- Time at Center -->
+        <div class="event-time-center">{{ formatTime(event) }}</div>
       </div>
     </div>
   </div>

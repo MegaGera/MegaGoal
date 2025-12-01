@@ -8,7 +8,7 @@
   border: 5px solid transparent;
   background-image: 
     linear-gradient(white, white),
-    linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    linear-gradient(135deg, #dc143c 0%, #ff6b6b 100%);
   background-origin: border-box;
   background-clip: padding-box, border-box;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -17,7 +17,7 @@
 }
 
 .league-info:hover {
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
   transform: translateY(-2px);
 }
 
@@ -31,7 +31,7 @@
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #dc143c 0%, #ff6b6b 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

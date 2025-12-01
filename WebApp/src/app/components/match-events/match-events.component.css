@@ -2,16 +2,61 @@
 .events-section {
   background: white;
   border-radius: 12px;
-  padding: 2rem;
+  padding: 2rem 0.5rem 0.5rem 0.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.section-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
 .section-title {
-  text-align: center;
-  margin: 0 0 2rem 0;
+  margin: 0;
   font-size: 1.75rem;
   font-weight: 600;
   color: #333;
+  text-align: center;
+}
+
+.filter-toggle-btn {
+  background: #dc143c !important;
+  color: #fff;
+  border: 2px solid #dc143c;
+  box-shadow: none;
+  outline: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 0;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-toggle-btn:hover,
+.filter-toggle-btn:focus {
+  background: #b91c3c !important;
+  color: #fff;
+  border-color: #b91c3c;
+  box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+  outline: none;
+  transform: translateY(-2px) scale(1.02);
+}
+
+.filter-toggle-btn:active {
+  outline: none;
+  box-shadow: 0 2px 6px rgba(220, 20, 60, 0.2);
+  transform: translateY(0) scale(1);
 }
 
 /* Timeline Container */
@@ -42,7 +87,7 @@
 /* Event Card - Modern style similar to player-item */
 .event-card {
   position: relative;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   z-index: 10;
 }
 
@@ -54,10 +99,16 @@
   position: relative;
 }
 
+.event-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .event-content-home {
   flex-direction: row;
   justify-content: flex-end;
-  padding-right: calc(50% + 1rem);
+  padding-right: calc(50% + 0.5rem);
 }
 
 .event-content-away {
@@ -65,6 +116,14 @@
   justify-content: flex-start;
   padding-left: calc(50% + 0.5rem);
   gap: 0.5rem;
+}
+
+.event-content-away .event-main {
+  padding-left: 1rem;
+}
+
+.event-content-home .event-main {
+  padding-right: 1rem;
 }
 
 .event-main {
@@ -80,7 +139,7 @@
   position: relative;
   overflow: hidden;
   flex: 1;
-  max-width: 200px;
+  max-width: 240px;
 }
 
 .event-main::before {
@@ -95,9 +154,18 @@
   transition: transform 0.3s ease;
 }
 
+.event-content-away .event-main::before {
+  left: auto;
+  right: 0;
+}
+
 .event-main:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+  border-color: #dc143c;
+}
+
+.event-card.event-goal .event-main:hover {
   border-color: #dc143c;
 }
 
@@ -111,22 +179,20 @@
   flex-shrink: 0;
 }
 
+.event-player-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: white;
+  border: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
 .event-details {
   flex: 1;
   min-width: 0;
-}
-
-.event-type {
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: #666;
-  text-transform: uppercase;
-  margin-bottom: 0.15rem;
-  line-height: 1.2;
-}
-
-.event-type:empty {
-  display: none;
 }
 
 .event-player {
@@ -135,6 +201,27 @@
   color: #1e293b;
   line-height: 1.3;
   word-wrap: break-word;
+  margin-bottom: 0;
+}
+
+.event-type {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #666;
+  margin-top: 0.15rem;
+  line-height: 1.2;
+}
+
+.event-type:empty {
+  display: none;
+}
+
+.event-content-home .event-player {
+  text-align: right;
+}
+
+.event-content-home .event-type {
+  text-align: right;
 }
 
 .event-time {
@@ -146,6 +233,23 @@
   border-radius: 5px;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.event-time-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  padding: 4px 8px;
+  background: white;
+  border-radius: 5px;
+  white-space: nowrap;
+  z-index: 15;
+  border: 2px solid #667eea;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .event-card.event-own-goal .event-main {
@@ -160,8 +264,18 @@
 /* Goal events - bigger size */
 .event-card.event-goal .event-main {
   padding: 10px 14px;
-  max-width: 260px;
+  max-width: 300px;
   border-radius: 10px;
+  border-color: #9ca3af;
+  border-width: 2px;
+}
+
+.event-card.event-goal .event-content-away .event-main {
+  padding-left: 1rem;
+}
+
+.event-card.event-goal .event-content-home .event-main {
+  padding-right: 1rem;
 }
 
 .event-card.event-goal .event-icon {
@@ -172,9 +286,20 @@
   font-size: 0.85rem;
 }
 
+.event-card.event-goal .event-player-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+}
+
 .event-card.event-goal .event-time {
   font-size: 0.8rem;
   padding: 4px 10px;
+}
+
+.event-card.event-goal .event-time-center {
+  font-size: 0.85rem;
+  padding: 5px 10px;
 }
 
 .event-card.event-goal {
@@ -215,14 +340,55 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* No Important Events Card */
+.no-important-events-card {
+  position: relative;
+  margin-bottom: 1rem;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.no-important-events-content {
+  text-align: center;
+  padding: 1.5rem 0.5rem;
+  color: #666;
+  font-size: 1.1rem;
+  font-weight: 500;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e5e7eb;
+  max-width: 500px;
+  width: calc(100% - 4rem);
+  margin: 0 auto;
+  position: relative;
+  z-index: 5;
+}
+
+.no-important-events-content p {
+  margin: 0;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .events-section {
-    padding: 1.5rem;
+    padding: 1.5rem 0.5rem 1.5rem 0.5rem;
+  }
+
+  .section-header {
+    gap: 0.75rem;
   }
 
   .section-title {
     font-size: 1.4rem;
+  }
+
+  .filter-toggle-btn {
+    padding: 8px 18px;
+    font-size: 15px;
   }
 
   .timeline-vertical {
@@ -231,16 +397,26 @@
   }
 
   .event-content-home {
-    padding-right: calc(50% + 0.75rem);
+    padding-right: calc(50% + 0.5rem);
+    width: 100%;
   }
 
   .event-content-away {
-    padding-left: 50%;
+    padding-left: calc(50% + 0.5rem);
+    width: 100%;
+  }
+
+  .event-link {
+    width: 100%;
+    display: block;
   }
 
   .event-main {
-    padding: 5px 8px;
-    max-width: 160px;
+    padding: 5px 5px;
+    max-width: 100% !important;
+    width: 100% !important;
+    flex: none !important;
+    min-width: 0;
   }
 
   .event-icon {
@@ -268,19 +444,33 @@
 
   .event-main {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto 1fr auto;
     grid-template-areas:
-      "icon type"
-      "player player";
+      "player-image player icon"
+      "player-image type icon";
     column-gap: 0.5rem;
-    row-gap: 0.25rem;
-    align-items: center;
+    row-gap: 0.15rem;
+    align-items: start;
     max-width: 100%;
+  }
+
+  .event-content-away .event-main {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "icon player player-image"
+      "icon type player-image";
   }
 
   .event-icon {
     grid-area: icon;
-    align-self: flex-start;
+    align-self: center;
+  }
+
+  .event-player-image {
+    grid-area: player-image;
+    align-self: center;
+    width: 36px;
+    height: 36px;
   }
 
   .event-details {
@@ -289,17 +479,32 @@
 
   .event-type {
     grid-area: type;
+    margin-top: 0;
     margin-bottom: 0;
+  }
+
+  .event-type:empty {
+    display: none;
   }
 
   .event-player {
     grid-area: player;
+    margin-bottom: 0;
+    align-self: start;
+  }
+
+  /* When event-type is empty, make player span both rows to center it vertically */
+  .event-main:has(.event-type:empty) .event-player {
+    grid-row: 1 / -1;
+    align-self: center;
   }
 
   /* Goal events mobile - bigger than rest */
   .event-card.event-goal .event-main {
-    padding: 8px 12px;
-    max-width: 220px;
+    padding: 8px 5px;
+    max-width: 100% !important;
+    width: 100% !important;
+    flex: none !important;
   }
 
   .event-card.event-goal .event-icon {
@@ -310,8 +515,23 @@
     font-size: 0.8rem;
   }
 
+  .event-card.event-goal .event-player-image {
+    width: 40px;
+    height: 40px;
+  }
+
   .event-card.event-goal .event-time {
     font-size: 0.75rem;
     padding: 3px 8px;
+  }
+
+  .event-time-center {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+
+  .event-card.event-goal .event-time-center {
+    font-size: 0.7rem;
+    padding: 4px 8px;
   }
 }
