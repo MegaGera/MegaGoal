@@ -1,5 +1,5 @@
 import datetime
-from utils import MatchUpdater
+from ..utils import MatchUpdater
 
 def perform_leagues_update():
     """Perform leagues update operation"""

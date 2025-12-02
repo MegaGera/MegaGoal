@@ -4,11 +4,11 @@ from pydantic import BaseModel
 import os
 import httpx
 import logging
-from utils import MatchUpdater
-from utils_players import PlayersUpdater
-from utils_lineups import LineupsUpdater
-from utils_events import EventsUpdater
-from utils_statistics import StatisticsUpdater
+from .utils import MatchUpdater
+from .players import PlayersUpdater
+from .lineups import LineupsUpdater
+from .events import EventsUpdater
+from .statistics import StatisticsUpdater
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

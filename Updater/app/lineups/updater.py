@@ -1,9 +1,9 @@
 import http.client
 import json
-from config import Config
+from ..config import Config
 
-class StatisticsUpdater:
-    """Utilities for statistics updating operations"""
+class LineupsUpdater:
+    """Utilities for lineups updating operations"""
     
     def __init__(self):
         self.db = Config.get_database()
@@ -11,11 +11,11 @@ class StatisticsUpdater:
         self.collection_settings = self.db['league_settings']
         self.headers = Config.get_api_headers()
         self.url = Config.RAPIDAPI_HOST
-        self.data_field = "statistics"
-        self.data_type = "statistics"
+        self.data_field = "lineups"
+        self.data_type = "lineups"
 
     def _get_data_from_api(self, fixture_id: int):
-        """Fetch fixture statistics from external API"""
+        """Fetch fixture lineups from external API"""
         conn = http.client.HTTPSConnection(self.url)
         endpoint = f"/fixtures/{self.data_type}?fixture={fixture_id}"
         print(f"Getting {self.data_type} from API for fixture {fixture_id}")
@@ -23,16 +23,16 @@ class StatisticsUpdater:
         response = conn.getresponse()
         return json.loads(response.read())
 
-    def get_fixture_statistics_from_api(self, fixture_id: int):
-        """Fetch fixture statistics from external API (public alias)"""
+    def get_fixture_lineups_from_api(self, fixture_id: int):
+        """Fetch fixture lineups from external API (public alias)"""
         return self._get_data_from_api(fixture_id)
 
-    def update_match_statistics(self, fixture_id: int):
-        """Fetch and persist statistics for a given fixture into real_matches document"""
+    def update_match_lineups(self, fixture_id: int):
+        """Fetch and persist lineups for a given fixture into real_matches document"""
         data_json = self._get_data_from_api(fixture_id)
         data_response = data_json.get("response", [])
 
-        # Upsert statistics field into real_matches
+        # Upsert lineups field into real_matches
         query_filter = {"fixture.id": int(fixture_id)}
         update_doc = {"$set": {self.data_field: data_response}}
         result = self.collection_real_matches.update_one(query_filter, update_doc)
@@ -45,7 +45,7 @@ class StatisticsUpdater:
         return True
 
     def _count_matches_with_data(self, league_id, season):
-        """Count finished matches that have statistics data"""
+        """Count finished matches that have lineups data"""
         finished_statuses = Config.get_finished_match_status_array()
         count = self.collection_real_matches.count_documents({
             "league.id": int(league_id),
@@ -61,14 +61,20 @@ class StatisticsUpdater:
         
         for match in matches_list:
             fixture_id = match["fixture"]["id"]
-            success = self.update_match_statistics(fixture_id)
-            if success:
+            data_json = self._get_data_from_api(fixture_id)
+            data_response = data_json.get("response", [])
+            
+            if data_response:
+                query_filter = {"fixture.id": int(fixture_id)}
+                update_doc = {"$set": {self.data_field: data_response}}
+                self.collection_real_matches.update_one(query_filter, update_doc)
                 updated_count += 1
+                print(f"Updated {self.data_type} for fixture {fixture_id}")
         
         return updated_count
 
-    def update_statistics_by_league_and_season_full(self, league_id, season):
-        """Update statistics for all finished matches in a league and season"""
+    def update_lineups_by_league_and_season_full(self, league_id, season):
+        """Update lineups for all finished matches in a league and season"""
         print(f"Updating {self.data_type} (full) for league {league_id}, season {season}")
         
         finished_statuses = Config.get_finished_match_status_array()
@@ -81,14 +87,14 @@ class StatisticsUpdater:
         updated_count = self._update_matches(list(matches), "full")
         print(f"Updated {updated_count} {self.data_type} for league {league_id}, season {season}")
         
-        # Count all matches with statistics data in database
+        # Count all matches with lineups data in database
         total_count = self._count_matches_with_data(league_id, season)
         self._update_available_season(league_id, season, total_count)
         
         return total_count
 
-    def update_statistics_by_league_and_season_missing(self, league_id, season):
-        """Update statistics only for finished matches that don't have statistics data"""
+    def update_lineups_by_league_and_season_missing(self, league_id, season):
+        """Update lineups only for finished matches that don't have lineups data"""
         print(f"Updating {self.data_type} (missing only) for league {league_id}, season {season}")
         
         finished_statuses = Config.get_finished_match_status_array()
@@ -106,18 +112,18 @@ class StatisticsUpdater:
         updated_count = self._update_matches(list(matches), "missing")
         print(f"Updated {updated_count} {self.data_type} (missing only) for league {league_id}, season {season}")
         
-        # Count all matches with statistics data in database
+        # Count all matches with lineups data in database
         total_count = self._count_matches_with_data(league_id, season)
         self._update_available_season(league_id, season, total_count)
         
         return total_count
 
-    def update_statistics_by_league_and_season(self, league_id, season):
+    def update_lineups_by_league_and_season(self, league_id, season):
         """Backward compatibility: alias for full update"""
-        return self.update_statistics_by_league_and_season_full(league_id, season)
+        return self.update_lineups_by_league_and_season_full(league_id, season)
 
     def _update_available_season(self, league_id, season, count):
-        """Update available_seasons for a league with statistics count"""
+        """Update available_seasons for a league with lineups count"""
         setting = self.collection_settings.find_one({"league_id": int(league_id)})
         if not setting:
             return
@@ -140,6 +146,6 @@ class StatisticsUpdater:
         else:
             print(f"Season {season} not found in available_seasons for league {league_id}, skipping {self.data_type} update")
 
-    def update_available_season_with_statistics(self, league_id, season, statistics_count):
+    def update_available_season_with_lineups(self, league_id, season, lineups_count):
         """Public alias for backward compatibility"""
-        self._update_available_season(league_id, season, statistics_count)
+        self._update_available_season(league_id, season, lineups_count)

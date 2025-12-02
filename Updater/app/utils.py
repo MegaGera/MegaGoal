@@ -1,7 +1,8 @@
 import http.client
 import json
 import datetime
-from config import Config
+from .config import Config
+from .players import PlayersUpdater
 
 class MatchUpdater:
     """Shared utilities for match updating operations"""
@@ -475,48 +476,6 @@ class MatchUpdater:
         
         return True
 
-    def get_players_from_api(self, league_id, season, page=1):
-        """Get players from API for a specific league and season"""
-        conn = http.client.HTTPSConnection(self.url)
-        endpoint = f"/players?league={league_id}&season={season}&page={page}"
-        print(f"Getting players from API for league {league_id}, season {season}, page {page}")
-        
-        conn.request("GET", endpoint, headers=self.headers)
-        response = conn.getresponse()
-        return json.loads(response.read())
-
-    def player_exists(self, player_id):
-        """Check if player exists in database"""
-        player = self.collection_players.find_one({"player.id": player_id})
-        if player is not None:
-            return True, player
-        else:
-            return False, None
-
-    def add_team_to_player(self, player_data, team_info, season):
-        """Add team information to a player's teams array"""
-        if "teams" not in player_data:
-            player_data["teams"] = []
-        
-        # Check if team already exists in player's teams
-        team_found = False
-        for team_data in player_data["teams"]:
-            if team_data["team"]["id"] == team_info["team"]["id"]:
-                # Team exists, add season if not already present
-                if season not in team_data["seasons"]:
-                    team_data["seasons"].append(season)
-                team_found = True
-                break
-        
-        # If team doesn't exist, add it
-        if not team_found:
-            player_data["teams"].append({
-                "team": team_info["team"],
-                "seasons": [season]
-            })
-        
-        return player_data
-
     def update_players_by_league_and_season(self, league_id, season):
         """Update players for a league and season with pagination"""
         print(f"Updating players for league {league_id}, season {season}")
@@ -526,7 +485,7 @@ class MatchUpdater:
         
         while True:
             # Get players from API for current page
-            players_data = self.get_players_from_api(league_id, season, page)
+            players_data = PlayersUpdater().get_players_from_api_by_league_and_season(league_id, season, page)
             players_response = players_data.get("response", [])
             
             if not players_response:
@@ -545,12 +504,12 @@ class MatchUpdater:
                         }
                         
                         # Check if player exists
-                        exists, existing_player = self.player_exists(player_id)
+                        exists, existing_player = PlayersUpdater().player_exists(player_id)
                         
                         if exists:
                             # Update existing player with team information
                             print(f"Updating player {player_id} ({player_data['player']['name']}) with team {team_info['team']['name']} for season {season}")
-                            updated_player = self.add_team_to_player(existing_player, team_info, season)
+                            updated_player = PlayersUpdater().add_team_to_player(existing_player, team_info, season)
                             self.collection_players.update_one(
                                 {"player.id": player_id},
                                 {"$set": {"teams": updated_player["teams"]}}

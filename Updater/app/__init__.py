@@ -1,0 +1,2 @@
+"""Updater application package"""
+

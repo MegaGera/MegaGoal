@@ -1,6 +1,6 @@
 import datetime
-from utils import MatchUpdater
-from config import Config
+from ..utils import MatchUpdater
+from ..config import Config
 
 def fetch_leagues_to_update_daily(updater):
     """Fetch leagues to update based on daily update criteria"""

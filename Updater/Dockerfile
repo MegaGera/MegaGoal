@@ -3,11 +3,11 @@ FROM python:3.9-slim
 # Set working directory
 WORKDIR /app
 
-# Copy all Python files and requirements
-COPY *.py /app/
+# Copy app directory and requirements
+COPY app/ /app/app/
 COPY requirements.txt /app/
 COPY .env /app/
-COPY matches_updater_cron /etc/cron.d/matches_updater_cron
+COPY app/cron/matches_updater_cron /etc/cron.d/matches_updater_cron
 
 # Install cron, supervisor, and Python dependencies
 RUN apt-get update && apt-get install -y cron supervisor && pip install -r requirements.txt

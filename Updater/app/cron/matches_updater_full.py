@@ -1,5 +1,5 @@
 import datetime
-from utils import MatchUpdater
+from ..utils import MatchUpdater
 
 def fetch_leagues_to_update(updater):
     """Fetch leagues that need updating based on frequency and next match criteria"""

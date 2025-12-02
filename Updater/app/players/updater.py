@@ -1,7 +1,7 @@
 import http.client
 import json
 import datetime
-from config import Config
+from ..config import Config
 
 class PlayersUpdater:
     """Utilities for player updating operations"""
@@ -21,11 +21,45 @@ class PlayersUpdater:
         else:
             return False, None
 
-    def get_players_from_api(self, page):
+    def get_players_from_api_by_page(self, page):
         """Get players from API with pagination"""
         conn = http.client.HTTPSConnection(self.url)
         endpoint = f"/players/profiles?page={page}"
         print(f"Getting players from API for page {page}")
+        
+        conn.request("GET", endpoint, headers=self.headers)
+        response = conn.getresponse()
+        return json.loads(response.read())
+
+    def add_team_to_player(self, player_data, team_info, season):
+        """Add team information to a player's teams array"""
+        if "teams" not in player_data:
+            player_data["teams"] = []
+        
+        # Check if team already exists in player's teams
+        team_found = False
+        for team_data in player_data["teams"]:
+            if team_data["team"]["id"] == team_info["team"]["id"]:
+                # Team exists, add season if not already present
+                if season not in team_data["seasons"]:
+                    team_data["seasons"].append(season)
+                team_found = True
+                break
+        
+        # If team doesn't exist, add it
+        if not team_found:
+            player_data["teams"].append({
+                "team": team_info["team"],
+                "seasons": [season]
+            })
+        
+        return player_data
+
+    def get_players_from_api_by_league_and_season(self, league_id, season, page=1):
+        """Get players from API for a specific league and season"""
+        conn = http.client.HTTPSConnection(self.url)
+        endpoint = f"/players?league={league_id}&season={season}&page={page}"
+        print(f"Getting players from API for league {league_id}, season {season}, page {page}")
         
         conn.request("GET", endpoint, headers=self.headers)
         response = conn.getresponse()
@@ -85,7 +119,7 @@ class PlayersUpdater:
     def update_players_by_page(self, page):
         """Update players for a specific page"""
         print(f"Updating players for page {page}")
-        players_data = self.get_players_from_api(page)
+        players_data = self.get_players_from_api_by_page(page)
         
         # Add players to database
         self.add_players_to_db(players_data)

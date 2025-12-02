@@ -1,4 +1,0 @@
-# cronjob file
-0 0 * * * /usr/local/bin/python /app/matches_updater_full.py >> /var/log/cron_matches_updater_full.log 2>&1
-10,30,50 * * * * /usr/local/bin/python /app/matches_updater_daily.py >> /var/log/cron_matches_updater_daily.log 2>&1
-0 1 * * * /usr/local/bin/python /app/leagues_updater.py >> /var/log/cron_leagues_updater.log 2>&1
