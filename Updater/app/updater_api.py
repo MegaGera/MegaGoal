@@ -292,7 +292,7 @@ async def update_player_teams(req: UpdatePlayerTeamsRequest, request: Request):
 @app.post("/update_league_players/")
 async def update_league_players(req: UpdateLeaguePlayersRequest, request: Request):
     await validate_admin(request)
-    updater = MatchUpdater()
+    updater = PlayersUpdater()
     try:
         player_count = updater.update_players_by_league_and_season(req.league_id, req.season)
         return {
@@ -433,7 +433,7 @@ async def multi_season_update(req: MultiSeasonUpdateRequest, request: Request):
             
             # Update players
             if req.update_players:
-                updater = MatchUpdater()
+                updater = PlayersUpdater()
                 updater.update_players_by_league_and_season(req.league_id, season)
                 season_result["updates"]["players"] = "completed"
                 results["total_updates"]["players"] += 1
