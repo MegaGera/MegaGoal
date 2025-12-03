@@ -2,9 +2,6 @@ import http.client
 import json
 import datetime
 from .config import Config
-from .statistics.updater import StatisticsUpdater
-from .events.updater import EventsUpdater
-from .lineups.updater import LineupsUpdater
 
 class MatchUpdater:
     """Shared utilities for match updating operations"""
@@ -169,6 +166,11 @@ class MatchUpdater:
 
         # Update statistics, events, and lineups if full update is requested
         if full:
+            # Lazy imports to avoid circular dependency
+            from .statistics.updater import StatisticsUpdater
+            from .events.updater import EventsUpdater
+            from .lineups.updater import LineupsUpdater
+            
             statistics_updater = StatisticsUpdater()
             statistics_updater.update_statistics_by_league_and_season_missing(league_id, season)
             events_updater = EventsUpdater()
