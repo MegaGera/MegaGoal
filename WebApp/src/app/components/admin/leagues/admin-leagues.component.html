@@ -357,19 +357,25 @@
         </div>
         <div class="modal-body">
           <div class="top-buttons-container">
-            <button 
-              class="modal-action-btn"
-              (click)="triggerUpdateLeagues()"
-              [disabled]="isUpdateLeaguesLoading">
-              {{ isUpdateLeaguesLoading ? 'Updating...' : 'Update All Leagues' }}
-            </button>
+            <div class="button-with-description">
+              <button 
+                class="modal-action-btn"
+                (click)="triggerUpdateLeagues()"
+                [disabled]="isUpdateLeaguesLoading">
+                {{ isUpdateLeaguesLoading ? 'Updating...' : 'Update All Leagues' }}
+              </button>
+              <p class="button-description">Trigger API update for all the leagues</p>
+            </div>
             
-            <button 
-              class="modal-action-btn"
-              (click)="triggerCheckAvailableSeasons()"
-              [disabled]="isCheckSeasonsLoading">
-              {{ isCheckSeasonsLoading ? 'Checking...' : 'Check Matches by League and Season' }}
-            </button>
+            <div class="button-with-description">
+              <button 
+                class="modal-action-btn"
+                (click)="triggerCheckAvailableSeasons()"
+                [disabled]="isCheckSeasonsLoading">
+                {{ isCheckSeasonsLoading ? 'Checking...' : 'Check Matches by League and Season' }}
+              </button>
+              <p class="button-description">Check and correct local data structures of league_settings</p>
+            </div>
           </div>
 
           <!-- Separator -->
