@@ -1,6 +1,7 @@
 import http.client
 import json
 from ..config import Config
+from ..utils import MatchUpdater
 
 class EventsUpdater:
     """Utilities for events updating operations"""
@@ -124,28 +125,10 @@ class EventsUpdater:
 
     def _update_available_season(self, league_id, season, count):
         """Update available_seasons for a league with events count"""
-        setting = self.collection_settings.find_one({"league_id": int(league_id)})
-        if not setting:
-            return
-        
-        available_seasons = setting.get("available_seasons", [])
-        
-        season_found = False
-        for season_data in available_seasons:
-            if season_data.get("season") == season:
-                season_data[self.data_field] = count if count > 0 else None
-                season_found = True
-                break
-        
-        if season_found:
-            self.collection_settings.update_one(
-                {"league_id": int(league_id)},
-                {"$set": {"available_seasons": available_seasons}}
-            )
-            print(f"Updated {self.data_type}_count for league {league_id}, season {season}: {count}")
-        else:
-            print(f"Season {season} not found in available_seasons for league {league_id}, skipping {self.data_type} update")
-
-    def update_available_season_with_events(self, league_id, season, events_count):
-        """Public alias for backward compatibility"""
-        self._update_available_season(league_id, season, events_count)
+        MatchUpdater.update_available_season(
+            self.collection_settings, 
+            league_id, 
+            season, 
+            self.data_field, 
+            count
+        )

@@ -2,6 +2,7 @@ import http.client
 import json
 import datetime
 from ..config import Config
+from ..utils import MatchUpdater
 
 class PlayersUpdater:
     """Utilities for player updating operations"""
@@ -240,32 +241,10 @@ class PlayersUpdater:
 
     def update_available_season_with_players(self, league_id, season, player_count):
         """Update available_seasons for a league with player count"""
-        # Get current available_seasons
-        setting = self.collection_league_settings.find_one({"league_id": int(league_id)})
-        if not setting:
-            return
-        
-        available_seasons = setting.get("available_seasons", [])
-        
-        # Find if season already exists
-        season_found = False
-        for season_data in available_seasons:
-            if season_data.get("season") == season:
-                season_data["players"] = player_count if player_count > 0 else None
-                season_found = True
-                break
-        
-        # If season not found, add it
-        if not season_found:
-            available_seasons.append({
-                "season": season,
-                "real_matches": None,  # Will be updated when matches are added
-                "teams": None,  # Will be updated when teams are added
-                "players": player_count if player_count > 0 else None
-            })
-        
-        # Update the settings
-        self.collection_league_settings.update_one(
-            {"league_id": int(league_id)},
-            {"$set": {"available_seasons": available_seasons}}
+        MatchUpdater.update_available_season(
+            self.collection_league_settings, 
+            league_id, 
+            season, 
+            "players", 
+            player_count
         )

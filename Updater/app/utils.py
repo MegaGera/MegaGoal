@@ -166,33 +166,12 @@ class MatchUpdater:
 
     def update_available_season_with_matches(self, league_id, season, match_count):
         """Update available_seasons for a league with match count"""
-        # Get current available_seasons
-        setting = self.collection_settings.find_one({"league_id": int(league_id)})
-        if not setting:
-            return
-        
-        available_seasons = setting.get("available_seasons", [])
-        
-        # Find if season already exists
-        season_found = False
-        for season_data in available_seasons:
-            if season_data.get("season") == season:
-                season_data["real_matches"] = match_count if match_count > 0 else None
-                season_found = True
-                break
-        
-        # If season not found, add it
-        if not season_found:
-            available_seasons.append({
-                "season": season,
-                "real_matches": match_count if match_count > 0 else None,
-                "teams": None  # Will be updated when teams are added
-            })
-        
-        # Update the settings
-        self.collection_settings.update_one(
-            {"league_id": int(league_id)},
-            {"$set": {"available_seasons": available_seasons}}
+        MatchUpdater.update_available_season(
+            self.collection_settings, 
+            league_id, 
+            season, 
+            "real_matches", 
+            match_count
         )
 
     def update_league_season(self, league_id, season):
@@ -203,10 +182,52 @@ class MatchUpdater:
         )
         return result.modified_count
 
+    @staticmethod
+    def update_available_season(collection_settings, league_id, season, field_name, count):
+        """Common method to update available_seasons for a league with a specific field count
+        
+        Args:
+            collection_settings: MongoDB collection for league_settings
+            league_id: The league ID
+            season: The season year
+            field_name: The field name to update (e.g., 'real_matches', 'teams', 'players', 'events', 'lineups', 'statistics')
+            count: The count value to set (will be None if count <= 0)
+        """
+        # Get current available_seasons
+        setting = collection_settings.find_one({"league_id": int(league_id)})
+        if not setting:
+            return
+        
+        available_seasons = setting.get("available_seasons", [])
+        
+        # Find if season already exists
+        season_found = False
+        for season_data in available_seasons:
+            if season_data.get("season") == season:
+                season_data[field_name] = count if count > 0 else None
+                season_found = True
+                break
+        
+        # If season not found and count is greater than 0, create it
+        if not season_found and count > 0:
+            available_seasons.append({
+                "season": season,
+                field_name: count if count > 0 else None
+            })
+        
+        # Update the settings
+        collection_settings.update_one(
+            {"league_id": int(league_id)},
+            {"$set": {"available_seasons": available_seasons}}
+        )
+        
+        # Log the update
+        print(f"Updated {field_name} count for league {league_id}, season {season}: {count}")
+
     def check_and_update_available_seasons(self):
-        """Check all leagues and update their available_seasons based on existing matches and teams in the database"""
+        """Check all leagues and update their available_seasons based on existing matches, teams, statistics, events, and lineups in the database. Removes seasons with no matches and preserves players count."""
         # Get all league settings
-        all_settings = self.collection_settings.find({})
+        all_settings = self.collection_settings.find()
         
         for setting in all_settings:
             league_id = setting["league_id"]
@@ -218,8 +239,17 @@ class MatchUpdater:
                 print(f"League {league_id} not found in collection_leagues")
                 continue
             
-            # Initialize available_seasons array
-            available_seasons = []
+            # Get existing available_seasons and filter out seasons with no real_matches
+            existing_available_seasons = setting.get("available_seasons", [])
+            # Remove seasons that have no real_matches (null, 0, or missing)
+            cleaned_seasons = [
+                season_data for season_data in existing_available_seasons
+                if season_data.get("real_matches") is not None and season_data.get("real_matches", 0) > 0
+            ]
+            print(f"Cleaned {len(existing_available_seasons) - len(cleaned_seasons)} seasons with no matches")
+            
+            # Create a dictionary for quick lookup of existing seasons (preserving players)
+            seasons_dict = {season_data.get("season"): season_data for season_data in cleaned_seasons}
             
             # Check each season in the league
             for season_data in league.get("seasons", []):
@@ -234,6 +264,14 @@ class MatchUpdater:
                     "league.season": season
                 })
                 
+                # Only process seasons that have matches
+                if match_count == 0:
+                    print(f"No matches found for league {league_id} and season {season}, skipping")
+                    # Remove from seasons_dict if it exists
+                    if season in seasons_dict:
+                        del seasons_dict[season]
+                    continue
+                
                 print(f"Checking team count for league {league_id} and season {season}")
                 # Check if there are any teams for this league and season
                 team_count = self.collection_teams.count_documents({
@@ -245,24 +283,72 @@ class MatchUpdater:
                     }
                 })
                 
-                # Add season to available_seasons regardless of counts
-                available_seasons.append({
-                    "season": season,
-                    "real_matches": match_count if match_count > 0 else None,
-                    "teams": team_count if team_count > 0 else None
+                # Count finished matches with statistics data
+                print(f"Checking statistics count for league {league_id} and season {season}")
+                finished_statuses = Config.get_finished_match_status_array()
+                statistics_count = self.collection_real_matches.count_documents({
+                    "league.id": league_id,
+                    "league.season": season,
+                    "fixture.status.short": {"$in": finished_statuses},
+                    "statistics": {"$exists": True, "$ne": None, "$ne": []}
                 })
+                
+                # Count finished matches with events data
+                print(f"Checking events count for league {league_id} and season {season}")
+                events_count = self.collection_real_matches.count_documents({
+                    "league.id": league_id,
+                    "league.season": season,
+                    "fixture.status.short": {"$in": finished_statuses},
+                    "events": {"$exists": True, "$ne": None, "$ne": []}
+                })
+                
+                # Count finished matches with lineups data
+                print(f"Checking lineups count for league {league_id} and season {season}")
+                lineups_count = self.collection_real_matches.count_documents({
+                    "league.id": league_id,
+                    "league.season": season,
+                    "fixture.status.short": {"$in": finished_statuses},
+                    "lineups": {"$exists": True, "$ne": None, "$ne": []}
+                })
+                
+                # Update or create season entry
+                if season in seasons_dict:
+                    # Update existing season, preserve players count
+                    existing_season = seasons_dict[season]
+                    existing_season["real_matches"] = match_count if match_count > 0 else None
+                    existing_season["teams"] = team_count if team_count > 0 else None
+                    existing_season["statistics"] = statistics_count if statistics_count > 0 else None
+                    existing_season["events"] = events_count if events_count > 0 else None
+                    existing_season["lineups"] = lineups_count if lineups_count > 0 else None
+                    # Keep existing players value if it exists, otherwise set to None
+                    if "players" not in existing_season:
+                        existing_season["players"] = None
+                else:
+                    # Create new season entry
+                    seasons_dict[season] = {
+                        "season": season,
+                        "real_matches": match_count if match_count > 0 else None,
+                        "teams": team_count if team_count > 0 else None,
+                        "statistics": statistics_count if statistics_count > 0 else None,
+                        "events": events_count if events_count > 0 else None,
+                        "lineups": lineups_count if lineups_count > 0 else None,
+                        "players": None  # Players are updated separately
+                    }
 
                 print(f"Finished checking league {league_id} and season {season}")
 
+            # Convert dictionary back to list
+            available_seasons = list(seasons_dict.values())
+            
             print(f"Finished checking league {league_id}")
             
-            # Update the settings with the complete available_seasons array
+            # Update the settings with the cleaned and updated available_seasons array
             self.collection_settings.update_one(
                 {"league_id": league_id},
                 {"$set": {"available_seasons": available_seasons}}
             )
             
-            print(f"Updated available_seasons for league {league_id}: {available_seasons}")
+            print(f"Updated available_seasons for league {league_id}: {len(available_seasons)} seasons")
 
     def team_exists(self, team_id):
         """Check if team exists in database"""
@@ -327,33 +413,12 @@ class MatchUpdater:
 
     def update_available_season_with_teams(self, league_id, season, team_count):
         """Update available_seasons for a league with team count"""
-        # Get current available_seasons
-        setting = self.collection_settings.find_one({"league_id": int(league_id)})
-        if not setting:
-            return
-        
-        available_seasons = setting.get("available_seasons", [])
-        
-        # Find if season already exists
-        season_found = False
-        for season_data in available_seasons:
-            if season_data.get("season") == season:
-                season_data["teams"] = team_count if team_count > 0 else None
-                season_found = True
-                break
-        
-        # If season not found, add it
-        if not season_found:
-            available_seasons.append({
-                "season": season,
-                "real_matches": None,  # Will be updated when matches are added
-                "teams": team_count if team_count > 0 else None
-            })
-        
-        # Update the settings
-        self.collection_settings.update_one(
-            {"league_id": int(league_id)},
-            {"$set": {"available_seasons": available_seasons}}
+        MatchUpdater.update_available_season(
+            self.collection_settings, 
+            league_id, 
+            season, 
+            "teams", 
+            team_count
         )
 
     def move_league_position(self, league_id: int, direction: str) -> bool:
