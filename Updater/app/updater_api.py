@@ -151,7 +151,7 @@ async def update_matches(req: UpdateRequest, request: Request):
     await validate_admin(request)
     updater = MatchUpdater()
     try:
-        updater.update_league_matches(req.league_id, req.season)
+        updater.update_league_matches(req.league_id, req.season, full=False)
         return {"status": "success", "message": f"Updated matches for league {req.league_id} in season {req.season}"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -420,7 +420,7 @@ async def multi_season_update(req: MultiSeasonUpdateRequest, request: Request):
             # Update matches
             if req.update_matches:
                 updater = MatchUpdater()
-                updater.update_league_matches(req.league_id, season)
+                updater.update_league_matches(req.league_id, season, full=False)
                 season_result["updates"]["matches"] = "completed"
                 results["total_updates"]["matches"] += 1
             

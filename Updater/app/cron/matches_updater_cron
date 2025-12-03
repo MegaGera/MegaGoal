@@ -1,4 +1,10 @@
 # cronjob file
+
+# Full update runs daily at midnight
 0 0 * * * cd /app && /usr/local/bin/python -m app.cron.matches_updater_full >> /var/log/cron_matches_updater_full.log 2>&1
-10,30,50 * * * * cd /app && /usr/local/bin/python -m app.cron.matches_updater_daily >> /var/log/cron_matches_updater_daily.log 2>&1
+
+# Daily update runs every 5 minutes during active matches
+*/5 * * * * cd /app && /usr/local/bin/python -m app.cron.matches_updater_daily >> /var/log/cron_matches_updater_daily.log 2>&1
+
+# Leagues update runs daily at 1am
 0 1 * * * cd /app && /usr/local/bin/python -m app.cron.leagues_updater >> /var/log/cron_leagues_updater.log 2>&1

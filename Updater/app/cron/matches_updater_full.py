@@ -42,7 +42,7 @@ def perform_full_update():
         league_id = str(league["league_id"])
         season = str(league["season"])
         print(f"Adding the matches of league {league_id} in {season}")
-        updater.update_league_matches(league_id, season)
+        updater.update_league_matches(league_id, season, full=True)
         print("OK")
 
 if __name__ == "__main__":

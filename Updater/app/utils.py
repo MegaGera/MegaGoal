@@ -2,6 +2,9 @@ import http.client
 import json
 import datetime
 from .config import Config
+from .statistics.updater import StatisticsUpdater
+from .events.updater import EventsUpdater
+from .lineups.updater import LineupsUpdater
 
 class MatchUpdater:
     """Shared utilities for match updating operations"""
@@ -153,7 +156,7 @@ class MatchUpdater:
             {"$set": {"last_daily_update": datetime.datetime.today()}}
         )
     
-    def update_league_matches(self, league_id, season):
+    def update_league_matches(self, league_id, season, full=False):
         """Fetch matches from API and update DB for a given league and season, and update available_seasons"""
         season = int(season)
         matches = self.get_matches_from_api(league_id, season)
@@ -163,6 +166,15 @@ class MatchUpdater:
         # Update available_seasons with match count
         match_count = len(matches.get("response", []))
         self.update_available_season_with_matches(league_id, season, match_count)
+
+        # Update statistics, events, and lineups if full update is requested
+        if full:
+            statistics_updater = StatisticsUpdater()
+            statistics_updater.update_statistics_by_league_and_season_missing(league_id, season)
+            events_updater = EventsUpdater()
+            events_updater.update_events_by_league_and_season_missing(league_id, season)
+            lineups_updater = LineupsUpdater()
+            lineups_updater.update_lineups_by_league_and_season_missing(league_id, season)
 
     def update_available_season_with_matches(self, league_id, season, match_count):
         """Update available_seasons for a league with match count"""
