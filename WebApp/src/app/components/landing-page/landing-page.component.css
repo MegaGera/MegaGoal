@@ -882,6 +882,12 @@ app-favourite-team-card {
   color: #FF3C3C;
 }
 
+.footer-link .footer-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
 .footer-bottom {
   border-top: 1px solid #333;
   padding-top: 2rem;
