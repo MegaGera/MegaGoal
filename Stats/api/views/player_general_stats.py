@@ -151,8 +151,9 @@ class PlayerGeneralStatsAPIView(APIView):
 
             for event in real_match.get('events', []):
                 event_type = (event.get('type') or '').lower()
+                event_detail = (event.get('detail') or '').lower()
 
-                if event_type == 'goal':
+                if event_type == 'goal' and event_detail != 'own goal' and event_detail != 'missed penalty':
                     scorer_id = event.get('player', {}).get('id')
                     assist = event.get('assist')
                     assist_id = assist.get('id') if isinstance(assist, dict) else None

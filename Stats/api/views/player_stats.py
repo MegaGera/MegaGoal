@@ -196,9 +196,10 @@ class PlayerStatsAPIView(APIView):
                     for event in real_match['events']:
                         event_player_id = event.get('player', {}).get('id')
                         event_type = event.get('type', '').lower()
+                        event_detail = event.get('detail', '').lower()
                         
                         # Count goals
-                        if event_type == 'goal' and event_player_id == player_id:
+                        if event_type == 'goal' and event_player_id == player_id and event_detail != 'own goal' and event_detail != 'missed penalty':
                             total_goals += 1
                             season_goals += 1
                         
