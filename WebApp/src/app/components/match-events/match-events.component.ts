@@ -21,8 +21,8 @@ export class MatchEventsComponent {
   constructor(public images: ImagesService) {}
 
   getEventIcon(event: MatchEvent): string {
-    const type = event.type.toLowerCase();
-    const detail = event.detail.toLowerCase();
+    const type = (event.type || '').toLowerCase();
+    const detail = (event.detail || '').toLowerCase();
     
     // Goal types
     if (type === 'goal') {
@@ -67,8 +67,8 @@ export class MatchEventsComponent {
     const isHomeTeam = event.team.id === this.homeTeamId;
     let className = isHomeTeam ? 'event-home' : 'event-away';
     
-    const type = event.type.toLowerCase();
-    const detail = event.detail.toLowerCase();
+    const type = (event.type || '').toLowerCase();
+    const detail = (event.detail || '').toLowerCase();
     
     // Add class for goals to make them bigger
     if (type === 'goal') {
@@ -95,8 +95,8 @@ export class MatchEventsComponent {
   }
 
   getEventDescription(event: MatchEvent): string {
-    const type = event.type.toLowerCase();
-    const detail = event.detail.toLowerCase();
+    const type = (event.type || '').toLowerCase();
+    const detail = (event.detail || '').toLowerCase();
     
     if ((type === 'subst' || detail.toLowerCase().includes('substitution')) && event.assist && event.assist.name) {
       return event.assist.name;
@@ -106,8 +106,8 @@ export class MatchEventsComponent {
   }
 
   getEventPlayerId(event: MatchEvent): number {
-    const type = event.type.toLowerCase();
-    const detail = event.detail.toLowerCase();
+    const type = (event.type || '').toLowerCase();
+    const detail = (event.detail || '').toLowerCase();
     
     // For substitutions, use assist.id (player coming in) if available
     if ((type === 'subst' || detail.includes('substitution')) && event.assist?.id) {
@@ -119,10 +119,10 @@ export class MatchEventsComponent {
   }
 
   getEventDetailDisplay(event: MatchEvent): string {
-    const type = event.type.toLowerCase();
-    const detail = event.detail;
+    const type = (event.type || '').toLowerCase();
+    const detail = event.detail || '';
     
-    if (type === 'subst' || detail.includes('substitution')) {
+    if (type === 'subst' || detail.toLowerCase().includes('substitution')) {
       return event.player.name;
     }
     
@@ -156,8 +156,8 @@ export class MatchEventsComponent {
   }
 
   isImportantEvent(event: MatchEvent): boolean {
-    const type = event.type.toLowerCase();
-    const detail = event.detail.toLowerCase();
+    const type = (event.type || '').toLowerCase();
+    const detail = (event.detail || '').toLowerCase();
     
     // Goals are important
     if (type === 'goal') {
