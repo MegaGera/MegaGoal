@@ -138,7 +138,7 @@ class PlayerStatsAPIView(APIView):
             # Check substitution events for team info
             if not player_started and 'events' in real_match:
                 for event in real_match['events']:
-                    if (event.get('type', '').lower() == 'subst' and 
+                    if ((event.get('type') or '').lower() == 'subst' and 
                         event.get('assist', {}).get('id') == player_id):
                         team_id = event.get('team', {}).get('id')
                         teams_watched.add(team_id)
@@ -195,8 +195,8 @@ class PlayerStatsAPIView(APIView):
                 if 'events' in real_match:
                     for event in real_match['events']:
                         event_player_id = event.get('player', {}).get('id')
-                        event_type = event.get('type', '').lower()
-                        event_detail = event.get('detail', '').lower()
+                        event_type = (event.get('type') or '').lower()
+                        event_detail = (event.get('detail') or '').lower()
                         
                         # Count goals
                         if event_type == 'goal' and event_player_id == player_id and event_detail != 'own goal' and event_detail != 'missed penalty':
@@ -212,7 +212,7 @@ class PlayerStatsAPIView(APIView):
                         
                         # Count cards
                         if event_type == 'card' and event_player_id == player_id:
-                            detail = event.get('detail', '').lower()
+                            detail = (event.get('detail') or '').lower()
                             if 'yellow' in detail:
                                 yellow_cards += 1
                                 season_yellow += 1

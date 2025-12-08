@@ -547,7 +547,7 @@ class GeneralStatsAPIView(APIView):
             if 'events' in real_match and real_match['events']:
                 for event in real_match['events']:
                     # Only process substitution events
-                    if event.get('type', '').lower() == 'subst':
+                    if (event.get('type') or '').lower() == 'subst':
                         assist = event.get('assist')  # Player entering the game
                         if assist and assist.get('id') and assist.get('name'):
                             player_id = assist['id']
@@ -667,7 +667,7 @@ class GeneralStatsAPIView(APIView):
             if 'events' in real_match and real_match['events']:
                 for event in real_match['events']:
                     # Only process substitution events
-                    if event.get('type', '').lower() == 'subst':
+                    if (event.get('type') or '').lower() == 'subst':
                         assist = event.get('assist')  # Player entering the game
                         if assist and assist.get('id') and assist.get('name'):
                             player_id = assist['id']
@@ -779,7 +779,7 @@ class GeneralStatsAPIView(APIView):
             if 'events' in real_match and real_match['events']:
                 for event in real_match['events']:
                     # Only process substitution events
-                    if event.get('type', '').lower() == 'subst':
+                    if (event.get('type') or '').lower() == 'subst':
                         assist = event.get('assist')  # Player entering the game
                         if assist and assist.get('id') and assist.get('name'):
                             player_id = assist['id']
