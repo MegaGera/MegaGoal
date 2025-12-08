@@ -17,6 +17,13 @@ const connectRabbitMQ = async () => {
       exclusive: false,     // Other connections can access it
       autoDelete: false     // Queue persists when consumers disconnect
     });
+
+    // Declare the mailing queue (Producer creates if needed)
+    await channel.assertQueue('mailing', {
+      durable: true,        // Messages will survive broker restarts
+      exclusive: false,     // Other connections can access it
+      autoDelete: false     // Queue persists when consumers disconnect
+    });
     
     console.log('Connected to RabbitMQ successfully');
     

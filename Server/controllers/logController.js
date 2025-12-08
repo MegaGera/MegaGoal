@@ -86,6 +86,34 @@ const logMatchUpdateLocation = async (username, data, req) => {
   );
 };
 
+// Send message to mailing queue
+const sendMailingMessage = async (email, username, template = 'feedback') => {
+  try {
+    if (!isConnected()) {
+      console.warn('RabbitMQ not connected, skipping mailing message');
+      return;
+    }
+
+    const channel = getChannel();
+    const mailingMessage = {
+      recipient: email,
+      template,
+      username
+    };
+
+    await channel.sendToQueue(
+      'mailing',
+      Buffer.from(JSON.stringify(mailingMessage)),
+      { persistent: true } // Make message persistent
+    );
+
+    console.log(`Mailing message sent: ${email} - ${template} template`);
+  } catch (error) {
+    console.error('Failed to send mailing message:', error.message);
+    // Don't throw error to avoid breaking the main flow
+  }
+};
+
 const logFeedbackSubmitted = async (username, feedbackData, req) => {
   await logUserAction(
     username,
@@ -120,5 +148,6 @@ export {
   logMatchUpdateLocation,
   logMatchDeleted,
   logFeedbackSubmitted,
-  logAdminAction
+  logAdminAction,
+  sendMailingMessage
 }; 

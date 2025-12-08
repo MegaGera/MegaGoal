@@ -1,5 +1,5 @@
 import { getDB } from '../config/db.js';
-import { logFeedbackSubmitted } from './logController.js';
+import { logFeedbackSubmitted, sendMailingMessage } from './logController.js';
 
 // Submit user feedback
 export const submitFeedback = async (req, res) => {
@@ -16,6 +16,11 @@ export const submitFeedback = async (req, res) => {
     
     // Log feedback submission to RabbitMQ
     await logFeedbackSubmitted(feedbackData.username, { ...feedbackData, _id: result.insertedId }, req);
+    
+    // Send mailing message if email is provided
+    if (req.validateData?.email) {
+      await sendMailingMessage(req.validateData.email, feedbackData.username, 'feedback');
+    }
     
     res.status(201).json({ 
       id: result.insertedId,
