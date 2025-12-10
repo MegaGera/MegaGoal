@@ -6,15 +6,17 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { jamChevronLeft, jamChevronRight, jamPlus } from '@ng-icons/jam-icons';
-
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { MegaGoalService } from '../../services/megagoal.service';
+import { StatsService } from '../../services/stats.service';
 import { ImagesService } from '../../services/images.service';
 import { MatchParserService } from '../../services/match-parser.service';
 import { RealMatch } from '../../models/realMatch';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
-import { League } from '../../models/league';
+import { League, LeagueStats } from '../../models/league';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
 import { FINISHED_STATUSES } from '../../config/matchStatus';
 
@@ -58,6 +60,7 @@ export class MatchesComponent implements OnInit {
   
   // Top leagues for ordering
   topLeagues: League[] = [];
+  leagueViewCounts: Map<number, number> = new Map();
   
   // Store original data for live matches toggle
   originalGroupedMatches: { [key: string]: RealMatch[] } = {};
@@ -65,6 +68,7 @@ export class MatchesComponent implements OnInit {
 
   constructor(
     private megaGoalService: MegaGoalService,
+    private statsService: StatsService,
     public images: ImagesService,
     public matchParser: MatchParserService,
     private router: Router,
@@ -74,9 +78,11 @@ export class MatchesComponent implements OnInit {
   ngOnInit(): void {
     this.loadLocations();
     this.loadWatchedMatches();
-    this.loadTopLeagues();
     this.checkUrlParameters();
-    this.getMatchesForDate();
+    // Load top leagues first, then get matches (to ensure ordering works)
+    this.loadTopLeagues(() => {
+      this.getMatchesForDate();
+    });
   }
 
   private checkUrlParameters(): void {
@@ -242,9 +248,9 @@ export class MatchesComponent implements OnInit {
     this.groupedMatches = {};
     this.leagueOrder = [];
 
+    // Group matches by league
     this.matches.forEach(match => {
       const leagueKey = `${match.league.id}_${match.league.season}`;
-      const leagueName = `${match.league.name} (${match.league.season})`;
       
       if (!this.groupedMatches[leagueKey]) {
         this.groupedMatches[leagueKey] = [];
@@ -254,30 +260,43 @@ export class MatchesComponent implements OnInit {
       this.groupedMatches[leagueKey].push(match);
     });
 
-    console.log('Top leagues:', this.topLeagues);
-
-    // Sort leagues by position from topLeagues, with leagues not in topLeagues at the end
+    // Sort leagues: first by view count (descending), then by position
     this.leagueOrder.sort((a, b) => {
       const leagueA = this.groupedMatches[a][0].league;
       const leagueB = this.groupedMatches[b][0].league;
+      
+      // Get view counts
+      const viewsA = this.leagueViewCounts.get(leagueA.id) || 0;
+      const viewsB = this.leagueViewCounts.get(leagueB.id) || 0;
       
       // Find leagues in topLeagues to get their positions
       const topLeagueA = this.topLeagues.find(tl => tl.league.id === leagueA.id);
       const topLeagueB = this.topLeagues.find(tl => tl.league.id === leagueB.id);
       
-      // If both leagues are in topLeagues, sort by position
-      if (topLeagueA && topLeagueB) {
-        const posA = topLeagueA.position || Number.MAX_SAFE_INTEGER;
-        const posB = topLeagueB.position || Number.MAX_SAFE_INTEGER;
-        return posA - posB;
+      // If both have views or both don't have views, compare them
+      if ((viewsA > 0 && viewsB > 0) || (viewsA === 0 && viewsB === 0)) {
+        if (viewsA > 0 && viewsB > 0) {
+          // Both have views - sort by view count descending
+          return viewsB - viewsA;
+        } else {
+          // Neither has views - sort by position
+          if (topLeagueA && topLeagueB) {
+            const posA = topLeagueA.position || Number.MAX_SAFE_INTEGER;
+            const posB = topLeagueB.position || Number.MAX_SAFE_INTEGER;
+            return posA - posB;
+          }
+          
+          // If only one league is in topLeagues, put the one not in topLeagues at the end
+          if (topLeagueA && !topLeagueB) return -1;
+          if (!topLeagueA && topLeagueB) return 1;
+          
+          // If neither league is in topLeagues, sort alphabetically
+          return leagueA.name.localeCompare(leagueB.name);
+        }
       }
       
-      // If only one league is in topLeagues, put the one not in topLeagues at the end
-      if (topLeagueA && !topLeagueB) return -1;
-      if (!topLeagueA && topLeagueB) return 1;
-      
-      // If neither league is in topLeagues, sort alphabetically
-      return leagueA.name.localeCompare(leagueB.name);
+      // One has views and one doesn't - leagues with views come first
+      return viewsB - viewsA;
     });
 
     // Sort matches within each league by time
@@ -339,13 +358,46 @@ export class MatchesComponent implements OnInit {
     });
   }
 
-  loadTopLeagues(): void {
-    this.megaGoalService.getTopLeagues().subscribe({
-      next: (leagues: League[]) => {
-        this.topLeagues = leagues;
+  loadTopLeagues(callback?: () => void): void {
+    // Fetch both top leagues and league view stats in parallel
+    // If stats fail, continue with empty array so leagues still display
+    forkJoin({
+      leagues: this.megaGoalService.getTopLeagues(),
+      leagueStats: this.statsService.getLeaguesViewed().pipe(
+        catchError(error => {
+          console.warn('Failed to fetch league stats, continuing without view counts:', error);
+          return of([]); // Return empty array if stats fail
+        })
+      )
+    }).subscribe({
+      next: (result) => {
+        // Create a map of league_id to view count
+        this.leagueViewCounts.clear();
+        result.leagueStats.forEach((stat: LeagueStats) => {
+          this.leagueViewCounts.set(stat.league_id, stat.count);
+        });
+
+        this.topLeagues = result.leagues;
+        
+        // If matches are already loaded, re-group them with the new order
+        if (this.matches.length > 0) {
+          this.groupMatchesByLeague();
+          // Re-apply live filter if active
+          if (this.showLiveMatches) {
+            this.applyLiveMatchesFilter();
+          }
+        }
+        
+        if (callback) {
+          callback();
+        }
       },
       error: (error) => {
         console.error('Error loading top leagues:', error);
+        // Still proceed with matches even if top leagues fail
+        if (callback) {
+          callback();
+        }
       }
     });
   }
