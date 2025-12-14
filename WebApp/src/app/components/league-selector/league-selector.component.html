@@ -1,17 +1,19 @@
-<!-- Loading overlay -->
-@if (isLoading) {
-  <div class="loading-overlay">
-    <div class="loading-spinner"></div>
-  </div>
-}
-
 <div class="container">
   <section class="fade-in">
     <h1 class="section-title">Select a League</h1>
     <p class="section-description">Choose a league to view teams and matches</p>
     
     <div class="leagues-grid">
-      @for (league of leagues; track league.league.id) {
+      @if (isLoading) {
+        @for (item of [1,2,3,4,5,6,7,8]; track $index) {
+          <div class="league-card-skeleton">
+            <div class="skeleton-logo"></div>
+            <div class="skeleton-name"></div>
+            <div class="skeleton-badge"></div>
+          </div>
+        }
+      } @else {
+        @for (league of leagues; track league.league.id) {
         <div 
           class="league-card" 
           (click)="selectLeague(league)"
@@ -30,6 +32,7 @@
             </div>
           }
         </div>
+        }
       }
     </div>
     

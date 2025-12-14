@@ -8,33 +8,51 @@
   min-height: 100vh;
 }
 
-/* Loading states */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
+/* Skeleton Loaders */
+.league-card-skeleton {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  text-align: center;
+  border: 3px solid #e9ecef;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
 }
 
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #dc143c;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.skeleton-logo {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.skeleton-name {
+  height: 20px;
+  width: 80%;
+  margin: 0 auto;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-badge {
+  height: 24px;
+  width: 60px;
+  margin: 12px auto 0;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* League selection grid */
@@ -218,6 +236,21 @@
     margin-bottom: 16px;
   }
   
+  .league-card-skeleton {
+    padding: 20px;
+    border-width: 2px;
+  }
+  
+  .skeleton-logo {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 16px;
+  }
+  
+  .skeleton-badge {
+    margin-top: 10px;
+  }
+  
   .section-title {
     font-size: 24px;
   }
@@ -251,6 +284,19 @@
   .view-count-badge {
     font-size: 9px;
     padding: 4px 8px;
+    margin-top: 8px;
+  }
+  
+  .league-card-skeleton {
+    padding: 16px;
+  }
+  
+  .skeleton-logo {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .skeleton-badge {
     margin-top: 8px;
   }
 } 
