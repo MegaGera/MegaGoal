@@ -1,10 +1,3 @@
-<!-- Loading overlay -->
-@if (isLoading) {
-  <div class="loading-overlay">
-    <div class="loading-spinner"></div>
-  </div>
-}
-
 <div class="container">
   <section class="fade-in">
     <!-- Header section -->
@@ -87,7 +80,50 @@
     </div>
 
     <!-- Matches by league -->
-    @if (leagueOrder.length > 0) {
+    @if (isLoading) {
+      <div class="leagues-container">
+        @for (item of [1,2,3]; track $index) {
+          <div class="league-section">
+            <div class="league-header-skeleton">
+              <div class="skeleton-league-info">
+                <div class="skeleton-league-logo"></div>
+                <div class="skeleton-league-details">
+                  <div class="skeleton-league-name"></div>
+                  <div class="skeleton-league-meta">
+                    <div class="skeleton-season"></div>
+                    <div class="skeleton-country"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="skeleton-match-count"></div>
+            </div>
+            <div class="matches-grid">
+              @for (matchItem of [1,2,3,4,5,6]; track $index) {
+                <div class="match-card-wrapper">
+                  <div class="match-card-skeleton">
+                    <div class="skeleton-match-header">
+                      <div class="skeleton-team">
+                        <div class="skeleton-team-logo"></div>
+                        <div class="skeleton-team-name"></div>
+                      </div>
+                      <div class="skeleton-score"></div>
+                      <div class="skeleton-team">
+                        <div class="skeleton-team-logo"></div>
+                        <div class="skeleton-team-name"></div>
+                      </div>
+                    </div>
+                    <div class="skeleton-match-info">
+                      <div class="skeleton-info-line"></div>
+                      <div class="skeleton-info-line short"></div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (leagueOrder.length > 0) {
       <div class="leagues-container">
         @for (leagueKey of leagueOrder; track leagueKey) {
           @if (groupedMatches[leagueKey].length > 0) {

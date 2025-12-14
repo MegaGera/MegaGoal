@@ -8,33 +8,157 @@
   min-height: 100vh;
 }
 
-/* Loading states */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.9);
+/* Skeleton Loaders */
+.league-header-skeleton {
+  background: white;
+  border-radius: 16px;
+  padding: 24px 32px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 2px solid #e5e7eb;
+  margin-bottom: 20px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
 }
 
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #dc143c;
+.skeleton-league-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.skeleton-league-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-league-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-league-name {
+  height: 24px;
+  width: 200px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-league-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.skeleton-season {
+  height: 20px;
+  width: 60px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-country {
+  height: 16px;
+  width: 80px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-match-count {
+  height: 32px;
+  width: 100px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.match-card-skeleton {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e9ecef;
+  min-height: 200px;
+}
+
+.skeleton-match-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.skeleton-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeleton-team-logo {
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.skeleton-team-name {
+  height: 16px;
+  width: 80px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-score {
+  height: 40px;
+  width: 60px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-match-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.skeleton-info-line {
+  height: 14px;
+  width: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-info-line.short {
+  width: 60%;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* Header section */
@@ -645,6 +769,46 @@
     flex-wrap: wrap;
   }
   
+  .league-header-skeleton {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+  }
+  
+  .skeleton-league-logo {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .skeleton-league-name {
+    width: 150px;
+  }
+  
+  .skeleton-match-count {
+    width: 80px;
+  }
+  
+  .match-card-skeleton {
+    padding: 16px;
+    min-height: 180px;
+  }
+  
+  .skeleton-team-logo {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .skeleton-team-name {
+    width: 70px;
+  }
+  
+  .skeleton-score {
+    width: 50px;
+    height: 35px;
+  }
+  
   .league-info {
     flex-direction: row;
     align-items: center;
@@ -741,6 +905,45 @@
   .league-header {
     padding: 12px 16px;
     gap: 8px;
+  }
+  
+  .league-header-skeleton {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  
+  .skeleton-league-logo {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .skeleton-league-name {
+    width: 120px;
+    height: 20px;
+  }
+  
+  .skeleton-match-count {
+    width: 70px;
+    height: 28px;
+  }
+  
+  .match-card-skeleton {
+    padding: 12px;
+    min-height: 160px;
+  }
+  
+  .skeleton-team-logo {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .skeleton-team-name {
+    width: 60px;
+  }
+  
+  .skeleton-score {
+    width: 45px;
+    height: 30px;
   }
   
   .league-info {
