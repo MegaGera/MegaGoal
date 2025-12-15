@@ -42,7 +42,7 @@ import { FINISHED_STATUSES } from '../../config/matchStatus';
   ]
 })
 export class MatchesComponent implements OnInit {
-  isLoading = false;
+  isLoading = true;
   selectedDate: string = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD for native input
   // maxDate: string = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
   matches: RealMatch[] = [];
