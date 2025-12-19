@@ -15,7 +15,7 @@ export class MiniStatCardComponent {
   @Input() label: string = '';
   @Input() value: string = '';
   @Input() subValue?: string; // Optional sub-value that shows on hover
-  @Input() type: 'crazy-match' | 'biggest-rival' | 'most-viewed-location' | 'home-stadium' | 'away-support' | 'total-away-visits' | 'king-of-draws' | 'biggest-win-percentage' | 'biggest-lose-percentage' | 'most-boring-team' | 'most-crazy-team' | 'most-watched-stadium' | 'top-goalscorer' | 'top-assist-provider' | 'most-watched-player' = 'crazy-match';
+  @Input() type: 'crazy-match' | 'biggest-win' | 'biggest-rival' | 'most-viewed-location' | 'home-stadium' | 'away-support' | 'total-away-visits' | 'king-of-draws' | 'biggest-win-percentage' | 'biggest-lose-percentage' | 'most-boring-team' | 'most-crazy-team' | 'most-watched-stadium' | 'top-goalscorer' | 'top-assist-provider' | 'most-watched-player' = 'crazy-match';
   @Input() team_id?: number;
   @Input() match_id?: number;
   @Input() player_id?: number;
@@ -26,6 +26,7 @@ export class MiniStatCardComponent {
   getIcon(): string {
     switch (this.type) {
       case 'crazy-match': return '🔥';
+      case 'biggest-win': return '🏆';
       case 'biggest-rival': return '⚔️';
       case 'most-viewed-location': return '📍';
       case 'home-stadium': return '🏟️';

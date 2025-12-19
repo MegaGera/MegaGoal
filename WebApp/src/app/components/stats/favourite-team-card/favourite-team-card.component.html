@@ -93,6 +93,17 @@
         </app-mini-stat-card>
       }
 
+      <!-- Biggest Win -->
+      @if (teamStats.biggest_win) {
+        <app-mini-stat-card
+          type="biggest-win"
+          label="Biggest Win"
+          [value]="teamStats.biggest_win.teams.home.name + ' ' + teamStats.biggest_win.goals.home + '-' + teamStats.biggest_win.goals.away + ' ' + teamStats.biggest_win.teams.away.name"
+          [match_id]="teamStats.biggest_win.fixture?.id"
+          [interactable]="interactable">
+        </app-mini-stat-card>
+      }
+
       <!-- Biggest Rival -->
       @if (teamStats.biggest_rival && teamStats.biggest_rival.matches_played > 1) {
         <app-mini-stat-card

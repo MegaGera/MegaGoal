@@ -1,4 +1,4 @@
-@if (interactable && match_id !== undefined && type === 'crazy-match') {
+@if (interactable && match_id !== undefined && (type === 'crazy-match' || type === 'biggest-win')) {
   <a [routerLink]="['/app/match']" [queryParams]="{id: match_id}" class="mini-stat-card-link">
     <div class="mini-stat-card" [ngClass]="type">
       <div class="stat-highlight-icon">

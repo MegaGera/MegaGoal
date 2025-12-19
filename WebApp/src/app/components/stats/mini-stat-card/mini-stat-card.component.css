@@ -103,6 +103,10 @@
   border-left-color: #dc3545;
 }
 
+.mini-stat-card.biggest-win {
+  border-left-color: #ffd700;
+}
+
 .mini-stat-card.biggest-rival {
   border-left-color: #6f42c1;
 }
