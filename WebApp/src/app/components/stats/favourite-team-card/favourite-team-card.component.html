@@ -82,17 +82,6 @@
 
     <!-- Additional Stats -->
     <div class="additional-stats" [class.show-on-mobile]="showAllStatsOnMobile">
-      <!-- Crazy Match -->
-      @if (teamStats.crazy_match) {
-        <app-mini-stat-card
-          type="crazy-match"
-          label="Crazy Match"
-          [value]="teamStats.crazy_match.teams.home.name + ' ' + teamStats.crazy_match.goals.home + '-' + teamStats.crazy_match.goals.away + ' ' + teamStats.crazy_match.teams.away.name"
-          [match_id]="teamStats.crazy_match.fixture?.id"
-          [interactable]="interactable">
-        </app-mini-stat-card>
-      }
-
       <!-- Biggest Win -->
       @if (teamStats.biggest_win) {
         <app-mini-stat-card
@@ -100,6 +89,17 @@
           label="Biggest Win"
           [value]="teamStats.biggest_win.teams.home.name + ' ' + teamStats.biggest_win.goals.home + '-' + teamStats.biggest_win.goals.away + ' ' + teamStats.biggest_win.teams.away.name"
           [match_id]="teamStats.biggest_win.fixture?.id"
+          [interactable]="interactable">
+        </app-mini-stat-card>
+      }
+
+      <!-- Crazy Match -->
+      @if (teamStats.crazy_match) {
+        <app-mini-stat-card
+          type="crazy-match"
+          label="Crazy Match"
+          [value]="teamStats.crazy_match.teams.home.name + ' ' + teamStats.crazy_match.goals.home + '-' + teamStats.crazy_match.goals.away + ' ' + teamStats.crazy_match.teams.away.name"
+          [match_id]="teamStats.crazy_match.fixture?.id"
           [interactable]="interactable">
         </app-mini-stat-card>
       }
