@@ -66,63 +66,10 @@
               </app-favourite-team-card>
 
               @if (viewMode === 'insights') {
-                <app-general-card customClass="insights-card">
-                    <div class="insights-card-header">
-                      <h3>📈 Performance Overview</h3>
-                    </div>
-
-                  <div class="insights-summary-grid performance-stats-grid">
-                    @if (favouriteTeamLoaded && favouriteTeamStats) {
-                      <app-basic-stat-card
-                        label="Yellow Cards"
-                        [value]="favouriteTeamStats.total_yellow_cards ?? 0"
-                        [subValue]="getPerMatchValue(favouriteTeamStats.total_yellow_cards ?? 0)"
-                        icon="🟨"
-                        iconClass="cards-yellow">
-                      </app-basic-stat-card>
-                      <app-basic-stat-card
-                        label="Red Cards"
-                        [value]="favouriteTeamStats.total_red_cards ?? 0"
-                        [subValue]="getPerMatchValue(favouriteTeamStats.total_red_cards ?? 0)"
-                        icon="🟥"
-                        iconClass="cards-red">
-                      </app-basic-stat-card>
-                      <app-basic-stat-card
-                        label="Fouls Committed"
-                        [value]="favouriteTeamStats.total_fouls ?? 0"
-                        [subValue]="getPerMatchValue(favouriteTeamStats.total_fouls ?? 0)"
-                        icon="🚫"
-                        iconClass="fouls">
-                      </app-basic-stat-card>
-                      <app-basic-stat-card
-                        label="Shots"
-                        [value]="favouriteTeamStats.total_shots ?? 0"
-                        [subValue]="getPerMatchValue(favouriteTeamStats.total_shots ?? 0)"
-                        icon="🎯"
-                        iconClass="shots">
-                      </app-basic-stat-card>
-                      <app-basic-stat-card
-                        label="Avg Possession"
-                        [value]="favouriteTeamStats.average_possession ?? 0"
-                        [valueSuffix]="'%'"
-                        icon="📊"
-                        iconClass="possession">
-                      </app-basic-stat-card>
-                      <app-basic-stat-card
-                        label="Corner Kicks"
-                        [value]="favouriteTeamStats.total_corner_kicks ?? 0"
-                        [subValue]="getPerMatchValue(favouriteTeamStats.total_corner_kicks ?? 0)"
-                        icon="🚩"
-                        iconClass="corners">
-                      </app-basic-stat-card>
-                    } @else {
-                      <div class="summary-tile performance-placeholder">
-                        <span class="summary-label">Team stats</span>
-                        <span class="summary-value">Loading…</span>
-                      </div>
-                    }
-                  </div>
-                </app-general-card>
+                <app-team-performance-overview
+                  [teamStats]="favouriteTeamStats"
+                  [isLoading]="!favouriteTeamLoaded">
+                </app-team-performance-overview>
               }
             } @else {
               <div class="insights-sidebar-placeholder" aria-hidden="true"></div>
@@ -415,56 +362,10 @@
                 </div>
                 @if (isMobileView) {
                   <div class="insights-mobile-performance">
-                    <app-general-card customClass="insights-card">
-                      <div class="insights-card-header">
-                        <h3>📈 Performance Overview</h3>
-                      </div>
-    
-                      <div class="insights-summary-grid performance-stats-grid">
-                        @if (favouriteTeamLoaded && favouriteTeamStats) {
-                          <app-basic-stat-card
-                            label="Yellow Cards"
-                            [value]="favouriteTeamStats.total_yellow_cards ?? 0"
-                            [subValue]="getPerMatchValue(favouriteTeamStats.total_yellow_cards ?? 0)"
-                            icon="🟨"
-                            iconClass="cards-yellow">
-                          </app-basic-stat-card>
-                          <app-basic-stat-card
-                            label="Red Cards"
-                            [value]="favouriteTeamStats.total_red_cards ?? 0"
-                            [subValue]="getPerMatchValue(favouriteTeamStats.total_red_cards ?? 0)"
-                            icon="🟥"
-                            iconClass="cards-red">
-                          </app-basic-stat-card>
-                          <app-basic-stat-card
-                            label="Fouls Committed"
-                            [value]="favouriteTeamStats.total_fouls ?? 0"
-                            [subValue]="getPerMatchValue(favouriteTeamStats.total_fouls ?? 0)"
-                            icon="🚫"
-                            iconClass="fouls">
-                          </app-basic-stat-card>
-                          <app-basic-stat-card
-                            label="Avg Possession"
-                            [value]="favouriteTeamStats.average_possession ?? 0"
-                            [valueSuffix]="'%'"
-                            icon="📊"
-                            iconClass="possession">
-                          </app-basic-stat-card>
-                          <app-basic-stat-card
-                            label="Corner Kicks"
-                            [value]="favouriteTeamStats.total_corner_kicks ?? 0"
-                            [subValue]="getPerMatchValue(favouriteTeamStats.total_corner_kicks ?? 0)"
-                            icon="🚩"
-                            iconClass="corners">
-                          </app-basic-stat-card>
-                        } @else {
-                          <div class="summary-tile performance-placeholder">
-                            <span class="summary-label">Team stats</span>
-                            <span class="summary-value">Loading…</span>
-                          </div>
-                        }
-                      </div>
-                    </app-general-card>
+                    <app-team-performance-overview
+                      [teamStats]="favouriteTeamStats"
+                      [isLoading]="!favouriteTeamLoaded">
+                    </app-team-performance-overview>
                   </div>
                 }
               </div>

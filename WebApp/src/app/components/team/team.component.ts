@@ -24,6 +24,7 @@ import { Location } from '../../models/location';
 import { FavouriteTeamCardComponent } from '../stats/favourite-team-card/favourite-team-card.component';
 import { BasicStatCardComponent } from '../stats/basic-stat-card/basic-stat-card.component';
 import { GeneralCardComponent } from '../general-card/general-card.component';
+import { TeamPerformanceOverviewComponent } from '../stats/team-performance-overview/team-performance-overview.component';
 import { TeamCardComponent } from '../team-card/team-card.component';
 import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { TeamHeaderComponent } from './team-header/team-header.component';
@@ -69,7 +70,8 @@ interface TeamInsightsSummary {
     GeneralCardComponent,
     MatProgressSpinnerModule,
     TeamHeaderComponent,
-    TeamCardComponent
+    TeamCardComponent,
+    TeamPerformanceOverviewComponent
   ],
   templateUrl: './team.component.html',
   styleUrl: './team.component.css',
@@ -934,15 +936,6 @@ export class TeamComponent implements OnInit, OnDestroy {
     return home + away;
   }
 
-  getPerMatchValue(total?: number | null): number | null {
-    if (!this.favouriteTeamStats || this.favouriteTeamStats.matches_watched === 0) {
-      return null;
-    }
-    if (total === undefined || total === null) {
-      return null;
-    }
-    return parseFloat((total / this.favouriteTeamStats.matches_watched).toFixed(2));
-  }
 
   isMatchWatched(fixtureId: number): boolean {
     return this.allWatchedMatches.some(match => match.fixture.id === fixtureId) ||
