@@ -1,10 +1,24 @@
-<app-general-card customClass="insights-card">
-  <div class="insights-card-header">
-    <h3>📈 Performance Overview</h3>
-  </div>
+@if (isLoading) {
+  <app-general-card customClass="insights-card" [loading]="true">
+    <div class="loading-skeleton">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-stats-grid">
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+        <div class="skeleton-stat"></div>
+      </div>
+    </div>
+  </app-general-card>
+} @else if (teamStats) {
+  <app-general-card customClass="insights-card">
+    <div class="insights-card-header">
+      <h3>📈 Performance Overview</h3>
+    </div>
 
-  <div class="insights-summary-grid performance-stats-grid">
-    @if (!isLoading && teamStats) {
+    <div class="insights-summary-grid performance-stats-grid">
       <app-basic-stat-card
         label="Yellow Cards"
         [value]="teamStats.total_yellow_cards ?? 0"
@@ -47,12 +61,7 @@
         icon="🚩"
         iconClass="corners">
       </app-basic-stat-card>
-    } @else {
-      <div class="summary-tile performance-placeholder">
-        <span class="summary-label">Team stats</span>
-        <span class="summary-value">Loading…</span>
-      </div>
-    }
-  </div>
-</app-general-card>
+    </div>
+  </app-general-card>
+}
 
