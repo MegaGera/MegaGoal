@@ -19,4 +19,20 @@ export class LandingService {
   getLandingPageInfo(): Observable<LandingPageInfo> {
     return this.http.get<LandingPageInfo>(`${this.apiUrl}/public/match/landing-info`);
   }
+
+  /**
+   * Log page visit to analytics endpoint (public, no authentication required)
+   */
+  logPageVisit(page: string, pageData?: any): Observable<any> {
+    const body = {
+      page,
+      ...pageData
+    };
+    const options = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+    return this.http.post<any>(`${this.apiUrl}/public/analytics/page-visit`, body, options);
+  }
 }

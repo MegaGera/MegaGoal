@@ -383,4 +383,15 @@ export class MegaGoalService {
     
     return this.http.get<any>(this.url + '/youtube/highlights', { ...this.options, params: params });
   }
+
+  /**
+   * Log page visit to analytics endpoint
+   */
+  logPageVisit(page: string, pageData?: any): Observable<any> {
+    const body = {
+      page,
+      ...pageData
+    };
+    return this.http.post<any>(this.url + '/analytics/page-visit', body, this.options);
+  }
 }
