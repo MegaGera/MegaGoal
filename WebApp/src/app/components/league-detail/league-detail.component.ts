@@ -160,6 +160,15 @@ export class LeagueDetailComponent implements OnInit {
           this.getRealMatches();
           this.getMatches();
           this.getLocations();
+          
+          // Log page visit with league information
+          this.megagoal.logPageVisit('league-detail', {
+            leagueId: this.selectedLeague.league.id,
+            leagueName: this.selectedLeague.league.name
+          }).subscribe({
+            next: () => {},
+            error: (error) => console.error('Error logging page visit:', error)
+          });
         } else {
           // League not found, redirect to league selector
           this.router.navigate(['/app/leagues']);

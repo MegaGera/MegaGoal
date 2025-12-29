@@ -75,6 +75,12 @@ export class LeagueSelectorComponent {
         });
         
         this.setLoading(false);
+        
+        // Log page visit
+        this.megagoal.logPageVisit('league-selector').subscribe({
+          next: () => {},
+          error: (error) => console.error('Error logging page visit:', error)
+        });
       },
       error: (error: any) => {
         // This will only trigger if the leagues API fails (critical error)
