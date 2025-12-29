@@ -142,6 +142,21 @@ const logAdminAction = async (username, action, details, req) => {
   );
 };
 
+const logPageVisit = async (username, pageName, pageData = {}, req) => {
+  await logUserAction(
+    username,
+    `VIEW_PAGE_${pageName.toUpperCase().replace(/-/g, '_')}`,
+    {
+      page: pageName,
+      ...pageData
+    },
+    {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }
+  );
+};
+
 export {
   logUserAction,
   logMatchCreated,
@@ -149,5 +164,6 @@ export {
   logMatchDeleted,
   logFeedbackSubmitted,
   logAdminAction,
-  sendMailingMessage
+  sendMailingMessage,
+  logPageVisit
 }; 

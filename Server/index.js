@@ -18,6 +18,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import playersRoutes from './routes/playersRoutes.js';
 import youtubeRoutes from './routes/youtubeRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
 
 
 const app = express();
@@ -62,6 +63,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // Public routes (no authentication required) - must be defined before middleware
 app.use('/public/match', matchRoutes);
+app.use('/public/analytics', analyticsRoutes);
 
 // Validate Api Key
 if (process.env.NODE_ENV === 'production') {
@@ -130,6 +132,7 @@ app.use('/admin', validateAdmin, adminRoutes);
 app.use('/feedback', feedbackRoutes);
 app.use('/players', playersRoutes);
 app.use('/youtube', youtubeRoutes);
+app.use('/analytics', analyticsRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3150;
