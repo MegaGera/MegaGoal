@@ -68,6 +68,19 @@ export class MatchInfoComponent {
           this.awayStatistics = this.match.statistics[1];
         }
         this.loading = false;
+        
+        // Log page visit with match information
+        this.megagoal.logPageVisit('match-info', {
+          fixtureId: this.match.fixture.id,
+          homeTeam: this.match.teams.home.name,
+          awayTeam: this.match.teams.away.name,
+          leagueId: this.match.league.id,
+          leagueName: this.match.league.name
+        }).subscribe({
+          next: () => {},
+          error: (error) => console.error('Error logging page visit:', error)
+        });
+        
         // Load highlights video if match is finished
         if (this.isFinished()) {
           this.loadHighlights();
