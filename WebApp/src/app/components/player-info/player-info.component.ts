@@ -59,6 +59,15 @@ export class PlayerInfoComponent {
         this.playerBirthPlace = this.buildBirthPlace(this.player.player?.birth);
         this.loading = false;
         this.loadPlayerStats();
+        
+        // Log page visit with player information
+        this.megagoal.logPageVisit('player-info', {
+          playerId: this.player.player.id,
+          playerName: this.player.player.name
+        }).subscribe({
+          next: () => {},
+          error: (error) => console.error('Error logging page visit:', error)
+        });
       } else {
         this.router.navigate(["/app/home"]);
       }
