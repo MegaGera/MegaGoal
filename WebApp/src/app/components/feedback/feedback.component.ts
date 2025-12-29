@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MegaGoalService } from '../../services/megagoal.service';
@@ -11,7 +11,7 @@ import { UserFeedback } from '../../models/user_feedback';
   templateUrl: './feedback.component.html',
   styleUrl: './feedback.component.css'
 })
-export class FeedbackComponent {
+export class FeedbackComponent implements OnInit {
   feedbackForm: FormGroup;
   featureOptions = [
     'Rate matches and teams and get recommended matches based on your votes and the ones of other users',
@@ -28,6 +28,14 @@ export class FeedbackComponent {
       voted: [[]],
       proposal: [''],
       general: ['']
+    });
+  }
+
+  ngOnInit(): void {
+    // Log page visit
+    this.megaGoalService.logPageVisit('feedback').subscribe({
+      next: () => {},
+      error: (error) => console.error('Error logging page visit:', error)
     });
   }
 

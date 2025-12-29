@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule, FormBuilder, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -30,7 +30,7 @@ import { MatchParserService } from '../../services/match-parser.service';
     size: '1.5em',
   }), provideIcons({ jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamChevronDown })]
 })
-export class LocationsComponent {
+export class LocationsComponent implements OnInit {
 
   locations: Location[] = [];
   selectedLocation: Location | null = null;
@@ -70,6 +70,14 @@ export class LocationsComponent {
     private imagesService: ImagesService
   ) {
     this.init();
+  }
+
+  ngOnInit(): void {
+    // Log page visit after initial data is loaded
+    this.megagoal.logPageVisit('locations').subscribe({
+      next: () => {},
+      error: (error) => console.error('Error logging page visit:', error)
+    });
   }
 
   init(): void {
