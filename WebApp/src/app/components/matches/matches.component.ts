@@ -236,6 +236,17 @@ export class MatchesComponent implements OnInit {
         }
         
         this.isLoading = false;
+        
+        // Log page visit with selected date
+        this.megaGoalService.logPageVisit('matches', {
+          selectedDate: this.selectedDate,
+          showLiveMatches: this.showLiveMatches,
+          totalMatches: this.matches.length,
+          totalLeagues: this.leagueOrder.length
+        }).subscribe({
+          next: () => {},
+          error: (error) => console.error('Error logging page visit:', error)
+        });
       },
       error: (error: any) => {
         console.error('Error fetching matches:', error);
