@@ -132,6 +132,12 @@ export class LandingPageComponent implements OnInit {
     this.setMetaTags();
     this.loadLandingPageInfo();
     this.loadTeamStats();
+    
+    // Log page visit (public endpoint, no authentication required)
+    this.landingService.logPageVisit('landing-page').subscribe({
+      next: () => {},
+      error: (error) => console.error('Error logging page visit:', error)
+    });
   }
 
   setMetaTags(): void {

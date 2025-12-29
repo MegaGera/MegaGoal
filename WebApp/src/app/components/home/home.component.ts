@@ -97,6 +97,12 @@ export class HomeComponent implements OnInit {
     this.getLocations();
     this.getUserStats();
     this.getLeaguesStats();
+    
+    // Log page visit
+    this.megagoal.logPageVisit('home').subscribe({
+      next: () => {},
+      error: (error) => console.error('Error logging page visit:', error)
+    });
   }
 
   /* 

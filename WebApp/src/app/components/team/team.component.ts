@@ -232,6 +232,15 @@ export class TeamComponent implements OnInit, OnDestroy {
         this.getLocations();
         this.loadAllWatchedMatches();
         
+        // Log page visit with team information
+        this.megagoal.logPageVisit('team', {
+          teamId: this.team.team.id,
+          teamName: this.team.team.name
+        }).subscribe({
+          next: () => {},
+          error: (error) => console.error('Error logging page visit:', error)
+        });
+        
         // Update URL with view parameter if it wasn't present initially
         // This ensures the URL reflects the current state (defaults to 'insights')
         if (!hasViewParam) {
