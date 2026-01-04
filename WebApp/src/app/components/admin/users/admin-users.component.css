@@ -129,7 +129,7 @@
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .stat-card {
@@ -138,7 +138,7 @@
   padding: 20px;
   border-radius: 8px;
   flex: 1;
-  min-width: 150px;
+  min-width: 0;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -165,12 +165,12 @@
 
 .users-table-header {
   display: grid;
-  grid-template-columns: 80px 1fr 150px;
+  grid-template-columns: 60px minmax(0, 1fr) 100px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   font-weight: 700;
   padding: 16px 20px;
-  gap: 16px;
+  gap: 12px;
 }
 
 .table-header-cell {
@@ -181,9 +181,9 @@
 
 .user-row {
   display: grid;
-  grid-template-columns: 80px 1fr 150px;
+  grid-template-columns: 60px minmax(0, 1fr) 100px;
   padding: 16px 20px;
-  gap: 16px;
+  gap: 12px;
   border-bottom: 1px solid #e2e8f0;
   transition: background-color 0.2s;
   align-items: center;
@@ -200,18 +200,23 @@
 .table-cell {
   display: flex;
   align-items: center;
+  min-width: 0;
 }
 
 .rank-cell {
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .username-cell {
   font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .count-cell {
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .rank-badge {
@@ -237,12 +242,17 @@
   font-size: 16px;
   color: #1a202c;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .match-count {
   font-size: 18px;
   font-weight: 700;
   color: #667eea;
+  white-space: nowrap;
 }
 
 .text-center {
@@ -258,15 +268,79 @@
 }
 
 @media (max-width: 768px) {
-  .users-table-header,
-  .user-row {
-    grid-template-columns: 60px 1fr 120px;
-    padding: 12px 16px;
-    gap: 12px;
+  .admin-users-container {
+    padding: 12px;
+  }
+
+  .section-title {
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+
+  .section-description {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .users-stats {
+    gap: 8px;
+    margin-bottom: 16px;
   }
 
   .stat-card {
-    min-width: 100%;
+    min-width: 0;
+    padding: 12px 8px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
+  .users-table-header,
+  .user-row {
+    grid-template-columns: 50px minmax(0, 1fr) 80px;
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .table-header-cell {
+    font-size: 11px;
+  }
+
+  .username {
+    font-size: 14px;
+  }
+
+  .match-count {
+    font-size: 16px;
+  }
+
+  .rank-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .empty-state {
+    padding: 40px 12px;
+  }
+
+  .empty-message {
+    font-size: 16px;
+  }
+
+  .loading-container {
+    padding: 30px 12px;
+  }
+
+  .alert {
+    padding: 10px 12px;
+    margin-bottom: 16px;
   }
 }
 
