@@ -292,6 +292,13 @@ export class MegaGoalService {
   }
 
   /*
+    Method to get all feedback (for admin purposes)
+  */
+  getAllFeedback(): Observable<UserFeedback[]> {
+    return this.http.get<UserFeedback[]>(this.url + '/feedback/', this.options);
+  }
+
+  /*
     Method to create a new league setting
   */
   createLeagueSetting(league_id: number, league_name: string): Observable<any> {

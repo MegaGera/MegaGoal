@@ -1,4 +1,5 @@
 export interface UserFeedback {
+    _id?: string;
     id?: string;
     username?: string;
     bug?: string;

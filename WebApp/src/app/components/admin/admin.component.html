@@ -5,6 +5,7 @@
         <option [ngValue]="'leagues'">Leagues Administration</option>
         <option [ngValue]="'matches'">Matches Administration</option>
         <option [ngValue]="'players'">Players Administration</option>
+        <option [ngValue]="'feedback'">Feedback Administration</option>
       </select>
     </div>
     
@@ -14,6 +15,8 @@
       <app-admin-matches></app-admin-matches>
     } @else if (selectedAdminView === 'players') {
       <app-admin-players></app-admin-players>
+    } @else if (selectedAdminView === 'feedback') {
+      <app-admin-feedback></app-admin-feedback>
     }
   </section>
 </div>
