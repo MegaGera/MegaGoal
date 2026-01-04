@@ -401,4 +401,11 @@ export class MegaGoalService {
     };
     return this.http.post<any>(this.url + '/analytics/page-visit', body, this.options);
   }
+
+  /**
+   * Get users and their match counts (admin endpoint)
+   */
+  getUsersMatchCounts(): Observable<{ username: string, matchCount: number }[]> {
+    return this.http.get<{ username: string, matchCount: number }[]>(this.url + '/match/users-match-counts', this.options);
+  }
 }

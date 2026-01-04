@@ -255,4 +255,38 @@ const getLandingPageInfo = async (req, res) => {
   }
 }
 
-export { getMatches, getMatchesByTeamId, createMatch, deleteMatch, changeLocation, getLandingPageInfo };
+// Get users and their match counts (admin endpoint - returns data for all users)
+// Does not validate username from req.validateData to return all users' data
+const getUsersMatchCounts = async (req, res) => {
+  const db = getDB();
+  try {
+    // Aggregate matches by username and count them
+    const result = await db.collection('matches')
+      .aggregate([
+        {
+          $group: {
+            _id: '$user.username',
+            matchCount: { $sum: 1 }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            username: '$_id',
+            matchCount: 1
+          }
+        },
+        {
+          $sort: { matchCount: -1 }
+        }
+      ])
+      .toArray();
+
+    console.log(`Users match counts retrieved: ${result.length} users`);
+    res.send(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export { getMatches, getMatchesByTeamId, createMatch, deleteMatch, changeLocation, getLandingPageInfo, getUsersMatchCounts };
