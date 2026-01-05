@@ -53,6 +53,7 @@ export class MatchesComponent implements OnInit {
   
   // Pagination for matches
   matchesPerPage = 9;
+  matchesPerPageSmall = 3;
   displayedMatches: { [key: string]: RealMatch[] } = {};
   
   // Live matches filter
@@ -206,7 +207,10 @@ export class MatchesComponent implements OnInit {
       if (liveMatches.length > 0) {
         liveLeagueOrder.push(leagueKey);
         liveGroupedMatches[leagueKey] = liveMatches;
-        this.displayedMatches[leagueKey] = liveMatches.slice(0, this.matchesPerPage);
+        // Use appropriate pagination based on league position in the original order
+        const originalIndex = this.originalLeagueOrder.indexOf(leagueKey);
+        const matchesPerPage = originalIndex < 5 ? this.matchesPerPage : this.matchesPerPageSmall;
+        this.displayedMatches[leagueKey] = liveMatches.slice(0, matchesPerPage);
       }
     });
     
@@ -441,16 +445,24 @@ export class MatchesComponent implements OnInit {
   }
 
   // Pagination methods
+  getMatchesPerPageForLeague(leagueKey: string): number {
+    const leagueIndex = this.leagueOrder.indexOf(leagueKey);
+    // Top 5 leagues (indices 0-4) use matchesPerPage, rest use matchesPerPageSmall
+    return leagueIndex < 5 ? this.matchesPerPage : this.matchesPerPageSmall;
+  }
+
   initializeDisplayedMatches(): void {
     this.leagueOrder.forEach(leagueKey => {
-      this.displayedMatches[leagueKey] = this.groupedMatches[leagueKey].slice(0, this.matchesPerPage);
+      const matchesPerPage = this.getMatchesPerPageForLeague(leagueKey);
+      this.displayedMatches[leagueKey] = this.groupedMatches[leagueKey].slice(0, matchesPerPage);
     });
   }
 
   showMoreMatches(leagueKey: string): void {
     const currentCount = this.displayedMatches[leagueKey].length;
     const totalCount = this.groupedMatches[leagueKey].length;
-    const nextBatch = Math.min(this.matchesPerPage, totalCount - currentCount);
+    const matchesPerPage = this.getMatchesPerPageForLeague(leagueKey);
+    const nextBatch = Math.min(matchesPerPage, totalCount - currentCount);
     
     if (nextBatch > 0) {
       const startIndex = currentCount;
