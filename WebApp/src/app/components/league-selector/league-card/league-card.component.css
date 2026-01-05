@@ -1,0 +1,222 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.league-card {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  padding-bottom: 50px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 3px solid #e9ecef;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.league-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #dc143c, #ff6b6b);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.league-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: #dc143c;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.league-card:hover::before {
+  transform: scaleX(1);
+}
+
+.league-card:active {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.league-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin: 0 auto 20px;
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.league-card:hover .league-logo {
+  transform: scale(1.15);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+}
+
+.league-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.country-badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 18%;
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 14px;
+  border-radius: 0 16px 0 0;
+  box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 1;
+}
+
+.country-flag {
+  width: 16px;
+  height: 12px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.country-flag-emoji {
+  font-size: 14px;
+  line-height: 1;
+  display: inline-block;
+}
+
+.country-name {
+  line-height: 1;
+}
+
+.league-card:hover .country-badge {
+  box-shadow: 0 6px 12px rgba(74, 144, 226, 0.4);
+}
+
+.view-count-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18%;
+  background: linear-gradient(135deg, #dc143c 0%, #ff6b6b 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 14px;
+  border-radius: 16px 0 0 0;
+  box-shadow: 0 4px 8px rgba(220, 20, 60, 0.3);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 1;
+}
+
+.league-card:hover .view-count-badge {
+  box-shadow: 0 6px 12px rgba(220, 20, 60, 0.4);
+}
+
+/* Focus states for accessibility */
+.league-card:focus {
+  outline: 3px solid #dc143c;
+  outline-offset: 4px;
+  box-shadow: 0 12px 24px rgba(220, 20, 60, 0.2);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .league-card {
+    padding: 20px;
+    padding-bottom: 45px;
+    border-width: 2px;
+  }
+  
+  .league-logo {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 16px;
+  }
+  
+  .country-badge {
+    font-size: 10px;
+    padding: 6px 12px;
+    gap: 5px;
+    border-radius: 0 12px 0 0;
+  }
+  
+  .country-flag {
+    width: 14px;
+    height: 10px;
+  }
+  
+  .country-flag-emoji {
+    font-size: 12px;
+  }
+  
+  .view-count-badge {
+    font-size: 10px;
+    padding: 6px 12px;
+    border-radius: 12px 0 0 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .league-card {
+    padding: 16px;
+    padding-bottom: 40px;
+  }
+  
+  .league-logo {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .country-badge {
+    font-size: 9px;
+    padding: 5px 10px;
+    gap: 4px;
+    border-radius: 0 10px 0 0;
+  }
+  
+  .country-flag {
+    width: 12px;
+    height: 9px;
+  }
+  
+  .country-flag-emoji {
+    font-size: 10px;
+  }
+  
+  .view-count-badge {
+    font-size: 9px;
+    padding: 5px 10px;
+    border-radius: 10px 0 0 0;
+  }
+}
+

@@ -14,24 +14,11 @@
         }
       } @else {
         @for (league of leagues; track league.league.id) {
-        <div 
-          class="league-card" 
-          (click)="selectLeague(league)"
-          (keydown.enter)="selectLeague(league)"
-          tabindex="0"
-          role="button"
-          [attr.aria-label]="'Select ' + league.league.name + ' league'">
-          <img 
-            class="league-logo" 
-            [src]="images.getRouteImageLeagueSm(league.league.id)"
-            [alt]="league.league.name + ' logo'">
-          <h3 class="league-name">{{ league.league.name }}</h3>
-          @if (getLeagueViewCount(league.league.id)) {
-            <div class="view-count-badge">
-              {{ getLeagueViewCount(league.league.id) }} views
-            </div>
-          }
-        </div>
+          <app-league-card
+            [league]="league"
+            [viewCount]="getLeagueViewCount(league.league.id)"
+            (leagueSelected)="selectLeague($event)">
+          </app-league-card>
         }
       }
     </div>

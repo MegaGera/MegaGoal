@@ -6,13 +6,13 @@ import { catchError } from 'rxjs/operators';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { StatsService } from '../../services/stats.service';
-import { ImagesService } from '../../services/images.service';
 import { League, LeagueStats } from '../../models/league';
+import { LeagueCardComponent } from './league-card/league-card.component';
 
 @Component({
   selector: 'app-league-selector',
   standalone: true,
-  imports: [NgFor],
+  imports: [NgFor, LeagueCardComponent],
   templateUrl: './league-selector.component.html',
   styleUrl: './league-selector.component.css'
 })
@@ -25,7 +25,6 @@ export class LeagueSelectorComponent {
   constructor(
     private megagoal: MegaGoalService,
     private stats: StatsService,
-    public images: ImagesService,
     private router: Router
   ) {
     this.getLeagues();
