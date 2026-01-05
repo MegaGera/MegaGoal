@@ -315,7 +315,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let seasonDetail of availableSeasonsDetails.slice().reverse()">
+                <tr *ngFor="let seasonDetail of availableSeasonsDetails">
                   <td class="season-status-year">{{ seasonDetail.season }}</td>
                   <td class="season-status-matches" [ngClass]="{'no-data': seasonDetail.real_matches === null}">
                     {{ seasonDetail.real_matches ? seasonDetail.real_matches : 'No data' }}

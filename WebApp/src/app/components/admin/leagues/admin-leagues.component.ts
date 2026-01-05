@@ -196,7 +196,7 @@ export class AdminLeaguesComponent {
 
   get availableSeasonsDetails(): any[] {
     if (!this.selectedLeague || !this.selectedLeague.available_seasons) return [];
-    return this.selectedLeague.available_seasons;
+    return [...this.selectedLeague.available_seasons].sort((a, b) => b.season - a.season);
   }
 
   get availableLeaguesForAdding(): League[] {
