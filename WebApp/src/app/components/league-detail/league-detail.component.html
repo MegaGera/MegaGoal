@@ -11,7 +11,20 @@
       <!-- Season selector with league logo -->
       <div class="season-selector">
         <div class="season-header">
-          <h2 class="section-title">{{ selectedLeague.league.name }}</h2>
+          <div class="title-with-badge">
+            <h2 class="section-title">{{ selectedLeague.league.name }}</h2>
+            <div class="country-badge">
+              @if (selectedLeague.country.flag) {
+                <img 
+                  class="country-flag" 
+                  [src]="selectedLeague.country.flag" 
+                  [alt]="selectedLeague.country.name + ' flag'">
+              } @else {
+                <span class="country-flag-emoji">🌍</span>
+              }
+              <span class="country-name">{{ selectedLeague.country.name }}</span>
+            </div>
+          </div>
           <div class="logo-selector-row">
             <img 
               class="league-logo-season" 
