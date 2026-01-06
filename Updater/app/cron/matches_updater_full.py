@@ -2,7 +2,12 @@ import datetime
 from ..utils import MatchUpdater
 
 def fetch_leagues_to_update(updater):
-    """Fetch leagues that need updating based on frequency and next match criteria"""
+    """Fetch leagues that need updating based on frequency and next match criteria.
+    It gets a league if (OR conditions):
+    - update_frequency is 1 (the number is days)
+    - last_update + update_frequency is less than or equal to now
+    - next_match is not null and is less than or equal to now (it was a match played in the last 24 hours)
+    """
     now = datetime.datetime.today()
     
     # MongoDB query to find leagues that need updating
