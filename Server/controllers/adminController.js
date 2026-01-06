@@ -68,6 +68,24 @@ export const changeDailyUpdate = async (req, res) => {
   }
 }
 
+// Patch change colors of a league settings
+export const changeLeagueColors = async (req, res) => {
+  const db = getDB();
+  try {
+    let {league_id, colors} = req.body;
+    const filter = { "league_id": +league_id };
+    const update = { $set: { "colors": colors } };
+    let result = await db.collection('league_settings').updateOne(filter, update);
+    console.log("Update colors for league " + league_id + " - colors: ", colors);
+
+    await logAdminAction(req.validateData.username, 'CHANGE_LEAGUE_COLORS', { league_id: league_id, colors: colors }, req);
+
+    res.status(201).json(result.acknowledged);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
 // Create a new league setting
 export const createLeagueSetting = async (req, res) => {
   const db = getDB();

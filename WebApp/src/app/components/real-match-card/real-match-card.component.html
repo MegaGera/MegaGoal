@@ -1,4 +1,4 @@
-<div class="row matchCard" [ngClass]="[leagueCSSSelector(match.league.id), size === 'md' ? 'matchCardMd' : '']" [class.expanded]="isCardExpanded">
+<div class="row matchCard" [ngClass]="[size === 'md' ? 'matchCardMd' : '']" [class.expanded]="isCardExpanded" [ngStyle]="getMatchCardStyles()">
   <div class="generalMatchCard" [ngClass]="{'generalMatchCardMd': size === 'md'}">
 
     <div class="live-indicator" *ngIf="isLive()">
@@ -20,7 +20,7 @@
           <div class="teamLogoSection">
 
             <div class="team h-100" [style.cursor]="interactable ? 'pointer' : 'default'" [class.clickable]="interactable" (click)="handleTeamClick(match.teams.home.id, $event)">
-              <div class="teamLogo h-100" [ngClass]="leagueCSSSelector(match.league.id)">
+              <div class="teamLogo h-100" [ngStyle]="getTeamLogoStyles()">
                 <img class="imgLogo p-1" [src]="images.getRouteImageTeam(match.teams.home.id)">
               </div>
             </div>
@@ -83,7 +83,7 @@
           <div class="teamLogoSection">
 
             <div class="team h-100" [style.cursor]="interactable ? 'pointer' : 'default'" [class.clickable]="interactable" (click)="handleTeamClick(match.teams.away.id, $event)">
-              <div class="teamLogo h-100" [ngClass]="leagueCSSSelector(match.league.id)">
+              <div class="teamLogo h-100" [ngStyle]="getTeamLogoStyles()">
                 <img class="imgLogo p-1" [src]="images.getRouteImageTeam(match.teams.away.id)">
               </div>
             </div>

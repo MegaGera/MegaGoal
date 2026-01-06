@@ -1,4 +1,4 @@
-<div class="match-card-container" *ngIf="match" [ngClass]="leagueCSSSelector(realMatch.league.id)">
+<div class="match-card-container" *ngIf="match" [ngStyle]="getMatchCardStyles()">
   
   <!-- Background League Logo -->
   <div class="league-background">
@@ -12,7 +12,7 @@
     <!-- Home Team -->
     <div class="team-section">
       <div class="team-logo-wrapper" (click)="navigateToTeam(realMatch.teams.home.id)" style="cursor: pointer;">
-        <div class="team-logo" [ngClass]="leagueCSSSelector(realMatch.league.id)">
+        <div class="team-logo" [ngStyle]="getTeamLogoStyles()" (mouseenter)="onTeamLogoHover($event)" (mouseleave)="onTeamLogoLeave($event)">
           <img [src]="images.getRouteImageTeam(realMatch.teams.home.id)" alt="Home team" class="logo-img">
         </div>
       </div>
@@ -82,7 +82,7 @@
     <!-- Away Team -->
     <div class="team-section">
       <div class="team-logo-wrapper" (click)="navigateToTeam(realMatch.teams.away.id)" style="cursor: pointer;">
-        <div class="team-logo" [ngClass]="leagueCSSSelector(realMatch.league.id)">
+        <div class="team-logo" [ngStyle]="getTeamLogoStyles()" (mouseenter)="onTeamLogoHover($event)" (mouseleave)="onTeamLogoLeave($event)">
           <img [src]="images.getRouteImageTeam(realMatch.teams.away.id)" alt="Away team" class="logo-img">
         </div>
       </div>

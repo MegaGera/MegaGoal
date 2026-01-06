@@ -20,10 +20,12 @@ const getTopLeagues = async (req, res) => {
     // First, get all league_ids and positions from league_settings
     const leagueSettings = await db.collection('league_settings').find({}).toArray();
     
-    // Create a map of league_id to position
+    // Create a map of league_id to position and colors
     const leaguePositionMap = {};
+    const leagueColorsMap = {};
     leagueSettings.forEach(setting => {
       leaguePositionMap[setting.league_id] = setting.position || Number.MAX_SAFE_INTEGER;
+      leagueColorsMap[setting.league_id] = setting.colors || {};
     });
     
     // Get the league IDs from settings
@@ -43,21 +45,46 @@ const getTopLeagues = async (req, res) => {
     
     const leagues = await db.collection('leagues').find(query).toArray();
     
-    // Add position to each league and sort by position
+    // Add position and colors to each league and sort by position
     const result = leagues.map(league => ({
       ...league,
-      position: leaguePositionMap[league.league.id] || Number.MAX_SAFE_INTEGER
+      position: leaguePositionMap[league.league.id] || Number.MAX_SAFE_INTEGER,
+      colors: leagueColorsMap[league.league.id] || {}
     })).sort((a, b) => {
       const posA = a.position || Number.MAX_SAFE_INTEGER;
       const posB = b.position || Number.MAX_SAFE_INTEGER;
       return posA - posB;
     });
     
-    console.log("Top Leagues Getted with positions");
+    console.log("Top Leagues Getted with positions and colors");
     res.send(result);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 }
 
-export { getLeagues, getTopLeagues };
+// Get league colors only (lightweight endpoint for colors)
+const getLeagueColors = async (req, res) => {
+  const db = getDB();
+  try {
+    // Get only league_id and colors from league_settings
+    const leagueSettings = await db.collection('league_settings')
+      .find({}, { projection: { league_id: 1, colors: 1 } })
+      .toArray();
+    
+    // Create a map of league_id to colors
+    const colorsMap = {};
+    leagueSettings.forEach(setting => {
+      if (setting.colors) {
+        colorsMap[setting.league_id] = setting.colors;
+      }
+    });
+    
+    console.log("League Colors Getted for " + Object.keys(colorsMap).length + " leagues");
+    res.send(colorsMap);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export { getLeagues, getTopLeagues, getLeagueColors };

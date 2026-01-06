@@ -125,6 +125,100 @@
         </div>
         <div class="modal-body">
 
+          <!-- League Colors Section -->
+          <div class="modal-section">
+            <h3 class="section-title">League Colors</h3>
+            <div class="colors-container">
+              <div class="color-input-group">
+                <label for="base-color">Base Color</label>
+                <div class="color-input-wrapper">
+                  <input 
+                    type="color" 
+                    id="base-color"
+                    [(ngModel)]="selectedLeagueBaseColor"
+                    (change)="onBaseColorChange()"
+                    class="color-picker">
+                  <input 
+                    type="text" 
+                    [(ngModel)]="selectedLeagueBaseColor"
+                    (change)="onBaseColorChange()"
+                    class="color-text-input"
+                    placeholder="#000000">
+                </div>
+              </div>
+              <div class="color-input-group">
+                <label for="card-main-color">Card Main Color</label>
+                <div class="color-input-wrapper">
+                  <input 
+                    type="color" 
+                    id="card-main-color"
+                    [(ngModel)]="selectedLeagueCardMainColor"
+                    (change)="onCardMainColorChange()"
+                    class="color-picker">
+                  <input 
+                    type="text" 
+                    [(ngModel)]="selectedLeagueCardMainColor"
+                    (change)="onCardMainColorChange()"
+                    class="color-text-input"
+                    placeholder="#000000">
+                  <button 
+                    type="button"
+                    (click)="copyBaseToCardMain()"
+                    class="copy-color-btn"
+                    title="Copy base color">
+                    📋
+                  </button>
+                </div>
+              </div>
+              <div class="color-input-group">
+                <label for="card-trans-color">Card Transparent Color</label>
+                <div class="color-input-wrapper">
+                  <input 
+                    type="color" 
+                    id="card-trans-color"
+                    [(ngModel)]="selectedLeagueCardTransColor"
+                    (change)="onCardTransColorChange()"
+                    class="color-picker">
+                  <input 
+                    type="text" 
+                    [(ngModel)]="selectedLeagueCardTransColor"
+                    (change)="onCardTransColorChange()"
+                    class="color-text-input"
+                    placeholder="rgba(0,0,0,0.9)">
+                  <button 
+                    type="button"
+                    (click)="copyBaseToCardTrans()"
+                    class="copy-color-btn"
+                    title="Copy base color as rgba">
+                    📋
+                  </button>
+                </div>
+              </div>
+              <button 
+                (click)="saveLeagueColors()"
+                [disabled]="isUpdatingColors"
+                class="modal-action-btn colors-btn">
+                {{ isUpdatingColors ? 'Saving...' : 'Save Colors' }}
+              </button>
+            </div>
+            
+            <!-- Preview Section -->
+            <div class="preview-section">
+              <h4 class="preview-title">Preview</h4>
+              <div class="preview-card-wrapper">
+                @if (previewMatch) {
+                  <app-real-match-card 
+                    [match]="previewMatch"
+                    [watched]="true"
+                    [locations]="[]"
+                    [size]="'md'"
+                    [interactable]="false">
+                  </app-real-match-card>
+                }
+              </div>
+            </div>
+          </div>
+
           <!-- Toggle Button for Update Sections -->
           <div class="modal-section">
             <button 

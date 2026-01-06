@@ -9,6 +9,11 @@ export interface LeaguesSettings {
     daily_update: boolean,
     season: number,
     position: number,
+    colors?: {
+        base_color?: string,
+        card_main_color?: string,
+        card_trans_color?: string
+    },
     available_seasons?: {
         season: number,
         real_matches: number,

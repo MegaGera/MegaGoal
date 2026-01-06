@@ -104,6 +104,14 @@ export class MegaGoalService {
   }
 
   /*
+    Method to get league colors only (lightweight endpoint)
+    Returns a map of league_id -> colors object
+  */
+  getLeagueColors(): Observable<{ [leagueId: number]: { base_color?: string, card_main_color?: string, card_trans_color?: string } }> {
+    return this.http.get<{ [leagueId: number]: { base_color?: string, card_main_color?: string, card_trans_color?: string } }>(this.url + '/league/colors/', this.options);
+  }
+
+  /*
     Method to get a Real Match by ID from the API
   */
   getRealMatchById(match_id: number): Observable<RealMatch> {
@@ -282,6 +290,17 @@ export class MegaGoalService {
       daily_update: daily_update
     }
     return this.http.patch<number>(this.url + '/admin/leagues_settings/daily_update', body, this.options);
+  }
+
+  /*
+    Method to change the colors of a League Settings
+  */
+  changeLeagueColors(league_id: number, colors: { base_color?: string, card_main_color?: string, card_trans_color?: string }): Observable<number> {
+    let body = {
+      league_id: league_id,
+      colors: colors
+    }
+    return this.http.patch<number>(this.url + '/admin/leagues_settings/colors', body, this.options);
   }
 
   /*
