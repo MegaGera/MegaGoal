@@ -49,17 +49,16 @@
 
             <div class="control-group">
               <label class="control-label">Frequency</label>
-              <div class="frequency-options" [class.disabled]="!leaguesSetting.is_active">
-                <label class="frequency-option" *ngFor="let freq of [1, 3, 7, 30]">
-                  <input type="radio" 
-                         name="frequency{{$index}}" 
-                         [value]="freq"
-                         [(ngModel)]="leaguesSetting.update_frequency"
-                         [disabled]="!leaguesSetting.is_active"
-                         (change)="changeUpdateFrequency(leaguesSetting.league_id, freq)">
-                  <span class="frequency-label">{{freq}}d</span>
-                  </label>
-                </div>
+              <select 
+                class="frequency-select"
+                [(ngModel)]="leaguesSetting.update_frequency"
+                [disabled]="!leaguesSetting.is_active"
+                (change)="changeUpdateFrequency(leaguesSetting.league_id, leaguesSetting.update_frequency)">
+                <option [value]="1">1d</option>
+                <option [value]="3">3d</option>
+                <option [value]="7">7d</option>
+                <option [value]="30">30d</option>
+              </select>
             </div>
 
             <div class="control-group">
@@ -92,6 +91,17 @@
           </div>
 
           <div class="league-actions">
+            <div class="league-color-indicator">
+              @if (hasLeagueBaseColor(leaguesSetting)) {
+                <div 
+                  class="color-square" 
+                  [style.background-color]="getLeagueBaseColor(leaguesSetting)"
+                  [title]="'Base color: ' + getLeagueBaseColor(leaguesSetting)">
+                </div>
+              } @else {
+                <div class="color-not-set" title="Color not set">Color not set</div>
+              }
+            </div>
             <button 
               class="settings-button" 
               (click)="openSettingsModal(leaguesSetting)"

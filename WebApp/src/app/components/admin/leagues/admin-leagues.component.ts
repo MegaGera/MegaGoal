@@ -269,6 +269,24 @@ export class AdminLeaguesComponent {
     });
   }
 
+  /*
+    Get the base color for a league setting
+    Returns the color string if exists, null otherwise
+  */
+  getLeagueBaseColor(leagueSetting: LeaguesSettings): string | null {
+    if (!leagueSetting.colors || !leagueSetting.colors.base_color) {
+      return null;
+    }
+    return leagueSetting.colors.base_color;
+  }
+
+  /*
+    Check if league has a base color set
+  */
+  hasLeagueBaseColor(leagueSetting: LeaguesSettings): boolean {
+    return this.getLeagueBaseColor(leagueSetting) !== null;
+  }
+
   openGeneralModal(): void {
     this.showGeneralModal = true;
     // Ensure leagues are loaded for the dropdown

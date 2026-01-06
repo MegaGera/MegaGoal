@@ -149,6 +149,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  align-items: center;
+  gap: 12px;
 }
 
 .league-logo {
@@ -180,6 +182,49 @@
   font-size: 14px;
   color: #64748b;
   font-weight: 500;
+}
+
+/* League Color Indicator */
+.league-color-indicator {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.color-square {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.color-square:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.color-not-set {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+  padding: 6px 10px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.league-row.league-inactive .color-square {
+  opacity: 0.6;
+}
+
+.league-row.league-inactive .color-not-set {
+  opacity: 0.7;
+  background: #e5e7eb;
+  color: #6b7280;
 }
 
 /* League Controls */
@@ -283,50 +328,41 @@ input:disabled + .toggle-slider {
   cursor: not-allowed;
 }
 
-/* Frequency Options */
-.frequency-options {
-  display: flex;
-  gap: 8px;
-}
-
-.frequency-options.disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.frequency-option {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 6px;
+/* Frequency Select */
+.frequency-select {
+  padding: 8px 12px;
   border: 2px solid #e5e7eb;
-  transition: all 0.2s ease;
+  border-radius: 8px;
   background: #ffffff;
-}
-
-.frequency-option:hover {
-  border-color: #10b981;
-  background: #f0fdf4;
-}
-
-.frequency-option input[type="radio"] {
-  width: 14px;
-  height: 14px;
-  accent-color: #10b981;
-}
-
-.frequency-option input[type="radio"]:checked + .frequency-label {
-  color: #10b981;
-  font-weight: 600;
-}
-
-.frequency-label {
-  font-size: 12px;
-  color: #6b7280;
+  font-size: 14px;
   font-weight: 500;
-  transition: color 0.2s ease;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding-right: 32px;
+}
+
+.frequency-select:hover:not(:disabled) {
+  border-color: #10b981;
+  background-color: #f0fdf4;
+}
+
+.frequency-select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.frequency-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
 }
 
 /* Daily Update Control */
@@ -661,19 +697,11 @@ input:disabled + .toggle-slider {
   }
   
   /* Frequency options in two rows */
-  .frequency-options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-  }
-  
-  .frequency-option {
-    padding: 4px 6px;
-    justify-content: center;
-  }
-  
-  .frequency-label {
-    font-size: 11px;
+  .frequency-select {
+    min-width: 70px;
+    padding: 6px 10px;
+    font-size: 13px;
+    padding-right: 28px;
   }
   
   /* Bottom row: Dates */
@@ -721,16 +749,11 @@ input:disabled + .toggle-slider {
     font-size: 11px;
   }
   
-  .frequency-options {
-    gap: 3px;
-  }
-  
-  .frequency-option {
-    padding: 3px 4px;
-  }
-  
-  .frequency-label {
-    font-size: 10px;
+  .frequency-select {
+    min-width: 60px;
+    padding: 5px 8px;
+    font-size: 12px;
+    padding-right: 26px;
   }
   
   .league-dates {
