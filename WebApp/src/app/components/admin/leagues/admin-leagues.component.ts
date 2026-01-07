@@ -27,6 +27,7 @@ export class AdminLeaguesComponent {
   leaguesSettings: LeaguesSettings[] = [];
   showSettingsModal: boolean = false;
   showUpdateSections: boolean = false;
+  showColorSection: boolean = false;
   selectedLeague: LeaguesSettings | null = null;
   selectedSeason: number | null = null;
   selectedDataUpdateSeason: number | null = null;

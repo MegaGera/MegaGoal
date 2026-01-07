@@ -456,7 +456,7 @@ input:disabled + .toggle-slider {
   background: white;
   border-radius: 16px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  max-width: 700px;
+  max-width: 1000px;
   width: 98%;
   max-height: 90vh;
   display: flex;
@@ -877,9 +877,12 @@ input:disabled + .toggle-slider {
 }
 
 .toggle-updates-btn {
-  margin-left: 0;
-  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  width: auto;
+  min-width: 200px;
   justify-content: center;
+  display: flex;
 }
 
 @media (max-width: 600px) {
@@ -1850,18 +1853,32 @@ input:disabled + .toggle-slider {
 /* League Colors Section */
 .colors-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 20px;
   padding: 16px;
   background: #f8fafc;
   border-radius: 10px;
   border: 1.5px solid #e5e7eb;
+  margin: 16px auto 0 auto;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .color-input-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1;
+  align-items: center;
+}
+
+.color-label-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
 }
 
 .color-input-group label {
@@ -1869,13 +1886,22 @@ input:disabled + .toggle-slider {
   font-weight: 600;
   color: #374151;
   margin: 0;
+  text-align: center;
 }
 
 .color-input-wrapper {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.color-input-wrapper .color-text-input {
+  flex: 1;
+  min-width: 0;
+  max-width: 180px;
 }
 
 .color-picker {
@@ -1926,13 +1952,15 @@ input:disabled + .toggle-slider {
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 700;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
-  align-self: flex-start;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  margin: 12px auto 0 auto;
+  width: auto;
+  display: block;
 }
 
 .colors-btn:hover:not(:disabled) {
@@ -1976,57 +2004,122 @@ input:disabled + .toggle-slider {
 }
 
 @media (max-width: 768px) {
-  .color-input-wrapper {
+  /* Colors Container - Stack vertically on mobile */
+  .colors-container {
     flex-direction: column;
-    align-items: stretch;
+    gap: 16px;
+    padding: 12px;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .color-input-group {
+    width: 100%;
+    flex: none;
+    align-items: center;
+  }
+
+  .color-input-wrapper {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
   }
   
   .color-picker {
-    width: 100%;
-    height: 50px;
+    width: 60px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .color-text-input {
+    flex: 1;
+    max-width: 200px;
   }
   
+  /* Center toggle buttons on mobile */
+  .toggle-updates-btn {
+    margin-left: auto;
+    margin-right: auto;
+    width: auto;
+    min-width: 180px;
+  }
+
+  /* Reduce and center save button on mobile */
   .colors-btn {
+    width: auto;
+    min-width: 150px;
+    padding: 6px 12px;
+    font-size: 12px;
+    margin: 12px auto 20px auto;
+  }
+
+  /* Reduce preview card width on mobile */
+  .preview-card-wrapper {
+    padding: 0;
+    margin: 0 16px;
+    width: calc(100% - 32px);
+  }
+
+  .preview-card-wrapper app-real-match-card {
+    max-width: 300px;
     width: 100%;
+  }
+
+  /* Mobile: Restructure to have label on top, then color picker and text input in row */
+  .color-label-row {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .color-label-row .color-picker {
+    order: 2;
+  }
+
+  .color-label-row label {
+    order: 1;
   }
 }
 
 /* Preview Section */
 .preview-section {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 2px solid #e5e7eb;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
-.preview-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #374151;
-  margin-bottom: 16px;
+.preview-separator {
+  width: 100%;
+  height: 1px;
+  background: #e5e7eb;
+  margin-top: 24px;
 }
 
 .preview-card-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 1.5px solid #e5e7eb;
-  min-height: 200px;
-  overflow: hidden;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  min-height: auto;
+  overflow: visible;
 }
 
 .preview-card-wrapper app-real-match-card {
   width: 100%;
-  max-width: 600px;
+  max-width: 400px;
 }
 
-@media (max-width: 768px) {
-  .preview-card-wrapper {
-    padding: 12px;
-  }
-}
 
 .select-all-btn, .deselect-all-btn {
   background: #ffffff;
