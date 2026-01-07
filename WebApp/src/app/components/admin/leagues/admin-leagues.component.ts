@@ -3,17 +3,20 @@ import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid } from '@ng-icons/jam-icons';
+import { RealMatchCardComponent } from '../../real-match-card/real-match-card.component';
 
 import { MegaGoalService } from '../../../services/megagoal.service';
 import { ImagesService } from '../../../services/images.service';
 import { UpdaterService } from '../../../services/updater.service';
+import { LeagueColorsService } from '../../../services/league-colors.service';
 import { LeaguesSettings } from '../../../models/leaguesSettings';
 import { League } from '../../../models/league';
+import { Match } from '../../../models/match';
 
 @Component({
   selector: 'app-admin-leagues',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgClass, NgIconComponent],
+  imports: [CommonModule, FormsModule, NgClass, NgIconComponent, RealMatchCardComponent],
   providers: [provideIcons({ jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid })],
   templateUrl: './admin-leagues.component.html',
   styleUrl: './admin-leagues.component.css'
@@ -24,6 +27,7 @@ export class AdminLeaguesComponent {
   leaguesSettings: LeaguesSettings[] = [];
   showSettingsModal: boolean = false;
   showUpdateSections: boolean = false;
+  showColorSection: boolean = false;
   selectedLeague: LeaguesSettings | null = null;
   selectedSeason: number | null = null;
   selectedDataUpdateSeason: number | null = null;
@@ -69,11 +73,22 @@ export class AdminLeaguesComponent {
   
   // Order mode properties
   isPositionOrder: boolean = false;
+  
+  // Color editing properties
+  selectedLeagueBaseColor: string = '#000000';
+  selectedLeagueCardMainColor: string = '#000000';
+  selectedLeagueCardTransColor: string = 'rgba(0,0,0,0.9)';
+  isUpdatingColors: boolean = false;
+  
+  // Preview match card
+  previewMatch: Match | null = null;
+  originalColors: { base_color?: string, card_main_color?: string, card_trans_color?: string } | null = null;
 
   constructor(
     private megagoal: MegaGoalService,
     public images: ImagesService,
-    private updater: UpdaterService
+    private updater: UpdaterService,
+    private leagueColorsService: LeagueColorsService
   ) {
     this.init();
   }
@@ -132,8 +147,19 @@ export class AdminLeaguesComponent {
     this.selectedSeasonTo = league.season;
     this.selectedNewLeague = null;
     this.leagueSearchText = '';
+    
+    // Initialize colors from league settings
+    this.selectedLeagueBaseColor = league.colors?.base_color || '#000000';
+    this.selectedLeagueCardMainColor = league.colors?.card_main_color || '#000000';
+    this.selectedLeagueCardTransColor = league.colors?.card_trans_color || 'rgba(0,0,0,0.9)';
+    
+    // Store original colors to restore on close
+    this.originalColors = league.colors ? { ...league.colors } : null;
+    
     this.showSettingsModal = true;
     this.showUpdateSections = false;
+    this.createPreviewMatch(league);
+    this.updatePreviewColors();
   }
 
   toggleUpdateSections(): void {
@@ -141,10 +167,22 @@ export class AdminLeaguesComponent {
   }
 
   closeSettingsModal(): void {
+    // Restore original colors if they were changed
+    if (this.selectedLeague && this.originalColors && this.originalColors.card_main_color && this.originalColors.card_trans_color) {
+      const leagueId = this.selectedLeague.league_id;
+      this.leagueColorsService.setTemporaryColors(
+        leagueId,
+        this.originalColors.card_main_color,
+        this.originalColors.card_trans_color
+      );
+    }
+    
     this.showSettingsModal = false;
     this.selectedLeague = null;
     this.selectedNewLeague = null;
     this.leagueSearchText = '';
+    this.previewMatch = null;
+    this.originalColors = null;
   }
 
   changeIsActive(league_id: number, is_active: boolean) {
@@ -230,6 +268,24 @@ export class AdminLeaguesComponent {
       const posB = b.position || Number.MAX_SAFE_INTEGER;
       return posA - posB;
     });
+  }
+
+  /*
+    Get the base color for a league setting
+    Returns the color string if exists, null otherwise
+  */
+  getLeagueBaseColor(leagueSetting: LeaguesSettings): string | null {
+    if (!leagueSetting.colors || !leagueSetting.colors.base_color) {
+      return null;
+    }
+    return leagueSetting.colors.base_color;
+  }
+
+  /*
+    Check if league has a base color set
+  */
+  hasLeagueBaseColor(leagueSetting: LeaguesSettings): boolean {
+    return this.getLeagueBaseColor(leagueSetting) !== null;
   }
 
   openGeneralModal(): void {
@@ -526,5 +582,119 @@ export class AdminLeaguesComponent {
 
   toggleOrderMode(): void {
     this.isPositionOrder = !this.isPositionOrder;
+  }
+
+  onBaseColorChange(): void {
+    this.updatePreviewColors();
+  }
+
+  onCardMainColorChange(): void {
+    this.updatePreviewColors();
+  }
+
+  onCardTransColorChange(): void {
+    this.updatePreviewColors();
+  }
+
+  /*
+    Copy base color to card main color
+  */
+  copyBaseToCardMain(): void {
+    this.selectedLeagueCardMainColor = this.selectedLeagueBaseColor;
+    this.onCardMainColorChange();
+  }
+
+  /*
+    Copy base color to card transparent color
+  */
+  copyBaseToCardTrans(): void {
+    // Convert hex to rgba with 0.9 opacity
+    const hex = this.selectedLeagueBaseColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    this.selectedLeagueCardTransColor = `rgba(${r}, ${g}, ${b}, 0.9)`;
+    this.onCardTransColorChange();
+  }
+
+  /*
+    Create a mock match for preview
+  */
+  createPreviewMatch(league: LeaguesSettings): void {
+    this.previewMatch = {
+      _id: 'preview',
+      fixture: {
+        id: 999999,
+        timestamp: Math.floor(Date.now() / 1000)
+      },
+      league: {
+        id: league.league_id,
+        name: league.league_name,
+        round: 'Regular Season',
+        season: league.season
+      },
+      teams: {
+        home: {
+          id: 1,
+          name: 'Home Team'
+        },
+        away: {
+          id: 2,
+          name: 'Away Team'
+        }
+      },
+      goals: {
+        home: 2,
+        away: 1
+      },
+      location: '',
+      status: 'FT'
+    };
+  }
+
+  /*
+    Update preview colors in the service temporarily
+  */
+  updatePreviewColors(): void {
+    if (!this.selectedLeague || !this.previewMatch) return;
+    
+    // Temporarily set colors for preview
+    const leagueId = this.selectedLeague.league_id;
+    this.leagueColorsService.setTemporaryColors(
+      leagueId,
+      this.selectedLeagueCardMainColor,
+      this.selectedLeagueCardTransColor
+    );
+  }
+
+  saveLeagueColors(): void {
+    if (!this.selectedLeague) return;
+    
+    this.isUpdatingColors = true;
+    const colors = {
+      base_color: this.selectedLeagueBaseColor,
+      card_main_color: this.selectedLeagueCardMainColor,
+      card_trans_color: this.selectedLeagueCardTransColor
+    };
+    
+    this.megagoal.changeLeagueColors(
+      this.selectedLeague.league_id,
+      colors
+    ).subscribe({
+      next: () => {
+        this.isUpdatingColors = false;
+        // Update the local league settings object
+        if (this.selectedLeague) {
+          this.selectedLeague.colors = colors;
+        }
+        // Update original colors to the new saved colors
+        this.originalColors = { ...colors };
+        // Refresh the leagues settings to get updated data
+        this.getLeaguesSettings();
+      },
+      error: () => {
+        this.isUpdatingColors = false;
+      }
+    });
   }
 }

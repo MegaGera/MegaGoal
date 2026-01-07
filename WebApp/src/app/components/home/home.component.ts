@@ -12,12 +12,14 @@ import { ionFootball } from '@ng-icons/ionicons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
+import { LeagueColorsService } from '../../services/league-colors.service';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
 import { SeasonInfo } from '../../models/season';
 import { UserStats } from '../../models/userStats';
 import { GeneralStats } from '../../models/generalStats';
 import { LeagueStats } from '../../models/league';
+import { League } from '../../models/league';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { TeamStatsListComponent } from '../stats/team-stats-list/team-stats-list.component';
@@ -85,14 +87,21 @@ export class HomeComponent implements OnInit {
   /* View Mode */
   viewMode: 'stats' | 'matches' | 'filters' = 'matches';
 
-  constructor(private megagoal: MegaGoalService, public images: ImagesService, private changeDetectorRef: ChangeDetectorRef,
-    private statsService: StatsService) { }
+  constructor(
+    private megagoal: MegaGoalService, 
+    public images: ImagesService, 
+    private changeDetectorRef: ChangeDetectorRef,
+    private statsService: StatsService,
+    private leagueColorsService: LeagueColorsService
+  ) { }
 
   setView(mode: 'stats' | 'matches' | 'filters'): void {
     this.viewMode = mode;
   }
 
   ngOnInit(): void {
+    // Load top leagues first to populate colors before matches are rendered
+    this.loadTopLeagues();
     this.getAllMatches();
     this.getLocations();
     this.getUserStats();
@@ -102,6 +111,23 @@ export class HomeComponent implements OnInit {
     this.megagoal.logPageVisit('home').subscribe({
       next: () => {},
       error: (error) => console.error('Error logging page visit:', error)
+    });
+  }
+
+  /*
+    Load top leagues to populate colors in LeagueColorsService
+    This ensures colors are available before match cards are rendered
+  */
+  loadTopLeagues(): void {
+    this.megagoal.getTopLeagues().subscribe({
+      next: (leagues: League[]) => {
+        // Populate colors service with league colors
+        this.leagueColorsService.setLeagueColors(leagues);
+      },
+      error: (error) => {
+        console.error('Error loading top leagues for colors:', error);
+        // Continue even if this fails - colors will load on-demand
+      }
     });
   }
 

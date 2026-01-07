@@ -49,17 +49,16 @@
 
             <div class="control-group">
               <label class="control-label">Frequency</label>
-              <div class="frequency-options" [class.disabled]="!leaguesSetting.is_active">
-                <label class="frequency-option" *ngFor="let freq of [1, 3, 7, 30]">
-                  <input type="radio" 
-                         name="frequency{{$index}}" 
-                         [value]="freq"
-                         [(ngModel)]="leaguesSetting.update_frequency"
-                         [disabled]="!leaguesSetting.is_active"
-                         (change)="changeUpdateFrequency(leaguesSetting.league_id, freq)">
-                  <span class="frequency-label">{{freq}}d</span>
-                  </label>
-                </div>
+              <select 
+                class="frequency-select"
+                [(ngModel)]="leaguesSetting.update_frequency"
+                [disabled]="!leaguesSetting.is_active"
+                (change)="changeUpdateFrequency(leaguesSetting.league_id, leaguesSetting.update_frequency)">
+                <option [value]="1">1d</option>
+                <option [value]="3">3d</option>
+                <option [value]="7">7d</option>
+                <option [value]="30">30d</option>
+              </select>
             </div>
 
             <div class="control-group">
@@ -92,6 +91,17 @@
           </div>
 
           <div class="league-actions">
+            <div class="league-color-indicator">
+              @if (hasLeagueBaseColor(leaguesSetting)) {
+                <div 
+                  class="color-square" 
+                  [style.background-color]="getLeagueBaseColor(leaguesSetting)"
+                  [title]="'Base color: ' + getLeagueBaseColor(leaguesSetting)">
+                </div>
+              } @else {
+                <div class="color-not-set" title="Color not set">Color not set</div>
+              }
+            </div>
             <button 
               class="settings-button" 
               (click)="openSettingsModal(leaguesSetting)"
@@ -124,6 +134,113 @@
           </button>
         </div>
         <div class="modal-body">
+
+          <!-- League Colors Section -->
+          <div class="modal-section">
+            <button 
+              (click)="showColorSection = !showColorSection"
+              class="modal-action-btn toggle-updates-btn"
+              type="button">
+              <span>{{ showColorSection ? 'Hide' : 'Show' }} League Colors</span>
+              <ng-icon [name]="showColorSection ? 'jamChevronUp' : 'jamChevronDown'" size="20"></ng-icon>
+            </button>
+
+            @if (showColorSection) {
+              <div class="colors-container">
+                <div class="color-input-group">
+                  <div class="color-label-row">
+                    <label for="base-color">Base Color</label>
+                    <input 
+                      type="color" 
+                      id="base-color"
+                      [(ngModel)]="selectedLeagueBaseColor"
+                      (change)="onBaseColorChange()"
+                      class="color-picker">
+                  </div>
+                  <input 
+                    type="text" 
+                    [(ngModel)]="selectedLeagueBaseColor"
+                    (change)="onBaseColorChange()"
+                    class="color-text-input"
+                    placeholder="#000000">
+                </div>
+                <div class="color-input-group">
+                  <div class="color-label-row">
+                    <label for="card-main-color">Card Main Color</label>
+                    <input 
+                      type="color" 
+                      id="card-main-color"
+                      [(ngModel)]="selectedLeagueCardMainColor"
+                      (change)="onCardMainColorChange()"
+                      class="color-picker">
+                  </div>
+                  <div class="color-input-wrapper">
+                    <input 
+                      type="text" 
+                      [(ngModel)]="selectedLeagueCardMainColor"
+                      (change)="onCardMainColorChange()"
+                      class="color-text-input"
+                      placeholder="#000000">
+                    <button 
+                      type="button"
+                      (click)="copyBaseToCardMain()"
+                      class="copy-color-btn"
+                      title="Copy base color">
+                      📋
+                    </button>
+                  </div>
+                </div>
+                <div class="color-input-group">
+                  <div class="color-label-row">
+                    <label for="card-trans-color">Card Shadow Color</label>
+                    <input 
+                      type="color" 
+                      id="card-trans-color"
+                      [(ngModel)]="selectedLeagueCardTransColor"
+                      (change)="onCardTransColorChange()"
+                      class="color-picker">
+                  </div>
+                  <div class="color-input-wrapper">
+                    <input 
+                      type="text" 
+                      [(ngModel)]="selectedLeagueCardTransColor"
+                      (change)="onCardTransColorChange()"
+                      class="color-text-input"
+                      placeholder="rgba(0,0,0,0.9)">
+                    <button 
+                      type="button"
+                      (click)="copyBaseToCardTrans()"
+                      class="copy-color-btn"
+                      title="Copy base color as rgba">
+                      📋
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <button 
+                (click)="saveLeagueColors()"
+                [disabled]="isUpdatingColors"
+                class="modal-action-btn colors-btn">
+                {{ isUpdatingColors ? 'Saving...' : 'Save Colors' }}
+              </button>
+              
+              <!-- Preview Section -->
+              <div class="preview-section">
+                <div class="preview-card-wrapper">
+                  @if (previewMatch) {
+                    <app-real-match-card 
+                      [match]="previewMatch"
+                      [watched]="true"
+                      [locations]="[]"
+                      [size]="'md'"
+                      [interactable]="false">
+                    </app-real-match-card>
+                  }
+                </div>
+                <div class="preview-separator"></div>
+              </div>
+            }
+          </div>
 
           <!-- Toggle Button for Update Sections -->
           <div class="modal-section">

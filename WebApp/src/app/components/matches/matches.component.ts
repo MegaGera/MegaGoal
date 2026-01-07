@@ -13,6 +13,7 @@ import { MegaGoalService } from '../../services/megagoal.service';
 import { StatsService } from '../../services/stats.service';
 import { ImagesService } from '../../services/images.service';
 import { MatchParserService } from '../../services/match-parser.service';
+import { LeagueColorsService } from '../../services/league-colors.service';
 import { RealMatch } from '../../models/realMatch';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
@@ -71,6 +72,7 @@ export class MatchesComponent implements OnInit {
     private megaGoalService: MegaGoalService,
     private statsService: StatsService,
     public images: ImagesService,
+    private leagueColorsService: LeagueColorsService,
     public matchParser: MatchParserService,
     private router: Router,
     private route: ActivatedRoute
@@ -393,6 +395,9 @@ export class MatchesComponent implements OnInit {
         });
 
         this.topLeagues = result.leagues;
+        
+        // Set CSS variables for league colors
+        this.leagueColorsService.setLeagueColors(result.leagues);
         
         // If matches are already loaded, re-group them with the new order
         if (this.matches.length > 0) {

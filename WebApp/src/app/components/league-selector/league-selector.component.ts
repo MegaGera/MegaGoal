@@ -6,6 +6,7 @@ import { catchError } from 'rxjs/operators';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { StatsService } from '../../services/stats.service';
+import { LeagueColorsService } from '../../services/league-colors.service';
 import { League, LeagueStats } from '../../models/league';
 import { LeagueCardComponent } from './league-card/league-card.component';
 
@@ -25,7 +26,8 @@ export class LeagueSelectorComponent {
   constructor(
     private megagoal: MegaGoalService,
     private stats: StatsService,
-    private router: Router
+    private router: Router,
+    private leagueColorsService: LeagueColorsService
   ) {
     this.getLeagues();
   }
@@ -72,6 +74,9 @@ export class LeagueSelectorComponent {
           // One has views and one doesn't - leagues with views come first
           return viewsB - viewsA;
         });
+        
+        // Set CSS variables for league colors
+        this.leagueColorsService.setLeagueColors(result.leagues);
         
         this.setLoading(false);
         

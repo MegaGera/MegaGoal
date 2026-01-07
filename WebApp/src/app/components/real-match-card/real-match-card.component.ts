@@ -12,6 +12,7 @@ import { jamEyeCloseF, jamEyeF, jamInfoF } from '@ng-icons/jam-icons';
 
 import { ImagesService } from '../../services/images.service';
 import { MegaGoalService } from '../../services/megagoal.service';
+import { LeagueColorsService } from '../../services/league-colors.service';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
 import { MatchParserService } from '../../services/match-parser.service';
@@ -43,6 +44,7 @@ export class RealMatchCardComponent implements OnInit {
     public matchParser: MatchParserService,
     private router: Router,
     private host: ElementRef<HTMLElement>,
+    private leagueColorsService: LeagueColorsService
   ) {
     this.orderLocations();
   }
@@ -103,47 +105,33 @@ export class RealMatchCardComponent implements OnInit {
     }
   }
 
-  leagueCSSSelector(leagueId: number) {
-    if (this.watched){
-      if (leagueId == 141) {
-        return 'SegundaDivision';
-      } else if (leagueId == 140) {
-        return 'PrimeraDivision';
-      } else if (leagueId == 39) {
-        return 'PremierLeague';
-      } else if (leagueId == 2) {
-        return 'ChampionsLeague';
-      } else if (leagueId == 3) {
-        return 'EuropaLeague';
-      } else if (leagueId == 78) {
-        return 'Bundesliga';
-      } else if (leagueId == 61) {
-        return 'Ligue1';
-      } else if (leagueId == 135) {
-        return 'SerieA';
-      } else if (leagueId == 143) {
-        return 'CopaDelRey';
-      } else if (leagueId == 45) {
-        return 'FaCup';
-      } else if (leagueId == 556) {
-        return 'SpanishSupercup';
-      } else if (leagueId == 531) {
-        return 'UefaSupercup';
-      } else if (leagueId == 848) {
-        return 'ConferenceLeague';
-      } else if (leagueId == 1) {
-        return 'WorldCup';
-      } else if (leagueId == 4) {
-        return 'EuroCup';
-      } else if (leagueId == 9) {
-        return 'AmericanCup';
-      } else if (leagueId == 15) {
-        return 'ClubWorldCup';
-      } else {
-        return 'None';
-      }
+  /*
+    Get dynamic styles for match card based on league colors
+  */
+  getMatchCardStyles(): any {
+    if (!this.watched || !this.match) {
+      return {};
     }
-    return '';
+    
+    const colors = this.leagueColorsService.getLeagueColors(this.match.league.id);
+    return {
+      'border': `2px solid ${colors.card_main_color}`,
+      'box-shadow': `0 0 4px 2px ${colors.card_trans_color}, 0 4px 4px 0 ${colors.card_trans_color}`
+    };
+  }
+
+  /*
+    Get dynamic styles for team logo based on league colors
+  */
+  getTeamLogoStyles(): any {
+    if (!this.watched || !this.match) {
+      return {};
+    }
+    
+    const colors = this.leagueColorsService.getLeagueColors(this.match.league.id);
+    return {
+      'box-shadow': `0 4px 4px 0 rgba(48,48,48, 0.15), var(--img-team-shadow) ${colors.card_trans_color}`
+    };
   }
 
   setLocation(fixtureId: number, location: string) {
