@@ -10,7 +10,9 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import matchRoutes from './routes/matchRoutes.js';
+import publicMatchRoutes from './routes/publicMatchRoutes.js';
 import leagueRoutes from './routes/leagueRoutes.js';
+import publicLeagueRoutes from './routes/publicLeagueRoutes.js';
 import teamRoutes from './routes/teamRoutes.js';
 import realMatchRoutes from './routes/realMatchRoutes.js';
 import locationRoutes from './routes/locationRoutes.js';
@@ -62,8 +64,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Public routes (no authentication required) - must be defined before middleware
-app.use('/public/match', matchRoutes);
+app.use('/public/match', publicMatchRoutes);
 app.use('/public/analytics', analyticsRoutes);
+app.use('/public/league', publicLeagueRoutes);
 
 // Validate Api Key
 if (process.env.NODE_ENV === 'production') {

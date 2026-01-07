@@ -106,9 +106,10 @@ export class MegaGoalService {
   /*
     Method to get league colors only (lightweight endpoint)
     Returns a map of league_id -> colors object
+    Public endpoint - no authentication required
   */
   getLeagueColors(): Observable<{ [leagueId: number]: { base_color?: string, card_main_color?: string, card_trans_color?: string } }> {
-    return this.http.get<{ [leagueId: number]: { base_color?: string, card_main_color?: string, card_trans_color?: string } }>(this.url + '/league/colors/', this.options);
+    return this.http.get<{ [leagueId: number]: { base_color?: string, card_main_color?: string, card_trans_color?: string } }>(this.url + '/public/league/colors/', this.options);
   }
 
   /*
