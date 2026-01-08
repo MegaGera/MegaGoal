@@ -1,7 +1,32 @@
 <div class="container">
   <section class="fade-in">
-    <h1 class="section-title">Select a League</h1>
-    <p class="section-description">Choose a league to view teams and matches</p>
+    <!-- Header section -->
+    <div class="header-section">
+      <div class="header-row">
+        <div class="header-left">
+          <h1 class="section-title">Leagues</h1>
+          <p class="section-description">Choose a league to view teams and matches</p>
+        </div>
+        
+        <div class="header-right">
+          <!-- Country filter -->
+          <div class="filter-wrapper">
+            <label for="country-filter" class="filter-label">Filter by Country</label>
+            <select 
+              id="country-filter"
+              class="country-filter"
+              [(ngModel)]="selectedCountry"
+              (change)="onCountryFilterChange()"
+              aria-label="Filter leagues by country">
+              <option value="">All Countries</option>
+              @for (country of availableCountries; track country.name) {
+                <option [value]="country.name">{{ country.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <div class="leagues-grid">
       @if (isLoading) {
@@ -13,7 +38,7 @@
           </div>
         }
       } @else {
-        @for (league of leagues; track league.league.id) {
+        @for (league of filteredLeagues; track league.league.id) {
           <app-league-card
             [league]="league"
             [viewCount]="getLeagueViewCount(league.league.id)"
@@ -23,11 +48,17 @@
       }
     </div>
     
-    @if (leagues.length === 0 && !isLoading) {
+    @if (filteredLeagues.length === 0 && !isLoading) {
       <div class="empty-state">
         <div class="empty-state-icon">🏆</div>
         <h2 class="empty-state-title">No Leagues Available</h2>
-        <p class="empty-state-description">There are currently no leagues to display.</p>
+        <p class="empty-state-description">
+          @if (selectedCountry) {
+            No leagues found for {{ selectedCountry }}.
+          } @else {
+            There are currently no leagues to display.
+          }
+        </p>
       </div>
     }
   </section>
