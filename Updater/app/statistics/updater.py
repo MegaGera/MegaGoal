@@ -103,7 +103,10 @@ class StatisticsUpdater:
                 {self.data_field: None},
                 {self.data_field: []}
             ],
-            self.data_field_checked: False
+            "$or": [
+                {self.data_field_checked: {"$exists": False}},
+                {self.data_field_checked: False}
+            ]
         })
         
         updated_count = self._update_matches(list(matches), "missing")
