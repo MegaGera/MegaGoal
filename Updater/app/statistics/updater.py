@@ -13,6 +13,7 @@ class StatisticsUpdater:
         self.headers = Config.get_api_headers()
         self.url = Config.RAPIDAPI_HOST
         self.data_field = "statistics"
+        self.data_field_checked = "statistics_checked"
         self.data_type = "statistics"
 
     def _get_data_from_api(self, fixture_id: int):
@@ -35,7 +36,7 @@ class StatisticsUpdater:
 
         # Upsert statistics field into real_matches
         query_filter = {"fixture.id": int(fixture_id)}
-        update_doc = {"$set": {self.data_field: data_response}}
+        update_doc = {"$set": {self.data_field: data_response, self.data_field_checked: True}}
         result = self.collection_real_matches.update_one(query_filter, update_doc)
 
         if result.matched_count == 0:
@@ -101,7 +102,8 @@ class StatisticsUpdater:
                 {self.data_field: {"$exists": False}},
                 {self.data_field: None},
                 {self.data_field: []}
-            ]
+            ],
+            self.data_field_checked: False
         })
         
         updated_count = self._update_matches(list(matches), "missing")
