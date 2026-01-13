@@ -68,7 +68,7 @@ class EventsUpdater:
             
             if data_response:
                 query_filter = {"fixture.id": int(fixture_id)}
-                update_doc = {"$set": {self.data_field: data_response}}
+                update_doc = {"$set": {self.data_field: data_response, self.data_field_checked: True}}
                 self.collection_real_matches.update_one(query_filter, update_doc)
                 updated_count += 1
                 print(f"Updated {self.data_type} for fixture {fixture_id}")
