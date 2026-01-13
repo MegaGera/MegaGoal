@@ -13,6 +13,7 @@ class LineupsUpdater:
         self.headers = Config.get_api_headers()
         self.url = Config.RAPIDAPI_HOST
         self.data_field = "lineups"
+        self.data_field_checked = "lineups_checked"
         self.data_type = "lineups"
 
     def _get_data_from_api(self, fixture_id: int):
@@ -35,7 +36,7 @@ class LineupsUpdater:
 
         # Upsert lineups field into real_matches
         query_filter = {"fixture.id": int(fixture_id)}
-        update_doc = {"$set": {self.data_field: data_response}}
+        update_doc = {"$set": {self.data_field: data_response, self.data_field_checked: True}}
         result = self.collection_real_matches.update_one(query_filter, update_doc)
 
         if result.matched_count == 0:
@@ -107,6 +108,10 @@ class LineupsUpdater:
                 {self.data_field: {"$exists": False}},
                 {self.data_field: None},
                 {self.data_field: []}
+            ],
+            "$or": [
+                {self.data_field_checked: {"$exists": False}},
+                {self.data_field_checked: False}
             ]
         })
         
