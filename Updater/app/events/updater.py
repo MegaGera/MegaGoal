@@ -63,15 +63,9 @@ class EventsUpdater:
         
         for match in matches_list:
             fixture_id = match["fixture"]["id"]
-            data_json = self._get_data_from_api(fixture_id)
-            data_response = data_json.get("response", [])
-            
-            if data_response:
-                query_filter = {"fixture.id": int(fixture_id)}
-                update_doc = {"$set": {self.data_field: data_response, self.data_field_checked: True}}
-                self.collection_real_matches.update_one(query_filter, update_doc)
+            success = self.update_match_events(fixture_id)
+            if success:
                 updated_count += 1
-                print(f"Updated {self.data_type} for fixture {fixture_id}")
         
         return updated_count
 
