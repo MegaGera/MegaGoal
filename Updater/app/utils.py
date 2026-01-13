@@ -160,8 +160,12 @@ class MatchUpdater:
         self.add_real_matches(matches)
         self.update_league_last_update(league_id)
         
-        # Update available_seasons with match count
-        match_count = len(matches.get("response", []))
+        # Update available_seasons with match count from database (not API response)
+        # This ensures we get the correct count even if API returns 0 matches
+        match_count = self.collection_real_matches.count_documents({
+            "league.id": int(league_id),
+            "league.season": season
+        })
         self.update_available_season_with_matches(league_id, season, match_count)
 
         # Update statistics, events, and lineups if full update is requested
