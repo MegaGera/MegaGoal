@@ -184,7 +184,7 @@ async def update_match_statistics(req: UpdateStatisticsRequest, request: Request
     await validate_admin(request)
     updater = StatisticsUpdater()
     try:
-        success = updater.update_match_statistics(req.fixture_id)
+        success = updater.update_match_statistics(req.fixture_id, full_update=True)
         if success:
             return {"status": "success", "message": f"Updated statistics for fixture {req.fixture_id}"}
         else:
@@ -197,7 +197,7 @@ async def update_match_lineups(req: UpdateStatisticsRequest, request: Request):
     await validate_admin(request)
     updater = LineupsUpdater()
     try:
-        success = updater.update_match_lineups(req.fixture_id)
+        success = updater.update_match_lineups(req.fixture_id, full_update=True)
         if success:
             return {"status": "success", "message": f"Updated lineups for fixture {req.fixture_id}"}
         else:
@@ -210,7 +210,7 @@ async def update_match_events(req: UpdateStatisticsRequest, request: Request):
     await validate_admin(request)
     updater = EventsUpdater()
     try:
-        success = updater.update_match_events(req.fixture_id)
+        success = updater.update_match_events(req.fixture_id, full_update=True)
         if success:
             return {"status": "success", "message": f"Updated events for fixture {req.fixture_id}"}
         else:

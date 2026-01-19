@@ -47,7 +47,7 @@ class StatisticsUpdater:
         """Fetch fixture statistics from external API (public alias)"""
         return self._get_data_from_api(fixture_id)
 
-    def update_match_statistics(self, fixture_id: int):
+    def update_match_statistics(self, fixture_id: int, full_update=True):
         """Fetch and persist statistics for a given fixture into real_matches document"""
         try:
             data_json = self._get_data_from_api(fixture_id)
@@ -55,7 +55,7 @@ class StatisticsUpdater:
 
             # Upsert statistics field into real_matches
             query_filter = {"fixture.id": int(fixture_id)}
-            update_doc = {"$set": {self.data_field: data_response, self.data_field_checked: True}}
+            update_doc = {"$set": {self.data_field: data_response, self.data_field_checked: full_update}}
             result = self.collection_real_matches.update_one(query_filter, update_doc)
 
             if result.matched_count == 0:
@@ -79,13 +79,13 @@ class StatisticsUpdater:
         })
         return count
 
-    def _update_matches(self, matches_list, update_type="full"):
+    def _update_matches(self, matches_list, full_update=True):
         """Update matches from the provided list"""
         updated_count = 0
         
         for match in matches_list:
             fixture_id = match["fixture"]["id"]
-            success = self.update_match_statistics(fixture_id)
+            success = self.update_match_statistics(fixture_id, full_update)
             if success:
                 updated_count += 1
         
@@ -102,7 +102,7 @@ class StatisticsUpdater:
             "fixture.status.short": {"$in": finished_statuses}
         })
         
-        updated_count = self._update_matches(list(matches), "full")
+        updated_count = self._update_matches(list(matches), full_update=True)
         print(f"Updated {updated_count} {self.data_type} for league {league_id}, season {season}")
         
         # Count all matches with statistics data in database
@@ -137,9 +137,20 @@ class StatisticsUpdater:
             ]
         })
         
-        updated_count = self._update_matches(list(matches), "missing")
+        updated_count = self._update_matches(list(matches), full_update=True)
         print(f"Updated {updated_count} {self.data_type} (missing only) for league {league_id}, season {season}")
         
+        # Count all matches with statistics data in database
+        total_count = self._count_matches_with_data(league_id, season)
+        self._update_available_season(league_id, season, total_count)
+        
+        return total_count
+
+    def update_statistics_by_matches(self, matches_list, league_id, season):
+        """Update statistics for a list of matches"""
+        updated_count = self._update_matches(list(matches_list), full_update=False)
+        print(f"Updated {updated_count} {self.data_type} (daily update) for league {league_id}")
+
         # Count all matches with statistics data in database
         total_count = self._count_matches_with_data(league_id, season)
         self._update_available_season(league_id, season, total_count)
