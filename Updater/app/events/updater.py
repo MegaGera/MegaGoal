@@ -1,5 +1,6 @@
 import http.client
 import json
+import time
 from ..config import Config
 from ..utils import MatchUpdater
 
@@ -16,32 +17,89 @@ class EventsUpdater:
         self.data_field_checked = "events_checked"
         self.data_type = "events"
 
+    def _make_api_request_with_retry(self, endpoint, max_retries=5, retry_delay=5):
+        """Make an API request with rate limit retry logic
+        
+        Args:
+            endpoint: The API endpoint to call
+            max_retries: Maximum number of retries (default: 5)
+            retry_delay: Delay in seconds between retries (default: 5)
+        
+        Returns:
+            dict: The JSON response from the API
+        
+        Raises:
+            Exception: If all retries are exhausted or if there's a non-rate-limit error
+        """
+        for attempt in range(max_retries):
+            try:
+                conn = http.client.HTTPSConnection(self.url)
+                conn.request("GET", endpoint, headers=self.headers)
+                response = conn.getresponse()
+                response_data = response.read()
+                
+                # Parse JSON response
+                try:
+                    json_response = json.loads(response_data)
+                except json.JSONDecodeError:
+                    # If JSON parsing fails, check if it's a rate limit error in the raw response
+                    response_text = response_data.decode('utf-8', errors='ignore')
+                    if "rateLimit" in response_text or "Too many requests" in response_text:
+                        if attempt < max_retries - 1:
+                            print(f"Rate limit detected (attempt {attempt + 1}/{max_retries}). Waiting {retry_delay} seconds before retry...")
+                            time.sleep(retry_delay)
+                            continue
+                        else:
+                            raise Exception(f"Rate limit exceeded after {max_retries} attempts")
+                    else:
+                        raise Exception(f"Invalid JSON response: {response_text[:200]}")
+                
+                # Check for errors in the JSON response
+                if "errors" in json_response:
+                    errors = json_response.get("errors", {})
+                    
+                    # Check if it's a rate limit error (retry)
+                    if "rateLimit" in errors:
+                        if attempt < max_retries - 1:
+                            rate_limit_msg = errors.get("rateLimit", "Rate limit exceeded")
+                            print(f"Rate limit detected: {rate_limit_msg} (attempt {attempt + 1}/{max_retries}). Waiting {retry_delay} seconds before retry...")
+                            time.sleep(retry_delay)
+                            continue
+                        else:
+                            raise Exception(f"Rate limit exceeded after {max_retries} attempts: {errors.get('rateLimit', 'Unknown error')}")
+                    
+                    # Check if there are any other errors (don't retry, raise immediately)
+                    if errors:
+                        error_messages = []
+                        for key, value in errors.items():
+                            if isinstance(value, str):
+                                error_messages.append(f"{key}: {value}")
+                            else:
+                                error_messages.append(f"{key}: {json.dumps(value)}")
+                        
+                        error_str = "; ".join(error_messages)
+                        print(f"API error detected: {error_str}")
+                        raise Exception(f"API returned errors: {error_str}")
+                
+                # Success - return the response
+                return json_response
+                
+            except Exception as e:
+                # If it's the last attempt, raise the exception
+                if attempt == max_retries - 1:
+                    raise
+                # For other errors, wait and retry
+                print(f"API request failed (attempt {attempt + 1}/{max_retries}): {str(e)}. Waiting {retry_delay} seconds before retry...")
+                time.sleep(retry_delay)
+        
+        # This should never be reached, but just in case
+        raise Exception(f"Failed to make API request after {max_retries} attempts")
+
     def _get_data_from_api(self, fixture_id: int):
         """Fetch fixture events from external API"""
-        conn = http.client.HTTPSConnection(self.url)
         endpoint = f"/fixtures/{self.data_type}?fixture={fixture_id}"
         print(f"Getting {self.data_type} from API for fixture {fixture_id}")
-        conn.request("GET", endpoint, headers=self.headers)
-        response = conn.getresponse()
-        
-        # Read response data (can only be read once)
-        response_data = response.read()
-        
-        # Check status code
-        if response.status != 200:
-            error_body = response_data.decode('utf-8', errors='ignore') if response_data else "No error body"
-            raise Exception(f"API returned status {response.status} for fixture {fixture_id}: {error_body}")
-        
-        # Check for empty response
-        if not response_data:
-            raise Exception(f"Empty response from API for fixture {fixture_id}")
-        
-        # Decode bytes to string and parse JSON
-        try:
-            response_text = response_data.decode('utf-8')
-            return json.loads(response_text)
-        except json.JSONDecodeError as e:
-            raise Exception(f"Invalid JSON response for fixture {fixture_id}: {response_text[:200]}") from e
+        return self._make_api_request_with_retry(endpoint)
 
     def get_fixture_events_from_api(self, fixture_id: int):
         """Fetch fixture events from external API (public alias)"""
