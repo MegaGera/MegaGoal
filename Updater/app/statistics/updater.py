@@ -23,7 +23,25 @@ class StatisticsUpdater:
         print(f"Getting {self.data_type} from API for fixture {fixture_id}")
         conn.request("GET", endpoint, headers=self.headers)
         response = conn.getresponse()
-        return json.loads(response.read())
+        
+        # Read response data (can only be read once)
+        response_data = response.read()
+        
+        # Check status code
+        if response.status != 200:
+            error_body = response_data.decode('utf-8', errors='ignore') if response_data else "No error body"
+            raise Exception(f"API returned status {response.status} for fixture {fixture_id}: {error_body}")
+        
+        # Check for empty response
+        if not response_data:
+            raise Exception(f"Empty response from API for fixture {fixture_id}")
+        
+        # Decode bytes to string and parse JSON
+        try:
+            response_text = response_data.decode('utf-8')
+            return json.loads(response_text)
+        except json.JSONDecodeError as e:
+            raise Exception(f"Invalid JSON response for fixture {fixture_id}: {response_text[:200]}") from e
 
     def get_fixture_statistics_from_api(self, fixture_id: int):
         """Fetch fixture statistics from external API (public alias)"""
@@ -31,20 +49,24 @@ class StatisticsUpdater:
 
     def update_match_statistics(self, fixture_id: int):
         """Fetch and persist statistics for a given fixture into real_matches document"""
-        data_json = self._get_data_from_api(fixture_id)
-        data_response = data_json.get("response", [])
+        try:
+            data_json = self._get_data_from_api(fixture_id)
+            data_response = data_json.get("response", [])
 
-        # Upsert statistics field into real_matches
-        query_filter = {"fixture.id": int(fixture_id)}
-        update_doc = {"$set": {self.data_field: data_response, self.data_field_checked: True}}
-        result = self.collection_real_matches.update_one(query_filter, update_doc)
+            # Upsert statistics field into real_matches
+            query_filter = {"fixture.id": int(fixture_id)}
+            update_doc = {"$set": {self.data_field: data_response, self.data_field_checked: True}}
+            result = self.collection_real_matches.update_one(query_filter, update_doc)
 
-        if result.matched_count == 0:
-            print(f"No real_match found for fixture {fixture_id} to update {self.data_type}")
+            if result.matched_count == 0:
+                print(f"No real_match found for fixture {fixture_id} to update {self.data_type}")
+                return False
+
+            print(f"Updated {self.data_type} for fixture {fixture_id}")
+            return True
+        except Exception as e:
+            print(f"Error updating {self.data_type} for fixture {fixture_id}: {str(e)}")
             return False
-
-        print(f"Updated {self.data_type} for fixture {fixture_id}")
-        return True
 
     def _count_matches_with_data(self, league_id, season):
         """Count finished matches that have statistics data"""
@@ -98,14 +120,20 @@ class StatisticsUpdater:
             "league.id": int(league_id),
             "league.season": int(season),
             "fixture.status.short": {"$in": finished_statuses},
-            "$or": [
-                {self.data_field: {"$exists": False}},
-                {self.data_field: None},
-                {self.data_field: []}
-            ],
-            "$or": [
-                {self.data_field_checked: {"$exists": False}},
-                {self.data_field_checked: False}
+            "$and": [
+                {
+                    "$or": [
+                        {self.data_field: {"$exists": False}},
+                        {self.data_field: None},
+                        {self.data_field: []}
+                    ]
+                },
+                {
+                    "$or": [
+                        {self.data_field_checked: {"$exists": False}},
+                        {self.data_field_checked: False}
+                    ]
+                }
             ]
         })
         
