@@ -1,6 +1,7 @@
 import http.client
 import json
 import datetime
+import time
 from .config import Config
 
 class MatchUpdater:
@@ -16,6 +17,84 @@ class MatchUpdater:
         self.collection_players = self.db['players']
         self.headers = Config.get_api_headers()
         self.url = Config.RAPIDAPI_HOST
+
+    def _make_api_request_with_retry(self, endpoint, max_retries=5, retry_delay=5):
+        """Make an API request with rate limit retry logic
+        
+        Args:
+            endpoint: The API endpoint to call
+            max_retries: Maximum number of retries (default: 5)
+            retry_delay: Delay in seconds between retries (default: 5)
+        
+        Returns:
+            dict: The JSON response from the API
+        
+        Raises:
+            Exception: If all retries are exhausted or if there's a non-rate-limit error
+        """
+        for attempt in range(max_retries):
+            try:
+                conn = http.client.HTTPSConnection(self.url)
+                conn.request("GET", endpoint, headers=self.headers)
+                response = conn.getresponse()
+                response_data = response.read()
+                
+                # Parse JSON response
+                try:
+                    json_response = json.loads(response_data)
+                except json.JSONDecodeError:
+                    # If JSON parsing fails, check if it's a rate limit error in the raw response
+                    response_text = response_data.decode('utf-8', errors='ignore')
+                    if "rateLimit" in response_text or "Too many requests" in response_text:
+                        if attempt < max_retries - 1:
+                            print(f"Rate limit detected (attempt {attempt + 1}/{max_retries}). Waiting {retry_delay} seconds before retry...")
+                            time.sleep(retry_delay)
+                            continue
+                        else:
+                            raise Exception(f"Rate limit exceeded after {max_retries} attempts")
+                    else:
+                        raise Exception(f"Invalid JSON response: {response_text[:200]}")
+                
+                # Check for errors in the JSON response
+                if "errors" in json_response:
+                    errors = json_response.get("errors", {})
+                    
+                    # Check if it's a rate limit error (retry)
+                    if "rateLimit" in errors:
+                        if attempt < max_retries - 1:
+                            rate_limit_msg = errors.get("rateLimit", "Rate limit exceeded")
+                            print(f"Rate limit detected: {rate_limit_msg} (attempt {attempt + 1}/{max_retries}). Waiting {retry_delay} seconds before retry...")
+                            time.sleep(retry_delay)
+                            continue
+                        else:
+                            raise Exception(f"Rate limit exceeded after {max_retries} attempts: {errors.get('rateLimit', 'Unknown error')}")
+                    
+                    # Check if there are any other errors (don't retry, raise immediately)
+                    if errors:
+                        error_messages = []
+                        for key, value in errors.items():
+                            if isinstance(value, str):
+                                error_messages.append(f"{key}: {value}")
+                            else:
+                                error_messages.append(f"{key}: {json.dumps(value)}")
+                        
+                        error_str = "; ".join(error_messages)
+                        print(f"API error detected: {error_str}")
+                        raise Exception(f"API returned errors: {error_str}")
+                
+                # Success - return the response
+                return json_response
+                
+            except Exception as e:
+                # If it's the last attempt, raise the exception
+                if attempt == max_retries - 1:
+                    raise
+                # For other errors, wait and retry
+                print(f"API request failed (attempt {attempt + 1}/{max_retries}): {str(e)}. Waiting {retry_delay} seconds before retry...")
+                time.sleep(retry_delay)
+        
+        # This should never be reached, but just in case
+        raise Exception(f"Failed to make API request after {max_retries} attempts")
 
     def league_exists(self, league_id):
         """Check if league exists in database"""
@@ -36,11 +115,8 @@ class MatchUpdater:
                 self.collection_leagues.insert_one(leagues["response"][i])
         
     def get_leagues_from_api(self):
-        conn = http.client.HTTPSConnection(self.url)
         endpoint = f"/leagues"
-        conn.request("GET", endpoint, headers=self.headers)
-        response = conn.getresponse()
-        return json.loads(response.read())
+        return self._make_api_request_with_retry(endpoint)
 
     def add_leagues(self):
         """Add leagues to database"""
@@ -78,7 +154,6 @@ class MatchUpdater:
     
     def get_matches_from_api(self, league_id, season, date=None, date_to=None):
         """Get matches from API"""
-        conn = http.client.HTTPSConnection(self.url)
         season = str(season)
         league_id = str(league_id)
         
@@ -93,9 +168,7 @@ class MatchUpdater:
             endpoint = f"/fixtures?league={league_id}&season={season}"
             print(f"Getting matches from API for league {league_id}, season {season}")
         
-        conn.request("GET", endpoint, headers=self.headers)
-        response = conn.getresponse()
-        return json.loads(response.read())
+        return self._make_api_request_with_retry(endpoint)
     
     def add_real_matches(self, json_real_matches):
         """Add or update real matches in database"""
@@ -411,13 +484,10 @@ class MatchUpdater:
 
     def get_teams_from_api(self, league_id, season):
         """Get teams from API"""
-        conn = http.client.HTTPSConnection(self.url)
         endpoint = f"/teams?league={league_id}&season={season}"
         print(f"Getting teams from API for league {league_id}, season {season}")
         
-        conn.request("GET", endpoint, headers=self.headers)
-        response = conn.getresponse()
-        return json.loads(response.read())
+        return self._make_api_request_with_retry(endpoint)
 
     def update_teams_by_league_and_season(self, league_id, season):
         """Update teams for a league and season"""
