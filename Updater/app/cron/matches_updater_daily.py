@@ -1,5 +1,8 @@
 import datetime
 from ..utils import MatchUpdater
+from ..events.updater import EventsUpdater
+from ..statistics.updater import StatisticsUpdater
+from ..lineups.updater import LineupsUpdater
 from ..config import Config
 
 def fetch_leagues_to_update_daily(updater):
@@ -43,6 +46,9 @@ def perform_daily_update():
     print(today.strftime('%Y-%m-%d %H:%M:%S'))
     
     updater = MatchUpdater()
+    events_updater = EventsUpdater()
+    statistics_updater = StatisticsUpdater()
+    lineups_updater = LineupsUpdater()
     leagues = fetch_leagues_to_update_daily(updater)
     
     for league in leagues:
@@ -56,6 +62,9 @@ def perform_daily_update():
                 date_to=today.strftime('%Y-%m-%d')
             )
             updater.add_real_matches(matches)
+            events_updater.update_events_by_matches(matches, league_id, season)
+            statistics_updater.update_statistics_by_matches(matches, league_id, season)
+            lineups_updater.update_lineups_by_matches(matches, league_id, season)
             updater.update_league_daily_update(league_id)
             print("OK")
 
