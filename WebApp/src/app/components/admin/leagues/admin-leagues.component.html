@@ -54,10 +54,10 @@
                 [(ngModel)]="leaguesSetting.update_frequency"
                 [disabled]="!leaguesSetting.is_active"
                 (change)="changeUpdateFrequency(leaguesSetting.league_id, leaguesSetting.update_frequency)">
-                <option [value]="1">1d</option>
-                <option [value]="3">3d</option>
-                <option [value]="7">7d</option>
-                <option [value]="30">30d</option>
+                <option [ngValue]="1">1d</option>
+                <option [ngValue]="3">3d</option>
+                <option [ngValue]="7">7d</option>
+                <option [ngValue]="30">30d</option>
               </select>
             </div>
 

@@ -11,13 +11,14 @@ def fetch_leagues_to_update(updater):
     now = datetime.datetime.today()
     
     # MongoDB query to find leagues that need updating
+    # Note: $toDouble converts both numeric and string numeric values to double
     leagues_to_update = updater.collection_settings.find({
         "is_active": True,
         "$or": [
             {"update_frequency": 1},
             {"$expr": {
                 "$lte": [
-                    {"$add": ["$last_update", {"$multiply": ["$update_frequency", 86400000]}]},  # Convert days to milliseconds
+                    {"$add": ["$last_update", {"$multiply": [{"$toDouble": "$update_frequency"}, 86400000]}]},  # Convert days to milliseconds, $toDouble handles both numbers and string numbers
                     now  # Check if last_update + update_frequency is less than or equal to now
                 ]
             }},

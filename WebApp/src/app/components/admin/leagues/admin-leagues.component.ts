@@ -196,7 +196,9 @@ export class AdminLeaguesComponent {
   }
 
   changeUpdateFrequency(league_id: number, update_frequency: number) {
-    this.megagoal.changeUpdateFrequency(league_id, update_frequency).subscribe(result => { });
+    // Ensure update_frequency is always a number (HTML select returns string)
+    const updateFrequencyNumber = Number(update_frequency);
+    this.megagoal.changeUpdateFrequency(league_id, updateFrequencyNumber).subscribe(result => { });
   }
 
   changeDailyUpdate(league_id: number, daily_update: boolean) {

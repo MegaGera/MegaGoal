@@ -37,10 +37,12 @@ export const changeUpdateFrequency = async (req, res) => {
   const db = getDB();
   try {
     let {league_id, update_frequency} = req.body;
+    // Ensure update_frequency is always stored as a number
+    const updateFrequencyNumber = Number(update_frequency);
     const filter = { "league_id": +league_id};
-    const update = { $set: { "update_frequency": update_frequency } };
+    const update = { $set: { "update_frequency": updateFrequencyNumber } };
     let result = await db.collection('league_settings').updateOne(filter, update);
-    console.log("Update frequency updated for league " + league_id + " to " + update_frequency);
+    console.log("Update frequency updated for league " + league_id + " to " + updateFrequencyNumber);
 
     await logAdminAction(req.validateData.username, 'CHANGE_UPDATE_FREQUENCY', { league_id: league_id, update_frequency: update_frequency }, req);
 

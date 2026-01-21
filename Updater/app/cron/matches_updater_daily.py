@@ -62,9 +62,11 @@ def perform_daily_update():
                 date_to=today.strftime('%Y-%m-%d')
             )
             updater.add_real_matches(matches)
-            events_updater.update_events_by_matches(matches, league_id, season)
-            statistics_updater.update_statistics_by_matches(matches, league_id, season)
-            lineups_updater.update_lineups_by_matches(matches, league_id, season)
+            # Pass matches["response"] since the updaters expect a list of match dictionaries
+            matches_list = matches.get("response", [])
+            events_updater.update_events_by_matches(matches_list, league_id, season)
+            statistics_updater.update_statistics_by_matches(matches_list, league_id, season)
+            lineups_updater.update_lineups_by_matches(matches_list, league_id, season)
             updater.update_league_daily_update(league_id)
             print("OK")
 
