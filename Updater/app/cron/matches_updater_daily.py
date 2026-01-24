@@ -64,9 +64,19 @@ def perform_daily_update():
             updater.add_real_matches(matches)
             # Pass matches["response"] since the updaters expect a list of match dictionaries
             matches_list = matches.get("response", [])
-            events_updater.update_events_by_matches(matches_list, league_id, season)
-            statistics_updater.update_statistics_by_matches(matches_list, league_id, season)
-            lineups_updater.update_lineups_by_matches(matches_list, league_id, season)
+            
+            # Filter non-finished matches for events, statistics, and lineups updates
+            finished_statuses = Config.get_finished_match_status_array()
+            non_finished_matches = [
+                match for match in matches_list 
+                if match.get("fixture", {}).get("status", {}).get("short") not in finished_statuses
+            ]
+            
+            # Update events, statistics, and lineups only for non-finished matches
+            events_updater.update_events_by_matches(non_finished_matches, league_id, season)
+            statistics_updater.update_statistics_by_matches(non_finished_matches, league_id, season)
+            lineups_updater.update_lineups_by_matches(non_finished_matches, league_id, season)
+
             updater.update_league_daily_update(league_id)
             print("OK")
 
