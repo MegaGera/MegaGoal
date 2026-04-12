@@ -1,4 +1,4 @@
-<div class="row matchCard" [ngClass]="[size === 'md' ? 'matchCardMd' : '']" [class.expanded]="isCardExpanded" [ngStyle]="getMatchCardStyles()">
+<div class="row matchCard" [ngClass]="[size === 'md' ? 'matchCardMd' : '']" [ngStyle]="getMatchCardStyles()">
   <div class="generalMatchCard" [ngClass]="{'generalMatchCardMd': size === 'md'}">
 
     <div class="live-indicator" *ngIf="isLive()">
@@ -19,7 +19,7 @@
         <div class="col-4 h-100 z-1">
           <div class="teamLogoSection">
 
-            <div class="team h-100" [style.cursor]="interactable ? 'pointer' : 'default'" [class.clickable]="interactable" (click)="handleTeamClick(match.teams.home.id, $event)">
+            <div class="team h-100" [style.cursor]="interactable ? 'pointer' : 'default'" [class.clickable]="interactable" (click)="handleTeamClick(match.teams.home.id)">
               <div class="teamLogo h-100" [ngStyle]="getTeamLogoStyles()">
                 <img class="imgLogo p-1" [src]="images.getRouteImageTeam(match.teams.home.id)">
               </div>
@@ -27,11 +27,11 @@
 
           </div>
           <div class="text-center">
-            <h2 class="m-auto team-name" [ngClass]="{'team-name-md': size === 'md'}" [style.cursor]="interactable ? 'pointer' : 'default'" [class.clickable]="interactable" (click)="handleTeamClick(match.teams.home.id, $event)">{{match.teams.home.name}}</h2>
+            <h2 class="m-auto team-name" [ngClass]="{'team-name-md': size === 'md'}">{{match.teams.home.name}}</h2>
           </div>
         </div>
 
-        <div class="col-4 h-100 z-1" [ngClass]="{'center-score-column': !interactable}">
+        <div class="col-4 h-100 z-1" [ngClass]="{'center-score-column': !interactable, 'match-center-actions-only': interactable && !shouldShowMatchScore()}">
 
           @if (interactable) {
             <div class="button-row">
@@ -48,15 +48,17 @@
             </div>
           }
 
-          <div class="row" style="width: fit-content; margin:auto;">
-            <div class="match-score">
-              <span class="match-score-number" [ngClass]="{'match-score-number-md': size === 'md', 'leading': match.goals.home > match.goals.away}">{{match.goals.home}}</span>
-              <span class="match-score-divider">:</span>
-              <span class="match-score-number" [ngClass]="{'match-score-number-md': size === 'md', 'leading': match.goals.home < match.goals.away}">{{match.goals.away}}</span>
+          @if (shouldShowMatchScore()) {
+            <div class="row" style="width: fit-content; margin:auto;">
+              <div class="match-score">
+                <span class="match-score-number" [ngClass]="{'match-score-number-md': size === 'md', 'leading': match.goals.home > match.goals.away}">{{match.goals.home}}</span>
+                <span class="match-score-divider">:</span>
+                <span class="match-score-number" [ngClass]="{'match-score-number-md': size === 'md', 'leading': match.goals.home < match.goals.away}">{{match.goals.away}}</span>
+              </div>
             </div>
-          </div>
+          }
 
-          @if (interactable && watched) {
+          @if (interactable && watched && shouldShowMatchScore()) {
             <div class="row" class="location-selector-row">
               <div class="location-selector">
                 <mat-select name="locationSelect" class="location-mat-select" panelWidth="null" [(ngModel)]="match.location" 
@@ -82,7 +84,7 @@
           
           <div class="teamLogoSection">
 
-            <div class="team h-100" [style.cursor]="interactable ? 'pointer' : 'default'" [class.clickable]="interactable" (click)="handleTeamClick(match.teams.away.id, $event)">
+            <div class="team h-100" [style.cursor]="interactable ? 'pointer' : 'default'" [class.clickable]="interactable" (click)="handleTeamClick(match.teams.away.id)">
               <div class="teamLogo h-100" [ngStyle]="getTeamLogoStyles()">
                 <img class="imgLogo p-1" [src]="images.getRouteImageTeam(match.teams.away.id)">
               </div>
@@ -90,7 +92,7 @@
 
           </div>
           <div class="text-center">
-            <h2 class="m-auto team-name" [ngClass]="{'team-name-md': size === 'md'}" [style.cursor]="interactable ? 'pointer' : 'default'" [class.clickable]="interactable" (click)="handleTeamClick(match.teams.away.id, $event)">{{match.teams.away.name}}</h2>
+            <h2 class="m-auto team-name" [ngClass]="{'team-name-md': size === 'md'}">{{match.teams.away.name}}</h2>
           </div>
 
         </div>

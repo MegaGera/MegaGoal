@@ -70,8 +70,7 @@
     height: 14vh;
   }
 
-	.matchCard:hover,
-	.matchCard.expanded {
+	.matchCard:hover {
 		height: 20vh;
 
 		.generalMatchCard {
@@ -107,8 +106,7 @@
 		height: 20vh;
 	}
 	
-	.matchCard:hover,
-	.matchCard.expanded {
+	.matchCard:hover {
 		height: 35vh;
 
 		.generalMatchCard {
@@ -120,8 +118,7 @@
 		}
 	}
 	
-	.matchCardMd:hover,
-	.matchCardMd.expanded {
+	.matchCardMd:hover {
 		height: 25vh;
 
 		.generalMatchCard {
@@ -149,8 +146,7 @@
   transition: 0.2s;
 }
 
-.matchCard:hover,
-.matchCard.expanded {
+.matchCard:hover {
   background-color: #e2e8f0;
   transition: 0.2s;
 
@@ -393,6 +389,21 @@
 	align-items: center;
 }
 
+.match-center-actions-only {
+	position: relative;
+}
+
+/* Vertical center of the row at 40% (50% = dead center); slightly above center */
+.match-center-actions-only .button-row {
+	position: absolute;
+	top: 35%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	height: auto;
+	margin: 0;
+	width: fit-content;
+}
+
 .match-eye-button {
 	margin: auto;
 	text-align: center;
@@ -487,12 +498,4 @@
 	transform: scale(1.05);
 }
 
-.team-name {
-	transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.team-name:hover {
-	color: #e94d4a;
-	transform: scale(1.02);
-}
   

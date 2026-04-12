@@ -119,19 +119,7 @@
 
 /* Country filter */
 .filter-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   min-width: 200px;
-}
-
-.filter-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 0;
-  text-align: center;
 }
 
 .country-filter {

@@ -88,9 +88,8 @@
               <div class="skeleton-league-info">
                 <div class="skeleton-league-logo"></div>
                 <div class="skeleton-league-details">
-                  <div class="skeleton-league-name"></div>
-                  <div class="skeleton-league-meta">
-                    <div class="skeleton-season"></div>
+                  <div class="skeleton-league-name-group">
+                    <div class="skeleton-league-name"></div>
                     <div class="skeleton-country"></div>
                   </div>
                 </div>
@@ -139,9 +138,15 @@
                     role="button"
                     [attr.aria-label]="'Go to ' + groupedMatches[leagueKey][0].league.name + ' league details'">
                   <div class="league-details">
-                    <h2 class="league-name">{{ groupedMatches[leagueKey][0].league.name }}</h2>
-                    <div class="league-meta">
-                      <span class="season">{{ groupedMatches[leagueKey][0].league.season }}</span>
+                    <div class="league-name-group">
+                      <h2 class="league-name">
+                        <a
+                          class="league-name-link"
+                          [routerLink]="['/app/leagues', groupedMatches[leagueKey][0].league.id]"
+                          [attr.aria-label]="'Go to ' + groupedMatches[leagueKey][0].league.name + ' league details'">
+                          {{ groupedMatches[leagueKey][0].league.name }}
+                        </a>
+                      </h2>
                       @if (groupedMatches[leagueKey][0].league.country) {
                         <span class="country">{{ groupedMatches[leagueKey][0].league.country }}</span>
                       }
