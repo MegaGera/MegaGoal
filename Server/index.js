@@ -21,7 +21,7 @@ import feedbackRoutes from './routes/feedbackRoutes.js';
 import playersRoutes from './routes/playersRoutes.js';
 import youtubeRoutes from './routes/youtubeRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
-
+import { startMcpHttpIfEnabled } from './mcp/createMcpServer.js';
 
 const app = express();
 
@@ -153,4 +153,9 @@ const PORT = process.env.PORT || 3150;
 // } else {
 //   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 // }
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  startMcpHttpIfEnabled().catch((err) => {
+    console.error('MCP server failed to start:', err);
+  });
+});

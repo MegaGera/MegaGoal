@@ -2,30 +2,21 @@ import { getDB } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import { logMatchCreated, logMatchDeleted, logMatchUpdateLocation } from './logController.js';
+import { getWatchedMatchesForUser } from '../mcp/services/watchedMatchesQuery.js';
 
 // Get matches
 const getMatches = async (req, res) => {
-  const db = getDB();
   try {
-    let {team_id, season, location, fixture_id} = req.query;
+    let { team_id, season, location, fixture_id } = req.query;
     let username = req.validateData.username;
 
-    const filters = [];
-    if (team_id) {
-      filters.push({
-          $or: [
-              { 'teams.home.id': +team_id },
-              { 'teams.away.id': +team_id }
-          ]
-      });
-    }
-    if (season) filters.push({ 'league.season': +season });
-    if (username) filters.push({ 'user.username': username });
-    if (location) filters.push({ 'location': location });
-    if (fixture_id) filters.push({ 'fixture.id': +fixture_id });
-    
-    const query = filters.length > 0 ? { $and: filters } : {};
-    const result = await db.collection('matches').find(query).toArray();
+    const result = await getWatchedMatchesForUser({
+      username,
+      team_id,
+      season,
+      location,
+      fixture_id,
+    });
 
     console.log("Matches Getted");
     res.send(result);
@@ -36,7 +27,6 @@ const getMatches = async (req, res) => {
 
 // Get matches by team id
 const getMatchesByTeamId = async (req, res) => {
-  const db = getDB();
   try {
     const { teamId } = req.params;
     const { season, location, fixture_id } = req.query;
@@ -46,30 +36,13 @@ const getMatchesByTeamId = async (req, res) => {
       return res.status(400).json({ message: "Team ID is required" });
     }
 
-    const filters = [
-      {
-        $or: [
-          { 'teams.home.id': +teamId },
-          { 'teams.away.id': +teamId }
-        ]
-      }
-    ];
-
-    if (username) {
-      filters.push({ 'user.username': username });
-    }
-    if (season) {
-      filters.push({ 'league.season': +season });
-    }
-    if (location) {
-      filters.push({ 'location': location });
-    }
-    if (fixture_id) {
-      filters.push({ 'fixture.id': +fixture_id });
-    }
-
-    const query = { $and: filters };
-    const result = await db.collection('matches').find(query).toArray();
+    const result = await getWatchedMatchesForUser({
+      username,
+      team_id: teamId,
+      season,
+      location,
+      fixture_id,
+    });
 
     console.log(`Matches retrieved for team ${teamId}`);
     res.send(result);
