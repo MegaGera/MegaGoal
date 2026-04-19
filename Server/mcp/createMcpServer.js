@@ -1,6 +1,9 @@
 import { FastMCP, UserError } from 'fastmcp';
 import { z } from 'zod';
-import { getWatchedMatchesForUser } from './services/watchedMatchesQuery.js';
+import {
+  countWatchedMatchesForUser,
+  getWatchedMatchesForUser,
+} from './services/watchedMatchesQuery.js';
 
 function resolveAuth(request) {
   const apiKey = process.env.MCP_API_KEY;
@@ -40,7 +43,7 @@ export function createMcpServer() {
     name: 'MegaGoal Server MCP',
     version: '0.0.1',
     instructions:
-      'Tools for MegaGoal football data. Use get_watched_matches to list matches a user has marked as watched (same data as GET /match).',
+      'Tools for MegaGoal football data. Use get_watched_matches to list watched matches; use count_watched_matches when only the number of matches is needed (same filters, efficient).',
     authenticate: async (request) => resolveAuth(request),
   });
 
@@ -86,6 +89,43 @@ export function createMcpServer() {
         null,
         2,
       );
+    },
+  });
+
+  server.addTool({
+    name: 'count_watched_matches',
+    title: 'Count watched matches',
+    description:
+      'Returns how many watched matches match the filters for the authenticated user. Same optional filters as get_watched_matches (team_id, season, location, fixture_id). Use this instead of get_watched_matches when you only need the total count.',
+    parameters: z.object({
+      team_id: z.coerce.number().int().optional(),
+      season: z.coerce.number().int().optional(),
+      location: z.string().optional(),
+      fixture_id: z.coerce.number().int().optional(),
+    }),
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
+    execute: async (args, context) => {
+      const sessionUser =
+        context.session &&
+        typeof context.session.username === 'string'
+          ? context.session.username
+          : undefined;
+      if (!sessionUser) {
+        throw new UserError('Missing authenticated username on MCP session.');
+      }
+
+      const count = await countWatchedMatchesForUser({
+        username: sessionUser,
+        team_id: args.team_id,
+        season: args.season,
+        location: args.location,
+        fixture_id: args.fixture_id,
+      });
+
+      return JSON.stringify({ count }, null, 2);
     },
   });
 

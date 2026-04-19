@@ -1,16 +1,16 @@
 import { getDB } from '../../config/db.js';
 
 /**
- * Watched matches for a user (`matches` collection). Same semantics as GET /match filters.
+ * Builds the MongoDB filter for watched matches (`matches` collection).
+ * Same semantics as GET /match filters.
  */
-export async function getWatchedMatchesForUser({
+export function buildWatchedMatchesQuery({
   username,
   team_id,
   season,
   location,
   fixture_id,
 }) {
-  const db = getDB();
   const filters = [];
 
   if (team_id != null && team_id !== '') {
@@ -32,6 +32,25 @@ export async function getWatchedMatchesForUser({
     filters.push({ 'fixture.id': Number(fixture_id) });
   }
 
-  const query = filters.length > 0 ? { $and: filters } : {};
-  return db.collection('matches').find(query).toArray();
+  return filters.length > 0 ? { $and: filters } : {};
+}
+
+export async function getWatchedMatchesForUser(args) {
+  const db = getDB();
+  const query = buildWatchedMatchesQuery(args);
+  return db
+    .collection('matches')
+    .find(query, {
+      projection: { lineups: 0, statistics: 0, events: 0 },
+    })
+    .toArray();
+}
+
+/**
+ * Count of documents matching {@link getWatchedMatchesForUser} (no document load).
+ */
+export async function countWatchedMatchesForUser(args) {
+  const db = getDB();
+  const query = buildWatchedMatchesQuery(args);
+  return db.collection('matches').countDocuments(query);
 }
