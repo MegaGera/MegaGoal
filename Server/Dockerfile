@@ -13,8 +13,8 @@ RUN npm install supervisor -g
 # Copy other files as well
 COPY . .
 
-# Expose the port
-EXPOSE 3150
+# Expose API (Express) and MCP (FastMCP httpStream, default MCP_PORT=3151)
+EXPOSE 3150 3151
 
 # Command to execute when the image is instantiated
 CMD ["npm","start"]
