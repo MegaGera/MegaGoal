@@ -7,13 +7,14 @@ import { getWatchedMatchesForUser } from '../mcp/services/watchedMatchesQuery.js
 // Get matches
 const getMatches = async (req, res) => {
   try {
-    let { team_id, season, location, fixture_id } = req.query;
+    let { team_id, season, league_id, location, fixture_id } = req.query;
     let username = req.validateData.username;
 
     const result = await getWatchedMatchesForUser({
       username,
       team_id,
       season,
+      league_id,
       location,
       fixture_id,
     });
@@ -29,7 +30,7 @@ const getMatches = async (req, res) => {
 const getMatchesByTeamId = async (req, res) => {
   try {
     const { teamId } = req.params;
-    const { season, location, fixture_id } = req.query;
+    const { season, league_id, location, fixture_id } = req.query;
     const username = req.validateData.username;
 
     if (!teamId) {
@@ -40,6 +41,7 @@ const getMatchesByTeamId = async (req, res) => {
       username,
       team_id: teamId,
       season,
+      league_id,
       location,
       fixture_id,
     });

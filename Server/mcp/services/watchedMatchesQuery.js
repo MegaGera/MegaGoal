@@ -8,6 +8,7 @@ export function buildWatchedMatchesQuery({
   username,
   team_id,
   season,
+  league_id,
   location,
   fixture_id,
 }) {
@@ -21,6 +22,9 @@ export function buildWatchedMatchesQuery({
   }
   if (season != null && season !== '') {
     filters.push({ 'league.season': Number(season) });
+  }
+  if (league_id != null && league_id !== '') {
+    filters.push({ 'league.id': Number(league_id) });
   }
   if (username) {
     filters.push({ 'user.username': username });

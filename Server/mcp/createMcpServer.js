@@ -51,10 +51,11 @@ export function createMcpServer() {
     name: 'get_watched_matches',
     title: 'Get watched matches',
     description:
-      'Returns watched matches for the authenticated MegaGoal user from the matches collection. Optional filters mirror GET /match: team_id, season, location, fixture_id. User identity comes from MCP auth (see X-MegaGoal-Username when using MCP_API_KEY).',
+      'Returns watched matches for the authenticated MegaGoal user from the matches collection. Optional filters mirror GET /match: team_id, season, league_id, location, fixture_id. User identity comes from MCP auth (see X-MegaGoal-Username when using MCP_API_KEY).',
     parameters: z.object({
       team_id: z.coerce.number().int().optional(),
       season: z.coerce.number().int().optional(),
+      league_id: z.coerce.number().int().optional(),
       location: z.string().optional(),
       fixture_id: z.coerce.number().int().optional(),
     }),
@@ -77,6 +78,7 @@ export function createMcpServer() {
         username,
         team_id: args.team_id,
         season: args.season,
+        league_id: args.league_id,
         location: args.location,
         fixture_id: args.fixture_id,
       });
@@ -96,10 +98,11 @@ export function createMcpServer() {
     name: 'count_watched_matches',
     title: 'Count watched matches',
     description:
-      'Returns how many watched matches match the filters for the authenticated user. Same optional filters as get_watched_matches (team_id, season, location, fixture_id). Use this instead of get_watched_matches when you only need the total count.',
+      'Returns how many watched matches match the filters for the authenticated user. Same optional filters as get_watched_matches (team_id, season, league_id, location, fixture_id). Use this instead of get_watched_matches when you only need the total count.',
     parameters: z.object({
       team_id: z.coerce.number().int().optional(),
       season: z.coerce.number().int().optional(),
+      league_id: z.coerce.number().int().optional(),
       location: z.string().optional(),
       fixture_id: z.coerce.number().int().optional(),
     }),
@@ -121,6 +124,7 @@ export function createMcpServer() {
         username: sessionUser,
         team_id: args.team_id,
         season: args.season,
+        league_id: args.league_id,
         location: args.location,
         fixture_id: args.fixture_id,
       });
