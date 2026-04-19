@@ -1,5 +1,6 @@
 # From the base image node
-FROM node:hydrogen-alpine3.20
+# fastmcp → undici 7 needs Node 20.18+ (global File)
+FROM node:20-alpine
 WORKDIR /usr/src/app
 
 # Copy all the files from your file system to the container file system
