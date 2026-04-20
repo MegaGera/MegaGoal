@@ -10,6 +10,12 @@ import {
   searchWatchedMatchesByNames,
 } from './services/matchSearchQuery.js';
 import {
+  getPlayedWatchedAggregateStats,
+  getPlayedWatchedMatchesBasic,
+  resolveSinglePlayerFromName,
+  resolveTeamIdsFromOptionalName,
+} from './services/playerWatchedPlayedQuery.js';
+import {
   listTeamsByLeagueOrCountry,
   MAX_LIMIT,
   searchTeamsByName,
@@ -53,7 +59,7 @@ export function createMcpServer() {
     name: 'MegaGoal Server MCP',
     version: '0.0.1',
     instructions:
-      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs; get_watched_matches / count_watched_matches for watched matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names for the same watched rows filtered by team_name, league_name, country_name, and seasons.',
+      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs; get_watched_matches / count_watched_matches for watched matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names for the same watched rows filtered by team_name, league_name, country_name, and seasons; player_played_watched_matches for slim match rows where a named player played among watched fixtures; player_played_watched_stats for goals/assists totals and splits by team and season.',
     authenticate: async (request) => resolveAuth(request),
   });
 
@@ -415,6 +421,155 @@ export function createMcpServer() {
       };
 
       return JSON.stringify(payload, null, 2);
+    },
+  });
+
+  const playerPlayedWatchedFiltersSchema = z
+    .object({
+      player_name: z.string(),
+      team_name: z.string().optional(),
+      seasons: z.array(z.coerce.number().int()).optional(),
+    })
+    .refine(
+      (d) => String(d.player_name ?? '').trim().length > 0,
+      { message: 'player_name must be a non-empty string.' },
+    );
+
+  server.addTool({
+    name: 'player_played_watched_matches',
+    title: 'Player played watched matches (basic)',
+    description:
+      'Among the authenticated user watched matches (`matches`), optional filter by club name substring (team_name → team ids) and/or seasons. Resolves player_name to a single player via the players collection; if multiple players match, returns candidates so the query can be refined. Uses `real_matches` lineups/events only to confirm the player participated (started or came on as sub). Returns a slim list per match: fixture_id, timestamp, date, league id/name/season, teams id/name, score — no lineups or events.',
+    parameters: playerPlayedWatchedFiltersSchema,
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
+    execute: async (args, context) => {
+      const sessionUser =
+        context.session &&
+        typeof context.session.username === 'string'
+          ? context.session.username
+          : undefined;
+      if (!sessionUser) {
+        throw new UserError('Missing authenticated username on MCP session.');
+      }
+
+      const resolved = await resolveSinglePlayerFromName(args.player_name);
+      if (!resolved.ok) {
+        return JSON.stringify(
+          {
+            ok: false,
+            reason: resolved.reason,
+            candidates: resolved.candidates,
+            resolution_truncated: resolved.resolution_truncated,
+          },
+          null,
+          2,
+        );
+      }
+
+      const teamRes = await resolveTeamIdsFromOptionalName(args.team_name);
+      const tn =
+        args.team_name != null ? String(args.team_name).trim() : '';
+      if (tn.length > 0 && teamRes.team_ids.length === 0) {
+        return JSON.stringify(
+          {
+            ok: false,
+            empty_reason: 'no_teams_for_team_name',
+            team_resolution_truncated: teamRes.team_resolution_truncated,
+          },
+          null,
+          2,
+        );
+      }
+
+      const payload = await getPlayedWatchedMatchesBasic({
+        username: sessionUser,
+        playerId: resolved.player_id,
+        displayName: resolved.display_name,
+        teamIds: teamRes.team_ids,
+        seasons: args.seasons,
+      });
+
+      return JSON.stringify(
+        {
+          ok: true,
+          team_resolution_truncated: teamRes.team_resolution_truncated,
+          ...payload,
+        },
+        null,
+        2,
+      );
+    },
+  });
+
+  server.addTool({
+    name: 'player_played_watched_stats',
+    title: 'Player played watched stats (aggregate)',
+    description:
+      'Same filters as player_played_watched_matches (player_name required; optional team_name, seasons). Returns totals.matches, totals.goals, totals.assists among watched fixtures where the player participated, plus by_team and by_season with the same three metrics per bucket. Participation and goal/assist counting align with Stats player_general_stats / real_matches events.',
+    parameters: playerPlayedWatchedFiltersSchema,
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
+    execute: async (args, context) => {
+      const sessionUser =
+        context.session &&
+        typeof context.session.username === 'string'
+          ? context.session.username
+          : undefined;
+      if (!sessionUser) {
+        throw new UserError('Missing authenticated username on MCP session.');
+      }
+
+      const resolved = await resolveSinglePlayerFromName(args.player_name);
+      if (!resolved.ok) {
+        return JSON.stringify(
+          {
+            ok: false,
+            reason: resolved.reason,
+            candidates: resolved.candidates,
+            resolution_truncated: resolved.resolution_truncated,
+          },
+          null,
+          2,
+        );
+      }
+
+      const teamRes = await resolveTeamIdsFromOptionalName(args.team_name);
+      const tn =
+        args.team_name != null ? String(args.team_name).trim() : '';
+      if (tn.length > 0 && teamRes.team_ids.length === 0) {
+        return JSON.stringify(
+          {
+            ok: false,
+            empty_reason: 'no_teams_for_team_name',
+            team_resolution_truncated: teamRes.team_resolution_truncated,
+          },
+          null,
+          2,
+        );
+      }
+
+      const payload = await getPlayedWatchedAggregateStats({
+        username: sessionUser,
+        playerId: resolved.player_id,
+        displayName: resolved.display_name,
+        teamIds: teamRes.team_ids,
+        seasons: args.seasons,
+      });
+
+      return JSON.stringify(
+        {
+          ok: true,
+          team_resolution_truncated: teamRes.team_resolution_truncated,
+          ...payload,
+        },
+        null,
+        2,
+      );
     },
   });
 
