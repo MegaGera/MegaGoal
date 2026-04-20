@@ -285,12 +285,33 @@ export function createMcpServer() {
     },
   });
 
-  const watchedMatchNameFiltersSchema = z
-    .object({
-      team_name: z.string().optional(),
-      league_name: z.string().optional(),
-      country_name: z.string().optional(),
-      seasons: z.array(z.coerce.number().int()).optional(),
+  const watchedMatchNameBaseSchema = z.object({
+    team_name: z.string().optional(),
+    league_name: z.string().optional(),
+    country_name: z.string().optional(),
+    seasons: z.array(z.coerce.number().int()).optional(),
+  });
+
+  /** Keep a single ZodObject + refine so JSON Schema has root type "object" (not allOf). Intersections break some MCP clients. */
+  const watchedMatchNameFiltersSchema = watchedMatchNameBaseSchema.refine(
+    (d) => {
+      const t = d.team_name != null ? String(d.team_name).trim() : '';
+      const l = d.league_name != null ? String(d.league_name).trim() : '';
+      const c = d.country_name != null ? String(d.country_name).trim() : '';
+      const s = Array.isArray(d.seasons)
+        ? d.seasons.map((x) => Number(x)).filter((n) => Number.isFinite(n))
+        : [];
+      return t.length > 0 || l.length > 0 || c.length > 0 || s.length > 0;
+    },
+    {
+      message:
+        'Provide at least one of: non-empty team_name, league_name, country_name, or a non-empty seasons array.',
+    },
+  );
+
+  const searchWatchedMatchesByNamesSchema = watchedMatchNameBaseSchema
+    .extend({
+      limit: z.coerce.number().int().min(1).max(MAX_LIMIT).optional(),
     })
     .refine(
       (d) => {
@@ -307,12 +328,6 @@ export function createMcpServer() {
           'Provide at least one of: non-empty team_name, league_name, country_name, or a non-empty seasons array.',
       },
     );
-
-  const searchWatchedMatchesByNamesSchema = watchedMatchNameFiltersSchema.and(
-    z.object({
-      limit: z.coerce.number().int().min(1).max(MAX_LIMIT).optional(),
-    }),
-  );
 
   server.addTool({
     name: 'search_watched_matches_by_names',
