@@ -6,6 +6,10 @@ import {
 } from './services/watchedMatchesQuery.js';
 import { listLeagues } from './services/leagueListQuery.js';
 import {
+  countWatchedMatchesByNames,
+  searchWatchedMatchesByNames,
+} from './services/matchSearchQuery.js';
+import {
   listTeamsByLeagueOrCountry,
   MAX_LIMIT,
   searchTeamsByName,
@@ -49,7 +53,7 @@ export function createMcpServer() {
     name: 'MegaGoal Server MCP',
     version: '0.0.1',
     instructions:
-      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs; get_watched_matches / count_watched_matches for watched matches.',
+      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs; get_watched_matches / count_watched_matches for watched matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names for the same watched rows filtered by team_name, league_name, country_name, and seasons.',
     authenticate: async (request) => resolveAuth(request),
   });
 
@@ -57,7 +61,7 @@ export function createMcpServer() {
     name: 'get_watched_matches',
     title: 'Get watched matches',
     description:
-      'Returns watched matches for the authenticated MegaGoal user from the matches collection. Optional filters mirror GET /match: team_id, season, league_id, location, fixture_id. User identity comes from MCP auth (see X-MegaGoal-Username when using MCP_API_KEY).',
+      'Returns watched matches for the authenticated MegaGoal user from the matches collection. Optional filters mirror GET /match: team_id, season, league_id, location, fixture_id. User identity comes from MCP auth (see X-MegaGoal-Username when using MCP_API_KEY). For filters by club or competition name (not ids), use search_watched_matches_by_names.',
     parameters: z.object({
       team_id: z.coerce.number().int().optional(),
       season: z.coerce.number().int().optional(),
@@ -104,7 +108,7 @@ export function createMcpServer() {
     name: 'count_watched_matches',
     title: 'Count watched matches',
     description:
-      'Returns how many watched matches match the filters for the authenticated user. Same optional filters as get_watched_matches (team_id, season, league_id, location, fixture_id). Use this instead of get_watched_matches when you only need the total count.',
+      'Returns how many watched matches match the filters for the authenticated user. Same optional filters as get_watched_matches (team_id, season, league_id, location, fixture_id). Use this instead of get_watched_matches when you only need the total count. For counts by team/league/country names, use count_watched_matches_by_names.',
     parameters: z.object({
       team_id: z.coerce.number().int().optional(),
       season: z.coerce.number().int().optional(),
@@ -278,6 +282,124 @@ export function createMcpServer() {
         null,
         2,
       );
+    },
+  });
+
+  const watchedMatchNameFiltersSchema = z
+    .object({
+      team_name: z.string().optional(),
+      league_name: z.string().optional(),
+      country_name: z.string().optional(),
+      seasons: z.array(z.coerce.number().int()).optional(),
+    })
+    .refine(
+      (d) => {
+        const t = d.team_name != null ? String(d.team_name).trim() : '';
+        const l = d.league_name != null ? String(d.league_name).trim() : '';
+        const c = d.country_name != null ? String(d.country_name).trim() : '';
+        const s = Array.isArray(d.seasons)
+          ? d.seasons.map((x) => Number(x)).filter((n) => Number.isFinite(n))
+          : [];
+        return t.length > 0 || l.length > 0 || c.length > 0 || s.length > 0;
+      },
+      {
+        message:
+          'Provide at least one of: non-empty team_name, league_name, country_name, or a non-empty seasons array.',
+      },
+    );
+
+  const searchWatchedMatchesByNamesSchema = watchedMatchNameFiltersSchema.and(
+    z.object({
+      limit: z.coerce.number().int().min(1).max(MAX_LIMIT).optional(),
+    }),
+  );
+
+  server.addTool({
+    name: 'search_watched_matches_by_names',
+    title: 'Search watched matches by names',
+    description:
+      'Query the matches collection for the authenticated user using human-readable filters only (no team or league ids in the tool contract). team_name resolves via the teams collection; league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). seasons filters on league.season. Name filters AND together, and the query is always scoped to the MCP user. Returns documents minus lineups, statistics, and events (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
+      String(MAX_LIMIT) +
+      ' cap — narrow the query if needed.',
+    parameters: searchWatchedMatchesByNamesSchema,
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
+    execute: async (args, context) => {
+      const sessionUser =
+        context.session &&
+        typeof context.session.username === 'string'
+          ? context.session.username
+          : undefined;
+      if (!sessionUser) {
+        throw new UserError('Missing authenticated username on MCP session.');
+      }
+
+      const {
+        matches,
+        truncated,
+        limit,
+        resolution,
+        empty_reason: emptyReason,
+      } = await searchWatchedMatchesByNames({
+        username: sessionUser,
+        teamName: args.team_name,
+        leagueName: args.league_name,
+        countryName: args.country_name,
+        seasons: args.seasons,
+        limit: args.limit,
+      });
+
+      const payload = {
+        count: matches.length,
+        matches,
+        truncated,
+        limit,
+        resolution,
+        ...(emptyReason != null ? { empty_reason: emptyReason } : {}),
+      };
+
+      return JSON.stringify(payload, null, 2);
+    },
+  });
+
+  server.addTool({
+    name: 'count_watched_matches_by_names',
+    title: 'Count watched matches by names',
+    description:
+      'Same name/season filters as search_watched_matches_by_names for the authenticated user in the matches collection, but returns only count plus resolution truncation flags.',
+    parameters: watchedMatchNameFiltersSchema,
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
+    execute: async (args, context) => {
+      const sessionUser =
+        context.session &&
+        typeof context.session.username === 'string'
+          ? context.session.username
+          : undefined;
+      if (!sessionUser) {
+        throw new UserError('Missing authenticated username on MCP session.');
+      }
+
+      const { count, resolution, empty_reason: emptyReason } =
+        await countWatchedMatchesByNames({
+          username: sessionUser,
+          teamName: args.team_name,
+          leagueName: args.league_name,
+          countryName: args.country_name,
+          seasons: args.seasons,
+        });
+
+      const payload = {
+        count,
+        resolution,
+        ...(emptyReason != null ? { empty_reason: emptyReason } : {}),
+      };
+
+      return JSON.stringify(payload, null, 2);
     },
   });
 

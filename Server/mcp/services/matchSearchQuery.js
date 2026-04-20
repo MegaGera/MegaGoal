@@ -1,0 +1,207 @@
+import { getDB } from '../../config/db.js';
+import {
+  DEFAULT_LIMIT,
+  escapeRegex,
+  MAX_LIMIT,
+  searchTeamsByName,
+} from './teamSearchQuery.js';
+
+function clampMatchListLimit(limit) {
+  const n = limit == null ? DEFAULT_LIMIT : Number(limit);
+  if (!Number.isFinite(n)) return DEFAULT_LIMIT;
+  return Math.min(Math.max(Math.trunc(n), 1), MAX_LIMIT);
+}
+
+function withUserFilter(username, docFilter) {
+  return { $and: [{ 'user.username': username }, docFilter] };
+}
+
+/**
+ * Resolve match-document filters from human-readable names (and optional seasons).
+ * Name filters resolve against `teams` / `leagues` server-side; combine with
+ * `user.username` when querying the watched `matches` collection.
+ */
+export async function buildWatchedMatchNameFilter({
+  teamName,
+  leagueName,
+  countryName,
+  seasons,
+}) {
+  const filters = [];
+  const resolution = {
+    team_resolution_truncated: false,
+    league_name_resolution_truncated: false,
+    country_name_resolution_truncated: false,
+  };
+
+  const tn =
+    teamName != null && String(teamName).trim() !== ''
+      ? String(teamName).trim()
+      : '';
+  const ln =
+    leagueName != null && String(leagueName).trim() !== ''
+      ? String(leagueName).trim()
+      : '';
+  const cn =
+    countryName != null && String(countryName).trim() !== ''
+      ? String(countryName).trim()
+      : '';
+
+  if (tn) {
+    const { teams, truncated } = await searchTeamsByName({
+      query: tn,
+      limit: MAX_LIMIT,
+    });
+    resolution.team_resolution_truncated = truncated;
+    const teamIds = teams.map((t) => t.id).filter((id) => id != null);
+    if (teamIds.length === 0) {
+      return { filter: null, resolution, empty_reason: 'no_teams_for_team_name' };
+    }
+    filters.push({
+      $or: [
+        { 'teams.home.id': { $in: teamIds } },
+        { 'teams.away.id': { $in: teamIds } },
+      ],
+    });
+  }
+
+  const db = getDB();
+
+  if (ln) {
+    const cursor = db.collection('leagues').find(
+      {
+        'league.name': { $regex: escapeRegex(ln), $options: 'i' },
+      },
+      {
+        projection: { _id: 0, 'league.id': 1 },
+        limit: MAX_LIMIT + 1,
+      },
+    );
+    const rows = await cursor.toArray();
+    resolution.league_name_resolution_truncated = rows.length > MAX_LIMIT;
+    const leagueIds = rows
+      .slice(0, MAX_LIMIT)
+      .map((r) => r.league?.id)
+      .filter((id) => id != null)
+      .map(Number);
+    if (leagueIds.length === 0) {
+      return { filter: null, resolution, empty_reason: 'no_leagues_for_league_name' };
+    }
+    filters.push({ 'league.id': { $in: leagueIds } });
+  }
+
+  if (cn) {
+    const cursor = db.collection('leagues').find(
+      {
+        'country.name': { $regex: escapeRegex(cn), $options: 'i' },
+      },
+      {
+        projection: { _id: 0, 'league.id': 1 },
+        limit: MAX_LIMIT + 1,
+      },
+    );
+    const rows = await cursor.toArray();
+    resolution.country_name_resolution_truncated = rows.length > MAX_LIMIT;
+    const leagueIds = rows
+      .slice(0, MAX_LIMIT)
+      .map((r) => r.league?.id)
+      .filter((id) => id != null)
+      .map(Number);
+    if (leagueIds.length === 0) {
+      return {
+        filter: null,
+        resolution,
+        empty_reason: 'no_leagues_for_country_name',
+      };
+    }
+    filters.push({ 'league.id': { $in: leagueIds } });
+  }
+
+  const seasonList = Array.isArray(seasons)
+    ? seasons.map((s) => Number(s)).filter((n) => Number.isFinite(n))
+    : [];
+  if (seasonList.length > 0) {
+    filters.push({ 'league.season': { $in: seasonList } });
+  }
+
+  if (filters.length === 0) {
+    return { filter: null, resolution, empty_reason: 'no_filters' };
+  }
+
+  const filter = filters.length === 1 ? filters[0] : { $and: filters };
+  return { filter, resolution };
+}
+
+export async function searchWatchedMatchesByNames({
+  username,
+  teamName,
+  leagueName,
+  countryName,
+  seasons,
+  limit,
+}) {
+  const built = await buildWatchedMatchNameFilter({
+    teamName,
+    leagueName,
+    countryName,
+    seasons,
+  });
+  if (built.filter == null) {
+    return {
+      matches: [],
+      truncated: false,
+      limit: clampMatchListLimit(limit),
+      resolution: built.resolution,
+      empty_reason: built.empty_reason,
+    };
+  }
+
+  const lim = clampMatchListLimit(limit);
+  const db = getDB();
+  const mongoFilter = withUserFilter(username, built.filter);
+  const cursor = db
+    .collection('matches')
+    .find(mongoFilter, {
+      projection: { lineups: 0, statistics: 0, events: 0 },
+      sort: { 'fixture.timestamp': -1 },
+      limit: lim + 1,
+    });
+
+  const raw = await cursor.toArray();
+  const truncated = raw.length > lim;
+  const matches = raw.slice(0, lim);
+
+  return {
+    matches,
+    truncated,
+    limit: lim,
+    resolution: built.resolution,
+  };
+}
+
+export async function countWatchedMatchesByNames({
+  username,
+  teamName,
+  leagueName,
+  countryName,
+  seasons,
+}) {
+  const built = await buildWatchedMatchNameFilter({
+    teamName,
+    leagueName,
+    countryName,
+    seasons,
+  });
+  if (built.filter == null) {
+    return {
+      count: 0,
+      resolution: built.resolution,
+      empty_reason: built.empty_reason,
+    };
+  }
+
+  const db = getDB();
+  const mongoFilter = withUserFilter(username, built.filter);
+  const count = await db.collection('matches').countDocuments(mongoFilter);
+  return { count, resolution: built.resolution };
+}
