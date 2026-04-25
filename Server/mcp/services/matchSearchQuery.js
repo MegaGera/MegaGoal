@@ -96,12 +96,41 @@ function normalizeLineupEventName(eventName) {
     return 'yellow_card';
   }
   if (
+    normalized === 'second_yellow' ||
+    normalized === 'second yellow' ||
+    normalized === 'secondyellow'
+  ) {
+    return 'second_yellow';
+  }
+  if (
     normalized === 'red_card' ||
     normalized === 'red card' ||
     normalized === 'red' ||
     normalized === 'redcard'
   ) {
     return 'red_card';
+  }
+  if (normalized === 'card' || normalized === 'cards') {
+    return 'card';
+  }
+  if (normalized === 'var') {
+    return 'var';
+  }
+  if (
+    normalized === 'penalty_shootout_scored' ||
+    normalized === 'penalty shootout scored' ||
+    normalized === 'shootout_scored' ||
+    normalized === 'shootout scored'
+  ) {
+    return 'penalty_shootout_scored';
+  }
+  if (
+    normalized === 'penalty_shootout_missed' ||
+    normalized === 'penalty shootout missed' ||
+    normalized === 'shootout_missed' ||
+    normalized === 'shootout missed'
+  ) {
+    return 'penalty_shootout_missed';
   }
   return null;
 }
@@ -277,6 +306,17 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           },
         };
       }
+      if (eventFilter.type === 'second_yellow') {
+        return {
+          events: {
+            $elemMatch: {
+              type: { $regex: '^card$', $options: 'i' },
+              'player.id': { $in: ids },
+              detail: { $regex: 'second yellow', $options: 'i' },
+            },
+          },
+        };
+      }
       if (eventFilter.type === 'red_card') {
         return {
           events: {
@@ -284,6 +324,52 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
               type: { $regex: '^card$', $options: 'i' },
               'player.id': { $in: ids },
               detail: { $regex: 'red', $options: 'i' },
+            },
+          },
+        };
+      }
+      if (eventFilter.type === 'card') {
+        return {
+          events: {
+            $elemMatch: {
+              type: { $regex: '^card$', $options: 'i' },
+              'player.id': { $in: ids },
+            },
+          },
+        };
+      }
+      if (eventFilter.type === 'var') {
+        return {
+          events: {
+            $elemMatch: {
+              type: { $regex: '^var$', $options: 'i' },
+              'player.id': { $in: ids },
+            },
+          },
+        };
+      }
+      if (eventFilter.type === 'penalty_shootout_scored') {
+        return {
+          events: {
+            $elemMatch: {
+              type: { $regex: '^goal$', $options: 'i' },
+              'player.id': { $in: ids },
+              detail: { $regex: 'penalty shootout', $options: 'i' },
+              comments: {
+                $not: { $regex: 'miss', $options: 'i' },
+              },
+            },
+          },
+        };
+      }
+      if (eventFilter.type === 'penalty_shootout_missed') {
+        return {
+          events: {
+            $elemMatch: {
+              type: { $regex: '^goal$', $options: 'i' },
+              'player.id': { $in: ids },
+              detail: { $regex: 'penalty shootout', $options: 'i' },
+              comments: { $regex: 'miss', $options: 'i' },
             },
           },
         };
