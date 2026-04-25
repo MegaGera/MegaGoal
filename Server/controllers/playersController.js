@@ -1,4 +1,13 @@
 import { getDB } from '../config/db.js';
+import {
+  parsePlayer,
+  parsePlayerId,
+  parsePlayerListResponse
+} from '../entities/playerEntity.js';
+import {
+  defaultPlayersApiInfoSetting,
+  parsePlayersApiInfoSetting
+} from '../entities/settingsEntity.js';
 
 // Get players from database with search and pagination
 export const getPlayers = async (req, res) => {
@@ -62,7 +71,7 @@ export const getPlayers = async (req, res) => {
       .limit(limit)
       .toArray();
     
-    res.json({
+    const response = {
       players,
       pagination: {
         currentPage: page,
@@ -72,7 +81,10 @@ export const getPlayers = async (req, res) => {
         hasNextPage: page < totalPages,
         hasPrevPage: page > 1
       }
-    });
+    };
+
+    const validatedResponse = parsePlayerListResponse(response);
+    res.json(validatedResponse);
   } catch (error) {
     console.error('Error fetching players:', error);
     res.status(500).json({ error: 'Failed to fetch players' });
@@ -86,15 +98,11 @@ export const getPlayersApiInfo = async (req, res) => {
     const apiInfo = await db.collection('settings').findOne({ type: 'PLAYERS_API_INFO' });
     
     if (!apiInfo) {
-      return res.json({
-        type: 'PLAYERS_API_INFO',
-        pages_searched: [],
-        total_pages: 0,
-        last_update: null
-      });
+      return res.json(defaultPlayersApiInfoSetting());
     }
     
-    res.json(apiInfo);
+    const validatedApiInfo = parsePlayersApiInfoSetting(apiInfo);
+    res.json(validatedApiInfo);
   } catch (error) {
     console.error('Error fetching players API info:', error);
     res.status(500).json({ error: 'Failed to fetch players API info' });
@@ -105,11 +113,7 @@ export const getPlayersApiInfo = async (req, res) => {
 export const getPlayerById = async (req, res) => {
   try {
     const db = getDB();
-    const playerId = parseInt(req.params.id);
-    
-    if (isNaN(playerId)) {
-      return res.status(400).json({ error: 'Invalid player ID' });
-    }
+    const playerId = parsePlayerId(req.params.id);
     
     const player = await db.collection('players').findOne({ 'player.id': playerId });
     
@@ -117,8 +121,12 @@ export const getPlayerById = async (req, res) => {
       return res.status(404).json({ error: 'Player not found' });
     }
     
-    res.json(player);
+    const validatedPlayer = parsePlayer(player);
+    res.json(validatedPlayer);
   } catch (error) {
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ error: 'Invalid player ID' });
+    }
     console.error('Error fetching player by ID:', error);
     res.status(500).json({ error: 'Failed to fetch player' });
   }

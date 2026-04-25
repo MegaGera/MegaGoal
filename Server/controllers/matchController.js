@@ -1,7 +1,21 @@
 import { getDB } from '../config/db.js';
 import { ObjectId } from 'mongodb';
-import { v4 as uuidv4 } from 'uuid';
 import { logMatchCreated, logMatchDeleted, logMatchUpdateLocation } from './logController.js';
+import {
+  buildMatchDocument,
+  parseCreateMatchBody,
+  parseFixtureId,
+  parseMatch,
+  parseMatches,
+  parseSetLocationPayload,
+  parseTeamId
+} from '../entities/matchEntity.js';
+import {
+  buildOfficialVenueLocation,
+  parseVenueLocationId
+} from '../entities/locationEntity.js';
+import { parseVenueReference } from '../entities/venueEntity.js';
+import { parseLandingMatchSettings } from '../entities/settingsEntity.js';
 
 // Get matches
 const getMatches = async (req, res) => {
@@ -26,9 +40,10 @@ const getMatches = async (req, res) => {
     
     const query = filters.length > 0 ? { $and: filters } : {};
     const result = await db.collection('matches').find(query).toArray();
+    const validatedResult = parseMatches(result);
 
     console.log("Matches Getted");
-    res.send(result);
+    res.send(validatedResult);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -38,19 +53,15 @@ const getMatches = async (req, res) => {
 const getMatchesByTeamId = async (req, res) => {
   const db = getDB();
   try {
-    const { teamId } = req.params;
+    const parsedTeamId = parseTeamId(req.params.teamId);
     const { season, location, fixture_id } = req.query;
     const username = req.validateData.username;
-
-    if (!teamId) {
-      return res.status(400).json({ message: "Team ID is required" });
-    }
 
     const filters = [
       {
         $or: [
-          { 'teams.home.id': +teamId },
-          { 'teams.away.id': +teamId }
+          { 'teams.home.id': parsedTeamId },
+          { 'teams.away.id': parsedTeamId }
         ]
       }
     ];
@@ -70,9 +81,10 @@ const getMatchesByTeamId = async (req, res) => {
 
     const query = { $and: filters };
     const result = await db.collection('matches').find(query).toArray();
+    const validatedResult = parseMatches(result);
 
-    console.log(`Matches retrieved for team ${teamId}`);
-    res.send(result);
+    console.log(`Matches retrieved for team ${parsedTeamId}`);
+    res.send(validatedResult);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -82,9 +94,9 @@ const getMatchesByTeamId = async (req, res) => {
 const createMatch = async (req, res) => {
   const db = getDB();
   try {
-    let match = req.body;
-    let username = req.validateData.username;
-    match.user = { username: username };
+    const username = req.validateData.username;
+    const createMatchBody = parseCreateMatchBody(req.body);
+    let match = buildMatchDocument({ body: createMatchBody, username });
 
     // Check if location exists and is NOT a UUID (no dashes) - treat it as a venue ID
     if (match.location && match.location.split('-').length === 1) {
@@ -117,12 +129,12 @@ const createMatch = async (req, res) => {
 const deleteMatch = async (req, res) => {
   const db = getDB();
   try {
-    let { fixtureId } = req.params;
+    const fixtureId = parseFixtureId(req.params.fixtureId);
     let username = req.validateData.username;
     let filter = {};
 
     if (fixtureId && username) {
-      filter = { "fixture.id": +fixtureId, "user.username": username };
+      filter = { "fixture.id": fixtureId, "user.username": username };
     } else {
       return res.status(400).json({ message: "Invalid request" });
     }
@@ -131,7 +143,8 @@ const deleteMatch = async (req, res) => {
     if (!result) {
       return res.status(404).json({ message: "Match not found" });
     }
-    if (result.user.username !== username) {
+    const validatedResult = parseMatch(result);
+    if (validatedResult.user.username !== username) {
       return res.status(401).json({ message: "Not authorized" });
     }
 
@@ -139,7 +152,7 @@ const deleteMatch = async (req, res) => {
     console.log("Match deleted with id " + fixtureId + " and username " + username);
     
     // Log the match deletion to RabbitMQ
-    await logMatchDeleted(username, result, req);
+    await logMatchDeleted(username, validatedResult, req);
     
     res.status(200).json({ message: "Match deleted successfully" });
   } catch (error) {
@@ -151,7 +164,7 @@ const deleteMatch = async (req, res) => {
 const changeLocation = async (req, res) => {
   const db = getDB();
   try {
-    let {fixtureId, location, venue} = req.body;
+    let { fixtureId, location, venue } = parseSetLocationPayload(req.body);
     let username = req.validateData.username;
 
     if (!fixtureId || !location || !username) {
@@ -166,7 +179,7 @@ const changeLocation = async (req, res) => {
       }
     }
 
-    const filter = { "fixture.id": +fixtureId, "user.username": username };
+    const filter = { "fixture.id": fixtureId, "user.username": username };
     const update = { $set: { "location": location} };
     let result = await db.collection('matches').updateOne(filter, update);
     console.log("Location updated for fixture " + fixtureId + " to " + location);
@@ -184,27 +197,31 @@ const checkLocationIsVenue = async (location_id, username, venueParams) => {
   const db = getDB();
   try {
 
-    const alreadyLocation = await db.collection('locations').findOne({ "user.username": username, "venue_id": location_id });
+    const parsedLocationId = parseVenueLocationId(location_id);
+    const alreadyLocation = await db.collection('locations').findOne({ "user.username": username, "venue_id": parsedLocationId });
     if (alreadyLocation) {
       return alreadyLocation.id;
     }
-    const venue = await db.collection('venues').findOne({ "id": +location_id });
+    const venue = await db.collection('venues').findOne({ "id": parsedLocationId });
 
-    const location = {
-      id: uuidv4(),
-      user: { username: username },
-      official: true,
-      stadium: true,
-      private: true
-    };
-
-    location.id = uuidv4();
+    let location;
     if (venue) {
-      location.name = venue.name;
-      location.venue_id = venue.id;
+      const parsedVenue = parseVenueReference(venue);
+      location = buildOfficialVenueLocation({
+        name: parsedVenue.name,
+        username,
+        venueId: parsedVenue.id
+      });
     } else if (venueParams) {
-      location.name = venueParams.name;
-      location.venue_id = venueParams.id;
+      const parsedVenueParams = parseVenueReference({
+        id: venueParams.id,
+        name: venueParams.name
+      });
+      location = buildOfficialVenueLocation({
+        name: parsedVenueParams.name,
+        username,
+        venueId: parsedVenueParams.id
+      });
     } else {
       return false;
     }
@@ -228,12 +245,13 @@ const getLandingPageInfo = async (req, res) => {
   const db = getDB();
   try {
     // Get random 3 fixture IDs from settings collection using MongoDB's $sample
-    const landingSettings = await db.collection('settings')
+    const landingSettingsRaw = await db.collection('settings')
       .aggregate([
         { $match: { type: 'LANDING_MATCH' } },
         { $sample: { size: 3 } }
       ])
       .toArray();
+    const landingSettings = parseLandingMatchSettings(landingSettingsRaw);
 
     if (landingSettings.length === 0) {
       // Return empty matches array if none configured

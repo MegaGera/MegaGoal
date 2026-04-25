@@ -45,3 +45,4 @@ testem.log
 /DataParser
 
 *ideas.txt
+.cursor/

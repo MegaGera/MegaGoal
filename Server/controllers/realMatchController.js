@@ -1,4 +1,5 @@
 import { getDB } from '../config/db.js';
+import { parseFixtureId, parseRealMatch, parseRealMatches } from '../entities/realMatchEntity.js';
 
 // Get real matches
 const getRealMatches = async (req, res) => {
@@ -92,9 +93,10 @@ const getRealMatches = async (req, res) => {
     // console.log("Real Matches query:", JSON.stringify(query, null, 2));
     
     const result = await db.collection('real_matches').find(query).toArray();
+    const validatedResult = parseRealMatches(result);
 
-    console.log(`Real Matches found: ${result.length} matches`);
-    res.send(result);
+    console.log(`Real Matches found: ${validatedResult.length} matches`);
+    res.send(validatedResult);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -104,21 +106,21 @@ const getRealMatches = async (req, res) => {
 const getRealMatchById = async (req, res) => {
   const db = getDB();
   try {
-    const { id } = req.params;
-    
-    if (!id) {
-      return res.status(400).json({ message: "Match ID is required" });
-    }
+    const parsedFixtureId = parseFixtureId(req.params.id);
 
-    const result = await db.collection('real_matches').findOne({ 'fixture.id': +id });
+    const result = await db.collection('real_matches').findOne({ 'fixture.id': parsedFixtureId });
 
     if (!result) {
       return res.status(404).json({ message: "Match not found" });
     }
 
-    console.log(`Real Match found: ${result.fixture.id}`);
-    res.send(result);
+    const validatedResult = parseRealMatch(result);
+    console.log(`Real Match found: ${validatedResult.fixture.id}`);
+    res.send(validatedResult);
   } catch (error) {
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ message: "Invalid match ID or invalid match shape" });
+    }
     res.status(500).json({ message: error.message });
   }
 }

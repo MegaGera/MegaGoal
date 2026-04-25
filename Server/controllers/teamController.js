@@ -1,27 +1,24 @@
 import { getDB } from '../config/db.js';
-import { getTopLeaguesInQuery, getTopLeaguesString, TOP_LEAGUES_IDS } from '../config/topLeagues.js';
+import { TOP_LEAGUES_IDS } from '../config/topLeagues.js';
+import {
+  buildTeamsQuery,
+  parseShortTeams,
+  parseTeamDocument,
+  parseTeamDocuments,
+  parseTeamId,
+  shortTeamAggregationPipeline,
+  setPreviousImagePayloadSchema
+} from '../entities/teamEntity.js';
 
 // Get teams
 const getTeams = async (req, res) => {
   const db = getDB();
   try {
-    let {league_id, season, country} = req.query;
-
-    const filters = [];
-    if (league_id && season) {
-      filters.push({
-        "seasons": 
-          { "$elemMatch": { "league": league_id, "season": season } } 
-      });
-    } else if (league_id && !season) {
-      filters.push({ "seasons.league": league_id });
-    }
-    if (country) filters.push({ 'team.country': country });
-
-    const query = filters.length > 0 ? { $and: filters } : {};
+    const query = buildTeamsQuery(req.query);
     const result = await db.collection('teams').find(query).toArray();
+    const validatedResult = parseTeamDocuments(result);
     console.log("Teams Getted");
-    res.send(result);
+    res.send(validatedResult);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -31,13 +28,15 @@ const getTeams = async (req, res) => {
 const getTeamByTeamId = async (req, res) => {
   const db = getDB();
   try {
-    let { team_id } = req.params;
+    const { team_id } = req.params;
+    const parsedTeamId = parseTeamId(team_id);
     const query = {
-      "team.id": +team_id
+      "team.id": parsedTeamId
     };
-    const result = await db.collection('teams').findOne(query) || undefined;;
-    console.log("Team getted " + team_id);
-    res.send(result);
+    const result = await db.collection('teams').findOne(query);
+    const validatedResult = result ? parseTeamDocument(result) : undefined;
+    console.log("Team getted " + parsedTeamId);
+    res.send(validatedResult);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -47,8 +46,8 @@ const getTeamByTeamId = async (req, res) => {
 const setPreviousImage = async (req, res) => {
   const db = getDB();
   try {
-    let { team_id, image_title } = req.body;
-    const filter = { "team.id": +team_id };
+    const { team_id, image_title } = setPreviousImagePayloadSchema.parse(req.body);
+    const filter = { "team.id": team_id };
     const update = { $push: { "previous": image_title } };
     let result = await db.collection('teams').updateOne(filter, update);
     console.log("Previous image updated for team " + team_id + " with " + image_title);
@@ -62,8 +61,8 @@ const setPreviousImage = async (req, res) => {
 const deletePreviousImage = async (req, res) => {
   const db = getDB();
   try {
-    let { team_id, image_title } = req.body;
-    const filter = { "team.id": +team_id };
+    const { team_id, image_title } = setPreviousImagePayloadSchema.parse(req.body);
+    const filter = { "team.id": team_id };
     const update = { $pull: { "previous": image_title } };
     let result = await db.collection('teams').updateOne(filter, update);
     console.log("Previous image deleted for team " + team_id + " with " + image_title);
@@ -89,16 +88,11 @@ const getTeamsByTopLeagues = async (req, res) => {
       }
     };
     
-    const result = await db.collection('teams').find(query, {
-      projection: {
-        "name": "$team.name",
-        "id": "$team.id",
-        "seasons": 1,
-        "_id": 0
-      }
-    }).toArray();
-    console.log(`Teams found for top leagues: ${result.length} teams`);
-    res.send(result);
+    const shortTeamsPipeline = shortTeamAggregationPipeline(query);
+    const result = await db.collection('teams').aggregate(shortTeamsPipeline).toArray();
+    const validatedResult = parseShortTeams(result);
+    console.log(`Teams found for top leagues: ${validatedResult.length} teams`);
+    res.send(validatedResult);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
