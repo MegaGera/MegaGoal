@@ -6,6 +6,7 @@ import {
   parseTeamDocument,
   parseTeamDocuments,
   parseTeamId,
+  shortTeamAggregationPipeline,
   setPreviousImagePayloadSchema
 } from '../entities/teamEntity.js';
 
@@ -87,13 +88,9 @@ const getTeamsByTopLeagues = async (req, res) => {
       }
     };
     
-    const result = await db.collection('teams').find(query).toArray();
-    const shortTeams = result.map((teamDoc) => ({
-      name: teamDoc.team?.name,
-      id: teamDoc.team?.id,
-      seasons: teamDoc.seasons
-    }));
-    const validatedResult = parseShortTeams(shortTeams);
+    const shortTeamsPipeline = shortTeamAggregationPipeline(query);
+    const result = await db.collection('teams').aggregate(shortTeamsPipeline).toArray();
+    const validatedResult = parseShortTeams(result);
     console.log(`Teams found for top leagues: ${validatedResult.length} teams`);
     res.send(validatedResult);
   } catch (error) {

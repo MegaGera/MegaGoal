@@ -43,6 +43,25 @@ const shortTeamSchema = z.object({
   seasons: z.array(seasonTeamSchema)
 });
 
+const shortTeamAggregationPipeline = (matchQuery = {}) => {
+  const pipeline = [];
+
+  if (Object.keys(matchQuery).length > 0) {
+    pipeline.push({ $match: matchQuery });
+  }
+
+  pipeline.push({
+    $project: {
+      _id: 0,
+      name: '$team.name',
+      id: '$team.id',
+      seasons: 1
+    }
+  });
+
+  return pipeline;
+};
+
 const setPreviousImagePayloadSchema = z.object({
   team_id: z.coerce.number().int(),
   image_title: z.string().min(1)
@@ -74,6 +93,7 @@ const parseShortTeams = (documents) => z.array(shortTeamSchema).parse(documents)
 
 export {
   buildTeamsQuery,
+  shortTeamAggregationPipeline,
   parseShortTeams,
   parseTeamDocument,
   parseTeamDocuments,
