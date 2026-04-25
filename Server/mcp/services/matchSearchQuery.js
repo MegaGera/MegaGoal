@@ -6,8 +6,8 @@ import {
   searchTeamsByName,
 } from './teamSearchQuery.js';
 import {
+  REAL_MATCH_FULL_SEARCH_LIMIT,
   REAL_MATCH_LIST_PROJECTION,
-  REAL_MATCH_SINGLE_SEARCH_LIMIT,
   WATCHED_MATCH_LIST_PROJECTION,
 } from '../../config/matchProjection.js';
 
@@ -396,9 +396,9 @@ export async function countRealMatchesByNames({
 
 /**
  * Same name/season/date filters as `searchRealMatchesByNames`, but returns at most
- * {@link REAL_MATCH_SINGLE_SEARCH_LIMIT} full `real_matches` documents (no list projection).
+ * {@link REAL_MATCH_FULL_SEARCH_LIMIT} full `real_matches` documents (no list projection).
  */
-export async function searchRealMatchByNameFilters({
+export async function getRealMatchesFullByNames({
   teamName,
   team2Name,
   leagueName,
@@ -420,7 +420,7 @@ export async function searchRealMatchByNameFilters({
     return {
       matches: [],
       count: 0,
-      max_documents: REAL_MATCH_SINGLE_SEARCH_LIMIT,
+      max_documents: REAL_MATCH_FULL_SEARCH_LIMIT,
       resolution: built.resolution,
       empty_reason: built.empty_reason,
     };
@@ -431,14 +431,14 @@ export async function searchRealMatchByNameFilters({
     .collection('real_matches')
     .find(built.filter, {
       sort: { 'fixture.timestamp': -1 },
-      limit: REAL_MATCH_SINGLE_SEARCH_LIMIT,
+      limit: REAL_MATCH_FULL_SEARCH_LIMIT,
     })
     .toArray();
 
   return {
     matches,
     count: matches.length,
-    max_documents: REAL_MATCH_SINGLE_SEARCH_LIMIT,
+    max_documents: REAL_MATCH_FULL_SEARCH_LIMIT,
     resolution: built.resolution,
   };
 }

@@ -8,7 +8,7 @@ import { listLeagues } from './services/leagueListQuery.js';
 import {
   countRealMatchesByNames,
   countWatchedMatchesByNames,
-  searchRealMatchByNameFilters,
+  getRealMatchesFullByNames,
   searchRealMatchesByNames,
   searchWatchedMatchesByNames,
 } from './services/matchSearchQuery.js';
@@ -63,7 +63,7 @@ export function createMcpServer() {
     name: 'MegaGoal Server MCP',
     version: '0.0.1',
     instructions:
-      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names with team_name, optional team_2_name (head-to-head when both set), league_name, country_name, seasons, optional date_from/date_to (date takes precedence over seasons when provided). Real matches (global fixture catalog in `real_matches`, not per-user): get_real_matches / count_real_matches_by_names with the same filters (list rows omit heavy fields); search_real_match uses the same name/date filters but returns up to 5 full documents for disambiguation. getLiveMatches returns all real_matches kicking off on the current UTC calendar day, each with live flags comparing server time to fixture.timestamp and classifying fixture.status.short using the same finished (FT,AET,PEN,PST,CANC) and not-started (NS,TBD) sets as the WebApp. player_played_watched_matches for slim rows where a named player played among watched fixtures; player_played_watched_stats for goals/assists totals and splits by team and season.',
+      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names with team_name, optional team_2_name (head-to-head when both set), league_name, country_name, seasons, optional date_from/date_to (date takes precedence over seasons when provided). Real matches (global fixture catalog in `real_matches`, not per-user): get_real_matches / count_real_matches_by_names with the same filters (list rows omit heavy fields); get_real_matches_full uses the same filters and returns up to 20 full documents for richer workflows. getLiveMatches returns all real_matches kicking off on the current UTC calendar day, each with live flags comparing server time to fixture.timestamp and classifying fixture.status.short using the same finished (FT,AET,PEN,PST,CANC) and not-started (NS,TBD) sets as the WebApp. player_played_watched_matches for slim rows where a named player played among watched fixtures; player_played_watched_stats for goals/assists totals and splits by team and season.',
     authenticate: async (request) => resolveAuth(request),
   });
 
@@ -539,10 +539,10 @@ export function createMcpServer() {
   });
 
   server.addTool({
-    name: 'search_real_match',
-    title: 'Search real match (full docs, max 5)',
+    name: 'get_real_matches_full',
+    title: 'Get real matches full (max 20 docs)',
     description:
-      'Query `real_matches` with the same human-readable filters as get_real_matches / count_real_matches_by_names (team_name, optional team_2_name for head-to-head, league_name, country_name, seasons, date_from, date_to; at least one filter; team_2_name requires team_name). Filters AND together. The MongoDB query is hard-capped at **5 documents** (sorted by fixture.timestamp descending). Returns **full** match documents (statistics, lineups, and events included — large payloads). Use when you need one or a few complete fixtures to disambiguate; use get_real_matches for longer lists with trimmed fields.',
+      'Query `real_matches` with the same human-readable filters as get_real_matches / count_real_matches_by_names (team_name, optional team_2_name for head-to-head, league_name, country_name, seasons, date_from, date_to; at least one filter; team_2_name requires team_name). Filters AND together. The MongoDB query is hard-capped at **20 documents** (sorted by fixture.timestamp descending). Returns **full** match documents (statistics, lineups, and events included — large payloads). Use when you need complete fixtures for richer workflows (for example weekend batches in one league); use get_real_matches for larger trimmed lists.',
     parameters: watchedMatchNameFiltersSchema,
     annotations: {
       readOnlyHint: true,
@@ -564,7 +564,7 @@ export function createMcpServer() {
         max_documents: maxDocuments,
         resolution,
         empty_reason: emptyReason,
-      } = await searchRealMatchByNameFilters({
+      } = await getRealMatchesFullByNames({
         teamName: args.team_name,
         team2Name: args.team_2_name,
         leagueName: args.league_name,

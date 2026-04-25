@@ -13,5 +13,5 @@ export const REAL_MATCH_LIST_PROJECTION = {
   events: 0,
 };
 
-/** Hard cap for MCP `search_real_match`: full `real_matches` documents for disambiguation. */
-export const REAL_MATCH_SINGLE_SEARCH_LIMIT = 5;
+/** Hard cap for MCP `get_real_matches_full`: full `real_matches` documents retrieval. */
+export const REAL_MATCH_FULL_SEARCH_LIMIT = 20;
