@@ -9,6 +9,8 @@ import {
   searchRealMatchesByNames,
   searchWatchedMatchesByNames,
 } from './matchSearchQuery.js';
+import { searchUserLocationsByName } from './locationSearchQuery.js';
+import { MAX_LIMIT } from './teamSearchQuery.js';
 
 /** Minimal `req` for RabbitMQ loggers when the caller is MCP (not HTTP). */
 const MCP_LOG_REQ = {
@@ -20,11 +22,15 @@ const MCP_LOG_REQ = {
  * Map a `real_matches` row to the POST /match body shape (same fields as
  * `MatchParserService.realMatchToMatch` → `matchToMatchRequest`: no statistics).
  */
-function realMatchDocToCreateBody(doc) {
+function realMatchDocToCreateBody(doc, { locationUuid } = {}) {
   if (doc == null || doc.fixture == null || doc.league == null || doc.teams == null) {
     return null;
   }
   const venue = doc.fixture.venue ?? {};
+  const loc =
+    locationUuid != null && String(locationUuid).trim() !== ''
+      ? String(locationUuid).trim()
+      : null;
   return {
     fixture: {
       id: doc.fixture.id,
@@ -50,7 +56,7 @@ function realMatchDocToCreateBody(doc) {
       home: doc.goals?.home ?? null,
       away: doc.goals?.away ?? null,
     },
-    location: null,
+    location: loc,
     status:
       doc.fixture.status?.short != null
         ? String(doc.fixture.status.short)
@@ -72,6 +78,7 @@ export async function markWatchedMatchesByNames({
   team2Name,
   leagueName,
   countryName,
+  locationName,
   seasons,
   dateFrom,
   dateTo,
@@ -112,6 +119,31 @@ export async function markWatchedMatchesByNames({
     };
   }
 
+  let chosenLocationUuid = null;
+  let locationResolutionTruncated = false;
+  let locationNameUnmatched = false;
+  const locQuery = locationName != null ? String(locationName).trim() : '';
+  if (locQuery.length > 0) {
+    const locRes = await searchUserLocationsByName({
+      username,
+      query: locQuery,
+      limit: MAX_LIMIT,
+    });
+    locationResolutionTruncated = locRes.truncated;
+    if (locRes.location_ids.length > 0) {
+      chosenLocationUuid = locRes.location_ids[0];
+    } else {
+      locationNameUnmatched = true;
+    }
+  }
+
+  const mergedResolution = {
+    ...resolution,
+    ...(locQuery.length > 0
+      ? { location_name_resolution_truncated: locationResolutionTruncated }
+      : {}),
+  };
+
   const db = getDB();
   let inserted = 0;
   let skippedAlready = 0;
@@ -120,7 +152,9 @@ export async function markWatchedMatchesByNames({
   const fixtureIdsTouched = [];
 
   for (const row of realRows) {
-    const rawBody = realMatchDocToCreateBody(row);
+    const rawBody = realMatchDocToCreateBody(row, {
+      locationUuid: chosenLocationUuid,
+    });
     if (rawBody == null) {
       skippedInvalid += 1;
       errors.push({
@@ -172,7 +206,7 @@ export async function markWatchedMatchesByNames({
   return {
     ok: errors.length === 0,
     action: 'mark',
-    resolution,
+    resolution: mergedResolution,
     inserted,
     skipped_already_watched: skippedAlready,
     skipped_invalid: skippedInvalid,
@@ -180,6 +214,7 @@ export async function markWatchedMatchesByNames({
     truncated,
     limit: lim,
     fixture_ids: fixtureIdsTouched,
+    ...(locationNameUnmatched ? { location_name_unmatched: true } : {}),
     ...(truncated
       ? {
           warning:
@@ -190,8 +225,9 @@ export async function markWatchedMatchesByNames({
 }
 
 /**
- * Unmark watched fixtures: same filters as search_watched_matches_by_names,
- * then delete matching `matches` rows for the user (with delete logging per row).
+ * Unmark watched fixtures: same **fixture** filters as search by names (team,
+ * league, country, seasons, dates, events). **`location_name` is ignored** here
+ * so bulk unmark by location alone is not supported.
  */
 export async function unmarkWatchedMatchesByNames({
   username,

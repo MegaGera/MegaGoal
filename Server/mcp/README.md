@@ -38,7 +38,7 @@ MCP still requires authentication for all tools; real-match tools do **not** nar
 
 ### By names
 
-These query the **`real_matches`** collection with the same human-readable filters as watched name search (team / optional second team for head-to-head, league/country names, seasons, date range). They are **not** scoped to the user’s watched list.
+These query the **`real_matches`** collection with the same human-readable filters as watched name search (team / optional second team for head-to-head, league/country names, seasons, date range, **excluding** `location_name` — real fixtures have no per-user location). They are **not** scoped to the user’s watched list.
 
 ### Player events filter semantics (`events`)
 
@@ -72,20 +72,20 @@ When using name-based match tools, `events` is an optional array of objects:
 ### `get_real_matches`
 
 - Purpose: list real (synced) fixtures matching name and/or date filters.
-- Filters: same as `search_watched_matches_by_names` — optional `team_name`, optional `team_2_name` (with `team_name`: only fixtures between those two clubs, home/away either way), `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`, `limit`.
+- Filters: same team/league/country/date/events contract as watched name search — optional `team_name`, optional `team_2_name` (with `team_name`: only fixtures between those two clubs, home/away either way), `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`, `limit`. **`location_name` is not a parameter** (not applicable to `real_matches`).
 - Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`. If `team_2_name` is set, `team_name` must be non-empty (Zod).
 - Returns: `{ count, matches[], truncated, limit, resolution, empty_reason? }` (same shape as watched name search).
 - Notes: date filters use `fixture.timestamp`; if `date_from` or `date_to` is set, `seasons` is ignored. `events` accepts objects like `{ "player_name": "Lamine Yamal", "event": "lineup" }` or `{ "event": "missed_penalty" }` (omit `player_name` for fixture-wide presence). Supported event values are `lineup` (startXI or bench), `startingXI` (startXI only), `bench` (bench only), `substitute` (in/out on substitution), `goal`, `assist`, `own_goal`, `missed_penalty`, `penalty`, `yellow_card`, `second_yellow`, `red_card`, `card`, `var`, `penalty_shootout_scored`, and `penalty_shootout_missed`. When `player_name` is set, it is resolved via the `players` collection. Rows omit `statistics`, `lineups`, and `events`.
 
 ### `count_real_matches_by_names`
 
-- Purpose: count-only variant of `get_real_matches` with the same filter contract.
+- Purpose: count-only variant of `get_real_matches` with the same filter contract (**no `location_name`**).
 - Returns: `{ count, resolution, empty_reason? }`.
 
 ### `get_real_matches_full`
 
 - Purpose: narrow to one or a few **`real_matches`** rows using the **same** name/season/date/events filters as `get_real_matches`, but return **complete** documents (including `statistics`, `lineups`, and `events`).
-- Filters: same contract as `get_real_matches` / `count_real_matches_by_names` (no `limit` parameter — the server always caps the query at **20** documents).
+- Filters: same contract as `get_real_matches` / `count_real_matches_by_names` (**no `location_name`**; no `limit` parameter — the server always caps the query at **20** documents).
 - Optional include flags: `include_statistics`, `include_lineups`, `include_events` (all default to `true`). Set any to `false` to omit that field from returned rows.
 - Returns: `{ count, max_documents: 20, matches[], resolution, empty_reason? }`.
 - Sort: `fixture.timestamp` descending (most recent first among the cap).
@@ -113,12 +113,13 @@ They resolve human-readable names server-side and keep the client contract clean
   - `team_2_name` (optional; head-to-head with `team_name` — requires non-empty `team_name`)
   - `league_name` (optional)
   - `country_name` (optional)
+  - `location_name` (optional; case-insensitive substring on the authenticated user’s rows in **`locations.name`**; resolves to UUIDs in `matches.location`)
   - `seasons` (optional array of numbers)
   - `date_from` (optional, ISO date/date-time)
   - `date_to` (optional, ISO date/date-time)
   - `events` (optional array of objects `{ player_name?, event }`; supported events: `lineup`, `startingXI`, `bench`, `substitute`, `goal`, `assist`, `own_goal`, `missed_penalty`, `penalty`, `yellow_card`, `second_yellow`, `red_card`, `card`, `var`, `penalty_shootout_scored`, `penalty_shootout_missed`)
   - `limit` (optional)
-- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`. `team_2_name` alone is invalid; it must accompany `team_name`.
+- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `location_name`, `seasons`, `date_from`, `date_to`, `events`. `team_2_name` alone is invalid; it must accompany `team_name`.
 - Returns: `{ count, matches[], truncated, limit, resolution, empty_reason? }`.
 - Notes:
   - Name filters are combined with AND semantics.
@@ -129,7 +130,8 @@ They resolve human-readable names server-side and keep the client contract clean
   - Example `events`: `[{"player_name":"Lamine Yamal","event":"lineup"}]` or `[{"event":"missed_penalty"}]` with `team_name` for “this team’s games where someone missed a penalty”.
   - Event semantics: `lineup` checks startXI or bench, `startingXI` checks startXI only, `bench` checks bench only, `substitute` checks substitution involvement (in or out), `goal` checks goal scorer events (excluding own goals and missed penalties), `assist` checks assister on goal events, `own_goal` checks own goals, `missed_penalty` checks missed penalties, `penalty` checks scored penalties, `yellow_card` checks yellow cards, `second_yellow` checks second-yellow cards, `red_card` checks red cards, `card` checks any card, `var` checks VAR events, `penalty_shootout_scored`/`penalty_shootout_missed` check penalty-shootout outcomes.
   - Multiple `events` entries are combined with AND semantics, so one query can require conditions across different players (for example: Ronaldo `goal`, Benzema `assist`, Bale `bench`).
-  - `resolution.*_truncated` indicates lookup caps were hit; refine query when needed.
+  - `resolution.*_truncated` indicates lookup caps were hit; refine query when needed. For locations, `resolution.location_name_resolution_truncated` mirrors the **`locations`** name lookup cap.
+  - `empty_reason` may include `no_locations_for_location_name` when `location_name` is set but no user location matches.
   - Each match row omits `statistics` and `player_stats` (same as `get_watched_matches`); other stored fields (e.g. lineups, events) are included when present.
 
 ### `count_watched_matches_by_names`
@@ -140,25 +142,26 @@ They resolve human-readable names server-side and keep the client contract clean
   - `team_2_name` (optional; same rules as search)
   - `league_name` (optional)
   - `country_name` (optional)
+  - `location_name` (optional; same semantics as `search_watched_matches_by_names`)
   - `seasons` (optional array of numbers)
   - `date_from` (optional, ISO date/date-time)
   - `date_to` (optional, ISO date/date-time)
   - `events` (optional array of objects `{ player_name?, event }`; supported events: `lineup`, `startingXI`, `bench`, `substitute`, `goal`, `assist`, `own_goal`, `missed_penalty`, `penalty`, `yellow_card`, `second_yellow`, `red_card`, `card`, `var`, `penalty_shootout_scored`, `penalty_shootout_missed`)
-- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`; `team_2_name` requires `team_name`.
+- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `location_name`, `seasons`, `date_from`, `date_to`, `events`; `team_2_name` requires `team_name`.
 - Returns: `{ count, resolution, empty_reason? }`.
 - Use when: you only need totals for name-based filters.
 
 ### `mutate_watched_matches_by_names` (write)
 
-- Purpose: **mark** fixtures as watched or **unmark** them using the **same** name/season/date/events filter contract as `search_watched_matches_by_names` / `get_real_matches`.
+- Purpose: **mark** fixtures as watched or **unmark** them. **Contract:** at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, or `events` (same rule as `get_real_matches`); optional **`location_name`** is **only used for `mark`** (see below). `team_2_name` requires `team_name`.
 - Required: `action` — either `mark` or `unmark`.
-- Filters (same rules as name-based search): `team_name`, optional `team_2_name` (requires `team_name`), `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`; at least one non-empty filter; date range overrides `seasons` when any date boundary is set.
 - Optional: `limit` (default **20**, maximum **50**). Rows are processed in **`fixture.timestamp` descending** order (same sort as list search). If `truncated` is `true`, more fixtures matched than were processed—narrow filters, raise `limit` within the cap, or call again.
-- **`mark`**: loads matching rows from **`real_matches`**, builds the watched payload like the WebApp when adding from a real card (no `statistics`), **`insertOne`** per fixture for the authenticated user, **skips** fixtures already in `matches`, emits **`MATCH_CREATED`** logging per insert (same RabbitMQ path as `POST /match`).
-- **`unmark`**: loads matching rows from the user’s **`matches`** collection (same semantics as `search_watched_matches_by_names`), **`deleteOne`** per row, emits **`MATCH_DELETED`** per removal (same path as `DELETE /match`).
+- **`mark`**: loads matching rows from **`real_matches`**, builds the watched payload like the WebApp when adding from a real card (no `statistics`). Optional **`location_name`**: if one or more user **`locations`** match by name, **`matches.location`** is set to the **first** UUID (after sort by name); if **`location_name`** is provided but **no** location matches, rows are still inserted with **`location` null** and the response may include **`location_name_unmatched: true`** (not an error). **`insertOne`** per fixture, **skips** duplicates, **`MATCH_CREATED`** per insert (same RabbitMQ path as `POST /match`).
+- **`unmark`**: **`location_name` is ignored** (you cannot bulk-unmark by location name via this tool). Selection uses the same **fixture** filters as `get_real_matches` / name search **without** narrowing by `matches.location`. **`deleteOne`** per row, **`MATCH_DELETED`** per removal (same path as `DELETE /match`).
+- **Changing location** on an already watched fixture: there is no MCP “update location” tool — **`unmark`** the fixture (using team/league/date/etc.), then **`mark`** again with the desired **`location_name`** (and the same fixture filters).
 - Returns (shape varies slightly by action):
   - Common: `ok`, `action`, `resolution`, `truncated`, `limit`, optional `warning`, optional `empty_reason` when filters could not be built.
-  - `mark`: `inserted`, `skipped_already_watched`, `skipped_invalid`, `errors[]` (per-fixture failures), `fixture_ids` (newly inserted fixture ids).
+  - `mark`: `inserted`, `skipped_already_watched`, `skipped_invalid`, `errors[]` (per-fixture failures), `fixture_ids` (newly inserted fixture ids); optional **`location_name_unmatched`** when a `location_name` was sent but no `locations` row matched.
   - `unmark`: `deleted`, `errors[]`, `fixture_ids` (removed fixture ids).
 - Auth: same as all tools; writes always apply to the MCP session user only.
 
@@ -254,7 +257,7 @@ These tools help discover team/league data and disambiguate user input.
 
 - All tools require an authenticated MCP session (same headers as below).
 - **Watched-match** and **player-on-watched** tools only return rows for that user’s watched games (`matches` + username).
-- **`mutate_watched_matches_by_names`** writes to the authenticated user’s `matches` rows (`mark` reads **`real_matches`** first; `unmark` only touches **`matches`**).
+- **`mutate_watched_matches_by_names`** writes to the authenticated user’s `matches` rows (`mark` reads **`real_matches`** first; `unmark` only touches **`matches`**). On **`unmark`**, **`location_name` is not applied** (no bulk delete by location name).
 - **Real-match** tools (`get_real_matches`, `count_real_matches_by_names`, `get_real_matches_full`, `getLiveMatches`) read the global `real_matches` catalog; they do not filter by username, but still require a valid session.
 - If `MCP_API_KEY` is set, send:
   - `Authorization: Bearer <MCP_API_KEY>`

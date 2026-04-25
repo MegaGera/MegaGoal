@@ -5,6 +5,7 @@ import {
   MAX_LIMIT,
   searchTeamsByName,
 } from './teamSearchQuery.js';
+import { searchUserLocationsByName } from './locationSearchQuery.js';
 import { searchPlayersByName } from './playerSearchQuery.js';
 import {
   REAL_MATCH_FULL_SEARCH_LIMIT,
@@ -455,12 +456,16 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
  * Name filters resolve against `teams` / `leagues` server-side; combine with
  * `user.username` when querying the watched `matches` collection.
  * Optional `team2Name` with `teamName` restricts to head-to-head (either team home).
+ * Optional `locationName` with `locationsScopeUsername` adds `matches.location` in
+ * (`locations.id` for that user); omit or leave empty for real_matches-only tools.
  */
 export async function buildWatchedMatchNameFilter({
   teamName,
   team2Name,
   leagueName,
   countryName,
+  locationName,
+  locationsScopeUsername,
   seasons,
   dateFrom,
   dateTo,
@@ -472,6 +477,7 @@ export async function buildWatchedMatchNameFilter({
     team_2_resolution_truncated: false,
     league_name_resolution_truncated: false,
     country_name_resolution_truncated: false,
+    location_name_resolution_truncated: false,
     events_resolution_truncated: false,
   };
 
@@ -601,6 +607,37 @@ export async function buildWatchedMatchNameFilter({
     filters.push({ 'league.id': { $in: leagueIds } });
   }
 
+  const locN =
+    locationName != null && String(locationName).trim() !== ''
+      ? String(locationName).trim()
+      : '';
+  if (locN) {
+    if (!locationsScopeUsername) {
+      return {
+        filter: null,
+        realMatchEventsFilter: null,
+        resolution,
+        empty_reason: 'location_name_requires_user_scope',
+      };
+    }
+    const { location_ids: locationIds, truncated: locTrunc } =
+      await searchUserLocationsByName({
+        username: locationsScopeUsername,
+        query: locN,
+        limit: MAX_LIMIT,
+      });
+    resolution.location_name_resolution_truncated = locTrunc;
+    if (locationIds.length === 0) {
+      return {
+        filter: null,
+        realMatchEventsFilter: null,
+        resolution,
+        empty_reason: 'no_locations_for_location_name',
+      };
+    }
+    filters.push({ location: { $in: locationIds } });
+  }
+
   const parseDateBoundary = (value, boundary) => {
     if (value == null) return null;
     const raw = String(value).trim();
@@ -698,6 +735,7 @@ export async function searchWatchedMatchesByNames({
   team2Name,
   leagueName,
   countryName,
+  locationName,
   seasons,
   dateFrom,
   dateTo,
@@ -709,6 +747,8 @@ export async function searchWatchedMatchesByNames({
     team2Name,
     leagueName,
     countryName,
+    locationName,
+    locationsScopeUsername: username,
     seasons,
     dateFrom,
     dateTo,
@@ -783,6 +823,7 @@ export async function countWatchedMatchesByNames({
   team2Name,
   leagueName,
   countryName,
+  locationName,
   seasons,
   dateFrom,
   dateTo,
@@ -793,6 +834,8 @@ export async function countWatchedMatchesByNames({
     team2Name,
     leagueName,
     countryName,
+    locationName,
+    locationsScopeUsername: username,
     seasons,
     dateFrom,
     dateTo,
