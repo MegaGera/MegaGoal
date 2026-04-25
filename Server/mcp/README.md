@@ -48,6 +48,12 @@ When using name-based match tools, `events` is an optional array of objects:
   - `bench`: player appears in `lineups.substitutes`.
   - `goal`: player is the scorer on a `goal` event (`events.type = goal`), excluding `own goal` and `missed penalty`.
   - `assist`: player is the assister on a `goal` event (`events.type = goal`).
+  - `own_goal`: player is the scorer on a `goal` event with `detail = own goal`.
+  - `missed_penalty`: player is the scorer on a `goal` event with `detail = missed penalty`.
+  - `penalty`: player is the scorer on a `goal` event with `detail = penalty` (penalty scored).
+  - `substitute`: player appears on a substitution event (`events.type = subst`) as either the replaced player (`events.player`) or the incoming player (`events.assist`).
+  - `yellow_card`: player is booked on a `card` event where `detail` contains `yellow`.
+  - `red_card`: player is sent off on a `card` event where `detail` contains `red`.
 - Multiple entries are combined with **AND** semantics.
   - Example: Ronaldo `goal` + Benzema `assist` + Bale `bench` returns only matches where all three conditions hold.
 - Scope rules:
@@ -60,7 +66,7 @@ When using name-based match tools, `events` is an optional array of objects:
 - Filters: same as `search_watched_matches_by_names` — optional `team_name`, optional `team_2_name` (with `team_name`: only fixtures between those two clubs, home/away either way), `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`, `limit`.
 - Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`. If `team_2_name` is set, `team_name` must be non-empty (Zod).
 - Returns: `{ count, matches[], truncated, limit, resolution, empty_reason? }` (same shape as watched name search).
-- Notes: date filters use `fixture.timestamp`; if `date_from` or `date_to` is set, `seasons` is ignored. `events` accepts objects like `{ "player_name": "Lamine Yamal", "event": "lineup" }`. Supported event values are `lineup` (startXI or bench), `startingXI` (startXI only), `bench` (bench only), `goal`, and `assist`, with semantic player-name resolution. Rows omit `statistics`, `lineups`, and `events`.
+- Notes: date filters use `fixture.timestamp`; if `date_from` or `date_to` is set, `seasons` is ignored. `events` accepts objects like `{ "player_name": "Lamine Yamal", "event": "lineup" }`. Supported event values are `lineup` (startXI or bench), `startingXI` (startXI only), `bench` (bench only), `substitute` (in/out on substitution), `goal`, `assist`, `own_goal`, `missed_penalty`, `penalty`, `yellow_card`, and `red_card`, with semantic player-name resolution. Rows omit `statistics`, `lineups`, and `events`.
 
 ### `count_real_matches_by_names`
 
@@ -101,7 +107,7 @@ They resolve human-readable names server-side and keep the client contract clean
   - `seasons` (optional array of numbers)
   - `date_from` (optional, ISO date/date-time)
   - `date_to` (optional, ISO date/date-time)
-  - `events` (optional array of objects `{ player_name, event }`; supported events: `lineup`, `startingXI`, `bench`, `goal`, `assist`)
+  - `events` (optional array of objects `{ player_name, event }`; supported events: `lineup`, `startingXI`, `bench`, `substitute`, `goal`, `assist`, `own_goal`, `missed_penalty`, `penalty`, `yellow_card`, `red_card`)
   - `limit` (optional)
 - Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`. `team_2_name` alone is invalid; it must accompany `team_name`.
 - Returns: `{ count, matches[], truncated, limit, resolution, empty_reason? }`.
@@ -112,7 +118,7 @@ They resolve human-readable names server-side and keep the client contract clean
   - If `date_from` or `date_to` is provided, date filtering takes precedence and `seasons` is ignored.
   - `events` filters are applied by resolving `player_name` semantically against `players`; for watched matches, matching is done by intersecting watched fixtures with `real_matches` lineup/event matches.
   - Example `events`: `[{"player_name":"Lamine Yamal","event":"lineup"}]`.
-  - Event semantics: `lineup` checks startXI or bench, `startingXI` checks startXI only, `bench` checks bench only, `goal` checks goal scorer events (excluding own goals and missed penalties), `assist` checks assister on goal events.
+  - Event semantics: `lineup` checks startXI or bench, `startingXI` checks startXI only, `bench` checks bench only, `substitute` checks substitution involvement (in or out), `goal` checks goal scorer events (excluding own goals and missed penalties), `assist` checks assister on goal events, `own_goal` checks own goals, `missed_penalty` checks missed penalties, `penalty` checks scored penalties, `yellow_card` checks yellow cards, `red_card` checks red cards.
   - Multiple `events` entries are combined with AND semantics, so one query can require conditions across different players (for example: Ronaldo `goal`, Benzema `assist`, Bale `bench`).
   - `resolution.*_truncated` indicates lookup caps were hit; refine query when needed.
   - Each match row omits `statistics` and `player_stats` (same as `get_watched_matches`); other stored fields (e.g. lineups, events) are included when present.
@@ -128,7 +134,7 @@ They resolve human-readable names server-side and keep the client contract clean
   - `seasons` (optional array of numbers)
   - `date_from` (optional, ISO date/date-time)
   - `date_to` (optional, ISO date/date-time)
-- `events` (optional array of objects `{ player_name, event }`; supported events: `lineup`, `startingXI`, `bench`, `goal`, `assist`)
+- `events` (optional array of objects `{ player_name, event }`; supported events: `lineup`, `startingXI`, `bench`, `substitute`, `goal`, `assist`, `own_goal`, `missed_penalty`, `penalty`, `yellow_card`, `red_card`)
 - Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`; `team_2_name` requires `team_name`.
 - Returns: `{ count, resolution, empty_reason? }`.
 - Use when: you only need totals for name-based filters.
