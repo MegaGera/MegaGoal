@@ -352,6 +352,15 @@ export function createMcpServer() {
     .refine(hasWatchedOrRealNameDateFilter, watchedOrRealNameDateFilterMessage)
     .refine(team2NameRequiresTeamName, team2NameRequiresTeamNameMessage);
 
+  const getRealMatchesFullSchema = watchedMatchNameBaseSchema
+    .extend({
+      include_statistics: z.boolean().optional(),
+      include_lineups: z.boolean().optional(),
+      include_events: z.boolean().optional(),
+    })
+    .refine(hasWatchedOrRealNameDateFilter, watchedOrRealNameDateFilterMessage)
+    .refine(team2NameRequiresTeamName, team2NameRequiresTeamNameMessage);
+
   server.addTool({
     name: 'search_watched_matches_by_names',
     title: 'Search watched matches by names',
@@ -542,8 +551,8 @@ export function createMcpServer() {
     name: 'get_real_matches_full',
     title: 'Get real matches full (max 20 docs)',
     description:
-      'Query `real_matches` with the same human-readable filters as get_real_matches / count_real_matches_by_names (team_name, optional team_2_name for head-to-head, league_name, country_name, seasons, date_from, date_to; at least one filter; team_2_name requires team_name). Filters AND together. The MongoDB query is hard-capped at **20 documents** (sorted by fixture.timestamp descending). Returns **full** match documents (statistics, lineups, and events included — large payloads). Use when you need complete fixtures for richer workflows (for example weekend batches in one league); use get_real_matches for larger trimmed lists.',
-    parameters: watchedMatchNameFiltersSchema,
+      'Query `real_matches` with the same human-readable filters as get_real_matches / count_real_matches_by_names (team_name, optional team_2_name for head-to-head, league_name, country_name, seasons, date_from, date_to; at least one filter; team_2_name requires team_name). Filters AND together. The MongoDB query is hard-capped at **20 documents** (sorted by fixture.timestamp descending). By default returns full match documents. Optional include flags let the client trim heavy fields when not needed: include_statistics, include_lineups, include_events (all default true). Use when you need complete fixtures for richer workflows (for example weekend batches in one league); use get_real_matches for larger trimmed lists.',
+    parameters: getRealMatchesFullSchema,
     annotations: {
       readOnlyHint: true,
       openWorldHint: false,
@@ -572,6 +581,11 @@ export function createMcpServer() {
         seasons: args.seasons,
         dateFrom: args.date_from,
         dateTo: args.date_to,
+        includeStatistics:
+          args.include_statistics == null ? true : args.include_statistics,
+        includeLineups:
+          args.include_lineups == null ? true : args.include_lineups,
+        includeEvents: args.include_events == null ? true : args.include_events,
       });
 
       const payload = {

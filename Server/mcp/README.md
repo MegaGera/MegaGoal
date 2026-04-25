@@ -53,6 +53,7 @@ These query the **`real_matches`** collection with the same human-readable filte
 
 - Purpose: narrow to one or a few **`real_matches`** rows using the **same** name/season/date filters as `get_real_matches`, but return **complete** documents (including `statistics`, `lineups`, and `events`).
 - Filters: same contract as `get_real_matches` / `count_real_matches_by_names` (no `limit` parameter — the server always caps the query at **20** documents).
+- Optional include flags: `include_statistics`, `include_lineups`, `include_events` (all default to `true`). Set any to `false` to omit that field from returned rows.
 - Returns: `{ count, max_documents: 20, matches[], resolution, empty_reason? }`.
 - Sort: `fixture.timestamp` descending (most recent first among the cap).
 - Use when: the agent needs full fixture payloads (single or multiple fixtures, e.g. a whole weekend in one league); use `get_real_matches` for larger trimmed lists.

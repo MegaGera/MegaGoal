@@ -406,6 +406,9 @@ export async function getRealMatchesFullByNames({
   seasons,
   dateFrom,
   dateTo,
+  includeStatistics = true,
+  includeLineups = true,
+  includeEvents = true,
 }) {
   const built = await buildWatchedMatchNameFilter({
     teamName,
@@ -427,12 +430,22 @@ export async function getRealMatchesFullByNames({
   }
 
   const db = getDB();
+  const projection = {};
+  if (!includeStatistics) projection.statistics = 0;
+  if (!includeLineups) projection.lineups = 0;
+  if (!includeEvents) projection.events = 0;
+
+  const findOptions = {
+    sort: { 'fixture.timestamp': -1 },
+    limit: REAL_MATCH_FULL_SEARCH_LIMIT,
+  };
+  if (Object.keys(projection).length > 0) {
+    findOptions.projection = projection;
+  }
+
   const matches = await db
     .collection('real_matches')
-    .find(built.filter, {
-      sort: { 'fixture.timestamp': -1 },
-      limit: REAL_MATCH_FULL_SEARCH_LIMIT,
-    })
+    .find(built.filter, findOptions)
     .toArray();
 
   return {
