@@ -24,9 +24,11 @@ function withUserFilter(username, docFilter) {
  * Resolve match-document filters from human-readable names (and optional seasons).
  * Name filters resolve against `teams` / `leagues` server-side; combine with
  * `user.username` when querying the watched `matches` collection.
+ * Optional `team2Name` with `teamName` restricts to head-to-head (either team home).
  */
 export async function buildWatchedMatchNameFilter({
   teamName,
+  team2Name,
   leagueName,
   countryName,
   seasons,
@@ -36,6 +38,7 @@ export async function buildWatchedMatchNameFilter({
   const filters = [];
   const resolution = {
     team_resolution_truncated: false,
+    team_2_resolution_truncated: false,
     league_name_resolution_truncated: false,
     country_name_resolution_truncated: false,
   };
@@ -44,6 +47,18 @@ export async function buildWatchedMatchNameFilter({
     teamName != null && String(teamName).trim() !== ''
       ? String(teamName).trim()
       : '';
+  const t2n =
+    team2Name != null && String(team2Name).trim() !== ''
+      ? String(team2Name).trim()
+      : '';
+
+  if (t2n && !tn) {
+    return {
+      filter: null,
+      resolution,
+      empty_reason: 'team_2_name_requires_team_name',
+    };
+  }
   const ln =
     leagueName != null && String(leagueName).trim() !== ''
       ? String(leagueName).trim()
@@ -53,7 +68,38 @@ export async function buildWatchedMatchNameFilter({
       ? String(countryName).trim()
       : '';
 
-  if (tn) {
+  if (tn && t2n) {
+    const [res1, res2] = await Promise.all([
+      searchTeamsByName({ query: tn, limit: MAX_LIMIT }),
+      searchTeamsByName({ query: t2n, limit: MAX_LIMIT }),
+    ]);
+    resolution.team_resolution_truncated = res1.truncated;
+    resolution.team_2_resolution_truncated = res2.truncated;
+    const idsA = res1.teams.map((t) => t.id).filter((id) => id != null);
+    const idsB = res2.teams.map((t) => t.id).filter((id) => id != null);
+    if (idsA.length === 0) {
+      return { filter: null, resolution, empty_reason: 'no_teams_for_team_name' };
+    }
+    if (idsB.length === 0) {
+      return { filter: null, resolution, empty_reason: 'no_teams_for_team_2_name' };
+    }
+    filters.push({
+      $or: [
+        {
+          $and: [
+            { 'teams.home.id': { $in: idsA } },
+            { 'teams.away.id': { $in: idsB } },
+          ],
+        },
+        {
+          $and: [
+            { 'teams.home.id': { $in: idsB } },
+            { 'teams.away.id': { $in: idsA } },
+          ],
+        },
+      ],
+    });
+  } else if (tn) {
     const { teams, truncated } = await searchTeamsByName({
       query: tn,
       limit: MAX_LIMIT,
@@ -179,6 +225,7 @@ export async function buildWatchedMatchNameFilter({
 export async function searchWatchedMatchesByNames({
   username,
   teamName,
+  team2Name,
   leagueName,
   countryName,
   seasons,
@@ -188,6 +235,7 @@ export async function searchWatchedMatchesByNames({
 }) {
   const built = await buildWatchedMatchNameFilter({
     teamName,
+    team2Name,
     leagueName,
     countryName,
     seasons,
@@ -230,6 +278,7 @@ export async function searchWatchedMatchesByNames({
 export async function countWatchedMatchesByNames({
   username,
   teamName,
+  team2Name,
   leagueName,
   countryName,
   seasons,
@@ -238,6 +287,7 @@ export async function countWatchedMatchesByNames({
 }) {
   const built = await buildWatchedMatchNameFilter({
     teamName,
+    team2Name,
     leagueName,
     countryName,
     seasons,
@@ -265,6 +315,7 @@ export async function countWatchedMatchesByNames({
  */
 export async function searchRealMatchesByNames({
   teamName,
+  team2Name,
   leagueName,
   countryName,
   seasons,
@@ -274,6 +325,7 @@ export async function searchRealMatchesByNames({
 }) {
   const built = await buildWatchedMatchNameFilter({
     teamName,
+    team2Name,
     leagueName,
     countryName,
     seasons,
@@ -312,6 +364,7 @@ export async function searchRealMatchesByNames({
 
 export async function countRealMatchesByNames({
   teamName,
+  team2Name,
   leagueName,
   countryName,
   seasons,
@@ -320,6 +373,7 @@ export async function countRealMatchesByNames({
 }) {
   const built = await buildWatchedMatchNameFilter({
     teamName,
+    team2Name,
     leagueName,
     countryName,
     seasons,

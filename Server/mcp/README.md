@@ -34,13 +34,13 @@ MCP still requires authentication for all tools; real-match tools do **not** nar
 
 ### By names
 
-These query the **`real_matches`** collection with the same human-readable filters as watched name search (team/league/country names, seasons, date range). They are **not** scoped to the user’s watched list.
+These query the **`real_matches`** collection with the same human-readable filters as watched name search (team / optional second team for head-to-head, league/country names, seasons, date range). They are **not** scoped to the user’s watched list.
 
 ### `get_real_matches`
 
 - Purpose: list real (synced) fixtures matching name and/or date filters.
-- Filters: same as `search_watched_matches_by_names` — optional `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `limit`.
-- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`.
+- Filters: same as `search_watched_matches_by_names` — optional `team_name`, optional `team_2_name` (with `team_name`: only fixtures between those two clubs, home/away either way), `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `limit`.
+- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`. If `team_2_name` is set, `team_name` must be non-empty (Zod).
 - Returns: `{ count, matches[], truncated, limit, resolution, empty_reason? }` (same shape as watched name search).
 - Notes: date filters use `fixture.timestamp`; if `date_from` or `date_to` is set, `seasons` is ignored. Rows omit `statistics`, `lineups`, and `events`.
 
@@ -68,17 +68,18 @@ They resolve human-readable names server-side and keep the client contract clean
 - Purpose: returns watched match rows using human-readable filters.
 - Filters:
   - `team_name` (optional)
+  - `team_2_name` (optional; head-to-head with `team_name` — requires non-empty `team_name`)
   - `league_name` (optional)
   - `country_name` (optional)
   - `seasons` (optional array of numbers)
   - `date_from` (optional, ISO date/date-time)
   - `date_to` (optional, ISO date/date-time)
   - `limit` (optional)
-- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`.
+- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`. `team_2_name` alone is invalid; it must accompany `team_name`.
 - Returns: `{ count, matches[], truncated, limit, resolution, empty_reason? }`.
 - Notes:
   - Name filters are combined with AND semantics.
-  - Team name resolves via `teams`; league/country names resolve via `leagues`.
+  - Team names resolve via `teams`; with both `team_name` and `team_2_name`, only matches where those two resolved club sets face each other are returned. `resolution.team_2_resolution_truncated` mirrors the second name lookup cap.
   - Date range filters apply on `fixture.timestamp`.
   - If `date_from` or `date_to` is provided, date filtering takes precedence and `seasons` is ignored.
   - `resolution.*_truncated` indicates lookup caps were hit; refine query when needed.
@@ -89,12 +90,13 @@ They resolve human-readable names server-side and keep the client contract clean
 - Purpose: same name-based filtering as `search_watched_matches_by_names`, but count-only.
 - Filters:
   - `team_name` (optional)
+  - `team_2_name` (optional; same rules as search)
   - `league_name` (optional)
   - `country_name` (optional)
   - `seasons` (optional array of numbers)
   - `date_from` (optional, ISO date/date-time)
   - `date_to` (optional, ISO date/date-time)
-- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`.
+- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`; `team_2_name` requires `team_name`.
 - Returns: `{ count, resolution, empty_reason? }`.
 - Use when: you only need totals for name-based filters.
 
