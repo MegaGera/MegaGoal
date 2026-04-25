@@ -1,14 +1,24 @@
 import { getDB } from '../config/db.js';
 import { logAdminAction } from './logController.js';
 import { createIndexes, ensureIndexes } from '../config/indexes.js';
+import {
+  buildNewLeagueSetting,
+  parseChangeDailyUpdatePayload,
+  parseChangeIsActivePayload,
+  parseChangeLeagueColorsPayload,
+  parseChangeUpdateFrequencyPayload,
+  parseCreateLeagueSettingPayload,
+  parseLeagueSettings
+} from '../entities/leagueEntity.js';
 
 // Get leagues settings
 export const getLeaguesSettings = async (req, res) => {
   const db = getDB();
   try {
     const result = await db.collection('league_settings').find().toArray();
+    const validatedResult = parseLeagueSettings(result);
     console.log("Leagues Settings Getted");
-    res.send(result);
+    res.send(validatedResult);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -18,8 +28,8 @@ export const getLeaguesSettings = async (req, res) => {
 export const changeIsActive = async (req, res) => {
   const db = getDB();
   try {
-    let {league_id, is_active} = req.body;
-    const filter = { "league_id": +league_id};
+    const { league_id, is_active } = parseChangeIsActivePayload(req.body);
+    const filter = { "league_id": league_id };
     const update = is_active ? { $set: { "is_active": is_active } } : { $set: { "is_active": is_active, "daily_update": false } };
     let result = await db.collection('league_settings').updateOne(filter, update);
     console.log("Update is_active for league " + league_id + " to " + is_active);
@@ -36,10 +46,10 @@ export const changeIsActive = async (req, res) => {
 export const changeUpdateFrequency = async (req, res) => {
   const db = getDB();
   try {
-    let {league_id, update_frequency} = req.body;
+    const { league_id, update_frequency } = parseChangeUpdateFrequencyPayload(req.body);
     // Ensure update_frequency is always stored as a number
     const updateFrequencyNumber = Number(update_frequency);
-    const filter = { "league_id": +league_id};
+    const filter = { "league_id": league_id };
     const update = { $set: { "update_frequency": updateFrequencyNumber } };
     let result = await db.collection('league_settings').updateOne(filter, update);
     console.log("Update frequency updated for league " + league_id + " to " + updateFrequencyNumber);
@@ -56,8 +66,8 @@ export const changeUpdateFrequency = async (req, res) => {
 export const changeDailyUpdate = async (req, res) => {
   const db = getDB();
   try {
-    let {league_id, daily_update} = req.body;
-    const filter = { "league_id": +league_id, "is_active": true };
+    const { league_id, daily_update } = parseChangeDailyUpdatePayload(req.body);
+    const filter = { "league_id": league_id, "is_active": true };
     const update = { $set: { "daily_update": daily_update } };
     let result = await db.collection('league_settings').updateOne(filter, update);
     console.log("Update daily_update for league " + league_id + " to " + daily_update);
@@ -74,8 +84,8 @@ export const changeDailyUpdate = async (req, res) => {
 export const changeLeagueColors = async (req, res) => {
   const db = getDB();
   try {
-    let {league_id, colors} = req.body;
-    const filter = { "league_id": +league_id };
+    const { league_id, colors } = parseChangeLeagueColorsPayload(req.body);
+    const filter = { "league_id": league_id };
     const update = { $set: { "colors": colors } };
     let result = await db.collection('league_settings').updateOne(filter, update);
     console.log("Update colors for league " + league_id + " - colors: ", colors);
@@ -92,10 +102,10 @@ export const changeLeagueColors = async (req, res) => {
 export const createLeagueSetting = async (req, res) => {
   const db = getDB();
   try {
-    let {league_id, league_name} = req.body;
+    const { league_id, league_name } = parseCreateLeagueSettingPayload(req.body);
     
     // Check if league setting already exists
-    const existingSetting = await db.collection('league_settings').findOne({ "league_id": +league_id });
+    const existingSetting = await db.collection('league_settings').findOne({ "league_id": league_id });
     if (existingSetting) {
       return res.status(400).json({ message: "League setting already exists" });
     }
@@ -112,15 +122,11 @@ export const createLeagueSetting = async (req, res) => {
       nextPosition = highestPositionLeague[0].position + 1;
     }
     
-    const newLeagueSetting = {
-      league_id: +league_id,
-      league_name: league_name,
-      update_frequency: 1,
-      is_active: false,
-      daily_update: false,
-      season: 2025,
+    const newLeagueSetting = buildNewLeagueSetting({
+      league_id,
+      league_name,
       position: nextPosition
-    };
+    });
     
     let result = await db.collection('league_settings').insertOne(newLeagueSetting);
     console.log("Created new league setting for league " + league_id + " - " + league_name + " with position " + nextPosition);
