@@ -3,6 +3,7 @@
 This document describes the MCP tools exposed by the MegaGoal server and how to use them.
 
 The tools are organized in these sections:
+
 - Watched matches vs real matches (which tool to use)
 - Real matches (global fixture catalog: by names, today / live)
 - Watched matches by names
@@ -16,10 +17,12 @@ The tools are organized in these sections:
 
 ## Watched matches vs real matches
 
-| Concept | MongoDB collection | Meaning |
-|--------|---------------------|---------|
-| **Watched matches** | `matches` | Rows the **authenticated user** marked as watched. Every watched tool filters by MCP user (`user.username`). |
-| **Real matches** | `real_matches` | **Global** fixture data MegaGoal syncs from the football API (schedule and results for leagues you support). The same fixture may or may not appear in a user’s watched list. |
+
+| Concept             | MongoDB collection | Meaning                                                                                                                                                                       |
+| ------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Watched matches** | `matches`          | Rows the **authenticated user** marked as watched. Every watched tool filters by MCP user (`user.username`).                                                                  |
+| **Real matches**    | `real_matches`     | **Global** fixture data MegaGoal syncs from the football API (schedule and results for leagues you support). The same fixture may or may not appear in a user’s watched list. |
+
 
 **Choosing a tool**
 
@@ -140,7 +143,7 @@ They resolve human-readable names server-side and keep the client contract clean
   - `seasons` (optional array of numbers)
   - `date_from` (optional, ISO date/date-time)
   - `date_to` (optional, ISO date/date-time)
-- `events` (optional array of objects `{ player_name?, event }`; supported events: `lineup`, `startingXI`, `bench`, `substitute`, `goal`, `assist`, `own_goal`, `missed_penalty`, `penalty`, `yellow_card`, `second_yellow`, `red_card`, `card`, `var`, `penalty_shootout_scored`, `penalty_shootout_missed`)
+  - `events` (optional array of objects `{ player_name?, event }`; supported events: `lineup`, `startingXI`, `bench`, `substitute`, `goal`, `assist`, `own_goal`, `missed_penalty`, `penalty`, `yellow_card`, `second_yellow`, `red_card`, `card`, `var`, `penalty_shootout_scored`, `penalty_shootout_missed`)
 - Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`; `team_2_name` requires `team_name`.
 - Returns: `{ count, resolution, empty_reason? }`.
 - Use when: you only need totals for name-based filters.
@@ -162,9 +165,11 @@ They resolve human-readable names server-side and keep the client contract clean
 ### Name-first client strategy
 
 If your goal is to avoid ids in the client:
+
 1. Use `search_watched_matches_by_names` for list/detail views.
 2. Use `count_watched_matches_by_names` for counters, badges, and pagination totals.
-3. Use reference lookup tools only to refine ambiguous names (not to persist ids in client state).
+3. Use **`mutate_watched_matches_by_names`** to mark or unmark by the same filters (prefer `count_*` / `search_*` first when many rows could match).
+4. Use reference lookup tools only to refine ambiguous names (not to persist ids in client state).
 
 ---
 
