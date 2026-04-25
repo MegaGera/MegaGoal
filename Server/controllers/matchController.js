@@ -1,7 +1,11 @@
 import { getDB } from '../config/db.js';
 import { ObjectId } from 'mongodb';
-import { v4 as uuidv4 } from 'uuid';
 import { logMatchCreated, logMatchDeleted, logMatchUpdateLocation } from './logController.js';
+import {
+  buildOfficialVenueLocation,
+  parseVenueLocationId,
+  parseVenueLocationParams
+} from '../entities/locationEntity.js';
 
 // Get matches
 const getMatches = async (req, res) => {
@@ -184,27 +188,27 @@ const checkLocationIsVenue = async (location_id, username, venueParams) => {
   const db = getDB();
   try {
 
-    const alreadyLocation = await db.collection('locations').findOne({ "user.username": username, "venue_id": location_id });
+    const parsedLocationId = parseVenueLocationId(location_id);
+    const alreadyLocation = await db.collection('locations').findOne({ "user.username": username, "venue_id": parsedLocationId });
     if (alreadyLocation) {
       return alreadyLocation.id;
     }
-    const venue = await db.collection('venues').findOne({ "id": +location_id });
+    const venue = await db.collection('venues').findOne({ "id": parsedLocationId });
 
-    const location = {
-      id: uuidv4(),
-      user: { username: username },
-      official: true,
-      stadium: true,
-      private: true
-    };
-
-    location.id = uuidv4();
+    let location;
     if (venue) {
-      location.name = venue.name;
-      location.venue_id = venue.id;
+      location = buildOfficialVenueLocation({
+        name: venue.name,
+        username,
+        venueId: venue.id
+      });
     } else if (venueParams) {
-      location.name = venueParams.name;
-      location.venue_id = venueParams.id;
+      const parsedVenueParams = parseVenueLocationParams(venueParams);
+      location = buildOfficialVenueLocation({
+        name: parsedVenueParams.name,
+        username,
+        venueId: parsedVenueParams.id
+      });
     } else {
       return false;
     }
