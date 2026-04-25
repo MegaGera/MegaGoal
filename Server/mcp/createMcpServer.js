@@ -6,7 +6,9 @@ import {
 } from './services/watchedMatchesQuery.js';
 import { listLeagues } from './services/leagueListQuery.js';
 import {
+  countRealMatchesByNames,
   countWatchedMatchesByNames,
+  searchRealMatchesByNames,
   searchWatchedMatchesByNames,
 } from './services/matchSearchQuery.js';
 import {
@@ -15,6 +17,7 @@ import {
   resolveSinglePlayerFromName,
   resolveTeamIdsFromOptionalName,
 } from './services/playerWatchedPlayedQuery.js';
+import { getLiveRealMatchesForUtcDay } from './services/liveRealMatchesQuery.js';
 import {
   listTeamsByLeagueOrCountry,
   MAX_LIMIT,
@@ -59,7 +62,7 @@ export function createMcpServer() {
     name: 'MegaGoal Server MCP',
     version: '0.0.1',
     instructions:
-      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs; get_watched_matches / count_watched_matches for watched matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names for the same watched rows filtered by team_name, league_name, country_name, seasons, and optional date_from/date_to (date takes precedence over seasons when provided); player_played_watched_matches for slim match rows where a named player played among watched fixtures; player_played_watched_stats for goals/assists totals and splits by team and season.',
+      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names with team_name, league_name, country_name, seasons, optional date_from/date_to (date takes precedence over seasons when provided). Real matches (global fixture catalog in `real_matches`, not per-user): get_real_matches / count_real_matches_by_names with the same name/season/date filters — use for general fixtures by date or competition, not for what the user watched. getLiveMatches returns all real_matches kicking off on the current UTC calendar day, each with live flags comparing server time to fixture.timestamp and classifying fixture.status.short using the same finished (FT,AET,PEN,PST,CANC) and not-started (NS,TBD) sets as the WebApp. player_played_watched_matches for slim rows where a named player played among watched fixtures; player_played_watched_stats for goals/assists totals and splits by team and season.',
     authenticate: async (request) => resolveAuth(request),
   });
 
@@ -67,7 +70,7 @@ export function createMcpServer() {
     name: 'get_watched_matches',
     title: 'Get watched matches',
     description:
-      'Returns watched matches for the authenticated MegaGoal user from the matches collection. Optional filters mirror GET /match: team_id, season, league_id, location, fixture_id. User identity comes from MCP auth (see X-MegaGoal-Username when using MCP_API_KEY). For filters by club or competition name (not ids), use search_watched_matches_by_names.',
+      'Returns watched matches for the authenticated MegaGoal user from the matches collection. Optional filters mirror GET /match: team_id, season, league_id, location, fixture_id. User identity comes from MCP auth (see X-MegaGoal-Username when using MCP_API_KEY). For filters by club or competition name (not ids), use search_watched_matches_by_names. Documents omit statistics and player_stats (large aggregates); other fields such as lineups and events are included when stored on the row.',
     parameters: z.object({
       team_id: z.coerce.number().int().optional(),
       season: z.coerce.number().int().optional(),
@@ -359,7 +362,7 @@ export function createMcpServer() {
     name: 'search_watched_matches_by_names',
     title: 'Search watched matches by names',
     description:
-      'Query the matches collection for the authenticated user using human-readable filters only (no team or league ids in the tool contract). team_name resolves via the teams collection; league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). Optional seasons filters on league.season. Optional date_from/date_to filter fixture.timestamp (ISO date or date-time accepted). If date_from or date_to is provided, date filtering takes precedence and seasons is ignored. Name/date filters AND together, and the query is always scoped to the MCP user. Returns documents minus lineups, statistics, and events (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
+      'Query the matches collection for the authenticated user using human-readable filters only (no team or league ids in the tool contract). team_name resolves via the teams collection; league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). Optional seasons filters on league.season. Optional date_from/date_to filter fixture.timestamp (ISO date or date-time accepted). If date_from or date_to is provided, date filtering takes precedence and seasons is ignored. Name/date filters AND together, and the query is always scoped to the MCP user. Returns documents omitting statistics and player_stats only (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
       String(MAX_LIMIT) +
       ' cap — narrow the query if needed.',
     parameters: searchWatchedMatchesByNamesSchema,
@@ -444,6 +447,120 @@ export function createMcpServer() {
         ...(emptyReason != null ? { empty_reason: emptyReason } : {}),
       };
 
+      return JSON.stringify(payload, null, 2);
+    },
+  });
+
+  server.addTool({
+    name: 'get_real_matches',
+    title: 'Get real matches',
+    description:
+      'Returns rows from the `real_matches` MongoDB collection: the app’s synced fixture catalog (all supported fixtures), independent of whether the authenticated user marked them as watched. Same filters as search_watched_matches_by_names: optional team_name, league_name, country_name, seasons, date_from, date_to, limit; at least one filter must be non-empty (same constraint as watched name search). Date range applies to fixture.timestamp and takes precedence over seasons when any date boundary is set. Name filters AND together. Auth is required but results are not filtered by user — use watched-match tools when the question is about games the user saved. Each row omits statistics, lineups, and events (large payloads). Sorted by fixture timestamp descending.',
+    parameters: searchWatchedMatchesByNamesSchema,
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
+    execute: async (args, context) => {
+      const sessionUser =
+        context.session &&
+        typeof context.session.username === 'string'
+          ? context.session.username
+          : undefined;
+      if (!sessionUser) {
+        throw new UserError('Missing authenticated username on MCP session.');
+      }
+
+      const {
+        matches,
+        truncated,
+        limit,
+        resolution,
+        empty_reason: emptyReason,
+      } = await searchRealMatchesByNames({
+        teamName: args.team_name,
+        leagueName: args.league_name,
+        countryName: args.country_name,
+        seasons: args.seasons,
+        dateFrom: args.date_from,
+        dateTo: args.date_to,
+        limit: args.limit,
+      });
+
+      const payload = {
+        count: matches.length,
+        matches,
+        truncated,
+        limit,
+        resolution,
+        ...(emptyReason != null ? { empty_reason: emptyReason } : {}),
+      };
+
+      return JSON.stringify(payload, null, 2);
+    },
+  });
+
+  server.addTool({
+    name: 'count_real_matches_by_names',
+    title: 'Count real matches by names',
+    description:
+      'Same name/season/date filters as get_real_matches on the `real_matches` collection; returns only count plus resolution truncation flags. Not scoped to the user’s watched list — use count_watched_matches_by_names when counting only marked games.',
+    parameters: watchedMatchNameFiltersSchema,
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
+    execute: async (args, context) => {
+      const sessionUser =
+        context.session &&
+        typeof context.session.username === 'string'
+          ? context.session.username
+          : undefined;
+      if (!sessionUser) {
+        throw new UserError('Missing authenticated username on MCP session.');
+      }
+
+      const { count, resolution, empty_reason: emptyReason } =
+        await countRealMatchesByNames({
+          teamName: args.team_name,
+          leagueName: args.league_name,
+          countryName: args.country_name,
+          seasons: args.seasons,
+          dateFrom: args.date_from,
+          dateTo: args.date_to,
+        });
+
+      const payload = {
+        count,
+        resolution,
+        ...(emptyReason != null ? { empty_reason: emptyReason } : {}),
+      };
+
+      return JSON.stringify(payload, null, 2);
+    },
+  });
+
+  server.addTool({
+    name: 'getLiveMatches',
+    title: 'Get live matches (today, real_matches)',
+    description:
+      'Queries the `real_matches` collection for fixtures whose kickoff (`fixture.timestamp`) falls on the **current UTC calendar day** (midnight–midnight UTC). Not scoped to the watched list. Each document omits statistics, lineups, and events. Adds a `live` object per row: `kickoff_passed` (server time >= kickoff), `status_finished` and `status_not_started` derived from `fixture.status.short` using the same codes as the MegaGoal WebApp (`WebApp/src/app/config/matchStatus.ts`): not started = NS, TBD; finished = FT, AET, PEN, PST, CANC; plus `kickoff_passed_and_not_finished` for likely ongoing or break-time games. Response includes `status_legend`, `utc_date`, `now_unix`, and day bounds for clarity.',
+    parameters: z.object({}),
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
+    execute: async (_args, context) => {
+      const sessionUser =
+        context.session &&
+        typeof context.session.username === 'string'
+          ? context.session.username
+          : undefined;
+      if (!sessionUser) {
+        throw new UserError('Missing authenticated username on MCP session.');
+      }
+
+      const payload = await getLiveRealMatchesForUtcDay();
       return JSON.stringify(payload, null, 2);
     },
   });

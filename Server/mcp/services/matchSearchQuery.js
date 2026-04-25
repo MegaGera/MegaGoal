@@ -5,6 +5,10 @@ import {
   MAX_LIMIT,
   searchTeamsByName,
 } from './teamSearchQuery.js';
+import {
+  REAL_MATCH_LIST_PROJECTION,
+  WATCHED_MATCH_LIST_PROJECTION,
+} from '../../config/matchProjection.js';
 
 function clampMatchListLimit(limit) {
   const n = limit == null ? DEFAULT_LIMIT : Number(limit);
@@ -206,7 +210,7 @@ export async function searchWatchedMatchesByNames({
   const cursor = db
     .collection('matches')
     .find(mongoFilter, {
-      projection: { lineups: 0, statistics: 0, events: 0 },
+      projection: WATCHED_MATCH_LIST_PROJECTION,
       sort: { 'fixture.timestamp': -1 },
       limit: lim + 1,
     });
@@ -251,5 +255,86 @@ export async function countWatchedMatchesByNames({
   const db = getDB();
   const mongoFilter = withUserFilter(username, built.filter);
   const count = await db.collection('matches').countDocuments(mongoFilter);
+  return { count, resolution: built.resolution };
+}
+
+/**
+ * Same name/season/date filter semantics as watched matches, but queries the
+ * global `real_matches` collection (no `user.username` scope).
+ * Projection excludes `statistics`, `lineups`, and `events`.
+ */
+export async function searchRealMatchesByNames({
+  teamName,
+  leagueName,
+  countryName,
+  seasons,
+  dateFrom,
+  dateTo,
+  limit,
+}) {
+  const built = await buildWatchedMatchNameFilter({
+    teamName,
+    leagueName,
+    countryName,
+    seasons,
+    dateFrom,
+    dateTo,
+  });
+  if (built.filter == null) {
+    return {
+      matches: [],
+      truncated: false,
+      limit: clampMatchListLimit(limit),
+      resolution: built.resolution,
+      empty_reason: built.empty_reason,
+    };
+  }
+
+  const lim = clampMatchListLimit(limit);
+  const db = getDB();
+  const cursor = db.collection('real_matches').find(built.filter, {
+    projection: REAL_MATCH_LIST_PROJECTION,
+    sort: { 'fixture.timestamp': -1 },
+    limit: lim + 1,
+  });
+
+  const raw = await cursor.toArray();
+  const truncated = raw.length > lim;
+  const matches = raw.slice(0, lim);
+
+  return {
+    matches,
+    truncated,
+    limit: lim,
+    resolution: built.resolution,
+  };
+}
+
+export async function countRealMatchesByNames({
+  teamName,
+  leagueName,
+  countryName,
+  seasons,
+  dateFrom,
+  dateTo,
+}) {
+  const built = await buildWatchedMatchNameFilter({
+    teamName,
+    leagueName,
+    countryName,
+    seasons,
+    dateFrom,
+    dateTo,
+  });
+  if (built.filter == null) {
+    return {
+      count: 0,
+      resolution: built.resolution,
+      empty_reason: built.empty_reason,
+    };
+  }
+
+  const db = getDB();
+  const count = await db.collection('real_matches').countDocuments(built.filter);
   return { count, resolution: built.resolution };
 }

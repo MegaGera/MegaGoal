@@ -1,4 +1,5 @@
 import { getDB } from '../../config/db.js';
+import { WATCHED_MATCH_LIST_PROJECTION } from '../../config/matchProjection.js';
 
 /**
  * Builds the MongoDB filter for watched matches (`matches` collection).
@@ -45,7 +46,7 @@ export async function getWatchedMatchesForUser(args) {
   return db
     .collection('matches')
     .find(query, {
-      projection: { lineups: 0, statistics: 0, events: 0 },
+      projection: WATCHED_MATCH_LIST_PROJECTION,
     })
     .toArray();
 }
