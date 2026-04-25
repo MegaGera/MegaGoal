@@ -36,13 +36,31 @@ MCP still requires authentication for all tools; real-match tools do **not** nar
 
 These query the **`real_matches`** collection with the same human-readable filters as watched name search (team / optional second team for head-to-head, league/country names, seasons, date range). They are **not** scoped to the user’s watched list.
 
+### Player events filter semantics (`events`)
+
+When using name-based match tools, `events` is an optional array of objects:
+
+- Shape: `[{ "player_name": "Cristiano Ronaldo", "event": "goal" }]`
+- `player_name`: semantic, case-insensitive name lookup in the `players` collection.
+- `event`: accepted values and exact meaning:
+  - `lineup`: player appears in either `lineups.startXI` or `lineups.substitutes`.
+  - `startingXI`: player appears in `lineups.startXI`.
+  - `bench`: player appears in `lineups.substitutes`.
+  - `goal`: player is the scorer on a `goal` event (`events.type = goal`), excluding `own goal` and `missed penalty`.
+  - `assist`: player is the assister on a `goal` event (`events.type = goal`).
+- Multiple entries are combined with **AND** semantics.
+  - Example: Ronaldo `goal` + Benzema `assist` + Bale `bench` returns only matches where all three conditions hold.
+- Scope rules:
+  - **Real-match tools** apply this directly on `real_matches`.
+  - **Watched-match tools** apply it on `real_matches` first, then intersect by fixture id with user-scoped `matches`.
+
 ### `get_real_matches`
 
 - Purpose: list real (synced) fixtures matching name and/or date filters.
-- Filters: same as `search_watched_matches_by_names` — optional `team_name`, optional `team_2_name` (with `team_name`: only fixtures between those two clubs, home/away either way), `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `limit`.
-- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`. If `team_2_name` is set, `team_name` must be non-empty (Zod).
+- Filters: same as `search_watched_matches_by_names` — optional `team_name`, optional `team_2_name` (with `team_name`: only fixtures between those two clubs, home/away either way), `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`, `limit`.
+- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`. If `team_2_name` is set, `team_name` must be non-empty (Zod).
 - Returns: `{ count, matches[], truncated, limit, resolution, empty_reason? }` (same shape as watched name search).
-- Notes: date filters use `fixture.timestamp`; if `date_from` or `date_to` is set, `seasons` is ignored. Rows omit `statistics`, `lineups`, and `events`.
+- Notes: date filters use `fixture.timestamp`; if `date_from` or `date_to` is set, `seasons` is ignored. `events` accepts objects like `{ "player_name": "Lamine Yamal", "event": "lineup" }`. Supported event values are `lineup` (startXI or bench), `startingXI` (startXI only), `bench` (bench only), `goal`, and `assist`, with semantic player-name resolution. Rows omit `statistics`, `lineups`, and `events`.
 
 ### `count_real_matches_by_names`
 
@@ -51,7 +69,7 @@ These query the **`real_matches`** collection with the same human-readable filte
 
 ### `get_real_matches_full`
 
-- Purpose: narrow to one or a few **`real_matches`** rows using the **same** name/season/date filters as `get_real_matches`, but return **complete** documents (including `statistics`, `lineups`, and `events`).
+- Purpose: narrow to one or a few **`real_matches`** rows using the **same** name/season/date/events filters as `get_real_matches`, but return **complete** documents (including `statistics`, `lineups`, and `events`).
 - Filters: same contract as `get_real_matches` / `count_real_matches_by_names` (no `limit` parameter — the server always caps the query at **20** documents).
 - Optional include flags: `include_statistics`, `include_lineups`, `include_events` (all default to `true`). Set any to `false` to omit that field from returned rows.
 - Returns: `{ count, max_documents: 20, matches[], resolution, empty_reason? }`.
@@ -83,14 +101,19 @@ They resolve human-readable names server-side and keep the client contract clean
   - `seasons` (optional array of numbers)
   - `date_from` (optional, ISO date/date-time)
   - `date_to` (optional, ISO date/date-time)
+  - `events` (optional array of objects `{ player_name, event }`; supported events: `lineup`, `startingXI`, `bench`, `goal`, `assist`)
   - `limit` (optional)
-- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`. `team_2_name` alone is invalid; it must accompany `team_name`.
+- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`. `team_2_name` alone is invalid; it must accompany `team_name`.
 - Returns: `{ count, matches[], truncated, limit, resolution, empty_reason? }`.
 - Notes:
   - Name filters are combined with AND semantics.
   - Team names resolve via `teams`; with both `team_name` and `team_2_name`, only matches where those two resolved club sets face each other are returned. `resolution.team_2_resolution_truncated` mirrors the second name lookup cap.
   - Date range filters apply on `fixture.timestamp`.
   - If `date_from` or `date_to` is provided, date filtering takes precedence and `seasons` is ignored.
+  - `events` filters are applied by resolving `player_name` semantically against `players`; for watched matches, matching is done by intersecting watched fixtures with `real_matches` lineup/event matches.
+  - Example `events`: `[{"player_name":"Lamine Yamal","event":"lineup"}]`.
+  - Event semantics: `lineup` checks startXI or bench, `startingXI` checks startXI only, `bench` checks bench only, `goal` checks goal scorer events (excluding own goals and missed penalties), `assist` checks assister on goal events.
+  - Multiple `events` entries are combined with AND semantics, so one query can require conditions across different players (for example: Ronaldo `goal`, Benzema `assist`, Bale `bench`).
   - `resolution.*_truncated` indicates lookup caps were hit; refine query when needed.
   - Each match row omits `statistics` and `player_stats` (same as `get_watched_matches`); other stored fields (e.g. lineups, events) are included when present.
 
@@ -105,7 +128,8 @@ They resolve human-readable names server-side and keep the client contract clean
   - `seasons` (optional array of numbers)
   - `date_from` (optional, ISO date/date-time)
   - `date_to` (optional, ISO date/date-time)
-- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`; `team_2_name` requires `team_name`.
+- `events` (optional array of objects `{ player_name, event }`; supported events: `lineup`, `startingXI`, `bench`, `goal`, `assist`)
+- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`; `team_2_name` requires `team_name`.
 - Returns: `{ count, resolution, empty_reason? }`.
 - Use when: you only need totals for name-based filters.
 

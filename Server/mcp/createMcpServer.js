@@ -303,6 +303,14 @@ export function createMcpServer() {
     seasons: z.array(z.coerce.number().int()).optional(),
     date_from: z.string().trim().optional(),
     date_to: z.string().trim().optional(),
+    events: z
+      .array(
+        z.object({
+          player_name: z.string(),
+          event: z.string(),
+        }),
+      )
+      .optional(),
   });
 
   const hasWatchedOrRealNameDateFilter = (d) => {
@@ -314,19 +322,21 @@ export function createMcpServer() {
       : [];
     const df = d.date_from != null ? String(d.date_from).trim() : '';
     const dt = d.date_to != null ? String(d.date_to).trim() : '';
+    const ev = Array.isArray(d.events) ? d.events : [];
     return (
       t.length > 0 ||
       l.length > 0 ||
       c.length > 0 ||
       s.length > 0 ||
       df.length > 0 ||
-      dt.length > 0
+      dt.length > 0 ||
+      ev.length > 0
     );
   };
 
   const watchedOrRealNameDateFilterMessage = {
     message:
-      'Provide at least one of: non-empty team_name, league_name, country_name, date_from, date_to, or a non-empty seasons array.',
+      'Provide at least one of: non-empty team_name, league_name, country_name, date_from, date_to, a non-empty seasons array, or a non-empty events array.',
   };
 
   const team2NameRequiresTeamName = (d) => {
@@ -365,7 +375,7 @@ export function createMcpServer() {
     name: 'search_watched_matches_by_names',
     title: 'Search watched matches by names',
     description:
-      'Query the matches collection for the authenticated user using human-readable filters only (no team or league ids in the tool contract). team_name resolves via the teams collection; optional team_2_name with team_name restricts to head-to-head (home/away either way). league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). Optional seasons filters on league.season. Optional date_from/date_to filter fixture.timestamp (ISO date or date-time accepted). If date_from or date_to is provided, date filtering takes precedence and seasons is ignored. Name/date filters AND together, and the query is always scoped to the MCP user. Returns documents omitting statistics and player_stats only (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
+      'Query the matches collection for the authenticated user using human-readable filters only (no team or league ids in the tool contract). team_name resolves via the teams collection; optional team_2_name with team_name restricts to head-to-head (home/away either way). league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). Optional seasons filters on league.season. Optional date_from/date_to filter fixture.timestamp (ISO date or date-time accepted). If date_from or date_to is provided, date filtering takes precedence and seasons is ignored. Optional events filter accepts objects like { player_name, event }; supported values are lineup (startXI or bench), startingXI (startXI only), bench (substitutes only), goal, and assist. Players are resolved semantically from players collection and matched against real_matches lineups/events for fixture intersection. Filters AND together, so you can combine different players and event types in one request. Returns documents omitting statistics and player_stats only (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
       String(MAX_LIMIT) +
       ' cap — narrow the query if needed.',
     parameters: searchWatchedMatchesByNamesSchema,
@@ -398,6 +408,7 @@ export function createMcpServer() {
         seasons: args.seasons,
         dateFrom: args.date_from,
         dateTo: args.date_to,
+        events: args.events,
         limit: args.limit,
       });
 
@@ -418,7 +429,7 @@ export function createMcpServer() {
     name: 'count_watched_matches_by_names',
     title: 'Count watched matches by names',
     description:
-      'Same name/season/date filters as search_watched_matches_by_names for the authenticated user in the matches collection (date takes precedence over season when provided), but returns only count plus resolution truncation flags.',
+      'Same name/season/date/events filters as search_watched_matches_by_names for the authenticated user in the matches collection (date takes precedence over season when provided), but returns only count plus resolution truncation flags.',
     parameters: watchedMatchNameFiltersSchema,
     annotations: {
       readOnlyHint: true,
@@ -444,6 +455,7 @@ export function createMcpServer() {
           seasons: args.seasons,
           dateFrom: args.date_from,
           dateTo: args.date_to,
+          events: args.events,
         });
 
       const payload = {
@@ -460,7 +472,7 @@ export function createMcpServer() {
     name: 'get_real_matches',
     title: 'Get real matches',
     description:
-      'Returns rows from the `real_matches` MongoDB collection: the app’s synced fixture catalog (all supported fixtures), independent of whether the authenticated user marked them as watched. Same filters as search_watched_matches_by_names: optional team_name, optional team_2_name (head-to-head with team_name), league_name, country_name, seasons, date_from, date_to, limit; at least one filter must be non-empty (same constraint as watched name search). Date range applies to fixture.timestamp and takes precedence over seasons when any date boundary is set. Name filters AND together. Auth is required but results are not filtered by user — use watched-match tools when the question is about games the user saved. Each row omits statistics, lineups, and events (large payloads). Sorted by fixture timestamp descending.',
+      'Returns rows from the `real_matches` MongoDB collection: the app’s synced fixture catalog (all supported fixtures), independent of whether the authenticated user marked them as watched. Same filters as search_watched_matches_by_names: optional team_name, optional team_2_name (head-to-head with team_name), league_name, country_name, seasons, date_from, date_to, events, limit; at least one filter must be non-empty (same constraint as watched name search). Date range applies to fixture.timestamp and takes precedence over seasons when any date boundary is set. Optional events accepts objects like { player_name, event }; supported values are lineup (startXI or bench), startingXI (startXI only), bench (substitutes only), goal, and assist. Filters AND together so one request can require multiple players/events at once. Auth is required but results are not filtered by user — use watched-match tools when the question is about games the user saved. Each row omits statistics, lineups, and events (large payloads). Sorted by fixture timestamp descending.',
     parameters: searchWatchedMatchesByNamesSchema,
     annotations: {
       readOnlyHint: true,
@@ -490,6 +502,7 @@ export function createMcpServer() {
         seasons: args.seasons,
         dateFrom: args.date_from,
         dateTo: args.date_to,
+        events: args.events,
         limit: args.limit,
       });
 
@@ -510,7 +523,7 @@ export function createMcpServer() {
     name: 'count_real_matches_by_names',
     title: 'Count real matches by names',
     description:
-      'Same name/season/date filters as get_real_matches on the `real_matches` collection; returns only count plus resolution truncation flags. Not scoped to the user’s watched list — use count_watched_matches_by_names when counting only marked games.',
+      'Same name/season/date/events filters as get_real_matches on the `real_matches` collection; returns only count plus resolution truncation flags. Not scoped to the user’s watched list — use count_watched_matches_by_names when counting only marked games.',
     parameters: watchedMatchNameFiltersSchema,
     annotations: {
       readOnlyHint: true,
@@ -535,6 +548,7 @@ export function createMcpServer() {
           seasons: args.seasons,
           dateFrom: args.date_from,
           dateTo: args.date_to,
+          events: args.events,
         });
 
       const payload = {
@@ -551,7 +565,7 @@ export function createMcpServer() {
     name: 'get_real_matches_full',
     title: 'Get real matches full (max 20 docs)',
     description:
-      'Query `real_matches` with the same human-readable filters as get_real_matches / count_real_matches_by_names (team_name, optional team_2_name for head-to-head, league_name, country_name, seasons, date_from, date_to; at least one filter; team_2_name requires team_name). Filters AND together. The MongoDB query is hard-capped at **20 documents** (sorted by fixture.timestamp descending). By default returns full match documents. Optional include flags let the client trim heavy fields when not needed: include_statistics, include_lineups, include_events (all default true). Use when you need complete fixtures for richer workflows (for example weekend batches in one league); use get_real_matches for larger trimmed lists.',
+      'Query `real_matches` with the same human-readable filters as get_real_matches / count_real_matches_by_names (team_name, optional team_2_name for head-to-head, league_name, country_name, seasons, date_from, date_to, events; at least one filter; team_2_name requires team_name). For events, pass objects like { player_name, event }; supported values are lineup (startXI or bench), startingXI (startXI only), bench (substitutes only), goal, and assist. Filters AND together, so you can express combinations like "player A scored and player B assisted and player C was on the bench". The MongoDB query is hard-capped at **20 documents** (sorted by fixture.timestamp descending). By default returns full match documents. Optional include flags let the client trim heavy fields when not needed: include_statistics, include_lineups, include_events (all default true). Use when you need complete fixtures for richer workflows (for example weekend batches in one league); use get_real_matches for larger trimmed lists.',
     parameters: getRealMatchesFullSchema,
     annotations: {
       readOnlyHint: true,
@@ -581,6 +595,7 @@ export function createMcpServer() {
         seasons: args.seasons,
         dateFrom: args.date_from,
         dateTo: args.date_to,
+        events: args.events,
         includeStatistics:
           args.include_statistics == null ? true : args.include_statistics,
         includeLineups:

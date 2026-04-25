@@ -5,6 +5,7 @@ import {
   MAX_LIMIT,
   searchTeamsByName,
 } from './teamSearchQuery.js';
+import { searchPlayersByName } from './playerSearchQuery.js';
 import {
   REAL_MATCH_FULL_SEARCH_LIMIT,
   REAL_MATCH_LIST_PROJECTION,
@@ -21,6 +22,165 @@ function withUserFilter(username, docFilter) {
   return { $and: [{ 'user.username': username }, docFilter] };
 }
 
+function normalizeEvents(events) {
+  if (!Array.isArray(events)) return [];
+  return events
+    .map((entry) => {
+      if (entry == null || typeof entry !== 'object' || Array.isArray(entry)) {
+        return null;
+      }
+      const playerName = String(entry.player_name ?? '').trim();
+      const eventName = String(entry.event ?? '').trim().toLowerCase();
+      if (!playerName || !eventName) return null;
+      return [playerName, eventName];
+    })
+    .filter((entry) => entry != null);
+}
+
+function normalizeLineupEventName(eventName) {
+  const normalized = String(eventName ?? '').trim().toLowerCase();
+  if (normalized === 'lineup') return 'lineup';
+  if (normalized === 'startingxi' || normalized === 'starting_xi') {
+    return 'startingxi';
+  }
+  if (normalized === 'bench' || normalized === 'substitutes') {
+    return 'bench';
+  }
+  if (
+    normalized === 'assist' ||
+    normalized === 'assists' ||
+    normalized === 'assit' ||
+    normalized === 'assits'
+  ) {
+    return 'assist';
+  }
+  if (normalized === 'goal' || normalized === 'goals' || normalized === 'scored') {
+    return 'goal';
+  }
+  return null;
+}
+
+async function resolveLineupEventPlayerIds(events) {
+  const normalized = normalizeEvents(events);
+  if (normalized.length === 0) {
+    return {
+      ok: true,
+      has_events_filter: false,
+      player_id_sets: [],
+      events_resolution_truncated: false,
+      empty_reason: null,
+    };
+  }
+
+  const filters = [];
+  let eventsResolutionTruncated = false;
+
+  for (const [playerName, eventName] of normalized) {
+    const normalizedEvent = normalizeLineupEventName(eventName);
+    if (normalizedEvent == null) {
+      return {
+        ok: false,
+        has_events_filter: true,
+        event_filters: [],
+        events_resolution_truncated: false,
+        empty_reason: 'unsupported_event_filter',
+      };
+    }
+
+    const { players, truncated } = await searchPlayersByName({
+      query: playerName,
+      limit: MAX_LIMIT,
+    });
+    eventsResolutionTruncated =
+      eventsResolutionTruncated || Boolean(truncated);
+
+    const ids = players
+      .map((p) => p.id)
+      .filter((id) => id != null)
+      .map(Number)
+      .filter(Number.isFinite);
+
+    if (ids.length === 0) {
+      return {
+        ok: false,
+        has_events_filter: true,
+        event_filters: [],
+        events_resolution_truncated: eventsResolutionTruncated,
+        empty_reason: 'no_players_for_event_player_name',
+      };
+    }
+
+    filters.push({
+      type: normalizedEvent,
+      player_ids: ids,
+    });
+  }
+
+  return {
+    ok: true,
+    has_events_filter: true,
+    event_filters: filters,
+    events_resolution_truncated: eventsResolutionTruncated,
+    empty_reason: null,
+  };
+}
+
+function buildLineupRealMatchFilterFromEvents(eventFilters) {
+  if (!Array.isArray(eventFilters) || eventFilters.length === 0) return null;
+  const parts = eventFilters
+    .map((eventFilter) => {
+      const ids = Array.isArray(eventFilter.player_ids)
+        ? eventFilter.player_ids
+        : [];
+      if (ids.length === 0) return null;
+
+      if (eventFilter.type === 'lineup') {
+        return {
+          $or: [
+            { 'lineups.startXI.player.id': { $in: ids } },
+            { 'lineups.substitutes.player.id': { $in: ids } },
+          ],
+        };
+      }
+      if (eventFilter.type === 'startingxi') {
+        return { 'lineups.startXI.player.id': { $in: ids } };
+      }
+      if (eventFilter.type === 'bench') {
+        return { 'lineups.substitutes.player.id': { $in: ids } };
+      }
+      if (eventFilter.type === 'goal') {
+        return {
+          events: {
+            $elemMatch: {
+              type: { $regex: '^goal$', $options: 'i' },
+              'player.id': { $in: ids },
+              detail: {
+                $not: {
+                  $regex: '^(own goal|missed penalty)$',
+                  $options: 'i',
+                },
+              },
+            },
+          },
+        };
+      }
+      if (eventFilter.type === 'assist') {
+        return {
+          events: {
+            $elemMatch: {
+              type: { $regex: '^goal$', $options: 'i' },
+              'assist.id': { $in: ids },
+            },
+          },
+        };
+      }
+      return null;
+    })
+    .filter((part) => part != null);
+  if (parts.length === 0) return null;
+  return parts.length === 1 ? parts[0] : { $and: parts };
+}
+
 /**
  * Resolve match-document filters from human-readable names (and optional seasons).
  * Name filters resolve against `teams` / `leagues` server-side; combine with
@@ -35,6 +195,7 @@ export async function buildWatchedMatchNameFilter({
   seasons,
   dateFrom,
   dateTo,
+  events,
 }) {
   const filters = [];
   const resolution = {
@@ -42,6 +203,7 @@ export async function buildWatchedMatchNameFilter({
     team_2_resolution_truncated: false,
     league_name_resolution_truncated: false,
     country_name_resolution_truncated: false,
+    events_resolution_truncated: false,
   };
 
   const tn =
@@ -216,11 +378,49 @@ export async function buildWatchedMatchNameFilter({
   }
 
   if (filters.length === 0) {
-    return { filter: null, resolution, empty_reason: 'no_filters' };
+    const eventsResolved = await resolveLineupEventPlayerIds(events);
+    resolution.events_resolution_truncated =
+      eventsResolved.events_resolution_truncated;
+    if (!eventsResolved.ok) {
+      return {
+        filter: null,
+        realMatchEventsFilter: null,
+        resolution,
+        empty_reason: eventsResolved.empty_reason,
+      };
+    }
+    if (!eventsResolved.has_events_filter) {
+      return { filter: null, realMatchEventsFilter: null, resolution, empty_reason: 'no_filters' };
+    }
+    return {
+      filter: {},
+      realMatchEventsFilter: buildLineupRealMatchFilterFromEvents(
+        eventsResolved.event_filters,
+      ),
+      resolution,
+    };
   }
 
   const filter = filters.length === 1 ? filters[0] : { $and: filters };
-  return { filter, resolution };
+  const eventsResolved = await resolveLineupEventPlayerIds(events);
+  resolution.events_resolution_truncated =
+    eventsResolved.events_resolution_truncated;
+  if (!eventsResolved.ok) {
+    return {
+      filter: null,
+      realMatchEventsFilter: null,
+      resolution,
+      empty_reason: eventsResolved.empty_reason,
+    };
+  }
+
+  return {
+    filter,
+    realMatchEventsFilter: buildLineupRealMatchFilterFromEvents(
+      eventsResolved.event_filters,
+    ),
+    resolution,
+  };
 }
 
 export async function searchWatchedMatchesByNames({
@@ -232,6 +432,7 @@ export async function searchWatchedMatchesByNames({
   seasons,
   dateFrom,
   dateTo,
+  events,
   limit,
 }) {
   const built = await buildWatchedMatchNameFilter({
@@ -242,6 +443,7 @@ export async function searchWatchedMatchesByNames({
     seasons,
     dateFrom,
     dateTo,
+    events,
   });
   if (built.filter == null) {
     return {
@@ -255,7 +457,37 @@ export async function searchWatchedMatchesByNames({
 
   const lim = clampMatchListLimit(limit);
   const db = getDB();
-  const mongoFilter = withUserFilter(username, built.filter);
+  const watchedFilterParts = [built.filter];
+
+  if (built.realMatchEventsFilter) {
+    const realMatchFilter = {
+      $and: [built.filter, built.realMatchEventsFilter],
+    };
+    const fixtureRows = await db.collection('real_matches').find(realMatchFilter, {
+      projection: { _id: 0, 'fixture.id': 1 },
+    }).toArray();
+    const fixtureIds = fixtureRows
+      .map((row) => row.fixture?.id)
+      .filter((id) => id != null)
+      .map(Number)
+      .filter(Number.isFinite);
+    if (fixtureIds.length === 0) {
+      return {
+        matches: [],
+        truncated: false,
+        limit: lim,
+        resolution: built.resolution,
+        empty_reason: 'no_matches_for_events',
+      };
+    }
+    watchedFilterParts.push({ 'fixture.id': { $in: fixtureIds } });
+  }
+
+  const combinedWatchedFilter =
+    watchedFilterParts.length === 1
+      ? watchedFilterParts[0]
+      : { $and: watchedFilterParts };
+  const mongoFilter = withUserFilter(username, combinedWatchedFilter);
   const cursor = db
     .collection('matches')
     .find(mongoFilter, {
@@ -285,6 +517,7 @@ export async function countWatchedMatchesByNames({
   seasons,
   dateFrom,
   dateTo,
+  events,
 }) {
   const built = await buildWatchedMatchNameFilter({
     teamName,
@@ -294,6 +527,7 @@ export async function countWatchedMatchesByNames({
     seasons,
     dateFrom,
     dateTo,
+    events,
   });
   if (built.filter == null) {
     return {
@@ -304,7 +538,33 @@ export async function countWatchedMatchesByNames({
   }
 
   const db = getDB();
-  const mongoFilter = withUserFilter(username, built.filter);
+  const watchedFilterParts = [built.filter];
+  if (built.realMatchEventsFilter) {
+    const realMatchFilter = {
+      $and: [built.filter, built.realMatchEventsFilter],
+    };
+    const fixtureRows = await db.collection('real_matches').find(realMatchFilter, {
+      projection: { _id: 0, 'fixture.id': 1 },
+    }).toArray();
+    const fixtureIds = fixtureRows
+      .map((row) => row.fixture?.id)
+      .filter((id) => id != null)
+      .map(Number)
+      .filter(Number.isFinite);
+    if (fixtureIds.length === 0) {
+      return {
+        count: 0,
+        resolution: built.resolution,
+        empty_reason: 'no_matches_for_events',
+      };
+    }
+    watchedFilterParts.push({ 'fixture.id': { $in: fixtureIds } });
+  }
+  const combinedWatchedFilter =
+    watchedFilterParts.length === 1
+      ? watchedFilterParts[0]
+      : { $and: watchedFilterParts };
+  const mongoFilter = withUserFilter(username, combinedWatchedFilter);
   const count = await db.collection('matches').countDocuments(mongoFilter);
   return { count, resolution: built.resolution };
 }
@@ -322,6 +582,7 @@ export async function searchRealMatchesByNames({
   seasons,
   dateFrom,
   dateTo,
+  events,
   limit,
 }) {
   const built = await buildWatchedMatchNameFilter({
@@ -332,6 +593,7 @@ export async function searchRealMatchesByNames({
     seasons,
     dateFrom,
     dateTo,
+    events,
   });
   if (built.filter == null) {
     return {
@@ -345,7 +607,13 @@ export async function searchRealMatchesByNames({
 
   const lim = clampMatchListLimit(limit);
   const db = getDB();
-  const cursor = db.collection('real_matches').find(built.filter, {
+  const realFilterParts = [built.filter];
+  if (built.realMatchEventsFilter) {
+    realFilterParts.push(built.realMatchEventsFilter);
+  }
+  const combinedRealFilter =
+    realFilterParts.length === 1 ? realFilterParts[0] : { $and: realFilterParts };
+  const cursor = db.collection('real_matches').find(combinedRealFilter, {
     projection: REAL_MATCH_LIST_PROJECTION,
     sort: { 'fixture.timestamp': -1 },
     limit: lim + 1,
@@ -371,6 +639,7 @@ export async function countRealMatchesByNames({
   seasons,
   dateFrom,
   dateTo,
+  events,
 }) {
   const built = await buildWatchedMatchNameFilter({
     teamName,
@@ -380,6 +649,7 @@ export async function countRealMatchesByNames({
     seasons,
     dateFrom,
     dateTo,
+    events,
   });
   if (built.filter == null) {
     return {
@@ -390,7 +660,13 @@ export async function countRealMatchesByNames({
   }
 
   const db = getDB();
-  const count = await db.collection('real_matches').countDocuments(built.filter);
+  const realFilterParts = [built.filter];
+  if (built.realMatchEventsFilter) {
+    realFilterParts.push(built.realMatchEventsFilter);
+  }
+  const combinedRealFilter =
+    realFilterParts.length === 1 ? realFilterParts[0] : { $and: realFilterParts };
+  const count = await db.collection('real_matches').countDocuments(combinedRealFilter);
   return { count, resolution: built.resolution };
 }
 
@@ -406,6 +682,7 @@ export async function getRealMatchesFullByNames({
   seasons,
   dateFrom,
   dateTo,
+  events,
   includeStatistics = true,
   includeLineups = true,
   includeEvents = true,
@@ -418,6 +695,7 @@ export async function getRealMatchesFullByNames({
     seasons,
     dateFrom,
     dateTo,
+    events,
   });
   if (built.filter == null) {
     return {
@@ -443,9 +721,15 @@ export async function getRealMatchesFullByNames({
     findOptions.projection = projection;
   }
 
+  const realFilterParts = [built.filter];
+  if (built.realMatchEventsFilter) {
+    realFilterParts.push(built.realMatchEventsFilter);
+  }
+  const combinedRealFilter =
+    realFilterParts.length === 1 ? realFilterParts[0] : { $and: realFilterParts };
   const matches = await db
     .collection('real_matches')
-    .find(built.filter, findOptions)
+    .find(combinedRealFilter, findOptions)
     .toArray();
 
   return {
