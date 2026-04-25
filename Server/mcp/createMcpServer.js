@@ -67,7 +67,7 @@ export function createMcpServer() {
     name: 'MegaGoal Server MCP',
     version: '0.0.1',
     instructions:
-      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (and location UUID / fixture); search_watched_matches_by_names / count_watched_matches_by_names with team_name, optional team_2_name (head-to-head when both set), league_name, country_name, optional location_name (substring on user `locations.name`, resolves to matches.location UUID), seasons, optional date_from/date_to (date takes precedence over seasons when provided), optional events array of { player_name?, event } (omit player_name for fixture-wide event presence). Writes: mutate_watched_matches_by_names: mark inserts from real_matches (POST /match shape); optional location_name sets matches.location when a user location matches, otherwise the row is still created without location; unmark uses fixture filters only (location_name ignored, no bulk delete by location). To change a watched match location: unmark then mark again with the new location_name. Real matches (`real_matches`, no location_name): get_real_matches / count_real_matches_by_names with the same team/league/country/date/events filters; get_real_matches_full up to 20 full documents. getLiveMatches for today UTC day with live flags. player_played_watched_matches / player_played_watched_stats for player-centric watched data.',
+      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (and location UUID / fixture); search_watched_matches_by_names / count_watched_matches_by_names with optional ids (fixture ids array) or team_name, optional team_2_name (head-to-head when both set), league_name, country_name, optional location_name (substring on user `locations.name`, resolves to matches.location UUID), seasons, optional date_from/date_to (date takes precedence over seasons when provided), optional events array of { player_name?, event } (omit player_name for fixture-wide event presence). If ids is provided, other filters are ignored. Writes: mutate_watched_matches_by_names: mark inserts from real_matches (POST /match shape); optional location_name sets matches.location when a user location matches, otherwise the row is still created without location; unmark uses fixture filters only (location_name ignored, no bulk delete by location). To change a watched match location: unmark then mark again with the new location_name. Real matches (`real_matches`, no location_name): get_real_matches / count_real_matches_by_names with optional ids or the same team/league/country/date/events filters; if ids is provided, other filters are ignored; get_real_matches_full up to 20 full documents. getLiveMatches for today UTC day with live flags. player_played_watched_matches / player_played_watched_stats for player-centric watched data.',
     authenticate: async (request) => resolveAuth(request),
   });
 
@@ -300,6 +300,7 @@ export function createMcpServer() {
   });
 
   const watchedMatchNameBaseSchema = z.object({
+    ids: z.array(z.coerce.number().int()).min(1).optional(),
     team_name: z.string().optional(),
     team_2_name: z.string().optional(),
     league_name: z.string().optional(),
@@ -318,6 +319,10 @@ export function createMcpServer() {
   });
 
   const hasWatchedOrRealNameDateFilter = (d) => {
+    const ids = Array.isArray(d.ids)
+      ? d.ids.map((x) => Number(x)).filter((n) => Number.isFinite(n))
+      : [];
+    if (ids.length > 0) return true;
     const t = d.team_name != null ? String(d.team_name).trim() : '';
     const l = d.league_name != null ? String(d.league_name).trim() : '';
     const c = d.country_name != null ? String(d.country_name).trim() : '';
@@ -343,6 +348,10 @@ export function createMcpServer() {
   });
 
   const hasWatchedSearchOrLocationFilter = (d) => {
+    const ids = Array.isArray(d.ids)
+      ? d.ids.map((x) => Number(x)).filter((n) => Number.isFinite(n))
+      : [];
+    if (ids.length > 0) return true;
     const loc =
       d.location_name != null ? String(d.location_name).trim() : '';
     return hasWatchedOrRealNameDateFilter(d) || loc.length > 0;
@@ -350,15 +359,19 @@ export function createMcpServer() {
 
   const watchedOrRealNameDateFilterMessage = {
     message:
-      'Provide at least one of: non-empty team_name, league_name, country_name, date_from, date_to, a non-empty seasons array, or a non-empty events array.',
+      'Provide at least one of: non-empty ids array, team_name, league_name, country_name, date_from, date_to, a non-empty seasons array, or a non-empty events array.',
   };
 
   const watchedSearchOrLocationFilterMessage = {
     message:
-      'Provide at least one of: non-empty team_name, league_name, country_name, date_from, date_to, a non-empty seasons array, a non-empty events array, or non-empty location_name (watched matches and locations collection only; not used for real_matches list tools).',
+      'Provide at least one of: non-empty ids array, team_name, league_name, country_name, date_from, date_to, a non-empty seasons array, a non-empty events array, or non-empty location_name (watched matches and locations collection only; not used for real_matches list tools).',
   };
 
   const team2NameRequiresTeamName = (d) => {
+    const ids = Array.isArray(d.ids)
+      ? d.ids.map((x) => Number(x)).filter((n) => Number.isFinite(n))
+      : [];
+    if (ids.length > 0) return true;
     const t2 = d.team_2_name != null ? String(d.team_2_name).trim() : '';
     const t = d.team_name != null ? String(d.team_name).trim() : '';
     return t2.length === 0 || t.length > 0;
@@ -366,7 +379,7 @@ export function createMcpServer() {
 
   const team2NameRequiresTeamNameMessage = {
     message:
-      'team_2_name requires non-empty team_name (head-to-head between two clubs).',
+      'team_2_name requires non-empty team_name (head-to-head between two clubs), unless ids is provided.',
   };
 
   /** Real-match tools: no location_name (real_matches have no per-user location). */
@@ -406,7 +419,7 @@ export function createMcpServer() {
     name: 'search_watched_matches_by_names',
     title: 'Search watched matches by names',
     description:
-      'Query the matches collection for the authenticated user using human-readable filters only (no team or league ids in the tool contract). team_name resolves via the teams collection; optional team_2_name with team_name restricts to head-to-head (home/away either way). league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). Optional location_name resolves via the locations collection for that user (substring on name, case-insensitive); matches.location stores the location UUID. Optional seasons filters on league.season. Optional date_from/date_to filter fixture.timestamp (ISO date or date-time accepted). If date_from or date_to is provided, date filtering takes precedence and seasons is ignored. Optional events filter accepts objects like { player_name?, event }; player_name is optional: omit it (or send empty) to match any player in the fixture for that event (e.g. any missed penalty in the match). When player_name is set, it is resolved semantically via the players collection. Supported event values are lineup (startXI or bench), startingXI (startXI only), bench (substitutes only), substitute (involved in substitution, in or out), goal, assist, own_goal, missed_penalty, penalty (penalty scored), yellow_card, second_yellow, red_card, card, var, penalty_shootout_scored, and penalty_shootout_missed. Matched against real_matches lineups/events for fixture intersection. Filters AND together, so you can combine different players and event types in one request. Returns documents omitting statistics and player_stats only (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
+      'Query the matches collection for the authenticated user using human-readable filters (no team/league numeric ids in the tool contract). Optional ids (array of fixture ids): when provided and non-empty, the query uses only fixture.id in ids and ignores all other filters. Otherwise, team_name resolves via the teams collection; optional team_2_name with team_name restricts to head-to-head (home/away either way). league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). Optional location_name resolves via the locations collection for that user (substring on name, case-insensitive); matches.location stores the location UUID. Optional seasons filters on league.season. Optional date_from/date_to filter fixture.timestamp (ISO date or date-time accepted). If date_from or date_to is provided, date filtering takes precedence and seasons is ignored. Optional events filter accepts objects like { player_name?, event }; player_name is optional: omit it (or send empty) to match any player in the fixture for that event (e.g. any missed penalty in the match). When player_name is set, it is resolved semantically via the players collection. Supported event values are lineup (startXI or bench), startingXI (startXI only), bench (substitutes only), substitute (involved in substitution, in or out), goal, assist, own_goal, missed_penalty, penalty (penalty scored), yellow_card, second_yellow, red_card, card, var, penalty_shootout_scored, and penalty_shootout_missed. Matched against real_matches lineups/events for fixture intersection. Filters AND together, so you can combine different players and event types in one request. Returns documents omitting statistics and player_stats only (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
       String(MAX_LIMIT) +
       ' cap — narrow the query if needed.',
     parameters: searchWatchedMatchesByNamesSchema,
@@ -432,6 +445,7 @@ export function createMcpServer() {
         empty_reason: emptyReason,
       } = await searchWatchedMatchesByNames({
         username: sessionUser,
+        ids: args.ids,
         teamName: args.team_name,
         team2Name: args.team_2_name,
         leagueName: args.league_name,
@@ -461,7 +475,7 @@ export function createMcpServer() {
     name: 'count_watched_matches_by_names',
     title: 'Count watched matches by names',
     description:
-      'Same name/season/date/events/location_name filters as search_watched_matches_by_names for the authenticated user in the matches collection (date takes precedence over season when provided), but returns only count plus resolution truncation flags.',
+      'Same filters as search_watched_matches_by_names for the authenticated user in the matches collection, but returns only count plus resolution truncation flags. Optional ids (fixture ids array) short-circuits all other filters.',
     parameters: watchedMatchNameFiltersWithLocationSchema,
     annotations: {
       readOnlyHint: true,
@@ -480,6 +494,7 @@ export function createMcpServer() {
       const { count, resolution, empty_reason: emptyReason } =
         await countWatchedMatchesByNames({
           username: sessionUser,
+          ids: args.ids,
           teamName: args.team_name,
           team2Name: args.team_2_name,
           leagueName: args.league_name,
@@ -513,7 +528,7 @@ export function createMcpServer() {
     name: 'mutate_watched_matches_by_names',
     title: 'Mark or unmark watched matches by names',
     description:
-      'Write tool: at least one of team_name, league_name, country_name, seasons, date_from, date_to, or events (team_2_name requires team_name). Optional location_name on mark: resolves user locations by name; if none match, the watched row is still created with null location. action=mark resolves real_matches, inserts into matches, skips duplicates, MATCH_CREATED logging. action=unmark ignores location_name (no bulk delete by location); deletes up to limit watched rows matching the fixture filters only, MATCH_DELETED per row. Hard cap limit default 20, max 50. Returns counts, fixture_ids, resolution, errors; mark may include location_name_unmatched when a location_name was given but not found.',
+      'Write tool: at least one fixture filter is required (ids or team_name/league_name/country_name/seasons/date_from/date_to/events). Optional ids (fixture ids array): when provided and non-empty, only ids are used and all other filters are ignored. Optional location_name on mark: resolves user locations by name; if none match, the watched row is still created with null location. action=mark resolves real_matches, inserts into matches, skips duplicates, MATCH_CREATED logging. action=unmark ignores location_name (no bulk delete by location); deletes up to limit watched rows matching the fixture filters only, MATCH_DELETED per row. Hard cap limit default 20, max 50. Returns counts, fixture_ids, resolution, errors; mark may include location_name_unmatched when a location_name was given but not found.',
     parameters: watchedMatchesMutateSchema,
     annotations: {
       readOnlyHint: false,
@@ -531,6 +546,7 @@ export function createMcpServer() {
 
       const common = {
         username: sessionUser,
+        ids: args.ids,
         teamName: args.team_name,
         team2Name: args.team_2_name,
         leagueName: args.league_name,
@@ -556,7 +572,7 @@ export function createMcpServer() {
     name: 'get_real_matches',
     title: 'Get real matches',
     description:
-      'Returns rows from the `real_matches` MongoDB collection: the app’s synced fixture catalog (all supported fixtures), independent of whether the authenticated user marked them as watched. Same team/league/country/season/date/events filters as watched name search (optional team_name, optional team_2_name with team_name for head-to-head, league_name, country_name, seasons, date_from, date_to, events, limit); no location_name — real_matches have no per-user location. At least one filter must be non-empty. Date range applies to fixture.timestamp and takes precedence over seasons when any date boundary is set. Optional events accepts objects like { player_name?, event }; omit player_name to match that event for any player in the match. Supported values are lineup (startXI or bench), startingXI (startXI only), bench (substitutes only), substitute (involved in substitution, in or out), goal, assist, own_goal, missed_penalty, penalty (penalty scored), yellow_card, second_yellow, red_card, card, var, penalty_shootout_scored, and penalty_shootout_missed. Filters AND together so one request can require multiple players/events at once. Auth is required but results are not filtered by user — use watched-match tools when the question is about games the user saved. Each row omits statistics, lineups, and events (large payloads). Sorted by fixture timestamp descending.',
+      'Returns rows from the `real_matches` MongoDB collection: the app’s synced fixture catalog (all supported fixtures), independent of whether the authenticated user marked them as watched. Optional ids (array of fixture ids): when provided and non-empty, only fixture.id in ids is used and all other filters are ignored. Otherwise same team/league/country/season/date/events filters as watched name search (optional team_name, optional team_2_name with team_name for head-to-head, league_name, country_name, seasons, date_from, date_to, events, limit); no location_name — real_matches have no per-user location. At least one filter must be non-empty. Date range applies to fixture.timestamp and takes precedence over seasons when any date boundary is set. Optional events accepts objects like { player_name?, event }; omit player_name to match that event for any player in the match. Supported values are lineup (startXI or bench), startingXI (startXI only), bench (substitutes only), substitute (involved in substitution, in or out), goal, assist, own_goal, missed_penalty, penalty (penalty scored), yellow_card, second_yellow, red_card, card, var, penalty_shootout_scored, and penalty_shootout_missed. Filters AND together so one request can require multiple players/events at once. Auth is required but results are not filtered by user — use watched-match tools when the question is about games the user saved. Each row omits statistics, lineups, and events (large payloads). Sorted by fixture timestamp descending.',
     parameters: searchRealMatchesByNamesSchema,
     annotations: {
       readOnlyHint: true,
@@ -580,6 +596,7 @@ export function createMcpServer() {
         empty_reason: emptyReason,
       } = await searchRealMatchesByNames({
         teamName: args.team_name,
+        ids: args.ids,
         team2Name: args.team_2_name,
         leagueName: args.league_name,
         countryName: args.country_name,
@@ -607,7 +624,7 @@ export function createMcpServer() {
     name: 'count_real_matches_by_names',
     title: 'Count real matches by names',
     description:
-      'Same name/season/date/events filters as get_real_matches on the `real_matches` collection (no location_name); returns only count plus resolution truncation flags. Not scoped to the user’s watched list — use count_watched_matches_by_names when counting only marked games.',
+      'Same filters as get_real_matches on the `real_matches` collection (no location_name); returns only count plus resolution truncation flags. Optional ids (fixture ids array) short-circuits all other filters. Not scoped to the user’s watched list — use count_watched_matches_by_names when counting only marked games.',
     parameters: watchedMatchNameFiltersSchema,
     annotations: {
       readOnlyHint: true,
@@ -626,6 +643,7 @@ export function createMcpServer() {
       const { count, resolution, empty_reason: emptyReason } =
         await countRealMatchesByNames({
           teamName: args.team_name,
+          ids: args.ids,
           team2Name: args.team_2_name,
           leagueName: args.league_name,
           countryName: args.country_name,
@@ -649,7 +667,7 @@ export function createMcpServer() {
     name: 'get_real_matches_full',
     title: 'Get real matches full (max 20 docs)',
     description:
-      'Query `real_matches` with the same human-readable filters as get_real_matches / count_real_matches_by_names (team_name, optional team_2_name for head-to-head, league_name, country_name, seasons, date_from, date_to, events; no location_name; at least one filter; team_2_name requires team_name). For events, pass objects like { player_name?, event }; omit player_name for match-wide event presence (any player). Supported values are lineup (startXI or bench), startingXI (startXI only), bench (substitutes only), substitute (involved in substitution, in or out), goal, assist, own_goal, missed_penalty, penalty (penalty scored), yellow_card, second_yellow, red_card, card, var, penalty_shootout_scored, and penalty_shootout_missed. Filters AND together, so you can express combinations like "player A scored and player B assisted and player C was on the bench". The MongoDB query is hard-capped at **20 documents** (sorted by fixture.timestamp descending). By default returns full match documents. Optional include flags let the client trim heavy fields when not needed: include_statistics, include_lineups, include_events (all default true). Use when you need complete fixtures for richer workflows (for example weekend batches in one league); use get_real_matches for larger trimmed lists.',
+      'Query `real_matches` with the same human-readable filters as get_real_matches / count_real_matches_by_names (team_name, optional team_2_name for head-to-head, league_name, country_name, seasons, date_from, date_to, events; no location_name; at least one filter; team_2_name requires team_name). Optional ids (fixture ids array): when provided and non-empty, only fixture.id in ids is used and all other filters are ignored. For events, pass objects like { player_name?, event }; omit player_name for match-wide event presence (any player). Supported values are lineup (startXI or bench), startingXI (startXI only), bench (substitutes only), substitute (involved in substitution, in or out), goal, assist, own_goal, missed_penalty, penalty (penalty scored), yellow_card, second_yellow, red_card, card, var, penalty_shootout_scored, and penalty_shootout_missed. Filters AND together, so you can express combinations like "player A scored and player B assisted and player C was on the bench". The MongoDB query is hard-capped at **20 documents** (sorted by fixture.timestamp descending). By default returns full match documents. Optional include flags let the client trim heavy fields when not needed: include_statistics, include_lineups, include_events (all default true). Use when you need complete fixtures for richer workflows (for example weekend batches in one league); use get_real_matches for larger trimmed lists.',
     parameters: getRealMatchesFullSchema,
     annotations: {
       readOnlyHint: true,
@@ -673,6 +691,7 @@ export function createMcpServer() {
         empty_reason: emptyReason,
       } = await getRealMatchesFullByNames({
         teamName: args.team_name,
+        ids: args.ids,
         team2Name: args.team_2_name,
         leagueName: args.league_name,
         countryName: args.country_name,

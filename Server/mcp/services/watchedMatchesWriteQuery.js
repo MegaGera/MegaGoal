@@ -74,6 +74,7 @@ function realMatchDocToCreateBody(doc, { locationUuid } = {}) {
  */
 export async function markWatchedMatchesByNames({
   username,
+  ids,
   teamName,
   team2Name,
   leagueName,
@@ -92,6 +93,7 @@ export async function markWatchedMatchesByNames({
     resolution,
     empty_reason: emptyReason,
   } = await searchRealMatchesByNames({
+    ids,
     teamName,
     team2Name,
     leagueName,
@@ -231,6 +233,7 @@ export async function markWatchedMatchesByNames({
  */
 export async function unmarkWatchedMatchesByNames({
   username,
+  ids,
   teamName,
   team2Name,
   leagueName,
@@ -249,6 +252,7 @@ export async function unmarkWatchedMatchesByNames({
     empty_reason: emptyReason,
   } = await searchWatchedMatchesByNames({
     username,
+    ids,
     teamName,
     team2Name,
     leagueName,

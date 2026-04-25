@@ -460,6 +460,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
  * (`locations.id` for that user); omit or leave empty for real_matches-only tools.
  */
 export async function buildWatchedMatchNameFilter({
+  ids,
   teamName,
   team2Name,
   leagueName,
@@ -480,6 +481,20 @@ export async function buildWatchedMatchNameFilter({
     location_name_resolution_truncated: false,
     events_resolution_truncated: false,
   };
+
+  const fixtureIds = Array.isArray(ids)
+    ? ids
+      .map((id) => Number(id))
+      .filter(Number.isFinite)
+      .map((id) => Math.trunc(id))
+    : [];
+  if (fixtureIds.length > 0) {
+    return {
+      filter: { 'fixture.id': { $in: fixtureIds } },
+      realMatchEventsFilter: null,
+      resolution,
+    };
+  }
 
   const tn =
     teamName != null && String(teamName).trim() !== ''
@@ -731,6 +746,7 @@ export async function buildWatchedMatchNameFilter({
 
 export async function searchWatchedMatchesByNames({
   username,
+  ids,
   teamName,
   team2Name,
   leagueName,
@@ -743,6 +759,7 @@ export async function searchWatchedMatchesByNames({
   limit,
 }) {
   const built = await buildWatchedMatchNameFilter({
+    ids,
     teamName,
     team2Name,
     leagueName,
@@ -819,6 +836,7 @@ export async function searchWatchedMatchesByNames({
 
 export async function countWatchedMatchesByNames({
   username,
+  ids,
   teamName,
   team2Name,
   leagueName,
@@ -830,6 +848,7 @@ export async function countWatchedMatchesByNames({
   events,
 }) {
   const built = await buildWatchedMatchNameFilter({
+    ids,
     teamName,
     team2Name,
     leagueName,
@@ -887,6 +906,7 @@ export async function countWatchedMatchesByNames({
  * Projection excludes `statistics`, `lineups`, and `events`.
  */
 export async function searchRealMatchesByNames({
+  ids,
   teamName,
   team2Name,
   leagueName,
@@ -898,6 +918,7 @@ export async function searchRealMatchesByNames({
   limit,
 }) {
   const built = await buildWatchedMatchNameFilter({
+    ids,
     teamName,
     team2Name,
     leagueName,
@@ -944,6 +965,7 @@ export async function searchRealMatchesByNames({
 }
 
 export async function countRealMatchesByNames({
+  ids,
   teamName,
   team2Name,
   leagueName,
@@ -954,6 +976,7 @@ export async function countRealMatchesByNames({
   events,
 }) {
   const built = await buildWatchedMatchNameFilter({
+    ids,
     teamName,
     team2Name,
     leagueName,
@@ -987,6 +1010,7 @@ export async function countRealMatchesByNames({
  * {@link REAL_MATCH_FULL_SEARCH_LIMIT} full `real_matches` documents (no list projection).
  */
 export async function getRealMatchesFullByNames({
+  ids,
   teamName,
   team2Name,
   leagueName,
@@ -1000,6 +1024,7 @@ export async function getRealMatchesFullByNames({
   includeEvents = true,
 }) {
   const built = await buildWatchedMatchNameFilter({
+    ids,
     teamName,
     team2Name,
     leagueName,
