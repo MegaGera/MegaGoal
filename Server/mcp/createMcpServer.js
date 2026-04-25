@@ -59,7 +59,7 @@ export function createMcpServer() {
     name: 'MegaGoal Server MCP',
     version: '0.0.1',
     instructions:
-      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs; get_watched_matches / count_watched_matches for watched matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names for the same watched rows filtered by team_name, league_name, country_name, and seasons; player_played_watched_matches for slim match rows where a named player played among watched fixtures; player_played_watched_stats for goals/assists totals and splits by team and season.',
+      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs; get_watched_matches / count_watched_matches for watched matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names for the same watched rows filtered by team_name, league_name, country_name, seasons, and optional date_from/date_to (date takes precedence over seasons when provided); player_played_watched_matches for slim match rows where a named player played among watched fixtures; player_played_watched_stats for goals/assists totals and splits by team and season.',
     authenticate: async (request) => resolveAuth(request),
   });
 
@@ -359,7 +359,7 @@ export function createMcpServer() {
     name: 'search_watched_matches_by_names',
     title: 'Search watched matches by names',
     description:
-      'Query the matches collection for the authenticated user using human-readable filters only (no team or league ids in the tool contract). team_name resolves via the teams collection; league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). seasons filters on league.season. Optional date_from/date_to filter fixture.timestamp (ISO date or date-time accepted). Name/date filters AND together, and the query is always scoped to the MCP user. Returns documents minus lineups, statistics, and events (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
+      'Query the matches collection for the authenticated user using human-readable filters only (no team or league ids in the tool contract). team_name resolves via the teams collection; league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). Optional seasons filters on league.season. Optional date_from/date_to filter fixture.timestamp (ISO date or date-time accepted). If date_from or date_to is provided, date filtering takes precedence and seasons is ignored. Name/date filters AND together, and the query is always scoped to the MCP user. Returns documents minus lineups, statistics, and events (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
       String(MAX_LIMIT) +
       ' cap — narrow the query if needed.',
     parameters: searchWatchedMatchesByNamesSchema,
@@ -411,7 +411,7 @@ export function createMcpServer() {
     name: 'count_watched_matches_by_names',
     title: 'Count watched matches by names',
     description:
-      'Same name/season/date filters as search_watched_matches_by_names for the authenticated user in the matches collection, but returns only count plus resolution truncation flags.',
+      'Same name/season/date filters as search_watched_matches_by_names for the authenticated user in the matches collection (date takes precedence over season when provided), but returns only count plus resolution truncation flags.',
     parameters: watchedMatchNameFiltersSchema,
     annotations: {
       readOnlyHint: true,

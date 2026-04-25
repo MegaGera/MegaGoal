@@ -33,6 +33,7 @@ They resolve human-readable names server-side and keep the client contract clean
   - Name filters are combined with AND semantics.
   - Team name resolves via `teams`; league/country names resolve via `leagues`.
   - Date range filters apply on `fixture.timestamp`.
+  - If `date_from` or `date_to` is provided, date filtering takes precedence and `seasons` is ignored.
   - `resolution.*_truncated` indicates lookup caps were hit; refine query when needed.
 
 ### `count_watched_matches_by_names`

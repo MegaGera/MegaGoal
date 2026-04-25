@@ -119,13 +119,6 @@ export async function buildWatchedMatchNameFilter({
     filters.push({ 'league.id': { $in: leagueIds } });
   }
 
-  const seasonList = Array.isArray(seasons)
-    ? seasons.map((s) => Number(s)).filter((n) => Number.isFinite(n))
-    : [];
-  if (seasonList.length > 0) {
-    filters.push({ 'league.season': { $in: seasonList } });
-  }
-
   const parseDateBoundary = (value, boundary) => {
     if (value == null) return null;
     const raw = String(value).trim();
@@ -149,6 +142,7 @@ export async function buildWatchedMatchNameFilter({
 
   const fromTs = parseDateBoundary(dateFrom, 'from');
   const toTs = parseDateBoundary(dateTo, 'to');
+  const hasDateFilter = fromTs != null || toTs != null;
   if (fromTs != null || toTs != null) {
     if (fromTs != null && toTs != null && fromTs > toTs) {
       throw new Error('Invalid date range: date_from must be <= date_to.');
@@ -157,6 +151,17 @@ export async function buildWatchedMatchNameFilter({
     if (fromTs != null) tsFilter.$gte = fromTs;
     if (toTs != null) tsFilter.$lte = toTs;
     filters.push({ 'fixture.timestamp': tsFilter });
+  }
+
+  // Date filters are more precise than season buckets. If either date boundary
+  // is present, ignore seasons to avoid broadening/narrowing unexpectedly.
+  if (!hasDateFilter) {
+    const seasonList = Array.isArray(seasons)
+      ? seasons.map((s) => Number(s)).filter((n) => Number.isFinite(n))
+      : [];
+    if (seasonList.length > 0) {
+      filters.push({ 'league.season': { $in: seasonList } });
+    }
   }
 
   if (filters.length === 0) {
