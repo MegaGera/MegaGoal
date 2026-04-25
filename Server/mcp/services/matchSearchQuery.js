@@ -26,6 +26,8 @@ export async function buildWatchedMatchNameFilter({
   leagueName,
   countryName,
   seasons,
+  dateFrom,
+  dateTo,
 }) {
   const filters = [];
   const resolution = {
@@ -124,6 +126,39 @@ export async function buildWatchedMatchNameFilter({
     filters.push({ 'league.season': { $in: seasonList } });
   }
 
+  const parseDateBoundary = (value, boundary) => {
+    if (value == null) return null;
+    const raw = String(value).trim();
+    if (!raw) return null;
+
+    const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(raw);
+    if (isDateOnly) {
+      const suffix =
+        boundary === 'from' ? 'T00:00:00.000Z' : 'T23:59:59.999Z';
+      return Date.parse(`${raw}${suffix}`) / 1000;
+    }
+
+    const parsedMs = Date.parse(raw);
+    if (Number.isNaN(parsedMs)) {
+      throw new Error(
+        `Invalid ${boundary === 'from' ? 'date_from' : 'date_to'} value. Use ISO date/date-time, for example "2026-04-01" or "2026-04-01T10:30:00Z".`,
+      );
+    }
+    return parsedMs / 1000;
+  };
+
+  const fromTs = parseDateBoundary(dateFrom, 'from');
+  const toTs = parseDateBoundary(dateTo, 'to');
+  if (fromTs != null || toTs != null) {
+    if (fromTs != null && toTs != null && fromTs > toTs) {
+      throw new Error('Invalid date range: date_from must be <= date_to.');
+    }
+    const tsFilter = {};
+    if (fromTs != null) tsFilter.$gte = fromTs;
+    if (toTs != null) tsFilter.$lte = toTs;
+    filters.push({ 'fixture.timestamp': tsFilter });
+  }
+
   if (filters.length === 0) {
     return { filter: null, resolution, empty_reason: 'no_filters' };
   }
@@ -138,6 +173,8 @@ export async function searchWatchedMatchesByNames({
   leagueName,
   countryName,
   seasons,
+  dateFrom,
+  dateTo,
   limit,
 }) {
   const built = await buildWatchedMatchNameFilter({
@@ -145,6 +182,8 @@ export async function searchWatchedMatchesByNames({
     leagueName,
     countryName,
     seasons,
+    dateFrom,
+    dateTo,
   });
   if (built.filter == null) {
     return {
@@ -185,12 +224,16 @@ export async function countWatchedMatchesByNames({
   leagueName,
   countryName,
   seasons,
+  dateFrom,
+  dateTo,
 }) {
   const built = await buildWatchedMatchNameFilter({
     teamName,
     leagueName,
     countryName,
     seasons,
+    dateFrom,
+    dateTo,
   });
   if (built.filter == null) {
     return {

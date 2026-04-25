@@ -24,12 +24,15 @@ They resolve human-readable names server-side and keep the client contract clean
   - `league_name` (optional)
   - `country_name` (optional)
   - `seasons` (optional array of numbers)
+  - `date_from` (optional, ISO date/date-time)
+  - `date_to` (optional, ISO date/date-time)
   - `limit` (optional)
-- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`.
+- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`.
 - Returns: `{ count, matches[], truncated, limit, resolution, empty_reason? }`.
 - Notes:
   - Name filters are combined with AND semantics.
   - Team name resolves via `teams`; league/country names resolve via `leagues`.
+  - Date range filters apply on `fixture.timestamp`.
   - `resolution.*_truncated` indicates lookup caps were hit; refine query when needed.
 
 ### `count_watched_matches_by_names`
@@ -40,7 +43,9 @@ They resolve human-readable names server-side and keep the client contract clean
   - `league_name` (optional)
   - `country_name` (optional)
   - `seasons` (optional array of numbers)
-- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`.
+  - `date_from` (optional, ISO date/date-time)
+  - `date_to` (optional, ISO date/date-time)
+- Constraint: provide at least one of `team_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`.
 - Returns: `{ count, resolution, empty_reason? }`.
 - Use when: you only need totals for name-based filters.
 

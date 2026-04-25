@@ -296,6 +296,8 @@ export function createMcpServer() {
     league_name: z.string().optional(),
     country_name: z.string().optional(),
     seasons: z.array(z.coerce.number().int()).optional(),
+    date_from: z.string().trim().optional(),
+    date_to: z.string().trim().optional(),
   });
 
   /** Keep a single ZodObject + refine so JSON Schema has root type "object" (not allOf). Intersections break some MCP clients. */
@@ -307,11 +309,20 @@ export function createMcpServer() {
       const s = Array.isArray(d.seasons)
         ? d.seasons.map((x) => Number(x)).filter((n) => Number.isFinite(n))
         : [];
-      return t.length > 0 || l.length > 0 || c.length > 0 || s.length > 0;
+      const df = d.date_from != null ? String(d.date_from).trim() : '';
+      const dt = d.date_to != null ? String(d.date_to).trim() : '';
+      return (
+        t.length > 0 ||
+        l.length > 0 ||
+        c.length > 0 ||
+        s.length > 0 ||
+        df.length > 0 ||
+        dt.length > 0
+      );
     },
     {
       message:
-        'Provide at least one of: non-empty team_name, league_name, country_name, or a non-empty seasons array.',
+        'Provide at least one of: non-empty team_name, league_name, country_name, date_from, date_to, or a non-empty seasons array.',
     },
   );
 
@@ -327,11 +338,20 @@ export function createMcpServer() {
         const s = Array.isArray(d.seasons)
           ? d.seasons.map((x) => Number(x)).filter((n) => Number.isFinite(n))
           : [];
-        return t.length > 0 || l.length > 0 || c.length > 0 || s.length > 0;
+        const df = d.date_from != null ? String(d.date_from).trim() : '';
+        const dt = d.date_to != null ? String(d.date_to).trim() : '';
+        return (
+          t.length > 0 ||
+          l.length > 0 ||
+          c.length > 0 ||
+          s.length > 0 ||
+          df.length > 0 ||
+          dt.length > 0
+        );
       },
       {
         message:
-          'Provide at least one of: non-empty team_name, league_name, country_name, or a non-empty seasons array.',
+          'Provide at least one of: non-empty team_name, league_name, country_name, date_from, date_to, or a non-empty seasons array.',
       },
     );
 
@@ -339,7 +359,7 @@ export function createMcpServer() {
     name: 'search_watched_matches_by_names',
     title: 'Search watched matches by names',
     description:
-      'Query the matches collection for the authenticated user using human-readable filters only (no team or league ids in the tool contract). team_name resolves via the teams collection; league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). seasons filters on league.season. Name filters AND together, and the query is always scoped to the MCP user. Returns documents minus lineups, statistics, and events (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
+      'Query the matches collection for the authenticated user using human-readable filters only (no team or league ids in the tool contract). team_name resolves via the teams collection; league_name and country_name resolve to league ids via the leagues collection (country uses competition country on leagues). seasons filters on league.season. Optional date_from/date_to filter fixture.timestamp (ISO date or date-time accepted). Name/date filters AND together, and the query is always scoped to the MCP user. Returns documents minus lineups, statistics, and events (same projection as get_watched_matches). Sorted by fixture timestamp descending. resolution.*_truncated flags indicate a name lookup hit the ' +
       String(MAX_LIMIT) +
       ' cap — narrow the query if needed.',
     parameters: searchWatchedMatchesByNamesSchema,
@@ -369,6 +389,8 @@ export function createMcpServer() {
         leagueName: args.league_name,
         countryName: args.country_name,
         seasons: args.seasons,
+        dateFrom: args.date_from,
+        dateTo: args.date_to,
         limit: args.limit,
       });
 
@@ -389,7 +411,7 @@ export function createMcpServer() {
     name: 'count_watched_matches_by_names',
     title: 'Count watched matches by names',
     description:
-      'Same name/season filters as search_watched_matches_by_names for the authenticated user in the matches collection, but returns only count plus resolution truncation flags.',
+      'Same name/season/date filters as search_watched_matches_by_names for the authenticated user in the matches collection, but returns only count plus resolution truncation flags.',
     parameters: watchedMatchNameFiltersSchema,
     annotations: {
       readOnlyHint: true,
@@ -412,6 +434,8 @@ export function createMcpServer() {
           leagueName: args.league_name,
           countryName: args.country_name,
           seasons: args.seasons,
+          dateFrom: args.date_from,
+          dateTo: args.date_to,
         });
 
       const payload = {
