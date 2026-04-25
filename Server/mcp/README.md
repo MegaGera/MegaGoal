@@ -49,6 +49,14 @@ These query the **`real_matches`** collection with the same human-readable filte
 - Purpose: count-only variant of `get_real_matches` with the same filter contract.
 - Returns: `{ count, resolution, empty_reason? }`.
 
+### `search_real_match`
+
+- Purpose: narrow to one or a few **`real_matches`** rows using the **same** name/season/date filters as `get_real_matches`, but return **complete** documents (including `statistics`, `lineups`, and `events`).
+- Filters: same contract as `get_real_matches` / `count_real_matches_by_names` (no `limit` parameter — the server always caps the query at **5** documents).
+- Returns: `{ count, max_documents: 5, matches[], resolution, empty_reason? }`.
+- Sort: `fixture.timestamp` descending (most recent first among the cap).
+- Use when: the agent needs full fixture payloads to pick the right game; use `get_real_matches` for larger trimmed lists.
+
 ### `getLiveMatches`
 
 - Purpose: all **`real_matches`** whose kickoff (`fixture.timestamp`) falls on the **current UTC calendar day** (not the watched list).
@@ -190,7 +198,7 @@ These tools help discover team/league data and disambiguate user input.
 
 - All tools require an authenticated MCP session (same headers as below).
 - **Watched-match** and **player-on-watched** tools only return rows for that user’s watched games (`matches` + username).
-- **Real-match** tools (`get_real_matches`, `count_real_matches_by_names`, `getLiveMatches`) read the global `real_matches` catalog; they do not filter by username, but still require a valid session.
+- **Real-match** tools (`get_real_matches`, `count_real_matches_by_names`, `search_real_match`, `getLiveMatches`) read the global `real_matches` catalog; they do not filter by username, but still require a valid session.
 - If `MCP_API_KEY` is set, send:
   - `Authorization: Bearer <MCP_API_KEY>`
   - `X-MegaGoal-Username: <username>`

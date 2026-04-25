@@ -7,6 +7,7 @@ import {
 } from './teamSearchQuery.js';
 import {
   REAL_MATCH_LIST_PROJECTION,
+  REAL_MATCH_SINGLE_SEARCH_LIMIT,
   WATCHED_MATCH_LIST_PROJECTION,
 } from '../../config/matchProjection.js';
 
@@ -391,4 +392,53 @@ export async function countRealMatchesByNames({
   const db = getDB();
   const count = await db.collection('real_matches').countDocuments(built.filter);
   return { count, resolution: built.resolution };
+}
+
+/**
+ * Same name/season/date filters as `searchRealMatchesByNames`, but returns at most
+ * {@link REAL_MATCH_SINGLE_SEARCH_LIMIT} full `real_matches` documents (no list projection).
+ */
+export async function searchRealMatchByNameFilters({
+  teamName,
+  team2Name,
+  leagueName,
+  countryName,
+  seasons,
+  dateFrom,
+  dateTo,
+}) {
+  const built = await buildWatchedMatchNameFilter({
+    teamName,
+    team2Name,
+    leagueName,
+    countryName,
+    seasons,
+    dateFrom,
+    dateTo,
+  });
+  if (built.filter == null) {
+    return {
+      matches: [],
+      count: 0,
+      max_documents: REAL_MATCH_SINGLE_SEARCH_LIMIT,
+      resolution: built.resolution,
+      empty_reason: built.empty_reason,
+    };
+  }
+
+  const db = getDB();
+  const matches = await db
+    .collection('real_matches')
+    .find(built.filter, {
+      sort: { 'fixture.timestamp': -1 },
+      limit: REAL_MATCH_SINGLE_SEARCH_LIMIT,
+    })
+    .toArray();
+
+  return {
+    matches,
+    count: matches.length,
+    max_documents: REAL_MATCH_SINGLE_SEARCH_LIMIT,
+    resolution: built.resolution,
+  };
 }
