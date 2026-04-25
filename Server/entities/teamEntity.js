@@ -8,9 +8,9 @@ const seasonTeamSchema = z.object({
 const teamInfoSchema = z.object({
   id: z.number().int(),
   name: z.string(),
-  code: z.string(),
+  code: z.string().nullable(),
   country: z.string(),
-  founded: z.number().int(),
+  founded: z.number().int().nullable(),
   national: z.boolean(),
   logo: z.string()
 });
@@ -18,7 +18,7 @@ const teamInfoSchema = z.object({
 const venueInfoSchema = z.object({
   id: z.number().int(),
   name: z.string(),
-  address: z.string(),
+  address: z.string().nullable(),
   city: z.string(),
   capacity: z.number().int(),
   surface: z.string(),

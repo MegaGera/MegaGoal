@@ -56,7 +56,7 @@ const statisticEntrySchema = z.object({
 
 const lineupPlayerSchema = z.object({
   player: z.object({
-    id: z.number().int(),
+    id: z.number().int().nullable(),
     name: z.string(),
     number: z.number().int().nullable(),
     pos: z.string().nullable(),
