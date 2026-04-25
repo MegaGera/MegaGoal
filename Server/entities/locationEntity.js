@@ -18,15 +18,9 @@ const createLocationBodySchema = z.object({
   name: z.string().min(1)
 });
 
-const venueLocationParamsSchema = z.object({
-  name: z.string().min(1),
-  id: z.coerce.number().int()
-});
-
 const parseLocationDocuments = (documents) => z.array(locationSchema).parse(documents);
 const parseLocationDocument = (document) => locationSchema.parse(document);
 const parseCreateLocationBody = (body) => createLocationBodySchema.parse(body);
-const parseVenueLocationParams = (params) => venueLocationParamsSchema.parse(params);
 const parseVenueLocationId = (locationId) => z.coerce.number().int().parse(locationId);
 
 const buildUserLocation = ({ name, username }) => parseLocationDocument({
@@ -54,6 +48,5 @@ export {
   parseCreateLocationBody,
   parseLocationDocument,
   parseLocationDocuments,
-  parseVenueLocationId,
-  parseVenueLocationParams
+  parseVenueLocationId
 };

@@ -3,9 +3,9 @@ import { ObjectId } from 'mongodb';
 import { logMatchCreated, logMatchDeleted, logMatchUpdateLocation } from './logController.js';
 import {
   buildOfficialVenueLocation,
-  parseVenueLocationId,
-  parseVenueLocationParams
+  parseVenueLocationId
 } from '../entities/locationEntity.js';
+import { parseVenueReference } from '../entities/venueEntity.js';
 
 // Get matches
 const getMatches = async (req, res) => {
@@ -197,13 +197,17 @@ const checkLocationIsVenue = async (location_id, username, venueParams) => {
 
     let location;
     if (venue) {
+      const parsedVenue = parseVenueReference(venue);
       location = buildOfficialVenueLocation({
-        name: venue.name,
+        name: parsedVenue.name,
         username,
-        venueId: venue.id
+        venueId: parsedVenue.id
       });
     } else if (venueParams) {
-      const parsedVenueParams = parseVenueLocationParams(venueParams);
+      const parsedVenueParams = parseVenueReference({
+        id: venueParams.id,
+        name: venueParams.name
+      });
       location = buildOfficialVenueLocation({
         name: parsedVenueParams.name,
         username,
