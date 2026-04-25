@@ -10,6 +10,11 @@ import {
   parseCreateLeagueSettingPayload,
   parseLeagueSettings
 } from '../entities/leagueEntity.js';
+import {
+  buildLandingMatchSetting,
+  parseLandingMatchPayload,
+  parseLandingMatchSettings
+} from '../entities/settingsEntity.js';
 
 // Get leagues settings
 export const getLeaguesSettings = async (req, res) => {
@@ -280,11 +285,7 @@ export const getRealMatchesWithoutStatistics = async (req, res) => {
 export const addLandingMatch = async (req, res) => {
   const db = getDB();
   try {
-    const { fixture_id } = req.body;
-    
-    if (!fixture_id) {
-      return res.status(400).json({ message: "fixture_id is required" });
-    }
+    const { fixture_id } = parseLandingMatchPayload(req.body);
 
     // Check if match already exists in settings
     const existing = await db.collection('settings').findOne({ 
@@ -297,11 +298,7 @@ export const addLandingMatch = async (req, res) => {
     }
 
     // Add new landing match
-    const newSetting = {
-      type: 'LANDING_MATCH',
-      fixture_id: +fixture_id,
-      created_at: new Date()
-    };
+    const newSetting = buildLandingMatchSetting({ fixture_id });
     
     const result = await db.collection('settings').insertOne(newSetting);
     console.log(`Added landing match: fixture_id=${fixture_id}`);
@@ -319,15 +316,11 @@ export const addLandingMatch = async (req, res) => {
 export const removeLandingMatch = async (req, res) => {
   const db = getDB();
   try {
-    const { fixture_id } = req.body;
-    
-    if (!fixture_id) {
-      return res.status(400).json({ message: "fixture_id is required" });
-    }
+    const { fixture_id } = parseLandingMatchPayload(req.body);
 
     const result = await db.collection('settings').deleteOne({ 
       type: 'LANDING_MATCH', 
-      fixture_id: +fixture_id 
+      fixture_id
     });
     
     console.log(`Removed landing match: fixture_id=${fixture_id}`);
@@ -346,10 +339,11 @@ export const getLandingMatches = async (req, res) => {
   const db = getDB();
   try {
     // Get all fixture IDs from settings collection (no limit for admin view)
-    const landingSettings = await db.collection('settings')
+    const landingSettingsRaw = await db.collection('settings')
       .find({ type: 'LANDING_MATCH' })
       .sort({ created_at: -1 })
       .toArray();
+    const landingSettings = parseLandingMatchSettings(landingSettingsRaw);
 
     if (landingSettings.length === 0) {
       return res.send([]);

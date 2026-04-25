@@ -4,6 +4,10 @@ import {
   parsePlayerId,
   parsePlayerListResponse
 } from '../entities/playerEntity.js';
+import {
+  defaultPlayersApiInfoSetting,
+  parsePlayersApiInfoSetting
+} from '../entities/settingsEntity.js';
 
 // Get players from database with search and pagination
 export const getPlayers = async (req, res) => {
@@ -94,15 +98,11 @@ export const getPlayersApiInfo = async (req, res) => {
     const apiInfo = await db.collection('settings').findOne({ type: 'PLAYERS_API_INFO' });
     
     if (!apiInfo) {
-      return res.json({
-        type: 'PLAYERS_API_INFO',
-        pages_searched: [],
-        total_pages: 0,
-        last_update: null
-      });
+      return res.json(defaultPlayersApiInfoSetting());
     }
     
-    res.json(apiInfo);
+    const validatedApiInfo = parsePlayersApiInfoSetting(apiInfo);
+    res.json(validatedApiInfo);
   } catch (error) {
     console.error('Error fetching players API info:', error);
     res.status(500).json({ error: 'Failed to fetch players API info' });

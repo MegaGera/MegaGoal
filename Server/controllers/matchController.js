@@ -15,6 +15,7 @@ import {
   parseVenueLocationId
 } from '../entities/locationEntity.js';
 import { parseVenueReference } from '../entities/venueEntity.js';
+import { parseLandingMatchSettings } from '../entities/settingsEntity.js';
 
 // Get matches
 const getMatches = async (req, res) => {
@@ -244,12 +245,13 @@ const getLandingPageInfo = async (req, res) => {
   const db = getDB();
   try {
     // Get random 3 fixture IDs from settings collection using MongoDB's $sample
-    const landingSettings = await db.collection('settings')
+    const landingSettingsRaw = await db.collection('settings')
       .aggregate([
         { $match: { type: 'LANDING_MATCH' } },
         { $sample: { size: 3 } }
       ])
       .toArray();
+    const landingSettings = parseLandingMatchSettings(landingSettingsRaw);
 
     if (landingSettings.length === 0) {
       // Return empty matches array if none configured
