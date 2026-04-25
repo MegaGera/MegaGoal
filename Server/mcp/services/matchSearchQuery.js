@@ -29,10 +29,14 @@ function normalizeEvents(events) {
       if (entry == null || typeof entry !== 'object' || Array.isArray(entry)) {
         return null;
       }
-      const playerName = String(entry.player_name ?? '').trim();
+      const rawName = entry.player_name;
+      const playerName =
+        rawName != null && String(rawName).trim() !== ''
+          ? String(rawName).trim()
+          : null;
       const eventName = String(entry.event ?? '').trim().toLowerCase();
-      if (!playerName || !eventName) return null;
-      return [playerName, eventName];
+      if (!eventName) return null;
+      return { playerName, eventName };
     })
     .filter((entry) => entry != null);
 }
@@ -141,7 +145,7 @@ async function resolveLineupEventPlayerIds(events) {
     return {
       ok: true,
       has_events_filter: false,
-      player_id_sets: [],
+      event_filters: [],
       events_resolution_truncated: false,
       empty_reason: null,
     };
@@ -150,7 +154,7 @@ async function resolveLineupEventPlayerIds(events) {
   const filters = [];
   let eventsResolutionTruncated = false;
 
-  for (const [playerName, eventName] of normalized) {
+  for (const { playerName, eventName } of normalized) {
     const normalizedEvent = normalizeLineupEventName(eventName);
     if (normalizedEvent == null) {
       return {
@@ -160,6 +164,14 @@ async function resolveLineupEventPlayerIds(events) {
         events_resolution_truncated: false,
         empty_reason: 'unsupported_event_filter',
       };
+    }
+
+    if (playerName == null) {
+      filters.push({
+        type: normalizedEvent,
+        player_ids: null,
+      });
+      continue;
     }
 
     const { players, truncated } = await searchPlayersByName({
@@ -202,33 +214,82 @@ async function resolveLineupEventPlayerIds(events) {
 
 function buildLineupRealMatchFilterFromEvents(eventFilters) {
   if (!Array.isArray(eventFilters) || eventFilters.length === 0) return null;
+
+  const playerIdIn = (ids) => ({ $in: ids });
+
   const parts = eventFilters
     .map((eventFilter) => {
       const ids = Array.isArray(eventFilter.player_ids)
         ? eventFilter.player_ids
         : [];
-      if (ids.length === 0) return null;
+      const matchWide = eventFilter.player_ids === null;
+      const hasPlayers = !matchWide && ids.length > 0;
+      if (!matchWide && !hasPlayers) return null;
+
+      const pid = hasPlayers ? playerIdIn(ids) : null;
 
       if (eventFilter.type === 'lineup') {
+        if (matchWide) {
+          return {
+            lineups: {
+              $elemMatch: {
+                $or: [
+                  {
+                    startXI: {
+                      $elemMatch: { 'player.id': { $gt: 0 } },
+                    },
+                  },
+                  {
+                    substitutes: {
+                      $elemMatch: { 'player.id': { $gt: 0 } },
+                    },
+                  },
+                ],
+              },
+            },
+          };
+        }
         return {
           $or: [
-            { 'lineups.startXI.player.id': { $in: ids } },
-            { 'lineups.substitutes.player.id': { $in: ids } },
+            { 'lineups.startXI.player.id': pid },
+            { 'lineups.substitutes.player.id': pid },
           ],
         };
       }
       if (eventFilter.type === 'startingxi') {
-        return { 'lineups.startXI.player.id': { $in: ids } };
+        if (matchWide) {
+          return {
+            lineups: {
+              $elemMatch: {
+                startXI: {
+                  $elemMatch: { 'player.id': { $gt: 0 } },
+                },
+              },
+            },
+          };
+        }
+        return { 'lineups.startXI.player.id': pid };
       }
       if (eventFilter.type === 'bench') {
-        return { 'lineups.substitutes.player.id': { $in: ids } };
+        if (matchWide) {
+          return {
+            lineups: {
+              $elemMatch: {
+                substitutes: {
+                  $elemMatch: { 'player.id': { $gt: 0 } },
+                },
+              },
+            },
+          };
+        }
+        return { 'lineups.substitutes.player.id': pid };
       }
       if (eventFilter.type === 'goal') {
         return {
           events: {
             $elemMatch: {
               type: { $regex: '^goal$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
               detail: {
                 $not: {
                   $regex: '^(own goal|missed penalty)$',
@@ -244,7 +305,9 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^goal$', $options: 'i' },
-              'assist.id': { $in: ids },
+              ...(hasPlayers
+                ? { 'assist.id': pid }
+                : { 'assist.id': { $gt: 0 } }),
             },
           },
         };
@@ -254,7 +317,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^goal$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
               detail: { $regex: '^own goal$', $options: 'i' },
             },
           },
@@ -265,7 +328,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^goal$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
               detail: { $regex: '^missed penalty$', $options: 'i' },
             },
           },
@@ -276,21 +339,27 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^goal$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
               detail: { $regex: '^penalty$', $options: 'i' },
             },
           },
         };
       }
       if (eventFilter.type === 'substitute') {
+        if (matchWide) {
+          return {
+            events: {
+              $elemMatch: {
+                type: { $regex: '^subst$', $options: 'i' },
+              },
+            },
+          };
+        }
         return {
           events: {
             $elemMatch: {
               type: { $regex: '^subst$', $options: 'i' },
-              $or: [
-                { 'player.id': { $in: ids } },
-                { 'assist.id': { $in: ids } },
-              ],
+              $or: [{ 'player.id': pid }, { 'assist.id': pid }],
             },
           },
         };
@@ -300,7 +369,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^card$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
               detail: { $regex: 'yellow', $options: 'i' },
             },
           },
@@ -311,7 +380,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^card$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
               detail: { $regex: 'second yellow', $options: 'i' },
             },
           },
@@ -322,7 +391,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^card$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
               detail: { $regex: 'red', $options: 'i' },
             },
           },
@@ -333,7 +402,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^card$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
             },
           },
         };
@@ -343,7 +412,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^var$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
             },
           },
         };
@@ -353,7 +422,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^goal$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
               detail: { $regex: 'penalty shootout', $options: 'i' },
               comments: {
                 $not: { $regex: 'miss', $options: 'i' },
@@ -367,7 +436,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           events: {
             $elemMatch: {
               type: { $regex: '^goal$', $options: 'i' },
-              'player.id': { $in: ids },
+              ...(hasPlayers ? { 'player.id': pid } : {}),
               detail: { $regex: 'penalty shootout', $options: 'i' },
               comments: { $regex: 'miss', $options: 'i' },
             },
