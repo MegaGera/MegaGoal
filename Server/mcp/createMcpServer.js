@@ -13,6 +13,10 @@ import {
   searchWatchedMatchesByNames,
 } from './services/matchSearchQuery.js';
 import {
+  markWatchedMatchesByNames,
+  unmarkWatchedMatchesByNames,
+} from './services/watchedMatchesWriteQuery.js';
+import {
   getPlayedWatchedAggregateStats,
   getPlayedWatchedMatchesBasic,
   resolveSinglePlayerFromName,
@@ -63,7 +67,7 @@ export function createMcpServer() {
     name: 'MegaGoal Server MCP',
     version: '0.0.1',
     instructions:
-      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names with team_name, optional team_2_name (head-to-head when both set), league_name, country_name, seasons, optional date_from/date_to (date takes precedence over seasons when provided), optional events array of { player_name?, event } (omit player_name for fixture-wide event presence). Real matches (global fixture catalog in `real_matches`, not per-user): get_real_matches / count_real_matches_by_names with the same filters (list rows omit heavy fields); get_real_matches_full uses the same filters and returns up to 20 full documents for richer workflows. getLiveMatches returns all real_matches kicking off on the current UTC calendar day, each with live flags comparing server time to fixture.timestamp and classifying fixture.status.short using the same finished (FT,AET,PEN,PST,CANC) and not-started (NS,TBD) sets as the WebApp. player_played_watched_matches for slim rows where a named player played among watched fixtures; player_played_watched_stats for goals/assists totals and splits by team and season.',
+      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (and location/fixture); search_watched_matches_by_names / count_watched_matches_by_names with team_name, optional team_2_name (head-to-head when both set), league_name, country_name, seasons, optional date_from/date_to (date takes precedence over seasons when provided), optional events array of { player_name?, event } (omit player_name for fixture-wide event presence). Writes: mutate_watched_matches_by_names with action mark or unmark uses the same name/date/events filters; mark inserts from real_matches (POST /match shape, skips already watched); unmark deletes watched rows (same as DELETE /match). Real matches (global fixture catalog in `real_matches`, not per-user): get_real_matches / count_real_matches_by_names with the same filters (list rows omit heavy fields); get_real_matches_full uses the same filters and returns up to 20 full documents for richer workflows. getLiveMatches returns all real_matches kicking off on the current UTC calendar day, each with live flags comparing server time to fixture.timestamp and classifying fixture.status.short using the same finished (FT,AET,PEN,PST,CANC) and not-started (NS,TBD) sets as the WebApp. player_played_watched_matches for slim rows where a named player played among watched fixtures; player_played_watched_stats for goals/assists totals and splits by team and season.',
     authenticate: async (request) => resolveAuth(request),
   });
 
@@ -463,6 +467,56 @@ export function createMcpServer() {
         resolution,
         ...(emptyReason != null ? { empty_reason: emptyReason } : {}),
       };
+
+      return JSON.stringify(payload, null, 2);
+    },
+  });
+
+  const watchedMatchesMutateSchema = watchedMatchNameBaseSchema
+    .extend({
+      action: z.enum(['mark', 'unmark']),
+      limit: z.coerce.number().int().min(1).max(MAX_LIMIT).optional(),
+    })
+    .refine(hasWatchedOrRealNameDateFilter, watchedOrRealNameDateFilterMessage)
+    .refine(team2NameRequiresTeamName, team2NameRequiresTeamNameMessage);
+
+  server.addTool({
+    name: 'mutate_watched_matches_by_names',
+    title: 'Mark or unmark watched matches by names',
+    description:
+      'Write tool: same human-readable filters as search_watched_matches_by_names / get_real_matches (team_name, optional team_2_name for head-to-head, league_name, country_name, seasons, date_from, date_to, events; at least one filter; team_2_name requires team_name). action=mark resolves fixtures in real_matches, builds the same watched payload as the WebApp when adding from a real match (no statistics), inserts into matches for the authenticated user, skips duplicates, and logs MATCH_CREATED like POST /match. action=unmark finds the user watched matches collection with the same filters as search_watched_matches_by_names, deletes up to limit rows (newest by kickoff first), and logs MATCH_DELETED per row like DELETE /match. Hard cap limit default 20, max 50 per call; truncated in the response means more rows matched—narrow filters or repeat. Returns counts, fixture_ids affected, resolution flags, and per-fixture errors when a row fails.',
+    parameters: watchedMatchesMutateSchema,
+    annotations: {
+      readOnlyHint: false,
+      openWorldHint: true,
+    },
+    execute: async (args, context) => {
+      const sessionUser =
+        context.session &&
+        typeof context.session.username === 'string'
+          ? context.session.username
+          : undefined;
+      if (!sessionUser) {
+        throw new UserError('Missing authenticated username on MCP session.');
+      }
+
+      const common = {
+        username: sessionUser,
+        teamName: args.team_name,
+        team2Name: args.team_2_name,
+        leagueName: args.league_name,
+        countryName: args.country_name,
+        seasons: args.seasons,
+        dateFrom: args.date_from,
+        dateTo: args.date_to,
+        events: args.events,
+        limit: args.limit,
+      };
+
+      const payload =
+        args.action === 'mark'
+          ? await markWatchedMatchesByNames(common)
+          : await unmarkWatchedMatchesByNames(common);
 
       return JSON.stringify(payload, null, 2);
     },

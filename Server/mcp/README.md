@@ -6,6 +6,7 @@ The tools are organized in these sections:
 - Watched matches vs real matches (which tool to use)
 - Real matches (global fixture catalog: by names, today / live)
 - Watched matches by names
+- Watched matches writes (mark / unmark)
 - Watched matches by ids
 - Player watched matches
 - Reference lookup
@@ -22,7 +23,7 @@ The tools are organized in these sections:
 
 **Choosing a tool**
 
-- The user asks what they **watched**, saved, or “my games” → watched tools (`search_watched_matches_by_names`, `count_watched_matches_by_names`, `get_watched_matches`, player tools, etc.).
+- The user asks what they **watched**, saved, or “my games” → watched tools (`search_watched_matches_by_names`, `count_watched_matches_by_names`, `get_watched_matches`, player tools, etc.). To **add or remove** watched rows by the same name filters, use **`mutate_watched_matches_by_names`** (`action`: `mark` or `unmark`).
 - The user asks about **fixtures in general** (a date, a season, a league’s results, “who played on …”) without tying to their watched list → **`get_real_matches`** / **`count_real_matches_by_names`**.
 - The user asks about **today’s schedule**, **live games**, or whether kickoff **has passed** vs **full-time** for fixtures in the catalog → **`getLiveMatches`** (`real_matches`, UTC day; see that section).
 
@@ -144,6 +145,20 @@ They resolve human-readable names server-side and keep the client contract clean
 - Returns: `{ count, resolution, empty_reason? }`.
 - Use when: you only need totals for name-based filters.
 
+### `mutate_watched_matches_by_names` (write)
+
+- Purpose: **mark** fixtures as watched or **unmark** them using the **same** name/season/date/events filter contract as `search_watched_matches_by_names` / `get_real_matches`.
+- Required: `action` — either `mark` or `unmark`.
+- Filters (same rules as name-based search): `team_name`, optional `team_2_name` (requires `team_name`), `league_name`, `country_name`, `seasons`, `date_from`, `date_to`, `events`; at least one non-empty filter; date range overrides `seasons` when any date boundary is set.
+- Optional: `limit` (default **20**, maximum **50**). Rows are processed in **`fixture.timestamp` descending** order (same sort as list search). If `truncated` is `true`, more fixtures matched than were processed—narrow filters, raise `limit` within the cap, or call again.
+- **`mark`**: loads matching rows from **`real_matches`**, builds the watched payload like the WebApp when adding from a real card (no `statistics`), **`insertOne`** per fixture for the authenticated user, **skips** fixtures already in `matches`, emits **`MATCH_CREATED`** logging per insert (same RabbitMQ path as `POST /match`).
+- **`unmark`**: loads matching rows from the user’s **`matches`** collection (same semantics as `search_watched_matches_by_names`), **`deleteOne`** per row, emits **`MATCH_DELETED`** per removal (same path as `DELETE /match`).
+- Returns (shape varies slightly by action):
+  - Common: `ok`, `action`, `resolution`, `truncated`, `limit`, optional `warning`, optional `empty_reason` when filters could not be built.
+  - `mark`: `inserted`, `skipped_already_watched`, `skipped_invalid`, `errors[]` (per-fixture failures), `fixture_ids` (newly inserted fixture ids).
+  - `unmark`: `deleted`, `errors[]`, `fixture_ids` (removed fixture ids).
+- Auth: same as all tools; writes always apply to the MCP session user only.
+
 ### Name-first client strategy
 
 If your goal is to avoid ids in the client:
@@ -234,6 +249,7 @@ These tools help discover team/league data and disambiguate user input.
 
 - All tools require an authenticated MCP session (same headers as below).
 - **Watched-match** and **player-on-watched** tools only return rows for that user’s watched games (`matches` + username).
+- **`mutate_watched_matches_by_names`** writes to the authenticated user’s `matches` rows (`mark` reads **`real_matches`** first; `unmark` only touches **`matches`**).
 - **Real-match** tools (`get_real_matches`, `count_real_matches_by_names`, `get_real_matches_full`, `getLiveMatches`) read the global `real_matches` catalog; they do not filter by username, but still require a valid session.
 - If `MCP_API_KEY` is set, send:
   - `Authorization: Bearer <MCP_API_KEY>`
