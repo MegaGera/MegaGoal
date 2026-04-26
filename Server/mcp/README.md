@@ -7,6 +7,7 @@ The tools are organized in these sections:
 - Watched matches vs real matches (which tool to use)
 - Real matches (global fixture catalog: by names, today / live)
 - Watched matches by names
+- Watched player event analytics (multi-player/multi-event)
 - Watched matches writes (mark / unmark)
 - Watched matches by ids
 - Player watched matches
@@ -152,6 +153,31 @@ They resolve human-readable names server-side and keep the client contract clean
 - Constraint: provide at least one of `ids`, `team_name`, `league_name`, `country_name`, `location_name`, `seasons`, `date_from`, `date_to`, `events`; `team_2_name` requires `team_name` unless `ids` is provided.
 - Returns: `{ count, resolution, empty_reason? }`.
 - Use when: you only need totals for name-based filters.
+
+### `analyze_watched_player_events`
+
+- Purpose: reusable watched analytics for player/event questions such as top scorers, assisters, cards, lineup participation, and mixed multi-player + multi-event conditions.
+- Scope filters: same watched name/date/location contract as `search_watched_matches_by_names` (`ids`, `team_name`, optional `team_2_name`, `league_name`, `country_name`, `location_name`, `seasons`, `date_from`, `date_to`).
+- Player/event filters:
+  - `players` (optional string array): semantic player-name resolution through `players`.
+  - `events` (optional string array): same event vocabulary as name-based tools (`lineup`, `startingXI`, `bench`, `substitute`, `goal`, `assist`, `own_goal`, `missed_penalty`, `penalty`, `yellow_card`, `second_yellow`, `red_card`, `card`, `var`, `penalty_shootout_scored`, `penalty_shootout_missed`).
+- Semantics controls:
+  - `pair_mode` (`paired` default): preserve player-event coupling when both filters are present.
+  - `pair_mode` (`independent`): evaluate player presence and event presence separately at match level.
+  - `logic` (`or` default, or `and`): combine requested conditions.
+  - `response_event_scope` (`matched_only` default, or `all_in_scope`): return only matched events, or all parsed events from included matches.
+  - `group_by` (`player` default, or `match`): return player ranking rows, and optionally match timeline rows.
+  - `limit` (optional, 1..100, default 20): caps ranking rows and match rows.
+- Returns:
+  - `count_matches`, `count_events`, `limit`
+  - `filters` (normalized/applied controls and player resolution output)
+  - `resolution` (name-lookup truncation flags, plus `players_resolution_truncated`)
+  - `players[]` ranking with `total_events`, `events` map, `matches`, `last_timestamp`
+  - `matches[]` when `group_by=match` with per-match event rows in watched timestamp order.
+- Notes:
+  - This tool analyzes watched fixtures by intersecting `matches` (user scope) with corresponding `real_matches` events/lineups.
+  - `ids` precedence is identical to other name-based tools: non-empty `ids` ignores other scope filters.
+  - `events` here are analytics outputs/constraints (string array), distinct from `events` in search/count tools (`{ player_name?, event }` objects).
 
 ### `mutate_watched_matches_by_names` (write)
 

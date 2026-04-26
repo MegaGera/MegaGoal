@@ -22,6 +22,7 @@ import {
   resolveSinglePlayerFromName,
   resolveTeamIdsFromOptionalName,
 } from './services/playerWatchedPlayedQuery.js';
+import { analyzeWatchedPlayerEvents } from './services/watchedPlayerEventsQuery.js';
 import { getLiveRealMatchesForUtcDay } from './services/liveRealMatchesQuery.js';
 import {
   listTeamsByLeagueOrCountry,
@@ -67,7 +68,7 @@ export function createMcpServer() {
     name: 'MegaGoal Server MCP',
     version: '0.0.1',
     instructions:
-      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (and location UUID / fixture); search_watched_matches_by_names / count_watched_matches_by_names with optional ids (fixture ids array) or team_name, optional team_2_name (head-to-head when both set), league_name, country_name, optional location_name (substring on user `locations.name`, resolves to matches.location UUID), seasons, optional date_from/date_to (date takes precedence over seasons when provided), optional events array of { player_name?, event } (omit player_name for fixture-wide event presence). If ids is provided, other filters are ignored. Writes: mutate_watched_matches_by_names: mark inserts from real_matches (POST /match shape); optional location_name sets matches.location when a user location matches, otherwise the row is still created without location; unmark uses fixture filters only (location_name ignored, no bulk delete by location). To change a watched match location: unmark then mark again with the new location_name. Real matches (`real_matches`, no location_name): get_real_matches / count_real_matches_by_names with optional ids or the same team/league/country/date/events filters; if ids is provided, other filters are ignored; get_real_matches_full up to 20 full documents. getLiveMatches for today UTC day with live flags. player_played_watched_matches / player_played_watched_stats for player-centric watched data.',
+      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (and location UUID / fixture); search_watched_matches_by_names / count_watched_matches_by_names with optional ids (fixture ids array) or team_name, optional team_2_name (head-to-head when both set), league_name, country_name, optional location_name (substring on user `locations.name`, resolves to matches.location UUID), seasons, optional date_from/date_to (date takes precedence over seasons when provided), optional events array of { player_name?, event } (omit player_name for fixture-wide event presence). If ids is provided, other filters are ignored. Writes: mutate_watched_matches_by_names: mark inserts from real_matches (POST /match shape); optional location_name sets matches.location when a user location matches, otherwise the row is still created without location; unmark uses fixture filters only (location_name ignored, no bulk delete by location). To change a watched match location: unmark then mark again with the new location_name. Real matches (`real_matches`, no location_name): get_real_matches / count_real_matches_by_names with optional ids or the same team/league/country/date/events filters; if ids is provided, other filters are ignored; get_real_matches_full up to 20 full documents. getLiveMatches for today UTC day with live flags. player_played_watched_matches / player_played_watched_stats for single-player watched data. analyze_watched_player_events for reusable multi-player + multi-event analytics on watched fixtures.',
     authenticate: async (request) => resolveAuth(request),
   });
 
@@ -754,6 +755,19 @@ export function createMcpServer() {
       { message: 'player_name must be a non-empty string.' },
     );
 
+  const watchedPlayerEventsAnalyticsSchema = watchedMatchNameWithLocationSchema
+    .extend({
+      players: z.array(z.string().trim().min(1)).optional(),
+      events: z.array(z.string().trim().min(1)).optional(),
+      pair_mode: z.enum(['paired', 'independent']).optional(),
+      logic: z.enum(['and', 'or']).optional(),
+      response_event_scope: z.enum(['matched_only', 'all_in_scope']).optional(),
+      group_by: z.enum(['player', 'match']).optional(),
+      limit: z.coerce.number().int().min(1).max(100).optional(),
+    })
+    .refine(hasWatchedSearchOrLocationFilter, watchedSearchOrLocationFilterMessage)
+    .refine(team2NameRequiresTeamName, team2NameRequiresTeamNameMessage);
+
   server.addTool({
     name: 'player_played_watched_matches',
     title: 'Player played watched matches (basic)',
@@ -820,6 +834,50 @@ export function createMcpServer() {
         null,
         2,
       );
+    },
+  });
+
+  server.addTool({
+    name: 'analyze_watched_player_events',
+    title: 'Analyze watched player events',
+    description:
+      'Reusable watched analytics for mixed player/event questions. Scope by the same watched name/date/location filters as search_watched_matches_by_names (optional ids short-circuit). Add optional players (array of player names) and/or events (goal, assist, cards, lineup, substitute, etc.). pair_mode controls semantics when both are present: paired (default) keeps player-event coupling, independent evaluates player and event conditions separately at match level. logic (default or) combines requested conditions. response_event_scope controls payload: matched_only (default) or all_in_scope events from included matches. group_by=player returns ranking rows; group_by=match adds per-match event timelines ordered by watched timestamp desc.',
+    parameters: watchedPlayerEventsAnalyticsSchema,
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
+    execute: async (args, context) => {
+      const sessionUser =
+        context.session &&
+        typeof context.session.username === 'string'
+          ? context.session.username
+          : undefined;
+      if (!sessionUser) {
+        throw new UserError('Missing authenticated username on MCP session.');
+      }
+
+      const payload = await analyzeWatchedPlayerEvents({
+        username: sessionUser,
+        ids: args.ids,
+        teamName: args.team_name,
+        team2Name: args.team_2_name,
+        leagueName: args.league_name,
+        countryName: args.country_name,
+        locationName: args.location_name,
+        seasons: args.seasons,
+        dateFrom: args.date_from,
+        dateTo: args.date_to,
+        players: args.players,
+        events: args.events,
+        pairMode: args.pair_mode ?? 'paired',
+        logic: args.logic ?? 'or',
+        responseEventScope: args.response_event_scope ?? 'matched_only',
+        groupBy: args.group_by ?? 'player',
+        limit: args.limit,
+      });
+
+      return JSON.stringify(payload, null, 2);
     },
   });
 
