@@ -11,7 +11,7 @@ The tools are organized in these sections:
 - Watched player event analytics (multi-player/multi-event)
 - Watched matches writes (mark / unmark)
 - Watched matches by ids
-- Player watched matches
+- Player watched and real matches
 - Reference lookup
 
 > Current product direction: prefer name-based workflows in clients (no id management in UI/app logic).  
@@ -28,8 +28,9 @@ The tools are organized in these sections:
 
 **Choosing a tool**
 
-- The user asks what they **watched**, saved, or “my games” → watched tools (`search_watched_matches_by_names`, `count_watched_matches_by_names`, `get_watched_matches`, player tools, etc.). To **add or remove** watched rows by the same filters, use **`mutate_watched_matches_by_names`** (`action`: `mark` or `unmark`).
+- The user asks what they **watched**, saved, or “my games” → watched tools (`search_watched_matches_by_names`, `count_watched_matches_by_names`, `get_watched_matches`, `player_played_watched_*`, etc.). To **add or remove** watched rows by the same filters, use **`mutate_watched_matches_by_names`** (`action`: `mark` or `unmark`).
 - The user asks about **fixtures in general** (a date, a season, a league’s results, “who played on …”) without tying to their watched list → **`get_real_matches`** / **`count_real_matches_by_names`**.
+- The user asks for a **single player** on global fixtures (not watched-only) → **`player_played_real_matches`** / **`player_played_real_stats`**.
 - The user asks about **today’s schedule**, **live games**, or whether kickoff **has passed** vs **full-time** for fixtures in the catalog → **`getLiveMatches`** (`real_matches`, UTC day; see that section).
 
 MCP still requires authentication for all tools; real-match tools do **not** narrow rows by username.
@@ -250,9 +251,19 @@ These tools query watched matches directly with numeric filters. They are useful
 
 ---
 
-## Player watched matches
+## Player watched and real matches
 
-These tools focus on a named player and return only watched fixtures where that player actually participated.
+Single-player tools are split by scope:
+
+- **Watched scope** (`matches` for authenticated user): `player_played_watched_matches`, `player_played_watched_stats`
+- **Global scope** (`real_matches` catalog): `player_played_real_matches`, `player_played_real_stats`
+
+All four tools share the same filter contract:
+
+- Required: `player_name`
+- Optional: `team_name`, `seasons`
+- Player resolution: `player_name` is resolved via `players`; ambiguous matches return `ok: false` with `candidates`.
+- Team resolution: `team_name` is resolved via `teams`; if no teams match, returns `ok: false` with `empty_reason: "no_teams_for_team_name"`.
 
 ### `player_played_watched_matches`
 
@@ -274,6 +285,28 @@ These tools focus on a named player and return only watched fixtures where that 
   - Success: `{ ok: true, player, totals, by_team, by_season, team_resolution_truncated }`
   - Same error/ambiguity patterns as `player_played_watched_matches`.
 - Use when: you need goals/assists/matches totals and splits for watched games.
+
+### `player_played_real_matches`
+
+- Purpose: global-catalog equivalent of `player_played_watched_matches` over `real_matches` (not restricted to watched rows).
+- Required: `player_name`.
+- Optional: `team_name`, `seasons`.
+- Participation rule: player must appear in startXI or enter via substitution event.
+- Returns:
+  - Success: `{ ok: true, player, matches[], count, team_resolution_truncated }`
+  - Ambiguous/no player match: `{ ok: false, reason, candidates, resolution_truncated }`
+  - Team filter no result: `{ ok: false, empty_reason: "no_teams_for_team_name", ... }`
+- Use when: you need fixture-level rows for a player's participation on global fixtures.
+
+### `player_played_real_stats`
+
+- Purpose: global-catalog equivalent of `player_played_watched_stats` over `real_matches` (not restricted to watched rows).
+- Required: `player_name`.
+- Optional: `team_name`, `seasons`.
+- Returns:
+  - Success: `{ ok: true, player, totals, by_team, by_season, team_resolution_truncated }`
+  - Same error/ambiguity patterns as `player_played_real_matches`.
+- Use when: you need goals/assists/matches totals and splits for global fixtures.
 
 ---
 
