@@ -151,8 +151,9 @@ export class GeneralMatchCardComponent implements OnInit {
     }
     
     const colors = this.leagueColorsService.getLeagueColors(this.realMatch.league.id);
+    const shadowSpread = this.getTeamLogoShadowSpread();
     return {
-      'box-shadow': `0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 10px ${colors.card_trans_color}`
+      'box-shadow': `0 6px 12px 0 rgba(48,48,48, 0.12), 0 0 0 ${shadowSpread}px ${colors.card_trans_color}`
     };
   }
 
@@ -163,7 +164,8 @@ export class GeneralMatchCardComponent implements OnInit {
     if (!this.watched || !this.realMatch) return;
     const target = event.currentTarget as HTMLElement;
     const colors = this.leagueColorsService.getLeagueColors(this.realMatch.league.id);
-    target.style.boxShadow = `0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 10px ${colors.card_trans_color}`;
+    const shadowSpread = this.getTeamLogoShadowSpread();
+    target.style.boxShadow = `0 8px 16px 0 rgba(48,48,48, 0.18), 0 0 0 ${shadowSpread}px ${colors.card_trans_color}`;
   }
 
   /*
@@ -174,6 +176,17 @@ export class GeneralMatchCardComponent implements OnInit {
     const target = event.currentTarget as HTMLElement;
     const styles = this.getTeamLogoStyles();
     target.style.boxShadow = styles['box-shadow'] || '';
+  }
+
+  /*
+    Keep team logo shadow ring proportional on small screens
+  */
+  private getTeamLogoShadowSpread(): number {
+    if (typeof window === 'undefined') {
+      return 10;
+    }
+
+    return window.innerWidth <= 768 ? 5 : 10;
   }
 }
 
