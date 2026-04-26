@@ -2,7 +2,7 @@
   Match Info component to display detailed information about a specific match
 */
 
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -38,6 +38,8 @@ export class MatchInfoComponent {
   isUpdating: boolean = false;
   highlightsVideo: any = null;
   loadingVideo: boolean = false;
+  viewMode: 'events' | 'statistics' | 'lineups' = 'events';
+  isMobileView: boolean = false;
 
   constructor(
     private megagoal: MegaGoalService, 
@@ -48,6 +50,8 @@ export class MatchInfoComponent {
     private updater: UpdaterService,
     private sanitizer: DomSanitizer
   ) {
+    this.updateViewportMode();
+
     this.activatedRoute.queryParamMap.subscribe(params => {
       this.queryMatchId = +params.get('id')! || 0;
       this.init();
@@ -57,6 +61,19 @@ export class MatchInfoComponent {
     this.authService.isAdmin().subscribe(isAdmin => {
       this.isAdmin = isAdmin;
     });
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateViewportMode();
+  }
+
+  setView(mode: 'events' | 'statistics' | 'lineups'): void {
+    this.viewMode = mode;
+  }
+
+  private updateViewportMode(): void {
+    this.isMobileView = typeof window !== 'undefined' && window.innerWidth <= 768;
   }
 
   init() {

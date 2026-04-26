@@ -41,20 +41,27 @@
     </div>
   </div>
 
-  <!-- Match Events Section -->
-  <app-match-events 
-    *ngIf="match.events"
-    [events]="match.events"
-    [homeTeamId]="match.teams.home.id"
-    [awayTeamId]="match.teams.away.id">
-  </app-match-events>
+  <div class="view-toggle-card" *ngIf="isMobileView">
+    <div class="view-toggle">
+      <button class="toggle-btn" [class.active]="viewMode === 'events'" (click)="setView('events')">Events</button>
+      <button class="toggle-btn" [class.active]="viewMode === 'statistics'" (click)="setView('statistics')">Statistics</button>
+      <button class="toggle-btn" [class.active]="viewMode === 'lineups'" (click)="setView('lineups')">Lineups</button>
+    </div>
+  </div>
 
-  <!-- Statistics and Lineups Two-Column Layout -->
-  <div class="stats-lineups-container">
-    <!-- Match Statistics Section - Left Column (35%) -->
-    <div class="stats-column">
+  <div class="mobile-tab-content" *ngIf="isMobileView">
+    <div class="mobile-tab-pane" [class.show]="viewMode === 'events'">
+      <app-match-events 
+        *ngIf="viewMode === 'events' && match.events"
+        [events]="match.events"
+        [homeTeamId]="match.teams.home.id"
+        [awayTeamId]="match.teams.away.id">
+      </app-match-events>
+    </div>
+
+    <div class="mobile-tab-pane" [class.show]="viewMode === 'statistics'">
       <app-match-statistics
-        *ngIf="homeStatistics && awayStatistics"
+        *ngIf="viewMode === 'statistics' && homeStatistics && awayStatistics"
         [homeStatistics]="homeStatistics"
         [awayStatistics]="awayStatistics"
         [isAdmin]="isAdmin"
@@ -64,16 +71,51 @@
       </app-match-statistics>
     </div>
 
-    <!-- Match Lineups Section - Right Column (65%) -->
-    <div class="lineups-column">
+    <div class="mobile-tab-pane" [class.show]="viewMode === 'lineups'">
       <app-match-lineups
-        *ngIf="match.lineups"
+        *ngIf="viewMode === 'lineups' && match.lineups"
         [lineups]="match.lineups"
         [homeTeamId]="match.teams.home.id"
         [awayTeamId]="match.teams.away.id">
       </app-match-lineups>
     </div>
   </div>
+
+  <ng-container *ngIf="!isMobileView">
+    <!-- Match Events Section -->
+    <app-match-events 
+      *ngIf="match.events"
+      [events]="match.events"
+      [homeTeamId]="match.teams.home.id"
+      [awayTeamId]="match.teams.away.id">
+    </app-match-events>
+
+    <!-- Statistics and Lineups Two-Column Layout -->
+    <div class="stats-lineups-container">
+      <!-- Match Statistics Section - Left Column (35%) -->
+      <div class="stats-column">
+        <app-match-statistics
+          *ngIf="homeStatistics && awayStatistics"
+          [homeStatistics]="homeStatistics"
+          [awayStatistics]="awayStatistics"
+          [isAdmin]="isAdmin"
+          [isFinished]="isFinished()"
+          [isUpdating]="isUpdating"
+          (updateStatistics)="updateStatistics()">
+        </app-match-statistics>
+      </div>
+
+      <!-- Match Lineups Section - Right Column (65%) -->
+      <div class="lineups-column">
+        <app-match-lineups
+          *ngIf="match.lineups"
+          [lineups]="match.lineups"
+          [homeTeamId]="match.teams.home.id"
+          [awayTeamId]="match.teams.away.id">
+        </app-match-lineups>
+      </div>
+    </div>
+  </ng-container>
 
 </div>
 
