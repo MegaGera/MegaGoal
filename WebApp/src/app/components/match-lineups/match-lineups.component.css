@@ -16,7 +16,7 @@
 
 .lineups-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 2rem;
   width: 100%;
   min-width: 0;
@@ -101,54 +101,16 @@
   min-width: 0;
 }
 
-.player-item {
-  display: grid;
-  grid-template-columns: 40px 1fr auto;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  background: #f9f9f9;
-  border-radius: 6px;
-  transition: background 0.2s ease;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
+.players-list-unplaced {
+  margin-top: 0.75rem;
 }
 
-.player-item:hover {
-  background: #f0f0f0;
-}
-
-.player-item.substitute {
-  opacity: 0.8;
-  background: #f5f5f5;
-}
-
-.player-number {
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: #667eea;
+.unplaced-title {
+  margin: 0;
   text-align: center;
-  min-width: 30px;
-}
-
-.player-name {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #333;
-  word-wrap: break-word;
-}
-
-.player-position {
-  font-size: 0.75rem;
+  color: #555;
+  font-size: 0.82rem;
   font-weight: 600;
-  color: #666;
-  text-transform: uppercase;
-  padding: 0.25rem 0.5rem;
-  background: #e5e7eb;
-  border-radius: 4px;
-  min-width: 35px;
-  text-align: center;
 }
 
 .coach-section {
@@ -189,16 +151,9 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
-  .lineups-container {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-}
-
 @media (max-width: 768px) {
   .lineups-section {
-    padding: 1.5rem;
+    padding: 0.9rem 0.45rem;
   }
 
   .section-title {
@@ -206,7 +161,6 @@
   }
 
   .lineups-container {
-    grid-template-columns: 1fr;
     gap: 2rem;
   }
 
@@ -229,19 +183,5 @@
     padding: 0.4rem 0.5rem;
   }
 
-  .player-number {
-    font-size: 0.85rem;
-    min-width: 25px;
-  }
-
-  .player-name {
-    font-size: 0.85rem;
-  }
-
-  .player-position {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.4rem;
-    min-width: 30px;
-  }
 }
 

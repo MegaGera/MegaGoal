@@ -1,0 +1,28 @@
+<div class="pitch">
+  <div class="center-line"></div>
+  <div class="center-circle"></div>
+  <div class="penalty-area top"></div>
+  <div class="penalty-area bottom"></div>
+
+  <div class="pitch-lines">
+    <div class="pitch-row" *ngFor="let row of rows">
+      <a
+        *ngFor="let fieldPlayer of row"
+        [routerLink]="['/app/player']"
+        [queryParams]="{id: fieldPlayer.player.id}"
+        class="field-player-link">
+        <div class="field-player">
+          <div class="field-player-image-wrapper">
+            <img
+              [src]="getPlayerImageUrl(fieldPlayer.player.id)"
+              [alt]="fieldPlayer.player.name"
+              class="field-player-image"
+              (error)="onPlayerImageError($event)">
+            <span class="field-player-number">{{ fieldPlayer.player.number }}</span>
+          </div>
+          <span class="field-player-name">{{ fieldPlayer.player.name }}</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
