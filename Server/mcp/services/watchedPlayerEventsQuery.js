@@ -6,13 +6,13 @@ import { searchPlayersByName } from './playerSearchQuery.js';
 const DEFAULT_OUTPUT_LIMIT = 20;
 const MAX_OUTPUT_LIMIT = 100;
 
-function clampLimit(limit) {
+export function clampLimit(limit) {
   const n = limit == null ? DEFAULT_OUTPUT_LIMIT : Number(limit);
   if (!Number.isFinite(n)) return DEFAULT_OUTPUT_LIMIT;
   return Math.min(Math.max(Math.trunc(n), 1), MAX_OUTPUT_LIMIT);
 }
 
-function normalizeEventName(event) {
+export function normalizeEventName(event) {
   const normalized = String(event ?? '').trim().toLowerCase();
   if (!normalized) return null;
   if (normalized === 'lineup') return 'lineup';
@@ -137,7 +137,7 @@ function pushRecord(records, {
   });
 }
 
-function recordsFromRealMatch(realMatch) {
+export function recordsFromRealMatch(realMatch) {
   const records = [];
   const fixtureId = realMatch.fixture?.id;
   const timestamp = realMatch.fixture?.timestamp ?? null;
@@ -315,7 +315,7 @@ function recordsFromRealMatch(realMatch) {
   return records;
 }
 
-async function resolvePlayerFilter(names) {
+export async function resolvePlayerFilter(names) {
   const list = Array.isArray(names)
     ? names
       .map((n) => String(n ?? '').trim())
@@ -364,7 +364,7 @@ async function resolvePlayerFilter(names) {
   };
 }
 
-function uniqueStrings(values) {
+export function uniqueStrings(values) {
   const seen = new Set();
   const out = [];
   for (const v of values || []) {
@@ -376,7 +376,7 @@ function uniqueStrings(values) {
   return out;
 }
 
-function buildRanking(records, limit) {
+export function buildRanking(records, limit) {
   const buckets = new Map();
   for (const rec of records) {
     const key = rec.player_id;
@@ -424,7 +424,7 @@ function buildRanking(records, limit) {
     .slice(0, limit);
 }
 
-function buildByMatchRows(matchesByFixture, records, limit) {
+export function buildByMatchRows(matchesByFixture, records, limit) {
   const rows = Array.from(matchesByFixture.values())
     .sort((a, b) => Number(b.fixture.timestamp ?? 0) - Number(a.fixture.timestamp ?? 0))
     .map((match) => ({

@@ -6,6 +6,7 @@ The tools are organized in these sections:
 
 - Watched matches vs real matches (which tool to use)
 - Real matches (global fixture catalog: by names, today / live)
+- Real player event analytics (multi-player/multi-event)
 - Watched matches by names
 - Watched player event analytics (multi-player/multi-event)
 - Watched matches writes (mark / unmark)
@@ -98,6 +99,28 @@ When using name-based match tools, `events` is an optional array of objects:
 - Parameters: none.
 - Returns: `utc_date`, `day_start_unix`, `day_end_unix`, `now_unix`, `status_legend` (same short codes as `WebApp/src/app/config/matchStatus.ts`: not started `NS`, `TBD`; finished `FT`, `AET`, `PEN`, `PST`, `CANC`), `count`, and `matches[]`. Each match omits `statistics`, `lineups`, and `events`, and includes a **`live`** object: `kickoff_passed`, `status_finished`, `status_not_started`, `kickoff_passed_and_not_finished`, `status_short`, `fixture_timestamp`.
 - Sort: kickoff ascending.
+
+### `analyze_real_player_events`
+
+- Purpose: reusable player/event analytics on the global `real_matches` catalog (not user watched list), with the same style as watched analytics.
+- Scope filters: same real name/date contract as `get_real_matches` (`ids`, `team_name`, optional `team_2_name`, `league_name`, `country_name`, `seasons`, `date_from`, `date_to`; **no `location_name`**).
+- Player/event filters:
+  - `players` (optional string array): semantic player-name resolution through `players`.
+  - `events` (optional string array): `lineup`, `startingXI`, `bench`, `substitute`, `goal`, `assist`, `own_goal`, `missed_penalty`, `penalty`, `yellow_card`, `second_yellow`, `red_card`, `card`, `var`, `penalty_shootout_scored`, `penalty_shootout_missed`.
+- Semantics controls:
+  - `pair_mode` (`paired` default) or `independent`
+  - `logic` (`or` default, or `and`)
+  - `response_event_scope` (`matched_only` default, or `all_in_scope`)
+  - `group_by` (`player` default, or `match`)
+  - `limit` (optional, 1..100, default 20)
+- Returns:
+  - `count_matches`, `count_events`, `limit`
+  - `filters`, `resolution`
+  - `players[]` ranking with `total_events`, `events` map, `matches`, `last_timestamp`
+  - `matches[]` when `group_by=match`
+- Notes:
+  - `ids` precedence is identical to other real name-based tools: non-empty `ids` ignores other scope filters.
+  - Supports the same prompt patterns as watched analytics but over global fixtures.
 
 ---
 
