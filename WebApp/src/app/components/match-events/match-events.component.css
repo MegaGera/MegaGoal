@@ -1,21 +1,14 @@
 /* Events Section */
 .events-section {
-  background: white;
-  border-radius: 12px;
-  padding: 2rem 0.5rem 0.5rem 0.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.section-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 1.15rem 0.75rem 0.75rem 0.75rem;
+  box-shadow: none;
 }
 
 .section-title {
-  margin: 0;
+  margin: 0 0 2rem 0;
   font-size: 1.75rem;
   font-weight: 600;
   color: #333;
@@ -35,7 +28,7 @@
   font-size: 15px;
   font-weight: 700;
   line-height: 1.2;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   vertical-align: middle;
@@ -59,10 +52,46 @@
   transform: translateY(0) scale(1);
 }
 
+.filter-toggle-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
 /* Timeline Container */
 .timeline-container {
   position: relative;
   padding: 0.5rem 0;
+}
+
+.teams-header-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.team-header-half {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+
+.team-header-home {
+  align-self: flex-start;
+  border-left: 3px solid #dc143c;
+}
+
+.team-header-away {
+  align-self: flex-end;
+  border-right: 3px solid #dc143c;
 }
 
 .timeline-vertical {
@@ -375,11 +404,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .events-section {
-    padding: 1.5rem 0.5rem 1.5rem 0.5rem;
-  }
-
-  .section-header {
-    gap: 0.75rem;
+    padding: 0.9rem 0.45rem;
   }
 
   .section-title {
@@ -394,6 +419,10 @@
   .timeline-vertical {
     padding: 0.75rem 0;
     max-width: 100%;
+  }
+
+  .team-header-half {
+    padding: 0.4rem 0.55rem;
   }
 
   .event-content-home {

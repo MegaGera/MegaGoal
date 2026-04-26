@@ -1,9 +1,10 @@
 /* Lineups Section */
 .lineups-section {
   background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  border: 1px solid #e8edf3;
+  padding: 1.15rem 0.75rem 0.75rem 0.75rem;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
 }
 
 .section-title {
@@ -25,13 +26,13 @@
 .team-lineup {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   min-width: 0;
   width: 100%;
   overflow: hidden;
 }
 
-.team-header {
+.teams-header-row {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,41 +41,51 @@
   min-width: 0;
 }
 
-.team-link {
-  text-decoration: none;
-  color: inherit;
-  display: inline-block;
-  transition: transform 0.2s ease;
-}
-
-.team-link:hover {
-  transform: scale(1.05);
-}
-
-.team-logo-large {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-}
-
-.team-name {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-  text-align: center;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+.team-header-half {
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
 }
 
-.formation {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #dc143c;
-  padding: 0.5rem 1rem;
-  background: #f0f0f0;
-  border-radius: 6px;
+.lineup-team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.lineup-team-header app-match-team-header {
+  flex: 1;
+  min-width: 0;
+}
+
+.team-header-home {
+  align-self: flex-start;
+  border-left: 3px solid #dc143c;
+}
+
+.team-header-away {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+  border-right: 3px solid #dc143c;
+}
+
+.formation-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #b31336;
+  padding: 0.22rem 0.58rem;
+  background: #ffe7ee;
+  border: 1px solid #f5b6c5;
+  border-radius: 7px;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .players-section {
@@ -114,8 +125,8 @@
 }
 
 .coach-section {
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  padding-top: 0;
+  border-top: none;
 }
 
 .coach-item {
@@ -164,17 +175,15 @@
     gap: 2rem;
   }
 
-  .team-logo-large {
-    width: 48px;
-    height: 48px;
+  .team-header-half {
+    width: 100%;
+    min-width: 0;
+    padding: 0.4rem 0.55rem;
   }
 
-  .team-name {
-    font-size: 1.1rem;
-  }
-
-  .formation {
-    font-size: 0.9rem;
+  .formation-badge {
+    font-size: 0.72rem;
+    padding: 0.18rem 0.45rem;
   }
 
   .player-item {

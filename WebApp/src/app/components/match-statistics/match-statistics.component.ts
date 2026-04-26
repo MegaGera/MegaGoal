@@ -1,13 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { TeamStatistics } from '../../models/realMatch';
-import { ImagesService } from '../../services/images.service';
+import { MatchTeamHeaderComponent } from '../match-team-header/match-team-header.component';
 
 @Component({
   selector: 'app-match-statistics',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, MatchTeamHeaderComponent],
   templateUrl: './match-statistics.component.html',
   styleUrl: './match-statistics.component.css'
 })
@@ -18,8 +17,6 @@ export class MatchStatisticsComponent {
   @Input() isFinished: boolean = false;
   @Input() isUpdating: boolean = false;
   @Output() updateStatistics = new EventEmitter<void>();
-
-  constructor(public images: ImagesService) {}
 
   getStatValue(statistics: TeamStatistics, type: string): string | number {
     if (!statistics) return '-';

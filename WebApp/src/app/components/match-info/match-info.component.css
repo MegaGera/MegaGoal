@@ -36,11 +36,38 @@
   font-weight: 500;
 }
 
-/* Statistics and Lineups Container */
-.stats-lineups-container {
+/* Desktop three-column layout: Statistics | Events | Lineups */
+.desktop-main-row {
   display: grid;
-  grid-template-columns: 35% 65%;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 2rem;
+  align-items: start;
+}
+
+.desktop-column {
+  min-width: 0;
+}
+
+.match-panel-card,
+.mobile-tab-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.match-panel-title {
+  margin: 0;
+  padding: 0.35rem 0.85rem;
+  width: 80%;
+  align-self: center;
+  text-align: center;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  background: linear-gradient(135deg, #dc143c 0%, #b31336 100%);
+  box-shadow: 0 4px 14px rgba(220, 20, 60, 0.22);
 }
 
 .view-toggle-card {
@@ -88,6 +115,12 @@
 
 .mobile-tab-pane.show {
   display: block;
+}
+
+:host ::ng-deep .statistics-section .section-title,
+:host ::ng-deep .events-section .section-title,
+:host ::ng-deep .lineups-section .section-title {
+  display: none;
 }
 
 /* Loading State */
@@ -161,7 +194,7 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .stats-lineups-container {
+  .desktop-main-row {
     grid-template-columns: 1fr;
   }
 }
@@ -170,6 +203,11 @@
   .match-info-container {
     padding: 1rem;
     gap: 1.5rem;
+  }
+
+  .match-panel-title {
+    font-size: 0.84rem;
+    padding: 0.32rem 0.72rem;
   }
 
   .highlights-section {
@@ -184,7 +222,19 @@
     display: block;
   }
 
-  :host ::ng-deep .mobile-tab-content .section-title {
+  .mobile-tab-content .match-panel-title {
     display: none;
+  }
+}
+
+@media (min-width: 769px) {
+  :host ::ng-deep .statistics-section,
+  :host ::ng-deep .events-section,
+  :host ::ng-deep .lineups-section {
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem !important;
+  }
+
+  :host ::ng-deep .statistics-section {
+    padding: 0.5rem 1rem 0.5rem 1rem !important;
   }
 }

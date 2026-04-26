@@ -1,12 +1,21 @@
 <div class="events-section" *ngIf="events && events.length > 0">
-  <div class="section-header">
-    <h2 class="section-title">Match Events</h2>
-    <button 
-      class="filter-toggle-btn"
-      (click)="toggleEventFilter()"
-      [attr.aria-label]="showAllEvents ? 'Show only important events' : 'Show all events'">
-      {{ showAllEvents ? 'Show Less Events' : 'Show All Events' }}
-    </button>
+  <h2 class="section-title">Events</h2>
+
+  <div class="teams-header-row">
+    <div class="team-header-half team-header-home">
+      <app-match-team-header
+        [teamId]="homeTeamId"
+        [teamName]="homeTeamName"
+        side="home">
+      </app-match-team-header>
+    </div>
+    <div class="team-header-half team-header-away">
+      <app-match-team-header
+        [teamId]="awayTeamId"
+        [teamName]="awayTeamName"
+        side="away">
+      </app-match-team-header>
+    </div>
   </div>
   
   <div class="timeline-container">
@@ -64,6 +73,15 @@
         <div class="event-time-center">{{ formatTime(event) }}</div>
       </div>
     </div>
+  </div>
+
+  <div class="filter-toggle-wrapper">
+    <button
+      class="filter-toggle-btn"
+      (click)="toggleEventFilter()"
+      [attr.aria-label]="showAllEvents ? 'Show only important events' : 'Show all events'">
+      {{ showAllEvents ? 'Show Less Events' : 'Show All Events' }}
+    </button>
   </div>
 </div>
 

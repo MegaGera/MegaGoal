@@ -1,0 +1,19 @@
+<a
+  [routerLink]="['/app/team']"
+  [queryParams]="{ id: teamId }"
+  class="team-link"
+  [ngClass]="side === 'home' ? 'team-home' : 'team-away'">
+  <img
+    *ngIf="side === 'home'"
+    [src]="images.getRouteImageTeam(teamId)"
+    [alt]="teamName"
+    class="team-logo"
+    onerror="this.src='assets/default-team.png'">
+  <span class="team-name">{{ teamName }}</span>
+  <img
+    *ngIf="side === 'away'"
+    [src]="images.getRouteImageTeam(teamId)"
+    [alt]="teamName"
+    class="team-logo"
+    onerror="this.src='assets/default-team.png'">
+</a>

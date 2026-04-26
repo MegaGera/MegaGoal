@@ -1,32 +1,20 @@
 <div class="statistics-section" *ngIf="homeStatistics && awayStatistics">
-  <h2 class="section-title">Match Statistics</h2>
-  
-  <!-- Team Headers -->
-  <div class="teams-header">
-    <div class="team-header">
-      <a [routerLink]="['/app/team']" [queryParams]="{ id: homeStatistics.team.id }" class="team-link">
-        <img 
-          [src]="images.getRouteImageTeam(homeStatistics.team.id)" 
-          [alt]="homeStatistics.team.name" 
-          class="team-logo-large"
-          onerror="this.src='assets/default-team.png'">
-      </a>
-      <a [routerLink]="['/app/team']" [queryParams]="{ id: homeStatistics.team.id }" class="team-link">
-        <h3 class="team-name">{{ homeStatistics.team.name }}</h3>
-      </a>
+  <h2 class="section-title">Statistics</h2>
+
+  <div class="teams-header-row">
+    <div class="team-header-half team-header-home">
+      <app-match-team-header
+        [teamId]="homeStatistics.team.id"
+        [teamName]="homeStatistics.team.name"
+        side="home">
+      </app-match-team-header>
     </div>
-    
-    <div class="team-header">
-      <a [routerLink]="['/app/team']" [queryParams]="{ id: awayStatistics.team.id }" class="team-link">
-        <img 
-          [src]="images.getRouteImageTeam(awayStatistics.team.id)" 
-          [alt]="awayStatistics.team.name" 
-          class="team-logo-large"
-          onerror="this.src='assets/default-team.png'">
-      </a>
-      <a [routerLink]="['/app/team']" [queryParams]="{ id: awayStatistics.team.id }" class="team-link">
-        <h3 class="team-name">{{ awayStatistics.team.name }}</h3>
-      </a>
+    <div class="team-header-half team-header-away">
+      <app-match-team-header
+        [teamId]="awayStatistics.team.id"
+        [teamName]="awayStatistics.team.name"
+        side="away">
+      </app-match-team-header>
     </div>
   </div>
   

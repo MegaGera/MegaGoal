@@ -4,25 +4,18 @@
   <div class="lineups-container">
     <!-- Home Team -->
     <div class="team-lineup" *ngIf="getHomeLineup() as homeLineup">
-      <div class="team-header">
-        <a [routerLink]="['/app/team']" [queryParams]="{ id: homeLineup.team.id }" class="team-link">
-          <img 
-            [src]="images.getRouteImageTeam(homeLineup.team.id)" 
-            [alt]="homeLineup.team.name" 
-            class="team-logo-large"
-            onerror="this.src='assets/default-team.png'">
-        </a>
-        <a [routerLink]="['/app/team']" [queryParams]="{ id: homeLineup.team.id }" class="team-link">
-          <h3 class="team-name">{{ homeLineup.team.name }}</h3>
-        </a>
-        <div class="formation" *ngIf="homeLineup.formation">
-          {{ homeLineup.formation }}
+      <div class="teams-header-row">
+        <div class="team-header-half team-header-home lineup-team-header">
+          <app-match-team-header
+            [teamId]="homeLineup.team.id"
+            [teamName]="homeLineup.team.name"
+            side="home">
+          </app-match-team-header>
+          <span class="formation-badge" *ngIf="homeLineup.formation">{{ homeLineup.formation }}</span>
         </div>
       </div>
 
       <div class="players-section" *ngIf="canRenderField(homeLineup); else homeListMode">
-        <h4 class="section-subtitle">Starting XI</h4>
-
         <app-lineup-pitch [rows]="getFieldRows(homeLineup)"></app-lineup-pitch>
 
         <div class="players-list players-list-unplaced" *ngIf="getUnplacedStartXI(homeLineup).length > 0">
@@ -37,7 +30,6 @@
 
       <ng-template #homeListMode>
         <div class="players-section">
-          <h4 class="section-subtitle">Starting XI</h4>
           <div class="players-list">
             <app-player-item
               *ngFor="let player of homeLineup.startXI"
@@ -47,6 +39,14 @@
           </div>
         </div>
       </ng-template>
+
+      <!-- Coach -->
+      <div class="coach-section" *ngIf="homeLineup.coach?.name">
+        <div class="coach-item">
+          <span class="coach-label">Coach:</span>
+          <span class="coach-name">{{ homeLineup.coach?.name }}</span>
+        </div>
+      </div>
 
       <!-- Substitutes -->
       <div class="players-section" *ngIf="homeLineup.substitutes && homeLineup.substitutes.length > 0">
@@ -59,37 +59,22 @@
           </app-player-item>
         </div>
       </div>
-
-      <!-- Coach -->
-      <div class="coach-section" *ngIf="homeLineup.coach">
-        <div class="coach-item">
-          <span class="coach-label">Coach:</span>
-          <span class="coach-name">{{ homeLineup.coach!.name }}</span>
-        </div>
-      </div>
     </div>
 
     <!-- Away Team -->
     <div class="team-lineup" *ngIf="getAwayLineup() as awayLineup">
-      <div class="team-header">
-        <a [routerLink]="['/app/team']" [queryParams]="{ id: awayLineup.team.id }" class="team-link">
-          <img 
-            [src]="images.getRouteImageTeam(awayLineup.team.id)" 
-            [alt]="awayLineup.team.name" 
-            class="team-logo-large"
-            onerror="this.src='assets/default-team.png'">
-        </a>
-        <a [routerLink]="['/app/team']" [queryParams]="{ id: awayLineup.team.id }" class="team-link">
-          <h3 class="team-name">{{ awayLineup.team.name }}</h3>
-        </a>
-        <div class="formation" *ngIf="awayLineup.formation">
-          {{ awayLineup.formation }}
+      <div class="teams-header-row">
+        <div class="team-header-half team-header-away lineup-team-header">
+          <app-match-team-header
+            [teamId]="awayLineup.team.id"
+            [teamName]="awayLineup.team.name"
+            side="away">
+          </app-match-team-header>
+          <span class="formation-badge" *ngIf="awayLineup.formation">{{ awayLineup.formation }}</span>
         </div>
       </div>
 
       <div class="players-section" *ngIf="canRenderField(awayLineup); else awayListMode">
-        <h4 class="section-subtitle">Starting XI</h4>
-
         <app-lineup-pitch [rows]="getFieldRows(awayLineup)"></app-lineup-pitch>
 
         <div class="players-list players-list-unplaced" *ngIf="getUnplacedStartXI(awayLineup).length > 0">
@@ -104,7 +89,6 @@
 
       <ng-template #awayListMode>
         <div class="players-section">
-          <h4 class="section-subtitle">Starting XI</h4>
           <div class="players-list">
             <app-player-item
               *ngFor="let player of awayLineup.startXI"
@@ -115,6 +99,14 @@
         </div>
       </ng-template>
 
+      <!-- Coach -->
+      <div class="coach-section" *ngIf="awayLineup.coach?.name">
+        <div class="coach-item">
+          <span class="coach-label">Coach:</span>
+          <span class="coach-name">{{ awayLineup.coach?.name }}</span>
+        </div>
+      </div>
+
       <!-- Substitutes -->
       <div class="players-section" *ngIf="awayLineup.substitutes && awayLineup.substitutes.length > 0">
         <h4 class="section-subtitle">Substitutes</h4>
@@ -124,14 +116,6 @@
             [player]="player.player"
             [isSubstitute]="true">
           </app-player-item>
-        </div>
-      </div>
-
-      <!-- Coach -->
-      <div class="coach-section" *ngIf="awayLineup.coach">
-        <div class="coach-item">
-          <span class="coach-label">Coach:</span>
-          <span class="coach-name">{{ awayLineup.coach!.name }}</span>
         </div>
       </div>
     </div>

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatchEvent } from '../../models/realMatch';
 import { ImagesService } from '../../services/images.service';
+import { MatchTeamHeaderComponent } from '../match-team-header/match-team-header.component';
 
 @Component({
   selector: 'app-match-events',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MatchTeamHeaderComponent],
   templateUrl: './match-events.component.html',
   styleUrl: './match-events.component.css'
 })
@@ -15,6 +16,8 @@ export class MatchEventsComponent {
   @Input() events!: MatchEvent[];
   @Input() homeTeamId!: number;
   @Input() awayTeamId!: number;
+  @Input() homeTeamName!: string;
+  @Input() awayTeamName!: string;
 
   showAllEvents: boolean = false;
 
