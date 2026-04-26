@@ -1,6 +1,6 @@
 import { getDB } from '../config/db.js';
-import { ObjectId } from 'mongodb';
 import { logMatchCreated, logMatchDeleted, logMatchUpdateLocation } from './logController.js';
+import { getWatchedMatchesForUser } from '../mcp/services/watchedMatchesQuery.js';
 import {
   buildMatchDocument,
   parseCreateMatchBody,
@@ -19,27 +19,18 @@ import { parseLandingMatchSettings } from '../entities/settingsEntity.js';
 
 // Get matches
 const getMatches = async (req, res) => {
-  const db = getDB();
   try {
-    let {team_id, season, location, fixture_id} = req.query;
+    let { team_id, season, league_id, location, fixture_id } = req.query;
     let username = req.validateData.username;
 
-    const filters = [];
-    if (team_id) {
-      filters.push({
-          $or: [
-              { 'teams.home.id': +team_id },
-              { 'teams.away.id': +team_id }
-          ]
-      });
-    }
-    if (season) filters.push({ 'league.season': +season });
-    if (username) filters.push({ 'user.username': username });
-    if (location) filters.push({ 'location': location });
-    if (fixture_id) filters.push({ 'fixture.id': +fixture_id });
-    
-    const query = filters.length > 0 ? { $and: filters } : {};
-    const result = await db.collection('matches').find(query).toArray();
+    const result = await getWatchedMatchesForUser({
+      username,
+      team_id,
+      season,
+      league_id,
+      location,
+      fixture_id,
+    });
     const validatedResult = parseMatches(result);
 
     console.log("Matches Getted");
@@ -51,36 +42,23 @@ const getMatches = async (req, res) => {
 
 // Get matches by team id
 const getMatchesByTeamId = async (req, res) => {
-  const db = getDB();
   try {
     const parsedTeamId = parseTeamId(req.params.teamId);
-    const { season, location, fixture_id } = req.query;
+    const { season, league_id, location, fixture_id } = req.query;
     const username = req.validateData.username;
 
-    const filters = [
-      {
-        $or: [
-          { 'teams.home.id': parsedTeamId },
-          { 'teams.away.id': parsedTeamId }
-        ]
-      }
-    ];
-
-    if (username) {
-      filters.push({ 'user.username': username });
-    }
-    if (season) {
-      filters.push({ 'league.season': +season });
-    }
-    if (location) {
-      filters.push({ 'location': location });
-    }
-    if (fixture_id) {
-      filters.push({ 'fixture.id': +fixture_id });
+    if (!parsedTeamId) {
+      return res.status(400).json({ message: "Team ID is required" });
     }
 
-    const query = { $and: filters };
-    const result = await db.collection('matches').find(query).toArray();
+    const result = await getWatchedMatchesForUser({
+      username,
+      team_id: parsedTeamId,
+      season,
+      league_id,
+      location,
+      fixture_id,
+    });
     const validatedResult = parseMatches(result);
 
     console.log(`Matches retrieved for team ${parsedTeamId}`);
