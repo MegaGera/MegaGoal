@@ -322,8 +322,9 @@ export function recordsFromRealMatch(realMatch) {
       eventType: scorerType,
       minute,
     });
-    // goal remains a generic scorer metric, excluding own-goal/missed penalty
-    if (scorerType === 'penalty' || scorerType === 'goal') {
+    // Keep generic "goal" only for scored penalties; normal goals are already
+    // recorded once above as scorerType === "goal".
+    if (scorerType === 'penalty') {
       pushRecord(records, {
         fixtureId,
         timestamp,

@@ -53,7 +53,7 @@ When using name-based match tools, `events` is an optional array of objects:
   - `lineup`: player played minutes (in `lineups.startXI` or entered from bench via substitution event).
   - `startingXI`: player appears in `lineups.startXI`.
   - `bench`: player appears in `lineups.substitutes`.
-  - `goal`: player is the scorer on a `goal` event (`events.type = goal`), excluding `own goal` and `missed penalty`.
+  - `goal`: player is the scorer on a `goal` event (`events.type = goal`), excluding `own goal` and `missed penalty` (counted once per source goal event).
   - `assist`: player is the assister on a `goal` event (`events.type = goal`).
   - `own_goal`: player is the scorer on a `goal` event with `detail = own goal`.
   - `missed_penalty`: player is the scorer on a `goal` event with `detail = missed penalty`.
@@ -202,6 +202,7 @@ They resolve human-readable names server-side and keep the client contract clean
   - This tool analyzes watched fixtures by intersecting `matches` (user scope) with corresponding `real_matches` events/lineups.
   - `ids` precedence is identical to other name-based tools: non-empty `ids` ignores other scope filters.
   - `events` here are analytics outputs/constraints (string array), distinct from `events` in search/count tools (`{ player_name?, event }` objects).
+  - Goal-event counting is de-duplicated: normal goals contribute one `goal`; scored penalties contribute one `penalty` plus one generic `goal`.
 
 ### `mutate_watched_matches_by_names` (write)
 
