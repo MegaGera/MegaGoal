@@ -15,6 +15,13 @@ export function clampLimit(limit) {
 export function normalizeEventName(event) {
   const normalized = String(event ?? '').trim().toLowerCase();
   if (!normalized) return null;
+  if (
+    normalized === 'calledup' ||
+    normalized === 'called_up' ||
+    normalized === 'called up'
+  ) {
+    return 'called_up';
+  }
   if (normalized === 'lineup') return 'lineup';
   if (normalized === 'startingxi' || normalized === 'starting_xi') {
     return 'startingXI';
@@ -141,6 +148,14 @@ export function recordsFromRealMatch(realMatch) {
   const records = [];
   const fixtureId = realMatch.fixture?.id;
   const timestamp = realMatch.fixture?.timestamp ?? null;
+  const incomingSubstituteIds = new Set();
+
+  for (const event of realMatch.events || []) {
+    const rawType = String(event.type ?? '').trim().toLowerCase();
+    if (rawType !== 'subst') continue;
+    const incomingId = Number(event.assist?.id);
+    if (Number.isFinite(incomingId)) incomingSubstituteIds.add(incomingId);
+  }
 
   for (const lineup of realMatch.lineups || []) {
     const teamId = lineup.team?.id;
@@ -154,6 +169,15 @@ export function recordsFromRealMatch(realMatch) {
         teamId,
         teamName: tName,
         eventType: 'startingXI',
+      });
+      pushRecord(records, {
+        fixtureId,
+        timestamp,
+        playerId: row.player?.id,
+        playerName: row.player?.name,
+        teamId,
+        teamName: tName,
+        eventType: 'called_up',
       });
       pushRecord(records, {
         fixtureId,
@@ -182,7 +206,7 @@ export function recordsFromRealMatch(realMatch) {
         playerName: row.player?.name,
         teamId,
         teamName: tName,
-        eventType: 'lineup',
+        eventType: 'called_up',
       });
     }
   }
@@ -218,6 +242,18 @@ export function recordsFromRealMatch(realMatch) {
         eventType: 'substitute',
         minute,
       });
+      if (incomingSubstituteIds.has(Number(assist.id))) {
+        pushRecord(records, {
+          fixtureId,
+          timestamp,
+          playerId: assist.id,
+          playerName: assist.name,
+          teamId,
+          teamName: tName,
+          eventType: 'lineup',
+          minute,
+        });
+      }
       continue;
     }
 

@@ -44,6 +44,13 @@ function normalizeEvents(events) {
 
 function normalizeLineupEventName(eventName) {
   const normalized = String(eventName ?? '').trim().toLowerCase();
+  if (
+    normalized === 'calledup' ||
+    normalized === 'called_up' ||
+    normalized === 'called up'
+  ) {
+    return 'called_up';
+  }
   if (normalized === 'lineup') return 'lineup';
   if (normalized === 'startingxi' || normalized === 'starting_xi') {
     return 'startingxi';
@@ -229,7 +236,7 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
 
       const pid = hasPlayers ? playerIdIn(ids) : null;
 
-      if (eventFilter.type === 'lineup') {
+      if (eventFilter.type === 'called_up') {
         if (matchWide) {
           return {
             lineups: {
@@ -254,6 +261,44 @@ function buildLineupRealMatchFilterFromEvents(eventFilters) {
           $or: [
             { 'lineups.startXI.player.id': pid },
             { 'lineups.substitutes.player.id': pid },
+          ],
+        };
+      }
+      if (eventFilter.type === 'lineup') {
+        if (matchWide) {
+          return {
+            $or: [
+              {
+                lineups: {
+                  $elemMatch: {
+                    startXI: {
+                      $elemMatch: { 'player.id': { $gt: 0 } },
+                    },
+                  },
+                },
+              },
+              {
+                events: {
+                  $elemMatch: {
+                    type: { $regex: '^subst$', $options: 'i' },
+                    'assist.id': { $gt: 0 },
+                  },
+                },
+              },
+            ],
+          };
+        }
+        return {
+          $or: [
+            { 'lineups.startXI.player.id': pid },
+            {
+              events: {
+                $elemMatch: {
+                  type: { $regex: '^subst$', $options: 'i' },
+                  'assist.id': pid,
+                },
+              },
+            },
           ],
         };
       }
