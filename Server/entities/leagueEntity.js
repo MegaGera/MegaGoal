@@ -66,7 +66,7 @@ const availableSeasonSchema = z.object({
 const leagueSettingsSchema = z.object({
   league_id: z.number().int(),
   league_name: z.string(),
-  update_frequency: z.number(),
+  update_frequency: z.coerce.number(),
   last_update: z.date().nullable().optional(),
   next_match: z.date().nullable().optional(),
   is_active: z.boolean(),
