@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LineupData } from '../../models/realMatch';
+import { LineupData, MatchEvent } from '../../models/realMatch';
 import { PlayerItemComponent } from './player-item/player-item.component';
 import { LineupPitchComponent } from './lineup-pitch/lineup-pitch.component';
 import { MatchTeamHeaderComponent } from '../match-team-header/match-team-header.component';
@@ -28,8 +28,26 @@ interface FieldPlayer {
 })
 export class MatchLineupsComponent {
   @Input() lineups!: LineupData[];
+  @Input() events: MatchEvent[] = [];
   @Input() homeTeamId!: number;
   @Input() awayTeamId!: number;
+
+  getGoalCountsByPlayerId(): Record<number, number> {
+    if (!this.events || this.events.length === 0) {
+      return {};
+    }
+
+    const goalCounts: Record<number, number> = {};
+    for (const event of this.events) {
+      const type = (event.type || '').toLowerCase();
+      const detail = (event.detail || '').toLowerCase();
+      if (type === 'goal' && !detail.includes('missed penalty') && event.player?.id) {
+        goalCounts[event.player.id] = (goalCounts[event.player.id] || 0) + 1;
+      }
+    }
+
+    return goalCounts;
+  }
 
   getHomeLineup(): LineupData | undefined {
     return this.lineups?.find(lineup => lineup.team.id === this.homeTeamId);

@@ -13,6 +13,11 @@
           [queryParams]="{id: fieldPlayer.player.id}"
           class="field-player-link">
           <div class="field-player">
+            <div class="goal-scorer-stack" *ngIf="getGoalIconIndexes(fieldPlayer.player.id).length > 0" title="Goal scorer">
+              <span class="goal-scorer-icon" *ngFor="let iconIndex of getGoalIconIndexes(fieldPlayer.player.id)">
+                ⚽
+              </span>
+            </div>
             <div class="field-player-image-wrapper">
               <img
                 [src]="getPlayerImageUrl(fieldPlayer.player.id)"
@@ -38,6 +43,11 @@
         [queryParams]="{id: fieldPlayer.player.id}"
         class="field-player-link">
         <div class="field-player">
+          <div class="goal-scorer-stack" *ngIf="getGoalIconIndexes(fieldPlayer.player.id).length > 0" title="Goal scorer">
+            <span class="goal-scorer-icon" *ngFor="let iconIndex of getGoalIconIndexes(fieldPlayer.player.id)">
+              ⚽
+            </span>
+          </div>
           <div class="field-player-image-wrapper">
             <img
               [src]="getPlayerImageUrl(fieldPlayer.player.id)"

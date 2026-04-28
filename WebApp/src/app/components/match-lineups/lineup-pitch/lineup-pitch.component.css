@@ -121,6 +121,7 @@
 }
 
 .field-player {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -168,6 +169,51 @@
   box-sizing: border-box;
   text-align: center;
   font-variant-numeric: tabular-nums;
+}
+
+.goal-scorer-stack {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.goal-scorer-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  -webkit-text-stroke: 0.5px #1f2937;
+  text-shadow:
+    -1px 0 #1f2937,
+    0 1px #1f2937,
+    1px 0 #1f2937,
+    0 -1px #1f2937;
+  z-index: 2;
+}
+
+.goal-scorer-icon:nth-child(1) {
+  z-index: 3;
+}
+
+.goal-scorer-icon:nth-child(2) {
+  top: 6px;
+  right: 0;
+  z-index: 2;
+}
+
+.goal-scorer-icon:nth-child(3) {
+  top: 12px;
+  right: 0;
+  z-index: 1;
 }
 
 .field-player-name {
@@ -219,6 +265,29 @@
     height: 16px;
     bottom: -8px;
     font-size: 9px;
+  }
+
+  .goal-scorer-stack {
+    top: 3px;
+    right: 3px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .goal-scorer-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 11px;
+  }
+
+  .goal-scorer-icon:nth-child(2) {
+    top: 5px;
+    right: 0;
+  }
+
+  .goal-scorer-icon:nth-child(3) {
+    top: 10px;
+    right: 0;
   }
 
   .field-player-name {

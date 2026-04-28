@@ -80,6 +80,7 @@
       <app-match-lineups
         *ngIf="viewMode === 'lineups' && match.lineups"
         [lineups]="match.lineups"
+        [events]="match.events || []"
         [homeTeamId]="match.teams.home.id"
         [awayTeamId]="match.teams.away.id">
       </app-match-lineups>
@@ -123,6 +124,7 @@
           <app-match-lineups
             *ngIf="match.lineups"
             [lineups]="match.lineups"
+            [events]="match.events || []"
             [homeTeamId]="match.teams.home.id"
             [awayTeamId]="match.teams.away.id">
           </app-match-lineups>

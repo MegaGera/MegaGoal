@@ -24,6 +24,7 @@ interface PitchRowEntry {
 })
 export class LineupPitchComponent {
   @Input() rows: PitchRowEntry[][] = [];
+  @Input() goalCountsByPlayerId: Record<number, number> = {};
   /** When true, renders only player rows for placement inside a parent dual-half pitch (no grass/markings). */
   @Input() embedded = false;
 
@@ -31,6 +32,12 @@ export class LineupPitchComponent {
 
   getPlayerImageUrl(playerId: number): string {
     return this.images.getRouteImagePlayer(playerId);
+  }
+
+  getGoalIconIndexes(playerId: number): number[] {
+    const count = this.goalCountsByPlayerId[playerId] || 0;
+    const visibleCount = Math.min(3, count);
+    return Array.from({ length: visibleCount }, (_, index) => index);
   }
 
   onPlayerImageError(event: Event): void {
