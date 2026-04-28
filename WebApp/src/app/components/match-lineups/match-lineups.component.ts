@@ -39,6 +39,21 @@ export class MatchLineupsComponent {
     return this.lineups?.find(lineup => lineup.team.id === this.awayTeamId);
   }
 
+  /** Both sides use formation grid → single shared pitch (home top half, away bottom half). */
+  showUnifiedPitch(): boolean {
+    const home = this.getHomeLineup();
+    const away = this.getAwayLineup();
+    return !!(home && away && this.canRenderField(home) && this.canRenderField(away));
+  }
+
+  /**
+   * Away half: reverse row order so the forward line is toward the center line and the goalkeeper is in their own goal.
+   */
+  getAwayHalfRows(lineup: LineupData | undefined): FieldPlayer[][] {
+    const rows = this.getFieldRows(lineup);
+    return rows.slice().reverse();
+  }
+
   canRenderField(lineup: LineupData | undefined): boolean {
     return !!lineup?.formation;
   }

@@ -1,3 +1,11 @@
+:host {
+  display: block;
+}
+
+:host-context(.pitch-half) {
+  height: 100%;
+}
+
 .pitch {
   position: relative;
   min-height: 360px;
@@ -70,6 +78,31 @@
   flex-direction: column;
   justify-content: space-evenly;
   padding: 18px 14px;
+}
+
+.pitch-lines--embedded {
+  min-height: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/*
+ * Inside dual pitch halves: do not use the full-pitch min-height (360px) — that forces rows to
+ * overflow the 50% tall region, stacking home/away strikers on the center line and clipping the
+ * away keeper. Fill the half exactly and keep a little vertical cushion around midfield.
+ */
+:host-context(.pitch-half) .pitch-lines.pitch-lines--embedded {
+  min-height: 0;
+  max-height: 100%;
+  height: 100%;
+}
+
+:host-context(.pitch-half--home) .pitch-lines--embedded {
+  padding: 12px 12px 18px 12px;
+}
+
+:host-context(.pitch-half--away) .pitch-lines--embedded {
+  padding: 18px 12px 12px 12px;
 }
 
 .pitch-row {

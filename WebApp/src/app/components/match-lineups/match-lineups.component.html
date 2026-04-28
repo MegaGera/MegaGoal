@@ -1,9 +1,131 @@
 <div class="lineups-section" *ngIf="lineups && lineups.length > 0">
   <h2 class="section-title">Lineups</h2>
-  
-  <div class="lineups-container">
+
+  <!-- Single pitch: home top half, away bottom half (reversed rows) -->
+  <ng-container *ngIf="showUnifiedPitch()">
+    <ng-container *ngIf="getHomeLineup() as homeLineup">
+      <ng-container *ngIf="getAwayLineup() as awayLineup">
+        <div class="lineup-card lineup-card--starters">
+        <div class="teams-header-row teams-header-row--unified-home">
+          <div class="team-header-half team-header-home lineup-team-header">
+            <app-match-team-header
+              [teamId]="homeLineup.team.id"
+              [teamName]="homeLineup.team.name"
+              side="home">
+            </app-match-team-header>
+            <span class="formation-badge" *ngIf="homeLineup.formation">{{ homeLineup.formation }}</span>
+          </div>
+        </div>
+
+        <div class="coach-row coach-row--above-pitch" *ngIf="homeLineup.coach?.name">
+          <div class="coach-item">
+            <span class="coach-label">Coach:</span>
+            <span class="coach-name">{{ homeLineup.coach?.name }}</span>
+          </div>
+        </div>
+
+        <div class="pitch pitch--dual">
+          <div class="center-line"></div>
+          <div class="center-circle"></div>
+          <div class="penalty-area top"></div>
+          <div class="penalty-area bottom"></div>
+
+          <div class="pitch-half pitch-half--home">
+            <app-lineup-pitch [rows]="getFieldRows(homeLineup)" [embedded]="true"></app-lineup-pitch>
+          </div>
+          <div class="pitch-half pitch-half--away">
+            <app-lineup-pitch [rows]="getAwayHalfRows(awayLineup)" [embedded]="true"></app-lineup-pitch>
+          </div>
+        </div>
+
+        <div class="coach-row coach-row--below-pitch" *ngIf="awayLineup.coach?.name">
+          <div class="coach-item">
+            <span class="coach-label">Coach:</span>
+            <span class="coach-name">{{ awayLineup.coach?.name }}</span>
+          </div>
+        </div>
+
+        <div class="teams-header-row teams-header-row--unified-away">
+          <div class="team-header-half team-header-away lineup-team-header">
+            <app-match-team-header
+              [teamId]="awayLineup.team.id"
+              [teamName]="awayLineup.team.name"
+              side="away">
+            </app-match-team-header>
+            <span class="formation-badge" *ngIf="awayLineup.formation">{{ awayLineup.formation }}</span>
+          </div>
+        </div>
+
+        <div class="players-list players-list-unplaced" *ngIf="getUnplacedStartXI(homeLineup).length > 0 || getUnplacedStartXI(awayLineup).length > 0">
+          <div *ngIf="getUnplacedStartXI(homeLineup).length > 0">
+            <h5 class="unplaced-title">Players without grid position — {{ homeLineup.team.name }}</h5>
+            <app-player-item
+              *ngFor="let player of getUnplacedStartXI(homeLineup)"
+              [player]="player.player"
+              [isSubstitute]="false">
+            </app-player-item>
+          </div>
+          <div *ngIf="getUnplacedStartXI(awayLineup).length > 0">
+            <h5 class="unplaced-title">Players without grid position — {{ awayLineup.team.name }}</h5>
+            <app-player-item
+              *ngFor="let player of getUnplacedStartXI(awayLineup)"
+              [player]="player.player"
+              [isSubstitute]="false">
+            </app-player-item>
+          </div>
+        </div>
+        </div>
+
+        <div class="lineup-card lineup-card--bench" *ngIf="homeLineup.substitutes.length + awayLineup.substitutes.length > 0">
+          <div class="players-section substitutes-combined">
+          <div class="substitutes-team-block" *ngIf="homeLineup.substitutes && homeLineup.substitutes.length > 0">
+            <div class="teams-header-row teams-header-row--bench-team">
+              <div class="team-header-half team-header-home lineup-team-header">
+                <app-match-team-header
+                  [teamId]="homeLineup.team.id"
+                  [teamName]="homeLineup.team.name"
+                  side="home">
+                </app-match-team-header>
+                <span class="formation-badge">Substitutes</span>
+              </div>
+            </div>
+            <div class="players-list">
+              <app-player-item
+                *ngFor="let player of homeLineup.substitutes"
+                [player]="player.player"
+                [isSubstitute]="true">
+              </app-player-item>
+            </div>
+          </div>
+          <div class="substitutes-team-block" *ngIf="awayLineup.substitutes && awayLineup.substitutes.length > 0">
+            <div class="teams-header-row teams-header-row--bench-team">
+              <div class="team-header-half team-header-away lineup-team-header">
+                <app-match-team-header
+                  [teamId]="awayLineup.team.id"
+                  [teamName]="awayLineup.team.name"
+                  side="away">
+                </app-match-team-header>
+                <span class="formation-badge">Substitutes</span>
+              </div>
+            </div>
+            <div class="players-list">
+              <app-player-item
+                *ngFor="let player of awayLineup.substitutes"
+                [player]="player.player"
+                [isSubstitute]="true">
+              </app-player-item>
+            </div>
+          </div>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+
+  <div class="lineups-container" *ngIf="!showUnifiedPitch()">
     <!-- Home Team -->
     <div class="team-lineup" *ngIf="getHomeLineup() as homeLineup">
+      <div class="lineup-card lineup-card--starters">
       <div class="teams-header-row">
         <div class="team-header-half team-header-home lineup-team-header">
           <app-match-team-header
@@ -40,29 +162,40 @@
         </div>
       </ng-template>
 
-      <!-- Coach -->
       <div class="coach-section" *ngIf="homeLineup.coach?.name">
         <div class="coach-item">
           <span class="coach-label">Coach:</span>
           <span class="coach-name">{{ homeLineup.coach?.name }}</span>
         </div>
       </div>
+      </div>
 
-      <!-- Substitutes -->
-      <div class="players-section" *ngIf="homeLineup.substitutes && homeLineup.substitutes.length > 0">
-        <h4 class="section-subtitle">Substitutes</h4>
-        <div class="players-list">
-          <app-player-item 
-            *ngFor="let player of homeLineup.substitutes"
-            [player]="player.player"
-            [isSubstitute]="true">
-          </app-player-item>
+      <div class="lineup-card lineup-card--bench" *ngIf="homeLineup.substitutes && homeLineup.substitutes.length > 0">
+        <div class="players-section">
+          <div class="teams-header-row teams-header-row--bench-team">
+            <div class="team-header-half team-header-home lineup-team-header">
+              <app-match-team-header
+                [teamId]="homeLineup.team.id"
+                [teamName]="homeLineup.team.name"
+                side="home">
+              </app-match-team-header>
+              <span class="formation-badge">Substitutes</span>
+            </div>
+          </div>
+          <div class="players-list">
+            <app-player-item
+              *ngFor="let player of homeLineup.substitutes"
+              [player]="player.player"
+              [isSubstitute]="true">
+            </app-player-item>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Away Team -->
     <div class="team-lineup" *ngIf="getAwayLineup() as awayLineup">
+      <div class="lineup-card lineup-card--starters">
       <div class="teams-header-row">
         <div class="team-header-half team-header-away lineup-team-header">
           <app-match-team-header
@@ -99,23 +232,33 @@
         </div>
       </ng-template>
 
-      <!-- Coach -->
       <div class="coach-section" *ngIf="awayLineup.coach?.name">
         <div class="coach-item">
           <span class="coach-label">Coach:</span>
           <span class="coach-name">{{ awayLineup.coach?.name }}</span>
         </div>
       </div>
+      </div>
 
-      <!-- Substitutes -->
-      <div class="players-section" *ngIf="awayLineup.substitutes && awayLineup.substitutes.length > 0">
-        <h4 class="section-subtitle">Substitutes</h4>
-        <div class="players-list">
-          <app-player-item 
-            *ngFor="let player of awayLineup.substitutes"
-            [player]="player.player"
-            [isSubstitute]="true">
-          </app-player-item>
+      <div class="lineup-card lineup-card--bench" *ngIf="awayLineup.substitutes && awayLineup.substitutes.length > 0">
+        <div class="players-section">
+          <div class="teams-header-row teams-header-row--bench-team">
+            <div class="team-header-half team-header-away lineup-team-header">
+              <app-match-team-header
+                [teamId]="awayLineup.team.id"
+                [teamName]="awayLineup.team.name"
+                side="away">
+              </app-match-team-header>
+              <span class="formation-badge">Substitutes</span>
+            </div>
+          </div>
+          <div class="players-list">
+            <app-player-item
+              *ngFor="let player of awayLineup.substitutes"
+              [player]="player.player"
+              [isSubstitute]="true">
+            </app-player-item>
+          </div>
         </div>
       </div>
     </div>

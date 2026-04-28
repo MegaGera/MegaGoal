@@ -24,6 +24,8 @@ interface PitchRowEntry {
 })
 export class LineupPitchComponent {
   @Input() rows: PitchRowEntry[][] = [];
+  /** When true, renders only player rows for placement inside a parent dual-half pitch (no grass/markings). */
+  @Input() embedded = false;
 
   constructor(private images: ImagesService) {}
 
