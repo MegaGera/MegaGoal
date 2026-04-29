@@ -31,10 +31,10 @@
           <div class="penalty-area bottom"></div>
 
           <div class="pitch-half pitch-half--home">
-            <app-lineup-pitch [rows]="getFieldRows(homeLineup)" [goalCountsByPlayerId]="getGoalCountsByPlayerId()" [embedded]="true"></app-lineup-pitch>
+            <app-lineup-pitch [rows]="getFieldRows(homeLineup)" [goalCountsByPlayerId]="getGoalCountsByPlayerId()" [assistCountsByPlayerId]="getAssistCountsByPlayerId()" [yellowCardCountsByPlayerId]="getYellowCardCountsByPlayerId()" [redCardCountsByPlayerId]="getRedCardCountsByPlayerId()" [substitutedOutPlayerIds]="getSubstitutedOutPlayerIds()" [embedded]="true"></app-lineup-pitch>
           </div>
           <div class="pitch-half pitch-half--away">
-            <app-lineup-pitch [rows]="getAwayHalfRows(awayLineup)" [goalCountsByPlayerId]="getGoalCountsByPlayerId()" [embedded]="true"></app-lineup-pitch>
+            <app-lineup-pitch [rows]="getAwayHalfRows(awayLineup)" [goalCountsByPlayerId]="getGoalCountsByPlayerId()" [assistCountsByPlayerId]="getAssistCountsByPlayerId()" [yellowCardCountsByPlayerId]="getYellowCardCountsByPlayerId()" [redCardCountsByPlayerId]="getRedCardCountsByPlayerId()" [substitutedOutPlayerIds]="getSubstitutedOutPlayerIds()" [embedded]="true"></app-lineup-pitch>
           </div>
         </div>
 
@@ -138,7 +138,7 @@
       </div>
 
       <div class="players-section" *ngIf="canRenderField(homeLineup); else homeListMode">
-        <app-lineup-pitch [rows]="getFieldRows(homeLineup)" [goalCountsByPlayerId]="getGoalCountsByPlayerId()"></app-lineup-pitch>
+        <app-lineup-pitch [rows]="getFieldRows(homeLineup)" [goalCountsByPlayerId]="getGoalCountsByPlayerId()" [assistCountsByPlayerId]="getAssistCountsByPlayerId()"></app-lineup-pitch>
 
         <div class="players-list players-list-unplaced" *ngIf="getUnplacedStartXI(homeLineup).length > 0">
           <h5 class="unplaced-title">Players without grid position</h5>
@@ -208,7 +208,7 @@
       </div>
 
       <div class="players-section" *ngIf="canRenderField(awayLineup); else awayListMode">
-        <app-lineup-pitch [rows]="getFieldRows(awayLineup)" [goalCountsByPlayerId]="getGoalCountsByPlayerId()"></app-lineup-pitch>
+        <app-lineup-pitch [rows]="getFieldRows(awayLineup)" [goalCountsByPlayerId]="getGoalCountsByPlayerId()" [assistCountsByPlayerId]="getAssistCountsByPlayerId()" [yellowCardCountsByPlayerId]="getYellowCardCountsByPlayerId()" [redCardCountsByPlayerId]="getRedCardCountsByPlayerId()" [substitutedOutPlayerIds]="getSubstitutedOutPlayerIds()"></app-lineup-pitch>
 
         <div class="players-list players-list-unplaced" *ngIf="getUnplacedStartXI(awayLineup).length > 0">
           <h5 class="unplaced-title">Players without grid position</h5>

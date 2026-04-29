@@ -171,13 +171,47 @@
   font-variant-numeric: tabular-nums;
 }
 
-.goal-scorer-stack {
+.field-player-corner-stats {
   position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.field-player-corner-stats--right {
   top: 4px;
   right: 4px;
+  align-items: flex-end;
+}
+
+.field-player-corner-stats--left {
+  top: 4px;
+  left: 4px;
+  align-items: flex-start;
+}
+
+.goal-scorer-stack + .assist-scorer-stack {
+  margin-top: 3px;
+}
+
+.card-event-stack + .sub-event-stack {
+  margin-top: 3px;
+}
+
+.goal-scorer-stack {
+  position: relative;
   width: 18px;
-  height: 18px;
   pointer-events: none;
+  flex-shrink: 0;
+}
+
+.assist-scorer-stack {
+  position: relative;
+  width: 18px;
+  pointer-events: none;
+  flex-shrink: 0;
 }
 
 .goal-scorer-icon {
@@ -214,6 +248,106 @@
   top: 12px;
   right: 0;
   z-index: 1;
+}
+
+.assist-scorer-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  -webkit-text-stroke: 0.5px #1f2937;
+  text-shadow:
+    -1px 0 #1f2937,
+    0 1px #1f2937,
+    1px 0 #1f2937,
+    0 -1px #1f2937;
+  z-index: 2;
+}
+
+.assist-scorer-icon:nth-child(1) {
+  z-index: 3;
+}
+
+.assist-scorer-icon:nth-child(2) {
+  top: 6px;
+  right: 0;
+  z-index: 2;
+}
+
+.assist-scorer-icon:nth-child(3) {
+  top: 12px;
+  right: 0;
+  z-index: 1;
+}
+
+.card-event-stack {
+  position: relative;
+  width: 18px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.card-event-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  z-index: 2;
+}
+
+.card-event-icon:nth-child(1) {
+  z-index: 3;
+}
+
+.card-event-icon:nth-child(2) {
+  top: 6px;
+  left: 0;
+  z-index: 2;
+}
+
+.card-event-icon:nth-child(3) {
+  top: 12px;
+  left: 0;
+  z-index: 1;
+}
+
+.sub-event-stack {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  flex-shrink: 0;
+  box-shadow: none;
+}
+
+.sub-event-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+  box-shadow: none;
+  filter: none;
+  z-index: 2;
 }
 
 .field-player-name {
@@ -267,11 +401,22 @@
     font-size: 9px;
   }
 
-  .goal-scorer-stack {
+  .field-player-corner-stats--right {
     top: 3px;
     right: 3px;
+  }
+
+  .field-player-corner-stats--left {
+    top: 3px;
+    left: 3px;
+  }
+
+  .goal-scorer-stack {
     width: 16px;
-    height: 16px;
+  }
+
+  .assist-scorer-stack {
+    width: 16px;
   }
 
   .goal-scorer-icon {
@@ -288,6 +433,53 @@
   .goal-scorer-icon:nth-child(3) {
     top: 10px;
     right: 0;
+  }
+
+  .assist-scorer-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 11px;
+  }
+
+  .assist-scorer-icon:nth-child(2) {
+    top: 5px;
+    right: 0;
+  }
+
+  .assist-scorer-icon:nth-child(3) {
+    top: 10px;
+    right: 0;
+  }
+
+  .card-event-stack {
+    width: 16px;
+  }
+
+  .card-event-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 11px;
+  }
+
+  .card-event-icon:nth-child(2) {
+    top: 5px;
+    left: 0;
+  }
+
+  .card-event-icon:nth-child(3) {
+    top: 10px;
+    left: 0;
+  }
+
+  .sub-event-stack {
+    width: 16px;
+    height: 16px;
+  }
+
+  .sub-event-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 11px;
   }
 
   .field-player-name {

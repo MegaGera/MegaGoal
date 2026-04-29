@@ -13,11 +13,44 @@
           [queryParams]="{id: fieldPlayer.player.id}"
           class="field-player-link">
           <div class="field-player">
-            <div class="goal-scorer-stack" *ngIf="getGoalIconIndexes(fieldPlayer.player.id).length > 0" title="Goal scorer">
-              <span class="goal-scorer-icon" *ngFor="let iconIndex of getGoalIconIndexes(fieldPlayer.player.id)">
-                ⚽
-              </span>
+            <div
+              class="field-player-corner-stats field-player-corner-stats--left"
+              *ngIf="showLeftCornerStats(fieldPlayer.player.id)">
+              <div
+                class="card-event-stack"
+                *ngIf="showCardStack(fieldPlayer.player.id)"
+                [style.height.px]="getCardStackHeightPx(fieldPlayer.player.id)"
+                [title]="getCardTitle(fieldPlayer.player.id)">
+                <span class="card-event-icon" *ngFor="let iconIndex of getCardIconIndexes(fieldPlayer.player.id)">
+                  {{ getCardEmoji(fieldPlayer.player.id) }}
+                </span>
+              </div>
+              <div class="sub-event-stack" *ngIf="hasSubstitution(fieldPlayer.player.id)" title="Substitution">
+                <span class="sub-event-icon">🔄</span>
+              </div>
             </div>
+
+            <div class="field-player-corner-stats field-player-corner-stats--right" *ngIf="showRightCornerStats(fieldPlayer.player.id)">
+              <div
+                class="goal-scorer-stack"
+                *ngIf="getGoalIconIndexes(fieldPlayer.player.id).length > 0"
+                [style.height.px]="getStackHeightPx(getGoalIconIndexes(fieldPlayer.player.id).length)"
+                title="Goals">
+                <span class="goal-scorer-icon" *ngFor="let iconIndex of getGoalIconIndexes(fieldPlayer.player.id)">
+                  ⚽
+                </span>
+              </div>
+              <div
+                class="assist-scorer-stack"
+                *ngIf="getAssistIconIndexes(fieldPlayer.player.id).length > 0"
+                [style.height.px]="getStackHeightPx(getAssistIconIndexes(fieldPlayer.player.id).length)"
+                title="Assists">
+                <span class="assist-scorer-icon" *ngFor="let iconIndex of getAssistIconIndexes(fieldPlayer.player.id)">
+                  🎯
+                </span>
+              </div>
+            </div>
+
             <div class="field-player-image-wrapper">
               <img
                 [src]="getPlayerImageUrl(fieldPlayer.player.id)"
@@ -43,11 +76,44 @@
         [queryParams]="{id: fieldPlayer.player.id}"
         class="field-player-link">
         <div class="field-player">
-          <div class="goal-scorer-stack" *ngIf="getGoalIconIndexes(fieldPlayer.player.id).length > 0" title="Goal scorer">
-            <span class="goal-scorer-icon" *ngFor="let iconIndex of getGoalIconIndexes(fieldPlayer.player.id)">
-              ⚽
-            </span>
+          <div
+            class="field-player-corner-stats field-player-corner-stats--left"
+            *ngIf="showLeftCornerStats(fieldPlayer.player.id)">
+            <div
+              class="card-event-stack"
+              *ngIf="showCardStack(fieldPlayer.player.id)"
+              [style.height.px]="getCardStackHeightPx(fieldPlayer.player.id)"
+              [title]="getCardTitle(fieldPlayer.player.id)">
+              <span class="card-event-icon" *ngFor="let iconIndex of getCardIconIndexes(fieldPlayer.player.id)">
+                {{ getCardEmoji(fieldPlayer.player.id) }}
+              </span>
+            </div>
+            <div class="sub-event-stack" *ngIf="hasSubstitution(fieldPlayer.player.id)" title="Substitution">
+              <span class="sub-event-icon">🔄</span>
+            </div>
           </div>
+
+          <div class="field-player-corner-stats field-player-corner-stats--right" *ngIf="showRightCornerStats(fieldPlayer.player.id)">
+            <div
+              class="goal-scorer-stack"
+              *ngIf="getGoalIconIndexes(fieldPlayer.player.id).length > 0"
+              [style.height.px]="getStackHeightPx(getGoalIconIndexes(fieldPlayer.player.id).length)"
+              title="Goals">
+              <span class="goal-scorer-icon" *ngFor="let iconIndex of getGoalIconIndexes(fieldPlayer.player.id)">
+                ⚽
+              </span>
+            </div>
+            <div
+              class="assist-scorer-stack"
+              *ngIf="getAssistIconIndexes(fieldPlayer.player.id).length > 0"
+              [style.height.px]="getStackHeightPx(getAssistIconIndexes(fieldPlayer.player.id).length)"
+              title="Assists">
+              <span class="assist-scorer-icon" *ngFor="let iconIndex of getAssistIconIndexes(fieldPlayer.player.id)">
+                🎯
+              </span>
+            </div>
+          </div>
+
           <div class="field-player-image-wrapper">
             <img
               [src]="getPlayerImageUrl(fieldPlayer.player.id)"

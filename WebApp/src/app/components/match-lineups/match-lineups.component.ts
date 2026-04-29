@@ -49,6 +49,80 @@ export class MatchLineupsComponent {
     return goalCounts;
   }
 
+  /** Assists from goal events (same source as match events timeline). */
+  getAssistCountsByPlayerId(): Record<number, number> {
+    if (!this.events || this.events.length === 0) {
+      return {};
+    }
+
+    const assistCounts: Record<number, number> = {};
+    for (const event of this.events) {
+      const type = (event.type || '').toLowerCase();
+      const detail = (event.detail || '').toLowerCase();
+      if (type !== 'goal' || detail.includes('missed penalty')) {
+        continue;
+      }
+      const assistId = event.assist?.id;
+      if (assistId != null && assistId > 0) {
+        assistCounts[assistId] = (assistCounts[assistId] || 0) + 1;
+      }
+    }
+
+    return assistCounts;
+  }
+
+  getYellowCardCountsByPlayerId(): Record<number, number> {
+    if (!this.events?.length) {
+      return {};
+    }
+
+    const counts: Record<number, number> = {};
+    for (const event of this.events) {
+      const detail = (event.detail || '').toLowerCase();
+      if (detail.includes('yellow card') && event.player?.id) {
+        counts[event.player.id] = (counts[event.player.id] || 0) + 1;
+      }
+    }
+
+    return counts;
+  }
+
+  getRedCardCountsByPlayerId(): Record<number, number> {
+    if (!this.events?.length) {
+      return {};
+    }
+
+    const counts: Record<number, number> = {};
+    for (const event of this.events) {
+      const detail = (event.detail || '').toLowerCase();
+      if (detail.includes('red card') && event.player?.id) {
+        counts[event.player.id] = (counts[event.player.id] || 0) + 1;
+      }
+    }
+
+    return counts;
+  }
+
+  /** Players substituted off (`event.player` on substitution rows — same as events timeline). */
+  getSubstitutedOutPlayerIds(): number[] {
+    if (!this.events?.length) {
+      return [];
+    }
+
+    const ids = new Set<number>();
+    for (const event of this.events) {
+      const type = (event.type || '').toLowerCase();
+      const detail = (event.detail || '').toLowerCase();
+      if (type === 'subst' || detail.includes('substitution')) {
+        if (event.player?.id) {
+          ids.add(event.player.id);
+        }
+      }
+    }
+
+    return Array.from(ids);
+  }
+
   getHomeLineup(): LineupData | undefined {
     return this.lineups?.find(lineup => lineup.team.id === this.homeTeamId);
   }

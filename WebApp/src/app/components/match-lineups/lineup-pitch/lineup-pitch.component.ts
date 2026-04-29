@@ -25,6 +25,10 @@ interface PitchRowEntry {
 export class LineupPitchComponent {
   @Input() rows: PitchRowEntry[][] = [];
   @Input() goalCountsByPlayerId: Record<number, number> = {};
+  @Input() assistCountsByPlayerId: Record<number, number> = {};
+  @Input() yellowCardCountsByPlayerId: Record<number, number> = {};
+  @Input() redCardCountsByPlayerId: Record<number, number> = {};
+  @Input() substitutedOutPlayerIds: number[] = [];
   /** When true, renders only player rows for placement inside a parent dual-half pitch (no grass/markings). */
   @Input() embedded = false;
 
@@ -38,6 +42,63 @@ export class LineupPitchComponent {
     const count = this.goalCountsByPlayerId[playerId] || 0;
     const visibleCount = Math.min(3, count);
     return Array.from({ length: visibleCount }, (_, index) => index);
+  }
+
+  getAssistIconIndexes(playerId: number): number[] {
+    const count = this.assistCountsByPlayerId[playerId] || 0;
+    const visibleCount = Math.min(3, count);
+    return Array.from({ length: visibleCount }, (_, index) => index);
+  }
+
+  /** Red overrides yellow (same player): show only red stack. */
+  getCardIconIndexes(playerId: number): number[] {
+    const redCount = this.redCardCountsByPlayerId[playerId] || 0;
+    if (redCount > 0) {
+      const visibleCount = Math.min(3, redCount);
+      return Array.from({ length: visibleCount }, (_, index) => index);
+    }
+
+    const yellowCount = this.yellowCardCountsByPlayerId[playerId] || 0;
+    const visibleCount = Math.min(3, yellowCount);
+    return Array.from({ length: visibleCount }, (_, index) => index);
+  }
+
+  getCardEmoji(playerId: number): string {
+    const redCount = this.redCardCountsByPlayerId[playerId] || 0;
+    return redCount > 0 ? '🟥' : '🟨';
+  }
+
+  getCardStackHeightPx(playerId: number): number {
+    return this.getStackHeightPx(this.getCardIconIndexes(playerId).length);
+  }
+
+  getCardTitle(playerId: number): string {
+    const redCount = this.redCardCountsByPlayerId[playerId] || 0;
+    return redCount > 0 ? 'Red card' : 'Yellow card';
+  }
+
+  showCardStack(playerId: number): boolean {
+    return this.getCardIconIndexes(playerId).length > 0;
+  }
+
+  hasSubstitution(playerId: number): boolean {
+    return this.substitutedOutPlayerIds.includes(playerId);
+  }
+
+  showLeftCornerStats(playerId: number): boolean {
+    return this.showCardStack(playerId) || this.hasSubstitution(playerId);
+  }
+
+  showRightCornerStats(playerId: number): boolean {
+    return this.getGoalIconIndexes(playerId).length > 0 || this.getAssistIconIndexes(playerId).length > 0;
+  }
+
+  /** Vertical footprint for stacked icons (matches CSS step of 6px between layers). */
+  getStackHeightPx(layerCount: number): number {
+    if (layerCount <= 0) {
+      return 0;
+    }
+    return 18 + (layerCount - 1) * 6;
   }
 
   onPlayerImageError(event: Event): void {
