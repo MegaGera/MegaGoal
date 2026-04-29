@@ -171,7 +171,11 @@ export class MatchLineupsComponent {
     return !!lineup?.formation;
   }
 
-  getFieldRows(lineup: LineupData | undefined): FieldPlayer[][] {
+  /**
+   * @param mirrorColumnsInRow When true (home team pitch only), players in each row are ordered
+   *   right-to-left by grid column so the XI mirrors on the horizontal axis.
+   */
+  getFieldRows(lineup: LineupData | undefined, mirrorColumnsInRow = false): FieldPlayer[][] {
     if (!lineup) {
       return [];
     }
@@ -189,7 +193,10 @@ export class MatchLineupsComponent {
 
     return Array.from(groupedByRow.entries())
       .sort((a, b) => a[0] - b[0])
-      .map(([, rowPlayers]) => rowPlayers.sort((a, b) => a.col - b.col));
+      .map(([, rowPlayers]) => {
+        const sorted = [...rowPlayers].sort((a, b) => a.col - b.col);
+        return mirrorColumnsInRow ? sorted.reverse() : sorted;
+      });
   }
 
   getUnplacedStartXI(lineup: LineupData | undefined): Array<{ player: LineupPlayer }> {
@@ -198,6 +205,53 @@ export class MatchLineupsComponent {
     }
 
     return lineup.startXI.filter(({ player }) => !this.parseGrid(player.grid));
+  }
+
+  /** Bench players ordered G → D → M → F; unknown / empty `pos` last. */
+  getSubstitutesSorted(lineup: LineupData): Array<{ player: LineupPlayer }> {
+    if (!lineup.substitutes?.length) {
+      return [];
+    }
+
+    return [...lineup.substitutes].sort(
+      (a, b) => this.substitutePositionOrder(a.player.pos) - this.substitutePositionOrder(b.player.pos)
+    );
+  }
+
+  private substitutePositionOrder(pos: string | null | undefined): number {
+    const raw = (pos ?? '').trim().toUpperCase();
+    if (!raw) {
+      return 99;
+    }
+
+    if (raw.startsWith('GK') || raw === 'G' || raw.startsWith('GOALKEEP')) {
+      return 0;
+    }
+    if (raw.startsWith('D') || raw.includes('DEF')) {
+      return 1;
+    }
+    if (raw.startsWith('M') || raw.includes('MID')) {
+      return 2;
+    }
+    if (raw.startsWith('F') || raw.includes('FORW') || raw.includes('ATT')) {
+      return 3;
+    }
+
+    const c = raw.charAt(0);
+    if (c === 'G') {
+      return 0;
+    }
+    if (c === 'D') {
+      return 1;
+    }
+    if (c === 'M') {
+      return 2;
+    }
+    if (c === 'F') {
+      return 3;
+    }
+
+    return 99;
   }
 
   private getValidFieldPlayers(lineup: LineupData): FieldPlayer[] {
