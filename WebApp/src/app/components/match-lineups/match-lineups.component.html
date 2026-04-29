@@ -93,7 +93,12 @@
               <app-player-item
                 *ngFor="let player of homeLineup.substitutes"
                 [player]="player.player"
-                [isSubstitute]="true">
+                [isSubstitute]="true"
+                [goalCountsByPlayerId]="getGoalCountsByPlayerId()"
+                [assistCountsByPlayerId]="getAssistCountsByPlayerId()"
+                [yellowCardCountsByPlayerId]="getYellowCardCountsByPlayerId()"
+                [redCardCountsByPlayerId]="getRedCardCountsByPlayerId()"
+                [substitutedInPlayerIds]="getSubstitutedInPlayerIds()">
               </app-player-item>
             </div>
           </div>
@@ -112,7 +117,12 @@
               <app-player-item
                 *ngFor="let player of awayLineup.substitutes"
                 [player]="player.player"
-                [isSubstitute]="true">
+                [isSubstitute]="true"
+                [goalCountsByPlayerId]="getGoalCountsByPlayerId()"
+                [assistCountsByPlayerId]="getAssistCountsByPlayerId()"
+                [yellowCardCountsByPlayerId]="getYellowCardCountsByPlayerId()"
+                [redCardCountsByPlayerId]="getRedCardCountsByPlayerId()"
+                [substitutedInPlayerIds]="getSubstitutedInPlayerIds()">
               </app-player-item>
             </div>
           </div>
@@ -138,7 +148,7 @@
       </div>
 
       <div class="players-section" *ngIf="canRenderField(homeLineup); else homeListMode">
-        <app-lineup-pitch [rows]="getFieldRows(homeLineup)" [goalCountsByPlayerId]="getGoalCountsByPlayerId()" [assistCountsByPlayerId]="getAssistCountsByPlayerId()"></app-lineup-pitch>
+        <app-lineup-pitch [rows]="getFieldRows(homeLineup)" [goalCountsByPlayerId]="getGoalCountsByPlayerId()" [assistCountsByPlayerId]="getAssistCountsByPlayerId()" [yellowCardCountsByPlayerId]="getYellowCardCountsByPlayerId()" [redCardCountsByPlayerId]="getRedCardCountsByPlayerId()" [substitutedOutPlayerIds]="getSubstitutedOutPlayerIds()"></app-lineup-pitch>
 
         <div class="players-list players-list-unplaced" *ngIf="getUnplacedStartXI(homeLineup).length > 0">
           <h5 class="unplaced-title">Players without grid position</h5>
@@ -186,7 +196,12 @@
             <app-player-item
               *ngFor="let player of homeLineup.substitutes"
               [player]="player.player"
-              [isSubstitute]="true">
+              [isSubstitute]="true"
+              [goalCountsByPlayerId]="getGoalCountsByPlayerId()"
+              [assistCountsByPlayerId]="getAssistCountsByPlayerId()"
+              [yellowCardCountsByPlayerId]="getYellowCardCountsByPlayerId()"
+              [redCardCountsByPlayerId]="getRedCardCountsByPlayerId()"
+              [substitutedInPlayerIds]="getSubstitutedInPlayerIds()">
             </app-player-item>
           </div>
         </div>
@@ -256,7 +271,12 @@
             <app-player-item
               *ngFor="let player of awayLineup.substitutes"
               [player]="player.player"
-              [isSubstitute]="true">
+              [isSubstitute]="true"
+              [goalCountsByPlayerId]="getGoalCountsByPlayerId()"
+              [assistCountsByPlayerId]="getAssistCountsByPlayerId()"
+              [yellowCardCountsByPlayerId]="getYellowCardCountsByPlayerId()"
+              [redCardCountsByPlayerId]="getRedCardCountsByPlayerId()"
+              [substitutedInPlayerIds]="getSubstitutedInPlayerIds()">
             </app-player-item>
           </div>
         </div>

@@ -1,19 +1,47 @@
 <a [routerLink]="['/app/player']" [queryParams]="{id: player.id}" class="player-row-link">
-  <div class="player-row" [class.player-substitute]="isSubstitute">
+  <div
+    class="player-row"
+    [class.player-substitute]="isSubstitute"
+    [class.player-substitute-played]="isSubstitute && hasSubstitutedIn()">
     <div class="player-info">
       <div class="player-image-wrapper">
-        <img 
-          [src]="getPlayerImageUrl(player.id)" 
+        <img
+          [src]="getPlayerImageUrl(player.id)"
           [alt]="player.name"
           class="player-image"
           (error)="onImageError($event)">
         <span class="player-number">{{ player.number }}</span>
       </div>
       <div class="player-details">
-        <span class="player-name">{{ player.name }}</span>
+        <div class="player-name-row">
+          <span class="player-name">{{ player.name }}</span>
+          <div class="player-inline-stats" *ngIf="showBenchEventIcons()">
+            <div
+              class="bench-inline-stack bench-goals"
+              *ngIf="getGoalIconIndexes().length > 0"
+              [style.height.px]="getStackHeightPx(getGoalIconIndexes().length)"
+              title="Goals">
+              <span class="bench-inline-icon bench-goal-icon" *ngFor="let i of getGoalIconIndexes()">⚽</span>
+            </div>
+            <div
+              class="bench-inline-stack bench-assists"
+              *ngIf="getAssistIconIndexes().length > 0"
+              [style.height.px]="getStackHeightPx(getAssistIconIndexes().length)"
+              title="Assists">
+              <span class="bench-inline-icon bench-assist-icon" *ngFor="let i of getAssistIconIndexes()">🎯</span>
+            </div>
+            <div
+              class="bench-inline-stack bench-cards"
+              *ngIf="getCardIconIndexes().length > 0"
+              [style.height.px]="getStackHeightPx(getCardIconIndexes().length)"
+              title="Card">
+              <span class="bench-inline-icon bench-card-icon" *ngFor="let i of getCardIconIndexes()">{{ getCardEmoji() }}</span>
+            </div>
+            <span class="bench-sub-icon" *ngIf="hasSubstitutedIn()" title="Came on">🔄</span>
+          </div>
+        </div>
         <span class="player-position">{{ player.pos || '-' }}</span>
       </div>
     </div>
   </div>
 </a>
-

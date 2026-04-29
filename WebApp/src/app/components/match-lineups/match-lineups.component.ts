@@ -123,6 +123,27 @@ export class MatchLineupsComponent {
     return Array.from(ids);
   }
 
+  /** Players coming on (`assist` on substitution rows — same as events timeline). */
+  getSubstitutedInPlayerIds(): number[] {
+    if (!this.events?.length) {
+      return [];
+    }
+
+    const ids = new Set<number>();
+    for (const event of this.events) {
+      const type = (event.type || '').toLowerCase();
+      const detail = (event.detail || '').toLowerCase();
+      if (type === 'subst' || detail.includes('substitution')) {
+        const comingOnId = event.assist?.id;
+        if (comingOnId != null && comingOnId > 0) {
+          ids.add(comingOnId);
+        }
+      }
+    }
+
+    return Array.from(ids);
+  }
+
   getHomeLineup(): LineupData | undefined {
     return this.lineups?.find(lineup => lineup.team.id === this.homeTeamId);
   }
