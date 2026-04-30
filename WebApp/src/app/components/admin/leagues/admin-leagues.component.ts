@@ -60,7 +60,7 @@ export class AdminLeaguesComponent {
     events_missing: false
   };
 
-  shortSeasonsList: number[] = [2024, 2025];
+  shortSeasonsList: number[] = [2024, 2025, 2026];
 
   // Add new league properties
   selectedNewLeague: League | null = null;
