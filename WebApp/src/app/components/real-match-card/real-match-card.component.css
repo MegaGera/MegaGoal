@@ -161,6 +161,7 @@
 	.location-selector-row {
 		opacity: 1;
 		transition: 0.05s;
+		pointer-events: auto;
 	}
 }
 
@@ -442,11 +443,19 @@
 	background: rgba(118, 75, 162, 1);
 }
 
+/* Middle column must shrink so long location labels do not widen the card */
+.matchCard .row.h-100 > .col-4:nth-child(2) {
+	min-width: 0;
+}
+
 .location-selector-row {
 	opacity: 0;
+	pointer-events: none;
 	transition: 0.05s;
-	width: fit-content; 
+	width: 100%;
+	max-width: 100%;
 	margin: 8% auto auto;
+	box-sizing: border-box;
 }
 
 .location-selector {
@@ -458,10 +467,86 @@
 	box-shadow: 0 0 2px 0 rgba(48, 48, 48, 0.1), 0px 4px 4px 1px rgba(48, 48, 48, 0.1);
 	backdrop-filter: blur(3px);
 	cursor: pointer;
+	max-width: 100%;
+	min-width: 0;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .location-mat-select {
 	font-size: 0.9rem;
+	width: 100%;
+	max-width: 100%;
+}
+
+:host ::ng-deep .location-selector .mat-mdc-select {
+	width: 100%;
+	max-width: 100%;
+}
+
+:host ::ng-deep .location-selector .mat-mdc-select-trigger {
+	max-width: 100%;
+	min-width: 0;
+}
+
+:host ::ng-deep .location-selector .mat-mdc-select-value {
+	max-width: 100%;
+	min-width: 0;
+	overflow: hidden;
+}
+
+:host ::ng-deep .location-selector .mat-mdc-select-value-text {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: block;
+}
+
+/*
+  While [disabled] waits for the interactable timeout, Material dims the label.
+  Override only the label so it matches the normal text color; the control stays disabled.
+*/
+:host ::ng-deep .location-selector .mat-mdc-select.mat-mdc-select-disabled {
+	opacity: 1;
+}
+
+:host ::ng-deep .location-selector .mat-mdc-select.mat-mdc-select-disabled .mat-mdc-select-trigger {
+	opacity: 1;
+	color: #1e293b;
+}
+
+:host ::ng-deep .location-selector .mat-mdc-select.mat-mdc-select-disabled .mat-mdc-select-value,
+:host ::ng-deep .location-selector .mat-mdc-select.mat-mdc-select-disabled .mat-mdc-select-value-text {
+	opacity: 1;
+	color: #1e293b;
+	-webkit-text-fill-color: #1e293b;
+}
+
+@media only screen and (max-width: 768px) {
+	.location-selector {
+		padding: 1px 3px;
+		border-radius: 6px;
+	}
+
+	.location-mat-select {
+		font-size: 0.55rem;
+		font-weight: 400;
+	}
+
+	:host ::ng-deep .location-selector .mat-mdc-select,
+	:host ::ng-deep .location-selector .mat-mdc-select-value-text {
+		font-weight: 400;
+	}
+
+	:host ::ng-deep .location-selector .mat-mdc-select-trigger {
+		min-height: 18px;
+		padding: 0 2px;
+		font-weight: 400;
+	}
+
+	:host ::ng-deep .location-selector .mat-mdc-select-arrow-wrapper {
+		transform: scale(0.6);
+	}
 }
 
 /* Blinking live red circle */

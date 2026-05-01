@@ -1,4 +1,11 @@
-<div class="row matchCard" [ngClass]="[size === 'md' ? 'matchCardMd' : '']" [ngStyle]="getMatchCardStyles()">
+<div
+  class="row matchCard"
+  [ngClass]="[size === 'md' ? 'matchCardMd' : '']"
+  [ngStyle]="getMatchCardStyles()"
+  (mouseenter)="onMatchCardPointerEnter()"
+  (mouseleave)="onMatchCardPointerLeave()"
+  (touchstart)="onMatchCardTouchStart()"
+  (focusin)="onMatchCardPointerEnter()">
   <div class="generalMatchCard" [ngClass]="{'generalMatchCardMd': size === 'md'}">
 
     <div class="live-indicator" *ngIf="isLive()">
@@ -61,7 +68,13 @@
           @if (interactable && watched && shouldShowMatchScore()) {
             <div class="row" class="location-selector-row">
               <div class="location-selector">
-                <mat-select name="locationSelect" class="location-mat-select" panelWidth="null" [(ngModel)]="match.location" 
+                <mat-select
+                  name="locationSelect"
+                  class="location-mat-select"
+                  panelWidth="null"
+                  [(ngModel)]="match.location"
+                  [disabled]="!locationSelectInteractable"
+                  (openedChange)="onLocationPanelOpenedChange($event)"
                   (selectionChange)="setLocation(match.fixture.id, $event.value)">
                   @if (match.venue && match.venue.id) {
                     <mat-option [value]="getLocationIdFromVenueId(match.venue.id)">

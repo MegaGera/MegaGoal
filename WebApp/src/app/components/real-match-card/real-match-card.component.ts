@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -29,12 +29,25 @@ import { isNotStartedStatus } from '../../config/matchStatus';
     size: window.innerWidth < 769 ? '1.2em' : '1.5em',
   }), provideIcons({ jamEyeCloseF, jamEyeF, jamInfoF })]
 })
-export class RealMatchCardComponent {
+export class RealMatchCardComponent implements OnChanges, OnDestroy {
   @Input() match!: Match;
   @Input() watched: boolean = false;
   @Input() locations!: Location[];
   @Input() size: string = 'lg';
   @Input() interactable: boolean = true;
+
+  /**
+   * Location mat-select stays disabled until the user has "entered" the card
+   * (mouse/focus) or touched it, with a short delay on touch so the same gesture
+   * that applies :hover does not open the panel. CSS opacity alone still leaves
+   * the control active; disabled blocks Material from handling the open.
+   */
+  locationSelectInteractable = false;
+  locationPanelOpen = false;
+  private locationInteractableTimer: ReturnType<typeof setTimeout> | null = null;
+  private locationLeaveCheckTimer: ReturnType<typeof setTimeout> | null = null;
+  private static readonly TOUCH_ENABLE_DELAY_MS = 280;
+  private static readonly LEAVE_PANEL_CHECK_MS = 150;
 
   constructor(
     public images: ImagesService,
@@ -44,6 +57,95 @@ export class RealMatchCardComponent {
     private leagueColorsService: LeagueColorsService
   ) {
     this.orderLocations();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['watched']) {
+      this.resetLocationSelectInteraction();
+    }
+    const matchCh = changes['match'];
+    if (
+      matchCh &&
+      matchCh.currentValue?.fixture?.id !== matchCh.previousValue?.fixture?.id
+    ) {
+      this.resetLocationSelectInteraction();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.clearLocationInteractableTimer();
+    this.clearLocationLeaveCheckTimer();
+  }
+
+  onMatchCardPointerEnter(): void {
+    this.scheduleLocationSelectInteractable(this.coarsePointerDelayMs());
+  }
+
+  onMatchCardTouchStart(): void {
+    if (!this.canShowLocationSelect()) {
+      return;
+    }
+    this.scheduleLocationSelectInteractable(RealMatchCardComponent.TOUCH_ENABLE_DELAY_MS);
+  }
+
+  onMatchCardPointerLeave(): void {
+    this.clearLocationInteractableTimer();
+    this.clearLocationLeaveCheckTimer();
+    this.locationLeaveCheckTimer = setTimeout(() => {
+      this.locationLeaveCheckTimer = null;
+      if (!this.locationPanelOpen) {
+        this.locationSelectInteractable = false;
+      }
+    }, RealMatchCardComponent.LEAVE_PANEL_CHECK_MS);
+  }
+
+  onLocationPanelOpenedChange(opened: boolean): void {
+    this.locationPanelOpen = opened;
+  }
+
+  private scheduleLocationSelectInteractable(delayMs: number): void {
+    if (!this.canShowLocationSelect()) {
+      return;
+    }
+    this.clearLocationInteractableTimer();
+    this.locationInteractableTimer = setTimeout(() => {
+      this.locationSelectInteractable = true;
+      this.locationInteractableTimer = null;
+    }, delayMs);
+  }
+
+  private coarsePointerDelayMs(): number {
+    if (typeof window === 'undefined') {
+      return 0;
+    }
+    return window.matchMedia('(pointer: coarse)').matches
+      ? RealMatchCardComponent.TOUCH_ENABLE_DELAY_MS
+      : 0;
+  }
+
+  private canShowLocationSelect(): boolean {
+    return this.interactable && this.watched && this.shouldShowMatchScore();
+  }
+
+  private resetLocationSelectInteraction(): void {
+    this.clearLocationInteractableTimer();
+    this.clearLocationLeaveCheckTimer();
+    this.locationSelectInteractable = false;
+    this.locationPanelOpen = false;
+  }
+
+  private clearLocationInteractableTimer(): void {
+    if (this.locationInteractableTimer != null) {
+      clearTimeout(this.locationInteractableTimer);
+      this.locationInteractableTimer = null;
+    }
+  }
+
+  private clearLocationLeaveCheckTimer(): void {
+    if (this.locationLeaveCheckTimer != null) {
+      clearTimeout(this.locationLeaveCheckTimer);
+      this.locationLeaveCheckTimer = null;
+    }
   }
 
   shouldShowMatchScore(): boolean {
@@ -70,9 +172,13 @@ export class RealMatchCardComponent {
   createMatch() {
     if (!this.watched) {
       this.watched = true;
-      this.megaGoal.createMatch(this.matchParser.matchToMatchRequest(this.match)).subscribe(result => { })
+      this.resetLocationSelectInteraction();
+      this.megaGoal.createMatch(this.matchParser.matchToMatchRequest(this.match)).subscribe(result => { });
+      // Pointer may still be over the card; mouseenter will not fire again.
+      setTimeout(() => this.onMatchCardPointerEnter(), 0);
     } else {
       this.watched = false;
+      this.resetLocationSelectInteraction();
       this.megaGoal.deleteMatch(this.match.fixture.id).subscribe(result => { });
     }
   }
