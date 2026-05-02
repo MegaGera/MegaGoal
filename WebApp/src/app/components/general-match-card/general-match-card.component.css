@@ -290,8 +290,6 @@
 .location-selector-row {
   width: 100%;
   margin-top: 0.5rem;
-  max-height: 100px;
-  overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 1;
 }
@@ -319,6 +317,34 @@
   font-size: 0.95rem;
   font-weight: 500;
   color: #334155;
+  width: 100%;
+}
+
+/* Wrap long location names in the trigger (layout unchanged; Material defaults to nowrap) */
+:host ::ng-deep .location-selector .mat-mdc-select {
+  width: 100%;
+}
+
+:host ::ng-deep .location-selector .mat-mdc-select-trigger {
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  align-items: flex-start;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+:host ::ng-deep .location-selector .mat-mdc-select-value {
+  max-width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep .location-selector .mat-mdc-select-value-text {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+  text-align: center;
 }
 
 /* Mobile Info Section - hidden on desktop */

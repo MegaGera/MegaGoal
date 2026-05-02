@@ -144,6 +144,6 @@ export interface MatchEvent {
         name: string | null
     } | null,
     type: string,
-    detail: string,
+    detail: string | null,
     comments?: string | null
 }
