@@ -16,13 +16,13 @@ const teamInfoSchema = z.object({
 });
 
 const venueInfoSchema = z.object({
-  id: z.number().int(),
-  name: z.string(),
+  id: z.number().int().nullable(),
+  name: z.string().nullable(),
   address: z.string().nullable(),
-  city: z.string(),
-  capacity: z.number().int(),
-  surface: z.string(),
-  image: z.string()
+  city: z.string().nullable(),
+  capacity: z.number().int().nullable(),
+  surface: z.string().nullable(),
+  image: z.string().nullable()
 });
 
 // Mirrors WebApp/src/app/models/team.ts -> Team interface.

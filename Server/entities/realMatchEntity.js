@@ -103,7 +103,7 @@ const eventSchema = z.object({
   player: eventParticipantSchema,
   assist: eventParticipantSchema.nullable(),
   type: z.string(),
-  detail: z.string(),
+  detail: z.string().nullable(),
   comments: z.string().nullable().optional()
 });
 

@@ -21,19 +21,19 @@ export interface Team {
 interface team {
     id: number,
     name: string,
-    code: string,
+    code: string | null,
     country: string,
-    founded: number,
+    founded: number | null,
     national: boolean,
     logo: string
 }
 
 interface venue {
-    id: number,
-    name: string,
-    address: string,
-    city: string,
-    capacity: number,
-    surface: string,
-    image: string
+    id: number | null,
+    name: string | null,
+    address: string | null,
+    city: string | null,
+    capacity: number | null,
+    surface: string | null,
+    image: string | null
 }
