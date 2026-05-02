@@ -35,6 +35,13 @@ interface fixture {
     }
 }
 
+/** League settings colors; included only on GET /real-matches/:id when configured */
+interface leagueColors {
+    base_color?: string,
+    card_main_color?: string,
+    card_trans_color?: string
+}
+
 interface league {
     id: number,
     name: string,
@@ -42,7 +49,8 @@ interface league {
     logo: string,
     flag: string,
     season: number,
-    round: string
+    round: string,
+    colors?: leagueColors
 }
 
 interface teams {

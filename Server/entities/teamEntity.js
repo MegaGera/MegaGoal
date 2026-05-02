@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { leagueColorsSchema } from './leagueEntity.js';
+
 const seasonTeamSchema = z.object({
   league: z.string(),
   season: z.string()
@@ -32,9 +34,25 @@ const teamSchema = z.object({
   seasons: z.array(seasonTeamSchema)
 });
 
+const domesticLeagueBundleSchema = z.object({
+  league: z.object({
+    id: z.number().int(),
+    name: z.string(),
+    type: z.string(),
+    logo: z.string()
+  }),
+  country: z.object({
+    name: z.string(),
+    code: z.string().nullable(),
+    flag: z.string().nullable()
+  }),
+  colors: leagueColorsSchema.optional()
+});
+
 // MongoDB document can include auxiliary fields not present in frontend model.
 const teamDocumentSchema = teamSchema.extend({
-  previous: z.array(z.string()).optional()
+  previous: z.array(z.string()).optional(),
+  domestic_league: domesticLeagueBundleSchema.nullable().optional()
 });
 
 const shortTeamSchema = z.object({
@@ -93,6 +111,7 @@ const parseShortTeams = (documents) => z.array(shortTeamSchema).parse(documents)
 
 export {
   buildTeamsQuery,
+  domesticLeagueBundleSchema,
   shortTeamAggregationPipeline,
   parseShortTeams,
   parseTeamDocument,

@@ -1,4 +1,21 @@
-<div class="league-info" (click)="navigateToLeague()">
+<div
+  class="league-info"
+  [class.league-info--themed]="!!leagueThemeStyle"
+  [ngStyle]="leagueThemeStyle"
+  (click)="navigateToLeague()">
+  @if (countryName) {
+    <div class="country-badge" aria-hidden="true">
+      @if (countryFlag) {
+        <img
+          class="country-flag"
+          [src]="countryFlag"
+          [alt]="countryName + ' flag'">
+      } @else {
+        <span class="country-flag-emoji">🌍</span>
+      }
+      <span class="country-name">{{ countryName }}</span>
+    </div>
+  }
   <img [src]="images.getRouteImageLeagueSm(leagueId)" alt="League logo" class="league-logo">
   <div class="league-details">
     <h2>{{ leagueName }}</h2>

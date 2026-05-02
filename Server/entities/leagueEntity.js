@@ -145,6 +145,7 @@ const buildNewLeagueSetting = ({ league_id, league_name, position }) => parseLea
 export {
   buildLeagueColorsMap,
   buildNewLeagueSetting,
+  leagueColorsSchema,
   parseChangeDailyUpdatePayload,
   parseChangeIsActivePayload,
   parseChangeLeagueColorsPayload,

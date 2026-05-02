@@ -69,6 +69,44 @@ export class LeagueDetailComponent implements OnInit {
   querySeasonId: number | null = null;
   queryMatchday: number | null = null;
 
+  /** League crest tile border (top-leagues `colors`; same fallbacks as team-header domestic league). */
+  get leagueMarkBorderColor(): string {
+    const c = this.selectedLeague?.colors;
+    const raw =
+      c?.base_color?.trim() ||
+      c?.card_main_color?.trim() ||
+      c?.card_trans_color?.trim();
+    if (raw) return raw;
+    return '#94a3b8';
+  }
+
+  /** Header gradients / shadow tints from `leagueMarkBorderColor` (hex → rgba). */
+  leagueAccentRgba(alpha: number): string {
+    const hex = this.leagueMarkBorderColor.replace(/^#/, '').trim();
+    let r: number;
+    let g: number;
+    let b: number;
+    if (hex.length === 3) {
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    } else if (hex.length === 6) {
+      r = parseInt(hex.slice(0, 2), 16);
+      g = parseInt(hex.slice(2, 4), 16);
+      b = parseInt(hex.slice(4, 6), 16);
+    } else {
+      r = 148;
+      g = 163;
+      b = 184;
+    }
+    if ([r, g, b].some((n) => Number.isNaN(n))) {
+      r = 148;
+      g = 163;
+      b = 184;
+    }
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   constructor(
     private megagoal: MegaGoalService, 
     public images: ImagesService, 
@@ -481,13 +519,6 @@ export class LeagueDetailComponent implements OnInit {
   */
   findRealMatchInMatches(fixtureId: number): Match | undefined {
     return this.matches.find(match => match.fixture.id === fixtureId);
-  }
-
-  /*
-    Navigation method to go back to league selector
-  */
-  goToLeagueSelector(): void {
-    this.router.navigate(['/app/leagues']);
   }
 
   /*

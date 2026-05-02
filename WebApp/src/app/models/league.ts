@@ -2,12 +2,18 @@
     League interface for football competitions
     - league: Information about the league
     - country: Information about the country of the league
+    - colors: optional league_settings palette (same shape as DomesticLeague in team.ts)
 */
 export interface League {
     league: league,
     country: country,
     seasons: seasons[],
-    position?: number
+    position?: number,
+    colors?: {
+        base_color?: string,
+        card_main_color?: string,
+        card_trans_color?: string
+    }
 }
 
 interface league {

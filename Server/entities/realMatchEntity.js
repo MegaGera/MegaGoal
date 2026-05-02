@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { leagueColorsSchema } from './leagueEntity.js';
 
 const nullableNumber = z.number().int().nullable();
 
@@ -37,7 +38,9 @@ const leagueSchema = z.object({
   logo: z.string(),
   flag: z.string().nullable(),
   season: z.number().int(),
-  round: z.string()
+  round: z.string(),
+  /** Present only on GET real-matches/:id when league_settings defines colors */
+  colors: leagueColorsSchema.optional()
 });
 
 const matchTeamSchema = teamRefSchema.extend({

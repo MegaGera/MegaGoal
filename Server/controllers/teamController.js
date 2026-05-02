@@ -9,6 +9,11 @@ import {
   shortTeamAggregationPipeline,
   setPreviousImagePayloadSchema
 } from '../entities/teamEntity.js';
+import {
+  enrichTeamWithDomesticLeague,
+  enrichTeamsWithDomesticLeague,
+  loadDomesticLeagueContext
+} from '../services/teamDomesticLeagueService.js';
 
 // Get teams
 const getTeams = async (req, res) => {
@@ -17,8 +22,10 @@ const getTeams = async (req, res) => {
     const query = buildTeamsQuery(req.query);
     const result = await db.collection('teams').find(query).toArray();
     const validatedResult = parseTeamDocuments(result);
+    const ctx = await loadDomesticLeagueContext(db);
+    const withDomestic = enrichTeamsWithDomesticLeague(validatedResult, ctx);
     console.log("Teams Getted");
-    res.send(validatedResult);
+    res.send(parseTeamDocuments(withDomestic));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -34,9 +41,15 @@ const getTeamByTeamId = async (req, res) => {
       "team.id": parsedTeamId
     };
     const result = await db.collection('teams').findOne(query);
-    const validatedResult = result ? parseTeamDocument(result) : undefined;
+    if (!result) {
+      res.send(undefined);
+      return;
+    }
+    const validatedResult = parseTeamDocument(result);
+    const ctx = await loadDomesticLeagueContext(db);
+    const withDomestic = enrichTeamWithDomesticLeague(validatedResult, ctx);
     console.log("Team getted " + parsedTeamId);
-    res.send(validatedResult);
+    res.send(parseTeamDocument(withDomestic));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

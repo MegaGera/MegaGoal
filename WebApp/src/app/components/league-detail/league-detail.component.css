@@ -36,101 +36,172 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Season selector with league logo */
-.season-selector {
-  background: white;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e9ecef;
-  margin-bottom: 30px;
-}
-
-.season-header {
+/* Header card — same metrics as .team-header-card; border color from template (league) */
+.league-detail-header-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1.5rem;
+  padding: 1.75rem;
+  border-radius: 24px;
+  background: radial-gradient(circle at top left, var(--league-glow-18, rgba(148, 163, 184, 0.18)), transparent 55%), #ffffff;
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.08),
+    0 2px 4px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  position: relative;
+  margin: 1.5rem 0 2rem;
 }
 
-.title-with-badge {
+.league-detail-header-top {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1.75rem;
+  align-items: stretch;
+  position: relative;
+  z-index: 1;
+}
+
+.league-detail-header-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--league-glow-12, rgba(148, 163, 184, 0.12)), transparent 60%);
+  mix-blend-mode: screen;
+}
+
+.league-detail-header-info {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex: 1 1 360px;
+  min-width: min(360px, 100%);
+  position: relative;
+  z-index: 1;
+}
+
+.league-detail-header-season {
+  flex: 1 1 420px;
+  min-width: min(340px, 100%);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.league-detail-header-season .season-info {
+  width: 100%;
+  max-width: 320px;
+  margin-left: auto;
+}
+
+.league-crest-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* League crest tile — same footprint as team-header .team-avatar (116×116, logo 82×82) */
+.league-detail-header-card .league-detail-league-badge.team-league-mark {
+  display: grid;
+  place-items: center;
+  width: 116px;
+  height: 116px;
+  flex-shrink: 0;
+  border-radius: 18px;
+  background: #f8f9fa;
+  box-sizing: border-box;
+  box-shadow: 0 8px 18px var(--league-shadow-16, rgba(148, 163, 184, 0.16));
+  transition: none;
+  cursor: default;
+}
+
+.league-detail-header-card .team-league-logo {
+  width: 82px;
+  height: 82px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.league-detail-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.league-name-row {
   display: flex;
   align-items: center;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 0.8rem;
 }
 
-.title-with-badge .section-title {
-  margin-bottom: 0;
-  line-height: 1.2;
+.league-name {
+  margin: 0;
+  font-size: clamp(1.8rem, 2vw, 2.3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #101828;
 }
 
-.country-badge {
+/* Country pill: fully rounded; desktop sits under title (document order) */
+.league-country-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
+  max-width: 100%;
+  padding: 8px 16px;
+  border-radius: 9999px;
   background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
   color: white;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 20px;
-  box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.35);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.country-flag {
+.league-country-pill-flag {
   width: 18px;
   height: 14px;
   object-fit: cover;
-  border-radius: 2px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.country-flag-emoji {
-  font-size: 14px;
-  line-height: 1;
-  display: inline-block;
-}
-
-.country-name {
-  line-height: 1;
-}
-
-.logo-selector-row {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-}
-
-.league-logo-season {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  border-radius: 12px;
-  background: #f8f9fa;
-  padding: 8px;
-  border: 2px solid #e9ecef;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   flex-shrink: 0;
 }
 
-.league-logo-season:hover {
-  transform: scale(1.05);
-  border-color: #dc143c;
-  box-shadow: 0 4px 8px rgba(220, 20, 60, 0.2);
+.league-country-pill-emoji {
+  font-size: 14px;
+  line-height: 1;
 }
 
-.league-logo-season:focus {
-  outline: 2px solid #dc143c;
-  outline-offset: 2px;
+.league-country-pill-name {
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.league-detail-header-top::after {
+  content: '';
+  flex: auto;
+}
+
+@media (min-width: 1024px) {
+  .league-detail-header-info,
+  .league-detail-header-season {
+    flex: 1 1 calc(50% - 0.875rem);
+    max-width: calc(50% - 0.875rem);
+  }
 }
 
 .season-info {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -138,7 +209,6 @@
 
 .season-info mat-form-field {
   width: 100%;
-  max-width: 280px;
 }
 
 /* Teams grid */
@@ -569,33 +639,79 @@
     padding: 16px;
   }
   
-  .season-selector {
-    padding: 12px;
+  .league-detail-header-card {
+    padding: 1.25rem;
+    gap: 1rem;
   }
-  
-  .season-header {
-    gap: 12px;
+
+  .league-detail-header-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
-  
-  .logo-selector-row {
-    flex-direction: row;
-    align-items: center;
-    gap: 16px;
+
+  .league-detail-header-info {
     width: 100%;
-    justify-content: space-between;
+    max-width: 100%;
+    flex: 1 1 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
   }
-  
-  .league-logo-season {
-    width: 80px;
-    height: 80px;
-    padding: 6px;
+
+  /* Same visual order as team-header mobile: title → crest → country pill */
+  .league-detail-main {
+    display: contents;
   }
-  
-  .season-info {
-    flex: 1;
-    align-items: flex-end;
+
+  .league-name-row {
+    order: -1;
+    width: 100%;
+    justify-content: center;
   }
-  
+
+  .league-crest-row {
+    order: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .league-country-pill {
+    order: 1;
+    align-self: center;
+    max-width: min(100%, 320px);
+    font-size: 11px;
+    padding: 6px 14px;
+  }
+
+  .league-name {
+    font-size: 1.8rem;
+  }
+
+  .league-detail-header-card .league-detail-league-badge.team-league-mark {
+    width: 92px;
+    height: 92px;
+  }
+
+  .league-detail-header-card .team-league-logo {
+    width: 64px;
+    height: 64px;
+  }
+
+  .league-detail-header-season {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+  }
+
+  .league-detail-header-season .season-info {
+    max-width: none;
+    margin-left: 0;
+    width: 100%;
+  }
+
   .season-info mat-form-field {
     max-width: none;
     width: 100%;
@@ -683,61 +799,22 @@
   }
 }
 
-@media (max-width: 768px) {
-  .country-badge {
-    font-size: 14px;
-    padding: 5px 10px;
-    gap: 5px;
+@media (max-width: 480px) {
+  .league-country-pill {
+    font-size: 10px;
+    padding: 5px 12px;
+    gap: 6px;
   }
-  
-  .country-flag {
+
+  .league-country-pill-flag {
     width: 16px;
     height: 12px;
   }
-  
-  .country-flag-emoji {
-    font-size: 14px;
-  }
-}
 
-@media (max-width: 480px) {
-  .season-selector {
-    padding: 10px;
-  }
-  
-  .season-header {
-    gap: 10px;
-  }
-  
-  .title-with-badge {
-    gap: 12px;
-  }
-  
-  .logo-selector-row {
-    gap: 12px;
-  }
-  
-  .league-logo-season {
-    width: 80px;
-    height: 80px;
-    padding: 4px;
-  }
-  
-  .country-badge {
-    font-size: 12px;
-    padding: 4px 8px;
-    gap: 4px;
-  }
-  
-  .country-flag {
-    width: 15px;
-    height: 12px;
-  }
-  
-  .country-flag-emoji {
+  .league-country-pill-emoji {
     font-size: 12px;
   }
-  
+
   .season-info {
     gap: 6px;
   }

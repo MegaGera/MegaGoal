@@ -8,37 +8,55 @@
 <div class="container">
   @if (selectedLeague) {
     <section class="slide-in">
-      <!-- Season selector with league logo -->
-      <div class="season-selector">
-        <div class="season-header">
-          <div class="title-with-badge">
-            <h2 class="section-title">{{ selectedLeague.league.name }}</h2>
-            <div class="country-badge">
-              @if (selectedLeague.country.flag) {
-                <img 
-                  class="country-flag" 
-                  [src]="selectedLeague.country.flag" 
-                  [alt]="selectedLeague.country.name + ' flag'">
-              } @else {
-                <span class="country-flag-emoji">🌍</span>
+      <!-- Header card: same structure as app-team-header (info + season column) -->
+      <div
+        class="league-detail-header-card"
+        [style.border]="'1px solid ' + leagueMarkBorderColor"
+        [style.--league-glow-18]="leagueAccentRgba(0.18)"
+        [style.--league-glow-12]="leagueAccentRgba(0.12)"
+        [style.--league-shadow-16]="leagueAccentRgba(0.16)"
+        [style.--league-shadow-hover]="leagueAccentRgba(0.2)">
+        <div class="league-detail-header-top">
+          <div class="league-detail-header-info">
+            <div class="league-crest-row">
+              <div
+                class="team-league-mark league-detail-league-badge"
+                [style.border]="'2px solid ' + leagueMarkBorderColor">
+                <img
+                  class="team-league-logo"
+                  [src]="images.getRouteImageLeagueSm(selectedLeague.league.id)"
+                  [alt]="selectedLeague.league.name + ' logo'"
+                  width="82"
+                  height="82">
+              </div>
+            </div>
+            <div class="league-detail-main">
+              <div class="league-name-row">
+                <h1 class="league-name">{{ selectedLeague.league.name }}</h1>
+              </div>
+              @if (selectedLeague.country.name) {
+                <div class="league-country-pill">
+                  @if (selectedLeague.country.flag) {
+                    <img
+                      class="league-country-pill-flag"
+                      [src]="selectedLeague.country.flag"
+                      [alt]="selectedLeague.country.name + ' flag'"
+                      width="18"
+                      height="14">
+                  } @else {
+                    <span class="league-country-pill-emoji">🌍</span>
+                  }
+                  <span class="league-country-pill-name">{{ selectedLeague.country.name }}</span>
+                </div>
               }
-              <span class="country-name">{{ selectedLeague.country.name }}</span>
             </div>
           </div>
-          <div class="logo-selector-row">
-            <img 
-              class="league-logo-season" 
-              [src]="images.getRouteImageLeagueSm(selectedLeague.league.id)"
-              [alt]="selectedLeague.league.name + ' logo'"
-              (click)="goToLeagueSelector()"
-              tabindex="0"
-              role="button"
-              [attr.aria-label]="'Go back to league selector'">
+          <div class="league-detail-header-season">
             <div class="season-info">
               <mat-form-field appearance="outline">
                 <mat-label>Select Season</mat-label>
-                <mat-select 
-                  [(ngModel)]="selectedSeason" 
+                <mat-select
+                  [(ngModel)]="selectedSeason"
                   (selectionChange)="getTeamsBySeason(selectedSeason)"
                   aria-label="Select season">
                   @for (season of seasonsFiltered; track season.id) {

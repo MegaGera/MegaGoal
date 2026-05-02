@@ -36,7 +36,7 @@
 .team-header-info {
   display: flex;
   gap: 1.5rem;
-  align-items: center;
+  align-items: flex-start;
   flex: 1 1 360px;
   min-width: min(360px, 100%);
 }
@@ -54,23 +54,66 @@
   margin-left: auto;
 }
 
+.team-crest-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* League crest tile — desktop: flex sibling left of team avatar; mobile overrides below */
+.team-league-mark {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 18px;
+  background: #f8f9fa;
+  box-sizing: border-box;
+  box-shadow: 0 8px 18px rgba(220, 20, 60, 0.16);
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* League-detail–style lift; keep inline league border color (no crimson border swap) */
+.team-league-mark:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(220, 20, 60, 0.2);
+}
+
+.team-league-mark:focus {
+  outline: 2px solid #dc143c;
+  outline-offset: 2px;
+}
+
+.team-league-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
 .team-avatar {
   width: 116px;
   height: 116px;
   display: grid;
   place-items: center;
-  border-radius: 40px;
-  background: linear-gradient(135deg, rgba(220, 20, 60, 0.25), rgba(255, 107, 107, 0.18));
-  box-shadow:
-    0 22px 38px rgba(220, 20, 60, 0.28),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+  /* Match team-header .team-league-mark tile */
+  border-radius: 18px;
+  background: #f8f9fa;
+  box-sizing: border-box;
+  box-shadow: 0 8px 18px rgba(220, 20, 60, 0.16);
+  transition: all 0.2s ease;
 }
 
 .team-avatar img {
   width: 82px;
   height: 82px;
   object-fit: contain;
-  filter: drop-shadow(0 14px 20px rgba(220, 20, 60, 0.3));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
 .team-main {
@@ -78,6 +121,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
+  min-width: 0;
+}
+
+.team-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
 }
 
 .team-name-row {
@@ -140,7 +191,66 @@
   text-overflow: ellipsis;
 }
 
+/* Same corner nation badge as match-info league-header */
+.team-header-card > .country-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  max-width: min(55%, 100%);
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 0 0 0 8px;
+  box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.team-header-card > .country-badge .country-flag {
+  width: 16px;
+  height: 12px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.team-header-card > .country-badge .country-name {
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 769px) {
+  .team-header-card > .country-badge {
+    left: 0;
+    right: auto;
+    border-radius: 0 0 8px 0;
+  }
+}
+
 @media (max-width: 768px) {
+  .team-header-card > .country-badge {
+    font-size: 10px;
+    padding: 5px 10px;
+    gap: 5px;
+    max-width: min(62%, calc(100% - 52px));
+  }
+
+  .team-header-card > .country-badge .country-flag {
+    width: 14px;
+    height: 10px;
+  }
+
   .team-header-card {
     padding: 1.25rem;
     gap: 1rem;
@@ -161,17 +271,82 @@
     text-align: center;
   }
 
+  /*
+    Stack: title row → crest → city / founded / stadium (display:contents flattens team-main
+    so name, avatar, details are ordered siblings).
+  */
+  .team-main {
+    display: contents;
+  }
+
+  .team-name-row {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+  }
+
+  /*
+    Team crest stays visually centered; league sits just left of it (same gap as before flex layout).
+    Avatar is 92px wide → center at 50%, league tile 56px + gap to avatar left edge.
+  */
+  .team-crest-row {
+    order: 0;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    min-height: 92px;
+    gap: 0;
+  }
+
+  .team-league-mark {
+    position: absolute;
+    left: max(0px, calc(50% - (92px / 2) - 0.5rem - 56px));
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 18px;
+    /* Same tile fill as league-detail .team-league-mark */
+    background: #f8f9fa;
+    box-sizing: border-box;
+    box-shadow: 0 8px 18px rgba(220, 20, 60, 0.16);
+  }
+
+  .team-league-mark:hover {
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  .team-league-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+  }
+
+  .team-avatar {
+    width: 92px;
+    height: 92px;
+  }
+
+  .team-details {
+    order: 1;
+    width: 100%;
+    align-items: center;
+  }
+
   .team-header-stats {
     width: 100%;
     max-width: 100%;
     flex: 1 1 100%;
     justify-content: flex-start;
     margin-top: 0.5rem;
-  }
-
-  .team-avatar {
-    width: 92px;
-    height: 92px;
   }
 
   .team-avatar img {
@@ -181,14 +356,6 @@
 
   .team-name {
     font-size: 1.8rem;
-  }
-
-  .team-main {
-    align-items: center;
-  }
-
-  .team-name-row {
-    justify-content: center;
   }
 
   .team-meta {
@@ -221,7 +388,7 @@
     max-width: calc(50% - 0.875rem);
   }
 }
-
 @media (max-width: 480px) {
 }
+
 

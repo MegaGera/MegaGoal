@@ -1,40 +1,73 @@
 <div class="team-header-card">
+  @if (badgeCountryName) {
+    <div class="country-badge team-header-country-badge" aria-hidden="true">
+      @if (badgeCountryFlag) {
+        <img
+          class="country-flag"
+          [src]="badgeCountryFlag"
+          [alt]="badgeCountryName + ' flag'"
+          width="16"
+          height="12">
+      }
+      <span class="country-name">{{ badgeCountryName }}</span>
+    </div>
+  }
   <div class="team-header-top">
     <div class="team-header-info">
-      <div class="team-avatar">
-        <img
-          [ngSrc]="images.getRouteImageTeam(team.team.id)"
-          [alt]="team.team.name"
-          width="112"
-          height="112"
-          priority="true"
-        />
+      <div class="team-crest-row">
+        @if (domesticLeagueId; as leagueId) {
+          <a
+            class="team-league-mark"
+            [routerLink]="['/app/leagues', leagueId]"
+            [attr.aria-label]="'Open ' + (domesticLeagueName ?? 'league') + ' league page'"
+            [style.border]="'2px solid ' + leagueMarkBorderColor">
+            <img
+              class="team-league-logo"
+              [src]="images.getRouteImageLeagueSm(leagueId)"
+              [alt]="domesticLeagueName ?? 'League'"
+              width="40"
+              height="40">
+          </a>
+        }
+        <div
+          class="team-avatar"
+          [style.border]="'2px solid ' + leagueMarkBorderColor">
+          <img
+            [ngSrc]="images.getRouteImageTeam(team.team.id)"
+            [alt]="team.team.name"
+            width="112"
+            height="112"
+            priority="true"
+          />
+        </div>
       </div>
 
       <div class="team-main">
         <div class="team-name-row">
           <h1 class="team-name">{{ team.team.name }}</h1>
         </div>
-        <div class="team-meta">
-          <span>{{ team.team.country }}</span>
-          @if (team.venue.city) {
-            <span class="dot" aria-hidden="true">•</span>
-            <span>{{ team.venue.city }}</span>
-          }
-          @if (team.team.founded != null) {
-            <span class="dot" aria-hidden="true">•</span>
-            <span>Founded {{ team.team.founded }}</span>
+        <div class="team-details">
+          <div class="team-meta">
+            @if (team.venue.city) {
+              <span>{{ team.venue.city }}</span>
+            }
+            @if (team.team.founded != null) {
+              @if (team.venue.city) {
+                <span class="dot" aria-hidden="true">•</span>
+              }
+              <span>Founded {{ team.team.founded }}</span>
+            }
+          </div>
+
+          @if (team.venue.name) {
+            <div class="team-secondary">
+              <div class="info-chip">
+                <span class="chip-label">stadium</span>
+                <span class="chip-value">{{ team.venue.name }}</span>
+              </div>
+            </div>
           }
         </div>
-
-        @if (team.venue.name) {
-          <div class="team-secondary">
-            <div class="info-chip">
-              <span class="chip-label">stadium</span>
-              <span class="chip-value">{{ team.venue.name }}</span>
-            </div>
-          </div>
-        }
       </div>
     </div>
 

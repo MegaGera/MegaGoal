@@ -114,7 +114,25 @@ const getRealMatchById = async (req, res) => {
       return res.status(404).json({ message: "Match not found" });
     }
 
-    const validatedResult = parseRealMatch(result);
+    const leagueId = result.league?.id;
+    let payload = result;
+    if (leagueId != null) {
+      const setting = await db.collection('league_settings').findOne(
+        { league_id: leagueId },
+        { projection: { colors: 1 } }
+      );
+      if (setting?.colors && typeof setting.colors === 'object') {
+        payload = {
+          ...result,
+          league: {
+            ...result.league,
+            colors: setting.colors
+          }
+        };
+      }
+    }
+
+    const validatedResult = parseRealMatch(payload);
     console.log(`Real Match found: ${validatedResult.fixture.id}`);
     res.send(validatedResult);
   } catch (error) {
