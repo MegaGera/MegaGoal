@@ -105,6 +105,8 @@ export class TeamComponent implements OnInit, OnDestroy {
   
   // Store restored state before data loads
   private restoredSeasonId: number | null = null;
+  /** When true, after watched matches load, sync default view to URL (and use All Matches if none watched). */
+  private syncDefaultViewToUrlAfterWatchedLoad = false;
   realMatches: RealMatch[] = [];
   showRealMatches: RealMatch[] = [];
   matches: Match[] = [];
@@ -230,6 +232,7 @@ export class TeamComponent implements OnInit, OnDestroy {
         this.initializeSeasons();
         this.getRealMatches();
         this.getLocations();
+        this.syncDefaultViewToUrlAfterWatchedLoad = !hasViewParam;
         this.loadAllWatchedMatches();
         
         // Log page visit with team information
@@ -240,14 +243,6 @@ export class TeamComponent implements OnInit, OnDestroy {
           next: () => {},
           error: (error) => console.error('Error logging page visit:', error)
         });
-        
-        // Update URL with view parameter if it wasn't present initially
-        // This ensures the URL reflects the current state (defaults to 'insights')
-        if (!hasViewParam) {
-          setTimeout(() => {
-            this.updateQueryParams();
-          }, 0);
-        }
       } else {
         this.router.navigate(["/app/leagues"]);
       }
@@ -442,6 +437,7 @@ export class TeamComponent implements OnInit, OnDestroy {
         this.filterMatches();
         this.yourMatchesLoaded = true;
         this.filterInsightsData();
+        this.applyDefaultViewAfterWatchedMatchesLoaded();
       },
       error: () => {
         this.allWatchedMatches = [];
@@ -451,8 +447,25 @@ export class TeamComponent implements OnInit, OnDestroy {
         this.updateLeaguesForStats();
         this.yourMatchesLoaded = true;
         this.filterInsightsData();
+        this.applyDefaultViewAfterWatchedMatchesLoaded();
       }
     });
+  }
+
+  /**
+   * If the user opened the team without a `view` query param and has no watched matches,
+   * default to All Matches (fixtures) instead of an empty Stats view.
+   */
+  private applyDefaultViewAfterWatchedMatchesLoaded(): void {
+    if (!this.syncDefaultViewToUrlAfterWatchedLoad) {
+      return;
+    }
+    this.syncDefaultViewToUrlAfterWatchedLoad = false;
+    if (this.allWatchedMatches.length === 0) {
+      this.setView('allMatches');
+    } else {
+      this.updateQueryParams();
+    }
   }
 
   setView(mode: 'insights' | 'yourMatches' | 'allMatches'): void {
