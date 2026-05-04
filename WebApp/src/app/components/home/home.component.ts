@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule, NgClass, NgOptimizedImage } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -30,21 +31,25 @@ import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { GeneralStatsComponent } from '../stats/general-stats/general-stats.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
+import { UserMe } from '../../models/userMe';
+import { NotificationComponent } from '../notification/notification.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, RealMatchCardComponent, PaginationComponent, MatProgressSpinnerModule, 
-    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent, FiltersHomeComponent],
+    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent, FiltersHomeComponent, NotificationComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   providers: [ImagesService, provideNgIconsConfig({
     size: '1.2rem',
   }), provideIcons({ jamFilterF, jamEyeF, jamHomeF, ionFootball })]
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
 
   readonly panelOpenState = signal(false);
+
+  private userMeSubscription?: Subscription;
 
   /* 
     Array of matches
@@ -66,6 +71,9 @@ export class HomeComponent implements OnInit {
   /* User Stats for Hero Section */
   userStats: UserStats | null = null;
   userStatsLoaded: boolean = false;
+
+  userMe: UserMe | null = null;
+  userMeLoaded: boolean = false;
   
   /* General Stats */
   generalStats: GeneralStats | null = null;
@@ -87,6 +95,8 @@ export class HomeComponent implements OnInit {
   /* View Mode */
   viewMode: 'stats' | 'matches' | 'filters' = 'matches';
 
+  readonly setFavouritesNotificationName = 'set_favourites';
+
   constructor(
     private megagoal: MegaGoalService, 
     public images: ImagesService, 
@@ -100,6 +110,10 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.userMeSubscription = this.megagoal.userMe$.subscribe((user) => {
+      this.userMe = user;
+    });
+    this.loadUserMe();
     // Load top leagues first to populate colors before matches are rendered
     this.loadTopLeagues();
     this.getAllMatches();
@@ -112,6 +126,10 @@ export class HomeComponent implements OnInit {
       next: () => {},
       error: (error) => console.error('Error logging page visit:', error)
     });
+  }
+
+  ngOnDestroy(): void {
+    this.userMeSubscription?.unsubscribe();
   }
 
   /*
@@ -343,6 +361,28 @@ export class HomeComponent implements OnInit {
       this.userStats = result;
       this.userStatsLoaded = true;
     })
+  }
+
+  loadUserMe(): void {
+    this.megagoal.getUserMe().subscribe({
+      next: () => {
+        this.userMeLoaded = true;
+      },
+      error: (error) => {
+        console.error('Error loading user profile:', error);
+        this.userMe = null;
+        this.userMeLoaded = true;
+      }
+    });
+  }
+
+  showSetFavouritesNotification(): boolean {
+    if (!this.userMeLoaded || !this.userMe) {
+      return false;
+    }
+    return this.userMe.notifications.home.some(
+      (n) => n.name === this.setFavouritesNotificationName && n.status === 'active'
+    );
   }
 
   getFavouriteTeamStats() {

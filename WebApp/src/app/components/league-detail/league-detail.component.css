@@ -52,6 +52,61 @@
   margin: 1.5rem 0 2rem;
 }
 
+.league-favourite-btn {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #64748b;
+  box-shadow: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease, transform 0.12s ease;
+}
+
+.league-favourite-btn:hover:not(:disabled) {
+  color: #f5c542;
+  background: transparent;
+  border-color: transparent;
+  transform: scale(1.04);
+}
+
+.league-favourite-btn:focus-visible {
+  outline: 2px solid #dc143c;
+  outline-offset: 2px;
+}
+
+.league-favourite-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.league-favourite-btn--active {
+  color: #f5c542;
+  border-color: transparent;
+  background: transparent;
+}
+
+.league-favourite-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
 .league-detail-header-top {
   display: flex;
   flex-wrap: wrap;
@@ -201,6 +256,19 @@
   }
 }
 
+@media (min-width: 769px) {
+  .league-favourite-btn {
+    top: 6px;
+    left: 8px;
+    width: 1.75rem;
+    height: 1.75rem;
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    border-radius: 8px;
+    margin: 0;
+  }
+}
+
 .season-info {
   display: flex;
   flex-direction: column;
@@ -249,6 +317,37 @@
   background: linear-gradient(90deg, #dc143c, #ff6b6b);
   transform: scaleX(0);
   transition: transform 0.3s ease;
+}
+
+.team-favourite-indicator {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  min-width: 1.55rem;
+  min-height: 1.55rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #f5c542;
+  line-height: 0;
+  pointer-events: none;
+}
+
+.team-favourite-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 0;
 }
 
 .team-card:hover {
@@ -635,6 +734,14 @@
 }
 
 @media (max-width: 768px) {
+  .league-favourite-btn {
+    width: 1.85rem;
+    height: 1.85rem;
+    min-width: 1.85rem;
+    min-height: 1.85rem;
+    margin: 6px 0 0 6px;
+  }
+
   .container {
     padding: 16px;
   }
@@ -666,8 +773,9 @@
 
   .league-name-row {
     order: -1;
-    width: 100%;
+    width: 80%;
     justify-content: center;
+    align-self: center;
   }
 
   .league-crest-row {
@@ -686,6 +794,10 @@
 
   .league-name {
     font-size: 1.8rem;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .league-detail-header-card .league-detail-league-badge.team-league-mark {
@@ -723,6 +835,15 @@
   
   .team-card {
     padding: 12px;
+  }
+
+  .team-favourite-indicator {
+    top: 2px;
+    left: 3px;
+    width: 1.45rem;
+    height: 1.45rem;
+    min-width: 1.45rem;
+    min-height: 1.45rem;
   }
   
   .team-logo {
@@ -851,6 +972,15 @@
   
   .team-card {
     padding: 12px;
+  }
+
+  .team-favourite-indicator {
+    top: 2px;
+    left: 3px;
+    width: 1.35rem;
+    height: 1.35rem;
+    min-width: 1.35rem;
+    min-height: 1.35rem;
   }
   
   .team-logo {

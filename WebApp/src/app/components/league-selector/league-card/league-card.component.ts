@@ -5,13 +5,13 @@ import { ImagesService } from '../../../services/images.service';
 @Component({
   selector: 'app-league-card',
   standalone: true,
-  imports: [],
   templateUrl: './league-card.component.html',
   styleUrl: './league-card.component.css'
 })
 export class LeagueCardComponent {
   @Input() league!: League;
   @Input() viewCount: number | null = null;
+  @Input() isFavourite: boolean = false;
   @Output() leagueSelected = new EventEmitter<League>();
 
   constructor(public images: ImagesService) {}

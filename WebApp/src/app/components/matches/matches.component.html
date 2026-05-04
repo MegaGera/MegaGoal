@@ -124,21 +124,127 @@
       </div>
     } @else if (leagueOrder.length > 0) {
       <div class="leagues-container">
+        @if (favouriteLeagueOrder.length > 0) {
+          <div class="favourites-section">
+          <div class="favourites-section-header">
+            <ng-icon name="jamStarF" class="favourites-section-star" size="22" aria-hidden="true"></ng-icon>
+            <h2 class="favourites-section-title">Favourites</h2>
+          </div>
+          @for (leagueKey of favouriteLeagueOrder; track leagueKey) {
+            @if (favouriteGroupedMatches[leagueKey].length > 0) {
+              <div class="league-section league-section--favourites">
+                <div
+                  class="league-header league-header--themed"
+                  [style.--league-glow-18]="leagueAccentRgba(favouriteGroupedMatches[leagueKey][0].league, 0.18)"
+                  [style.--league-glow-12]="leagueAccentRgba(favouriteGroupedMatches[leagueKey][0].league, 0.12)"
+                  [style.--league-shadow-16]="leagueAccentRgba(favouriteGroupedMatches[leagueKey][0].league, 0.16)">
+                  <div class="league-info">
+                    <div
+                      class="team-league-mark matches-league-crest-badge clickable-league-crest"
+                      [style.border]="'2px solid ' + leagueMarkBorderColor(favouriteGroupedMatches[leagueKey][0].league)"
+                      [style.--league-shadow-16]="leagueAccentRgba(favouriteGroupedMatches[leagueKey][0].league, 0.16)"
+                      (click)="goToLeague(favouriteGroupedMatches[leagueKey][0].league.id)"
+                      (keydown.enter)="goToLeague(favouriteGroupedMatches[leagueKey][0].league.id)"
+                      tabindex="0"
+                      role="button"
+                      [attr.aria-label]="'Go to ' + favouriteGroupedMatches[leagueKey][0].league.name + ' league details'">
+                      <img
+                        class="team-league-logo"
+                        [src]="getLeagueLogo(favouriteGroupedMatches[leagueKey][0].league.id)"
+                        [alt]="favouriteGroupedMatches[leagueKey][0].league.name + ' logo'"
+                        width="28"
+                        height="28">
+                    </div>
+                    <div class="league-details">
+                      <div class="league-name-row">
+                        <h2 class="league-name">
+                          <a
+                            class="league-name-link"
+                            [routerLink]="['/app/leagues', favouriteGroupedMatches[leagueKey][0].league.id]"
+                            [attr.aria-label]="'Go to ' + favouriteGroupedMatches[leagueKey][0].league.name + ' league details'">
+                            {{ favouriteGroupedMatches[leagueKey][0].league.name }}
+                          </a>
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
+                  @if (favouriteGroupedMatches[leagueKey][0].league.country) {
+                    <div class="league-header-aside">
+                      <div class="league-country-pill">
+                        @if (favouriteGroupedMatches[leagueKey][0].league.flag) {
+                          <img
+                            class="league-country-pill-flag"
+                            [src]="favouriteGroupedMatches[leagueKey][0].league.flag"
+                            [alt]="favouriteGroupedMatches[leagueKey][0].league.country + ' flag'"
+                            width="18"
+                            height="14">
+                        } @else {
+                          <span class="league-country-pill-emoji">🌍</span>
+                        }
+                        <span class="league-country-pill-name">{{ favouriteGroupedMatches[leagueKey][0].league.country }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <div class="matches-grid">
+                  @for (match of displayedFavouriteMatches[leagueKey]; track match.fixture.id) {
+                    <div class="match-card-wrapper">
+                      <app-real-match-card 
+                        [match]="matchParser.realMatchToMatch(match, findWatchedMatch(match.fixture.id))"
+                        [watched]="isMatchWatched(match.fixture.id)"
+                        [locations]="locations"
+                        [size]="'md'">
+                      </app-real-match-card>
+                    </div>
+                  }
+                </div>
+                
+                @if (canShowMoreFavouriteMatches(leagueKey)) {
+                  <div class="show-more-matches-container">
+                    <button 
+                      class="show-more-matches-btn"
+                      (click)="showMoreFavouriteMatches(leagueKey)"
+                      aria-label="Show more favourite matches">
+                      <ng-icon name="jamPlus"></ng-icon>
+                      Show More Matches ({{ getRemainingFavouriteMatchesCount(leagueKey) }})
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          }
+          </div>
+        }
+
         @for (leagueKey of leagueOrder; track leagueKey) {
           @if (groupedMatches[leagueKey].length > 0) {
             <div class="league-section">
-              <div class="league-header">
+              <div
+                class="league-header league-header--themed"
+                [style.border]="'1px solid ' + leagueMarkBorderColor(groupedMatches[leagueKey][0].league)"
+                [style.--league-glow-18]="leagueAccentRgba(groupedMatches[leagueKey][0].league, 0.18)"
+                [style.--league-glow-12]="leagueAccentRgba(groupedMatches[leagueKey][0].league, 0.12)"
+                [style.--league-shadow-16]="leagueAccentRgba(groupedMatches[leagueKey][0].league, 0.16)">
                 <div class="league-info">
-                  <img 
-                    class="league-logo clickable-league-logo" 
-                    [src]="getLeagueLogo(groupedMatches[leagueKey][0].league.id)"
-                    [alt]="groupedMatches[leagueKey][0].league.name + ' logo'"
+                  <div
+                    class="team-league-mark matches-league-crest-badge clickable-league-crest"
+                    [style.border]="'2px solid ' + leagueMarkBorderColor(groupedMatches[leagueKey][0].league)"
+                    [style.--league-shadow-16]="leagueAccentRgba(groupedMatches[leagueKey][0].league, 0.16)"
                     (click)="goToLeague(groupedMatches[leagueKey][0].league.id)"
+                    (keydown.enter)="goToLeague(groupedMatches[leagueKey][0].league.id)"
                     tabindex="0"
                     role="button"
                     [attr.aria-label]="'Go to ' + groupedMatches[leagueKey][0].league.name + ' league details'">
+                    <img
+                      class="team-league-logo"
+                      [src]="getLeagueLogo(groupedMatches[leagueKey][0].league.id)"
+                      [alt]="groupedMatches[leagueKey][0].league.name + ' logo'"
+                      width="28"
+                      height="28">
+                  </div>
                   <div class="league-details">
-                    <div class="league-name-group">
+                    <div class="league-name-row">
                       <h2 class="league-name">
                         <a
                           class="league-name-link"
@@ -147,15 +253,26 @@
                           {{ groupedMatches[leagueKey][0].league.name }}
                         </a>
                       </h2>
-                      @if (groupedMatches[leagueKey][0].league.country) {
-                        <span class="country">{{ groupedMatches[leagueKey][0].league.country }}</span>
-                      }
                     </div>
                   </div>
                 </div>
-                <div class="match-count">
-                  {{ groupedMatches[leagueKey].length }} match{{ groupedMatches[leagueKey].length !== 1 ? 'es' : '' }}
-                </div>
+                @if (groupedMatches[leagueKey][0].league.country) {
+                  <div class="league-header-aside">
+                    <div class="league-country-pill">
+                      @if (groupedMatches[leagueKey][0].league.flag) {
+                        <img
+                          class="league-country-pill-flag"
+                          [src]="groupedMatches[leagueKey][0].league.flag"
+                          [alt]="groupedMatches[leagueKey][0].league.country + ' flag'"
+                          width="18"
+                          height="14">
+                      } @else {
+                        <span class="league-country-pill-emoji">🌍</span>
+                      }
+                      <span class="league-country-pill-name">{{ groupedMatches[leagueKey][0].league.country }}</span>
+                    </div>
+                  </div>
+                }
               </div>
 
               <div class="matches-grid">
@@ -186,6 +303,99 @@
             </div>
           }
         }
+      </div>
+    } @else if (favouriteLeagueOrder.length > 0) {
+      <div class="leagues-container">
+        <div class="favourites-section">
+        <div class="favourites-section-header">
+          <ng-icon name="jamStarF" class="favourites-section-star" size="22" aria-hidden="true"></ng-icon>
+          <h2 class="favourites-section-title">Favourite Matches</h2>
+        </div>
+        @for (leagueKey of favouriteLeagueOrder; track leagueKey) {
+          @if (favouriteGroupedMatches[leagueKey].length > 0) {
+            <div class="league-section league-section--favourites">
+              <div
+                class="league-header league-header--themed"
+                [style.--league-glow-18]="leagueAccentRgba(favouriteGroupedMatches[leagueKey][0].league, 0.18)"
+                [style.--league-glow-12]="leagueAccentRgba(favouriteGroupedMatches[leagueKey][0].league, 0.12)"
+                [style.--league-shadow-16]="leagueAccentRgba(favouriteGroupedMatches[leagueKey][0].league, 0.16)">
+                <div class="league-info">
+                  <div
+                    class="team-league-mark matches-league-crest-badge clickable-league-crest"
+                    [style.border]="'2px solid ' + leagueMarkBorderColor(favouriteGroupedMatches[leagueKey][0].league)"
+                    [style.--league-shadow-16]="leagueAccentRgba(favouriteGroupedMatches[leagueKey][0].league, 0.16)"
+                    (click)="goToLeague(favouriteGroupedMatches[leagueKey][0].league.id)"
+                    (keydown.enter)="goToLeague(favouriteGroupedMatches[leagueKey][0].league.id)"
+                    tabindex="0"
+                    role="button"
+                    [attr.aria-label]="'Go to ' + favouriteGroupedMatches[leagueKey][0].league.name + ' league details'">
+                    <img
+                      class="team-league-logo"
+                      [src]="getLeagueLogo(favouriteGroupedMatches[leagueKey][0].league.id)"
+                      [alt]="favouriteGroupedMatches[leagueKey][0].league.name + ' logo'"
+                      width="28"
+                      height="28">
+                  </div>
+                  <div class="league-details">
+                    <div class="league-name-row">
+                      <h2 class="league-name">
+                        <a
+                          class="league-name-link"
+                          [routerLink]="['/app/leagues', favouriteGroupedMatches[leagueKey][0].league.id]"
+                          [attr.aria-label]="'Go to ' + favouriteGroupedMatches[leagueKey][0].league.name + ' league details'">
+                          {{ favouriteGroupedMatches[leagueKey][0].league.name }}
+                        </a>
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+                @if (favouriteGroupedMatches[leagueKey][0].league.country) {
+                  <div class="league-header-aside">
+                    <div class="league-country-pill">
+                      @if (favouriteGroupedMatches[leagueKey][0].league.flag) {
+                        <img
+                          class="league-country-pill-flag"
+                          [src]="favouriteGroupedMatches[leagueKey][0].league.flag"
+                          [alt]="favouriteGroupedMatches[leagueKey][0].league.country + ' flag'"
+                          width="18"
+                          height="14">
+                      } @else {
+                        <span class="league-country-pill-emoji">🌍</span>
+                      }
+                      <span class="league-country-pill-name">{{ favouriteGroupedMatches[leagueKey][0].league.country }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="matches-grid">
+                @for (match of displayedFavouriteMatches[leagueKey]; track match.fixture.id) {
+                  <div class="match-card-wrapper">
+                    <app-real-match-card 
+                      [match]="matchParser.realMatchToMatch(match, findWatchedMatch(match.fixture.id))"
+                      [watched]="isMatchWatched(match.fixture.id)"
+                      [locations]="locations"
+                      [size]="'md'">
+                    </app-real-match-card>
+                  </div>
+                }
+              </div>
+              
+              @if (canShowMoreFavouriteMatches(leagueKey)) {
+                <div class="show-more-matches-container">
+                  <button 
+                    class="show-more-matches-btn"
+                    (click)="showMoreFavouriteMatches(leagueKey)"
+                    aria-label="Show more favourite matches">
+                    <ng-icon name="jamPlus"></ng-icon>
+                    Show More Matches ({{ getRemainingFavouriteMatchesCount(leagueKey) }})
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
+        </div>
       </div>
     }
 

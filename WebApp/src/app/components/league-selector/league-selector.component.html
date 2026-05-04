@@ -41,6 +41,7 @@
           <app-league-card
             [league]="league"
             [viewCount]="getLeagueViewCount(league.league.id)"
+            [isFavourite]="isLeagueFavourite(league.league.id)"
             (leagueSelected)="selectLeague($event)">
           </app-league-card>
         }

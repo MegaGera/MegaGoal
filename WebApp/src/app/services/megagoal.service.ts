@@ -8,13 +8,15 @@ import { League } from '../models/league';
 import { Match } from '../models/match';
 import { Team, shortTeam } from '../models/team';
 import { Location } from '../models/location';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { RealMatch } from '../models/realMatch';
 import { environment } from '../../environments/environment';
 import { LeaguesSettings } from '../models/leaguesSettings';
 import { MatchRequest } from '../models/matchRequest';
 import { UserFeedback } from '../models/user_feedback';
 import { Player } from '../models/player';
+import { UserMe } from '../models/userMe';
 
 @Injectable({
   providedIn: 'root'
@@ -37,7 +39,16 @@ export class MegaGoalService {
   */
   selectedTeam!: Team;
 
+  private userMeSubject = new BehaviorSubject<UserMe | null>(null);
+
+  /** Latest profile from GET /user/me; shared app-wide. */
+  readonly userMe$ = this.userMeSubject.asObservable();
+
   constructor(private http: HttpClient) { }
+
+  getUserMeSnapshot(): UserMe | null {
+    return this.userMeSubject.value;
+  }
   
   /*
     Set of the selected team
@@ -427,5 +438,48 @@ export class MegaGoalService {
    */
   getUsersMatchCounts(): Observable<{ username: string, matchCount: number }[]> {
     return this.http.get<{ username: string, matchCount: number }[]>(this.url + '/match/users-match-counts', this.options);
+  }
+
+  /*
+    Current user profile (users collection); updates shared userMe$ on success.
+  */
+  getUserMe(): Observable<UserMe> {
+    return this.http.get<UserMe>(this.url + '/user/me', this.options).pipe(
+      tap((user) => this.userMeSubject.next(user))
+    );
+  }
+
+  markHomeNotification(name: string, action: 'clicked' | 'dismissed'): Observable<UserMe> {
+    return this.http.post<UserMe>(
+      this.url + '/user/me/notifications/home',
+      { name, action },
+      this.options
+    ).pipe(tap((user) => this.userMeSubject.next(user)));
+  }
+
+  /**
+   * Add or remove a favourite team on the current user's profile.
+   */
+  setFavouriteTeam(id: number, name: string, favourite: boolean): Observable<UserMe> {
+    return this.http
+      .patch<UserMe>(
+        this.url + '/user/me/favourite-teams',
+        { id, name, favourite },
+        this.options
+      )
+      .pipe(tap((user) => this.userMeSubject.next(user)));
+  }
+
+  /**
+   * Add or remove a favourite league on the current user's profile.
+   */
+  setFavouriteLeague(id: number, name: string, favourite: boolean): Observable<UserMe> {
+    return this.http
+      .patch<UserMe>(
+        this.url + '/user/me/favourite-leagues',
+        { id, name, favourite },
+        this.options
+      )
+      .pipe(tap((user) => this.userMeSubject.next(user)));
   }
 }

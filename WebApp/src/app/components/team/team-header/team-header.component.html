@@ -1,17 +1,46 @@
-<div class="team-header-card">
-  @if (badgeCountryName) {
-    <div class="country-badge team-header-country-badge" aria-hidden="true">
-      @if (badgeCountryFlag) {
-        <img
-          class="country-flag"
-          [src]="badgeCountryFlag"
-          [alt]="badgeCountryName + ' flag'"
-          width="16"
-          height="12">
-      }
-      <span class="country-name">{{ badgeCountryName }}</span>
-    </div>
-  }
+<div
+  class="team-header-card"
+  [style.border]="'1px solid ' + leagueMarkBorderColor"
+  [style.--league-glow-18]="leagueAccentRgba(0.18)"
+  [style.--league-glow-12]="leagueAccentRgba(0.12)"
+  [style.--league-shadow-16]="leagueAccentRgba(0.16)"
+  [style.--league-shadow-hover]="leagueAccentRgba(0.2)">
+  <div
+    class="team-header-badge-cluster"
+    [class.team-header-badge-cluster--no-badge]="!badgeCountryName">
+    @if (badgeCountryName) {
+      <div class="country-badge team-header-country-badge" aria-hidden="true">
+        @if (badgeCountryFlag) {
+          <img
+            class="country-flag"
+            [src]="badgeCountryFlag"
+            [alt]="badgeCountryName + ' flag'"
+            width="16"
+            height="12">
+        }
+        <span class="country-name">{{ badgeCountryName }}</span>
+      </div>
+    }
+    <button
+      type="button"
+      class="team-favourite-btn"
+      [class.team-favourite-btn--active]="isFavourite"
+      [attr.aria-label]="
+        isFavourite
+          ? 'Remove ' + team.team.name + ' from your favourites'
+          : 'Add ' + team.team.name + ' to your favourites'
+      "
+      [attr.aria-pressed]="isFavourite"
+      [disabled]="favouritePending"
+      (click)="onToggleFavourite()">
+      <ng-icon
+        [name]="isFavourite ? 'jamStarF' : 'jamStar'"
+        [size]="favouriteIconSize"
+        class="team-favourite-icon"
+        aria-hidden="true">
+      </ng-icon>
+    </button>
+  </div>
   <div class="team-header-top">
     <div class="team-header-info">
       <div class="team-crest-row">

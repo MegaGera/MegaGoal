@@ -6,6 +6,7 @@ import { HomeComponent } from './components/home/home.component';
 import { LocationsComponent } from './components/locations/locations.component';
 import { AdminComponent } from './components/admin/admin.component';
 import { FeedbackComponent } from './components/feedback/feedback.component';
+import { ProfileComponent } from './components/profile/profile.component';
 import { MatchesComponent } from './components/matches/matches.component';
 import { LandingPageComponent } from './components/landing-page/landing-page.component';
 import { MatchInfoComponent } from './components/match-info/match-info.component';
@@ -26,6 +27,7 @@ export const routes: Routes = [
         { path: 'locations', component: LocationsComponent },
         { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
         { path: 'feedback', component: FeedbackComponent },
+        { path: 'profile', component: ProfileComponent },
         { path: '', redirectTo: '/app/home', pathMatch: 'full' }
     ]},
     { path: '**', redirectTo: '/' }

@@ -4,8 +4,7 @@
   gap: 1.5rem;
   padding: 1.75rem;
   border-radius: 24px;
-  background: radial-gradient(circle at top left, rgba(220, 20, 60, 0.18), transparent 55%), #ffffff;
-  border: 1px solid rgba(220, 20, 60, 0.08);
+  background: radial-gradient(circle at top left, var(--league-glow-18, rgba(148, 163, 184, 0.18)), transparent 55%), #ffffff;
   box-shadow:
     0 18px 40px rgba(15, 23, 42, 0.08),
     0 2px 4px rgba(15, 23, 42, 0.06);
@@ -20,7 +19,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(135deg, rgba(220, 20, 60, 0.12), transparent 60%);
+  background: linear-gradient(135deg, var(--league-glow-12, rgba(148, 163, 184, 0.12)), transparent 60%);
   mix-blend-mode: screen;
 }
 
@@ -72,7 +71,7 @@
   border-radius: 18px;
   background: #f8f9fa;
   box-sizing: border-box;
-  box-shadow: 0 8px 18px rgba(220, 20, 60, 0.16);
+  box-shadow: 0 8px 18px var(--league-shadow-16, rgba(148, 163, 184, 0.16));
   transition: all 0.2s ease;
   text-decoration: none;
   color: inherit;
@@ -82,7 +81,7 @@
 /* League-detail–style lift; keep inline league border color (no crimson border swap) */
 .team-league-mark:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(220, 20, 60, 0.2);
+  box-shadow: 0 4px 8px var(--league-shadow-hover, rgba(148, 163, 184, 0.2));
 }
 
 .team-league-mark:focus {
@@ -105,7 +104,7 @@
   border-radius: 18px;
   background: #f8f9fa;
   box-sizing: border-box;
-  box-shadow: 0 8px 18px rgba(220, 20, 60, 0.16);
+  box-shadow: 0 8px 18px var(--league-shadow-16, rgba(148, 163, 184, 0.16));
   transition: all 0.2s ease;
 }
 
@@ -191,16 +190,40 @@
   text-overflow: ellipsis;
 }
 
-/* Same corner nation badge as match-info league-header */
-.team-header-card > .country-badge {
+/* Top row: nation badge (optional) + favourite — mobile: star top-left, badge top-right */
+.team-header-badge-cluster {
   position: absolute;
   top: 0;
+  left: 0;
   right: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  pointer-events: none;
+}
+
+.team-header-badge-cluster--no-badge {
+  justify-content: flex-start;
+}
+
+/* Re-enable interaction for the star (cluster is pointer-events: none) */
+.team-header-badge-cluster .team-favourite-btn {
+  pointer-events: auto;
+}
+
+/* Same corner nation badge as match-info league-header */
+.team-header-badge-cluster .country-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  max-width: min(55%, 100%);
+  max-width: min(85%, calc(100% - 3rem));
   background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
   color: white;
   font-size: 11px;
@@ -210,11 +233,11 @@
   box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  z-index: 2;
+  flex-shrink: 0;
   pointer-events: none;
 }
 
-.team-header-card > .country-badge .country-flag {
+.team-header-badge-cluster .country-badge .country-flag {
   width: 16px;
   height: 12px;
   object-fit: cover;
@@ -223,32 +246,113 @@
   flex-shrink: 0;
 }
 
-.team-header-card > .country-badge .country-name {
+.team-header-badge-cluster .country-badge .country-name {
   line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.team-favourite-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #64748b;
+  box-shadow: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.team-favourite-btn:hover:not(:disabled) {
+  color: #f5c542;
+  background: transparent;
+  border-color: transparent;
+  transform: scale(1.04);
+}
+
+.team-favourite-btn:focus-visible {
+  outline: 2px solid #dc143c;
+  outline-offset: 2px;
+}
+
+.team-favourite-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.team-favourite-btn--active {
+  color: #f5c542;
+  border-color: transparent;
+  background: transparent;
+}
+
+.team-favourite-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
 @media (min-width: 769px) {
-  .team-header-card > .country-badge {
+  .team-header-badge-cluster {
+    top: -1px;
     left: 0;
     right: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    width: auto;
+    max-width: min(100%, 92%);
+    gap: 0.4rem;
+  }
+
+  .team-header-badge-cluster .country-badge {
+    max-width: none;
     border-radius: 0 0 8px 0;
+    white-space: nowrap;
+  }
+
+  .team-favourite-btn {
+    position: static;
+    width: 1.75rem;
+    height: 1.75rem;
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    border-radius: 8px;
+    margin: 0;
   }
 }
 
 @media (max-width: 768px) {
-  .team-header-card > .country-badge {
+  .team-header-badge-cluster .country-badge {
     font-size: 10px;
     padding: 5px 10px;
     gap: 5px;
-    max-width: min(62%, calc(100% - 52px));
+    max-width: min(62%, calc(100% - 2.75rem));
   }
 
-  .team-header-card > .country-badge .country-flag {
+  .team-header-badge-cluster .country-badge .country-flag {
     width: 14px;
     height: 10px;
+  }
+
+  .team-favourite-btn {
+    width: 1.85rem;
+    height: 1.85rem;
+    min-width: 1.85rem;
+    min-height: 1.85rem;
+    margin: 6px 0 0 6px;
   }
 
   .team-header-card {
@@ -317,7 +421,7 @@
     /* Same tile fill as league-detail .team-league-mark */
     background: #f8f9fa;
     box-sizing: border-box;
-    box-shadow: 0 8px 18px rgba(220, 20, 60, 0.16);
+    box-shadow: 0 8px 18px var(--league-shadow-16, rgba(148, 163, 184, 0.16));
   }
 
   .team-league-mark:hover {

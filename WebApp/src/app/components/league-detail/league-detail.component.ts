@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamPlus } from '@ng-icons/jam-icons';
+import { jamPlus, jamStar, jamStarF } from '@ng-icons/jam-icons';
+import { Subscription } from 'rxjs';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -17,6 +17,7 @@ import { Team } from '../../models/team';
 import { RealMatch } from '../../models/realMatch';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
+import { UserMe } from '../../models/userMe';
 
 @Component({
   selector: 'app-league-detail',
@@ -25,7 +26,6 @@ import { Location } from '../../models/location';
     FormsModule, 
     MatFormFieldModule, 
     MatSelectModule, 
-    NgFor, 
     RouterModule,
     RealMatchCardComponent, 
     NgIconComponent
@@ -35,10 +35,10 @@ import { Location } from '../../models/location';
   providers: [
     ImagesService, 
     provideNgIconsConfig({ size: '2em' }), 
-    provideIcons({ jamPlus })
+    provideIcons({ jamPlus, jamStar, jamStarF })
   ]
 })
-export class LeagueDetailComponent implements OnInit {
+export class LeagueDetailComponent implements OnInit, OnDestroy {
 
   /* League */
   selectedLeague!: League | undefined;
@@ -64,10 +64,14 @@ export class LeagueDetailComponent implements OnInit {
   /* UI State */
   isLoading: boolean = false;
   isLoadingMatches: boolean = false;
+  favouritePending = false;
+  readonly favouriteIconSize = '1.25rem';
 
   /* Query params storage */
   querySeasonId: number | null = null;
   queryMatchday: number | null = null;
+  private userMeSubscription?: Subscription;
+  private userMe: UserMe | null = null;
 
   /** League crest tile border (top-leagues `colors`; same fallbacks as team-header domestic league). */
   get leagueMarkBorderColor(): string {
@@ -107,6 +111,14 @@ export class LeagueDetailComponent implements OnInit {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
+  get isFavourite(): boolean {
+    const id = this.selectedLeague?.league?.id;
+    if (id == null) {
+      return false;
+    }
+    return (this.userMe?.favouriteLeagues ?? []).some((l) => l.id === id);
+  }
+
   constructor(
     private megagoal: MegaGoalService, 
     public images: ImagesService, 
@@ -119,6 +131,17 @@ export class LeagueDetailComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.userMeSubscription = this.megagoal.userMe$.subscribe((u) => {
+      this.userMe = u;
+      this.sortTeamsByFavourite();
+      this.syncVisibleTeams();
+    });
+    if (!this.megagoal.getUserMeSnapshot()) {
+      this.megagoal.getUserMe().subscribe({
+        error: (err) => console.error('Error loading user profile for favourite leagues:', err)
+      });
+    }
+
     // Read query params synchronously first
     const queryParams = this.route.snapshot.queryParamMap;
     const seasonParam = queryParams.get('season');
@@ -172,6 +195,10 @@ export class LeagueDetailComponent implements OnInit {
         }
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.userMeSubscription?.unsubscribe();
   }
 
   // This method load the league and the teams by league and season
@@ -456,7 +483,8 @@ export class LeagueDetailComponent implements OnInit {
     this.setLoading(true);
     this.megagoal.getTeamsByLeagueAndSeason(id, season).subscribe({
       next: (result: Team[]) => {
-        this.teams = result;
+        this.teams = [...result];
+        this.sortTeamsByFavourite();
         this.showTeams = this.teams.slice(0, 24);
         this.setLoading(false);
       },
@@ -472,6 +500,41 @@ export class LeagueDetailComponent implements OnInit {
   */
   showAllTeams(): void {
     this.showTeams = this.teams;
+  }
+
+  isTeamFavourite(teamId: number): boolean {
+    return (this.userMe?.favouriteTeams ?? []).some((team) => team.id === teamId);
+  }
+
+  private sortTeamsByFavourite(): void {
+    if (!this.teams || this.teams.length === 0) {
+      return;
+    }
+
+    this.teams.sort((a, b) => {
+      const isFavouriteA = this.isTeamFavourite(a.team.id) ? 1 : 0;
+      const isFavouriteB = this.isTeamFavourite(b.team.id) ? 1 : 0;
+      if (isFavouriteA !== isFavouriteB) {
+        return isFavouriteB - isFavouriteA;
+      }
+      return 0;
+    });
+  }
+
+  private syncVisibleTeams(): void {
+    if (!this.teams || this.teams.length === 0) {
+      this.showTeams = [];
+      return;
+    }
+
+    const currentVisibleCount = this.showTeams.length;
+    if (currentVisibleCount >= this.teams.length) {
+      this.showTeams = [...this.teams];
+      return;
+    }
+
+    const visibleCount = currentVisibleCount > 0 ? currentVisibleCount : 24;
+    this.showTeams = this.teams.slice(0, visibleCount);
   }
 
   /*
@@ -512,6 +575,27 @@ export class LeagueDetailComponent implements OnInit {
   */
   setLoading(loading: boolean): void {
     this.isLoading = loading;
+  }
+
+  onToggleFavouriteLeague(): void {
+    if (this.favouritePending || !this.selectedLeague?.league?.id) {
+      return;
+    }
+
+    const id = this.selectedLeague.league.id;
+    const name = this.selectedLeague.league.name?.trim() || 'League';
+    const nextFavourite = !this.isFavourite;
+
+    this.favouritePending = true;
+    this.megagoal.setFavouriteLeague(id, name, nextFavourite).subscribe({
+      next: () => {
+        this.favouritePending = false;
+      },
+      error: (err) => {
+        this.favouritePending = false;
+        console.error('Error updating favourite league:', err);
+      }
+    });
   }
 
   /*

@@ -1,0 +1,38 @@
+<div class="notification" role="region" [attr.aria-label]="message">
+  <button
+    type="button"
+    class="notification-close"
+    (click)="onDismiss()"
+    [disabled]="!syncsWithServer"
+    [attr.aria-label]="syncsWithServer ? 'Dismiss notification' : null"
+  >
+    <ng-icon name="jamClose" size="1.25rem"></ng-icon>
+  </button>
+  <div
+    class="notification-inner"
+    [class.notification-inner--text-only]="!showActionLink"
+  >
+    <p class="notification-text">{{ message }}</p>
+    @if (showActionLink) {
+      @if (syncsWithServer) {
+        <a
+          class="notification-action"
+          href="#"
+          role="button"
+          (click)="onActionClick($event)"
+          [attr.aria-label]="resolvedActionAriaLabel"
+        >
+          <ng-icon name="jamArrowRight" size="1.25rem"></ng-icon>
+        </a>
+      } @else {
+        <a
+          class="notification-action"
+          [routerLink]="actionRouterLink!"
+          [attr.aria-label]="resolvedActionAriaLabel"
+        >
+          <ng-icon name="jamArrowRight" size="1.25rem"></ng-icon>
+        </a>
+      }
+    }
+  </div>
+</div>

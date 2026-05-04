@@ -21,6 +21,7 @@ import feedbackRoutes from './routes/feedbackRoutes.js';
 import playersRoutes from './routes/playersRoutes.js';
 import youtubeRoutes from './routes/youtubeRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import { startMcpHttpIfEnabled } from './mcp/createMcpServer.js';
 
 const app = express();
@@ -136,6 +137,7 @@ app.use('/feedback', feedbackRoutes);
 app.use('/players', playersRoutes);
 app.use('/youtube', youtubeRoutes);
 app.use('/analytics', analyticsRoutes);
+app.use('/user', userRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3150;

@@ -1,12 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamChevronLeft, jamChevronRight, jamPlus } from '@ng-icons/jam-icons';
+import { jamChevronLeft, jamChevronRight, jamPlus, jamStarF } from '@ng-icons/jam-icons';
 import { forkJoin, of } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { MegaGoalService } from '../../services/megagoal.service';
@@ -18,6 +19,7 @@ import { RealMatch } from '../../models/realMatch';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
 import { League, LeagueStats } from '../../models/league';
+import { UserMe } from '../../models/userMe';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
 import { FINISHED_STATUSES } from '../../config/matchStatus';
 
@@ -39,16 +41,18 @@ import { FINISHED_STATUSES } from '../../config/matchStatus';
     provideNgIconsConfig({
       size: '1.2rem',
     }),
-    provideIcons({ jamChevronLeft, jamChevronRight, jamPlus })
+    provideIcons({ jamChevronLeft, jamChevronRight, jamPlus, jamStarF })
   ]
 })
-export class MatchesComponent implements OnInit {
+export class MatchesComponent implements OnInit, OnDestroy {
   isLoading = true;
   selectedDate: string = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD for native input
   // maxDate: string = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
   matches: RealMatch[] = [];
   groupedMatches: { [key: string]: RealMatch[] } = {};
   leagueOrder: string[] = [];
+  favouriteGroupedMatches: { [key: string]: RealMatch[] } = {};
+  favouriteLeagueOrder: string[] = [];
   locations: Location[] = [];
   watchedMatches: Match[] = [];
   
@@ -56,6 +60,7 @@ export class MatchesComponent implements OnInit {
   matchesPerPage = 9;
   matchesPerPageSmall = 3;
   displayedMatches: { [key: string]: RealMatch[] } = {};
+  displayedFavouriteMatches: { [key: string]: RealMatch[] } = {};
   
   // Live matches filter
   showLiveMatches = false;
@@ -67,6 +72,9 @@ export class MatchesComponent implements OnInit {
   // Store original data for live matches toggle
   originalGroupedMatches: { [key: string]: RealMatch[] } = {};
   originalLeagueOrder: string[] = [];
+  private userMeSubscription?: Subscription;
+  private userMe: UserMe | null = null;
+  private favouriteTeamIds: Set<number> = new Set();
 
   constructor(
     private megaGoalService: MegaGoalService,
@@ -79,6 +87,20 @@ export class MatchesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.userMeSubscription = this.megaGoalService.userMe$.subscribe((user) => {
+      this.userMe = user;
+      this.favouriteTeamIds = new Set((user?.favouriteTeams ?? []).map((team) => team.id));
+      this.resetToAllMatches();
+      if (this.showLiveMatches) {
+        this.applyLiveMatchesFilter();
+      }
+    });
+    if (!this.megaGoalService.getUserMeSnapshot()) {
+      this.megaGoalService.getUserMe().subscribe({
+        error: (error) => console.error('Error loading user profile for favourite teams:', error)
+      });
+    }
+
     this.loadLocations();
     this.loadWatchedMatches();
     this.checkUrlParameters();
@@ -86,6 +108,10 @@ export class MatchesComponent implements OnInit {
     this.loadTopLeagues(() => {
       this.getMatchesForDate();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.userMeSubscription?.unsubscribe();
   }
 
   private checkUrlParameters(): void {
@@ -194,7 +220,6 @@ export class MatchesComponent implements OnInit {
     const now = Math.floor(Date.now() / 1000); // Current timestamp in seconds
     const finishedStatuses = FINISHED_STATUSES as string[];
     
-    // Create a new league order that only includes leagues with live matches
     const liveLeagueOrder: string[] = [];
     const liveGroupedMatches: { [key: string]: RealMatch[] } = {};
     
@@ -209,23 +234,14 @@ export class MatchesComponent implements OnInit {
       if (liveMatches.length > 0) {
         liveLeagueOrder.push(leagueKey);
         liveGroupedMatches[leagueKey] = liveMatches;
-        // Use appropriate pagination based on league position in the original order
-        const originalIndex = this.originalLeagueOrder.indexOf(leagueKey);
-        const matchesPerPage = originalIndex < 5 ? this.matchesPerPage : this.matchesPerPageSmall;
-        this.displayedMatches[leagueKey] = liveMatches.slice(0, matchesPerPage);
       }
     });
     
-    // Update the league order and grouped matches for live mode
-    this.leagueOrder = liveLeagueOrder;
-    this.groupedMatches = liveGroupedMatches;
+    this.splitMatchesIntoSections(liveGroupedMatches, liveLeagueOrder);
   }
 
   resetToAllMatches(): void {
-    // Restore original matches and league order
-    this.groupedMatches = { ...this.originalGroupedMatches };
-    this.leagueOrder = [...this.originalLeagueOrder];
-    this.initializeDisplayedMatches();
+    this.splitMatchesIntoSections(this.originalGroupedMatches, this.originalLeagueOrder);
   }
 
   getMatchesForDate(): void {
@@ -262,25 +278,25 @@ export class MatchesComponent implements OnInit {
   }
 
   groupMatchesByLeague(): void {
-    this.groupedMatches = {};
-    this.leagueOrder = [];
+    const groupedMatches: { [key: string]: RealMatch[] } = {};
+    const leagueOrder: string[] = [];
 
     // Group matches by league
     this.matches.forEach(match => {
       const leagueKey = `${match.league.id}_${match.league.season}`;
       
-      if (!this.groupedMatches[leagueKey]) {
-        this.groupedMatches[leagueKey] = [];
-        this.leagueOrder.push(leagueKey);
+      if (!groupedMatches[leagueKey]) {
+        groupedMatches[leagueKey] = [];
+        leagueOrder.push(leagueKey);
       }
       
-      this.groupedMatches[leagueKey].push(match);
+      groupedMatches[leagueKey].push(match);
     });
 
     // Sort leagues: first by view count (descending), then by position
-    this.leagueOrder.sort((a, b) => {
-      const leagueA = this.groupedMatches[a][0].league;
-      const leagueB = this.groupedMatches[b][0].league;
+    leagueOrder.sort((a, b) => {
+      const leagueA = groupedMatches[a][0].league;
+      const leagueB = groupedMatches[b][0].league;
       
       // Get view counts
       const viewsA = this.leagueViewCounts.get(leagueA.id) || 0;
@@ -317,16 +333,14 @@ export class MatchesComponent implements OnInit {
     });
 
     // Sort matches within each league by time
-    this.leagueOrder.forEach(leagueKey => {
-      this.groupedMatches[leagueKey].sort((a, b) => a.fixture.timestamp - b.fixture.timestamp);
+    leagueOrder.forEach(leagueKey => {
+      groupedMatches[leagueKey].sort((a, b) => a.fixture.timestamp - b.fixture.timestamp);
     });
     
     // Store original data for live matches toggle
-    this.originalGroupedMatches = { ...this.groupedMatches };
-    this.originalLeagueOrder = [...this.leagueOrder];
-    
-    // Initialize displayed matches for pagination
-    this.initializeDisplayedMatches();
+    this.originalGroupedMatches = groupedMatches;
+    this.originalLeagueOrder = leagueOrder;
+    this.splitMatchesIntoSections(this.originalGroupedMatches, this.originalLeagueOrder);
   }
 
   formatDate(date: Date): string {
@@ -437,6 +451,66 @@ export class MatchesComponent implements OnInit {
     return this.images.getRouteImageLeagueSm(leagueId);
   }
 
+  /**
+   * Real-match list responses omit league.colors; league-detail uses top-league `colors`.
+   * Merge palette from GET /league/top when the match payload has none.
+   */
+  private resolveLeaguePalette(league: RealMatch['league'] | undefined): League['colors'] | undefined {
+    if (!league?.id) {
+      return undefined;
+    }
+    const fromMatch = league.colors;
+    const fromMatchRaw =
+      fromMatch?.base_color?.trim() ||
+      fromMatch?.card_main_color?.trim() ||
+      fromMatch?.card_trans_color?.trim();
+    if (fromMatchRaw) {
+      return fromMatch;
+    }
+    const top = this.topLeagues.find((tl) => tl.league.id === league.id);
+    return top?.colors;
+  }
+
+  /** Border / accent color (same fallbacks as league-detail). */
+  leagueMarkBorderColor(league: RealMatch['league'] | undefined): string {
+    const c = this.resolveLeaguePalette(league);
+    const raw =
+      c?.base_color?.trim() ||
+      c?.card_main_color?.trim() ||
+      c?.card_trans_color?.trim();
+    if (raw) {
+      return raw;
+    }
+    return '#94a3b8';
+  }
+
+  /** Hex from `leagueMarkBorderColor` → rgba for header gradients (league-detail parity). */
+  leagueAccentRgba(league: RealMatch['league'] | undefined, alpha: number): string {
+    const hex = this.leagueMarkBorderColor(league).replace(/^#/, '').trim();
+    let r: number;
+    let g: number;
+    let b: number;
+    if (hex.length === 3) {
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    } else if (hex.length === 6) {
+      r = parseInt(hex.slice(0, 2), 16);
+      g = parseInt(hex.slice(2, 4), 16);
+      b = parseInt(hex.slice(4, 6), 16);
+    } else {
+      r = 148;
+      g = 163;
+      b = 184;
+    }
+    if ([r, g, b].some((n) => Number.isNaN(n))) {
+      r = 148;
+      g = 163;
+      b = 184;
+    }
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   getCountryFlag(league: any): string {
     return league.flag || '';
   }
@@ -446,19 +520,27 @@ export class MatchesComponent implements OnInit {
   }
 
   getTotalLeagues(): number {
-    return this.leagueOrder.length;
+    return this.originalLeagueOrder.length;
   }
 
   // Pagination methods
-  getMatchesPerPageForLeague(leagueKey: string): number {
-    const leagueIndex = this.leagueOrder.indexOf(leagueKey);
+  getMatchesPerPageForLeague(leagueKey: string, leagueOrderRef: string[]): number {
+    const leagueIndex = leagueOrderRef.indexOf(leagueKey);
     // Top 5 leagues (indices 0-4) use matchesPerPage, rest use matchesPerPageSmall
     return leagueIndex < 5 ? this.matchesPerPage : this.matchesPerPageSmall;
   }
 
   initializeDisplayedMatches(): void {
+    this.displayedMatches = {};
+    this.displayedFavouriteMatches = {};
+
+    this.favouriteLeagueOrder.forEach(leagueKey => {
+      const matchesPerPage = this.getMatchesPerPageForLeague(leagueKey, this.favouriteLeagueOrder);
+      this.displayedFavouriteMatches[leagueKey] = this.favouriteGroupedMatches[leagueKey].slice(0, matchesPerPage);
+    });
+
     this.leagueOrder.forEach(leagueKey => {
-      const matchesPerPage = this.getMatchesPerPageForLeague(leagueKey);
+      const matchesPerPage = this.getMatchesPerPageForLeague(leagueKey, this.leagueOrder);
       this.displayedMatches[leagueKey] = this.groupedMatches[leagueKey].slice(0, matchesPerPage);
     });
   }
@@ -466,7 +548,7 @@ export class MatchesComponent implements OnInit {
   showMoreMatches(leagueKey: string): void {
     const currentCount = this.displayedMatches[leagueKey].length;
     const totalCount = this.groupedMatches[leagueKey].length;
-    const matchesPerPage = this.getMatchesPerPageForLeague(leagueKey);
+    const matchesPerPage = this.getMatchesPerPageForLeague(leagueKey, this.leagueOrder);
     const nextBatch = Math.min(matchesPerPage, totalCount - currentCount);
     
     if (nextBatch > 0) {
@@ -483,6 +565,63 @@ export class MatchesComponent implements OnInit {
 
   getRemainingMatchesCount(leagueKey: string): number {
     return this.groupedMatches[leagueKey]?.length - (this.displayedMatches[leagueKey]?.length || 0);
+  }
+
+  showMoreFavouriteMatches(leagueKey: string): void {
+    const currentCount = this.displayedFavouriteMatches[leagueKey].length;
+    const totalCount = this.favouriteGroupedMatches[leagueKey].length;
+    const matchesPerPage = this.getMatchesPerPageForLeague(leagueKey, this.favouriteLeagueOrder);
+    const nextBatch = Math.min(matchesPerPage, totalCount - currentCount);
+
+    if (nextBatch > 0) {
+      const startIndex = currentCount;
+      const endIndex = startIndex + nextBatch;
+      const newMatches = this.favouriteGroupedMatches[leagueKey].slice(startIndex, endIndex);
+      this.displayedFavouriteMatches[leagueKey].push(...newMatches);
+    }
+  }
+
+  canShowMoreFavouriteMatches(leagueKey: string): boolean {
+    return this.displayedFavouriteMatches[leagueKey]?.length < this.favouriteGroupedMatches[leagueKey]?.length;
+  }
+
+  getRemainingFavouriteMatchesCount(leagueKey: string): number {
+    return this.favouriteGroupedMatches[leagueKey]?.length - (this.displayedFavouriteMatches[leagueKey]?.length || 0);
+  }
+
+  private splitMatchesIntoSections(sourceGrouped: { [key: string]: RealMatch[] }, sourceOrder: string[]): void {
+    this.favouriteGroupedMatches = {};
+    this.favouriteLeagueOrder = [];
+    this.groupedMatches = {};
+    this.leagueOrder = [];
+
+    sourceOrder.forEach((leagueKey) => {
+      const matches = sourceGrouped[leagueKey] || [];
+      if (matches.length === 0) {
+        return;
+      }
+
+      const favouriteMatches = matches.filter((match) => this.isFavouriteTeamMatch(match));
+      const regularMatches = matches.filter((match) => !this.isFavouriteTeamMatch(match));
+
+      if (favouriteMatches.length > 0) {
+        this.favouriteLeagueOrder.push(leagueKey);
+        this.favouriteGroupedMatches[leagueKey] = favouriteMatches;
+      }
+
+      if (regularMatches.length > 0) {
+        this.leagueOrder.push(leagueKey);
+        this.groupedMatches[leagueKey] = regularMatches;
+      }
+    });
+
+    this.initializeDisplayedMatches();
+  }
+
+  private isFavouriteTeamMatch(match: RealMatch): boolean {
+    const homeId = match?.teams?.home?.id;
+    const awayId = match?.teams?.away?.id;
+    return (homeId != null && this.favouriteTeamIds.has(homeId)) || (awayId != null && this.favouriteTeamIds.has(awayId));
   }
 
   goToLeague(leagueId: number): void {

@@ -1,0 +1,123 @@
+.notification {
+  position: relative;
+  margin: 0 auto 1rem;
+  max-width: 1200px;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  background: linear-gradient(135deg, #f5f9ff 0%, #e8f1fc 100%);
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.08);
+}
+
+.notification-close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  user-select: none;
+  cursor: pointer;
+}
+
+.notification-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.notification-inner {
+  display: grid;
+  grid-template-columns: 90% 10%;
+  align-items: center;
+  gap: 0;
+  padding-right: 2%;
+}
+
+.notification-inner.notification-inner--text-only {
+  grid-template-columns: 1fr;
+  padding-right: 0;
+  width: 95%;
+  max-width: 95%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+.notification-text {
+  margin: 0;
+  justify-self: stretch;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.notification-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  user-select: none;
+  justify-self: center;
+  align-self: center;
+}
+
+a.notification-action {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .notification {
+    padding: 0.875rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .notification-inner {
+    display: grid;
+    grid-template-columns: 80% 20%;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* Must beat `.notification-inner` above so text-only keeps one column and 95% width */
+  .notification-inner.notification-inner--text-only {
+    grid-template-columns: 1fr;
+    padding-right: 0;
+    width: 95%;
+    max-width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
+
+  .notification-text {
+    font-size: 0.95rem;
+    text-align: left;
+    padding: 0 0.35rem 0 0;
+  }
+
+  .notification-action {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}

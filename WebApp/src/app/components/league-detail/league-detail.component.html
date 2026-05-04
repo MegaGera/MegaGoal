@@ -16,6 +16,25 @@
         [style.--league-glow-12]="leagueAccentRgba(0.12)"
         [style.--league-shadow-16]="leagueAccentRgba(0.16)"
         [style.--league-shadow-hover]="leagueAccentRgba(0.2)">
+        <button
+          type="button"
+          class="league-favourite-btn"
+          [class.league-favourite-btn--active]="isFavourite"
+          [attr.aria-label]="
+            isFavourite
+              ? 'Remove ' + selectedLeague.league.name + ' from your favourites'
+              : 'Add ' + selectedLeague.league.name + ' to your favourites'
+          "
+          [attr.aria-pressed]="isFavourite"
+          [disabled]="favouritePending"
+          (click)="onToggleFavouriteLeague()">
+          <ng-icon
+            [name]="isFavourite ? 'jamStarF' : 'jamStar'"
+            [size]="favouriteIconSize"
+            class="league-favourite-icon"
+            aria-hidden="true">
+          </ng-icon>
+        </button>
         <div class="league-detail-header-top">
           <div class="league-detail-header-info">
             <div class="league-crest-row">
@@ -85,6 +104,11 @@
                   routerLinkActive="active" 
                   ariaCurrentWhenActive="page"
                   [attr.aria-label]="'View ' + team.team.name + ' team details'">
+                  @if (isTeamFavourite(team.team.id)) {
+                    <span class="team-favourite-indicator" aria-hidden="true">
+                      <span class="team-favourite-icon">★</span>
+                    </span>
+                  }
                   <img 
                     class="team-logo" 
                     [src]="images.getRouteImageTeam(team.team.id)"

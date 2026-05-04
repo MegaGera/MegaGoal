@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -8,6 +9,7 @@ import { MegaGoalService } from '../../services/megagoal.service';
 import { StatsService } from '../../services/stats.service';
 import { LeagueColorsService } from '../../services/league-colors.service';
 import { League, LeagueStats } from '../../models/league';
+import { UserMe } from '../../models/userMe';
 import { LeagueCardComponent } from './league-card/league-card.component';
 
 interface CountryOption {
@@ -23,14 +25,16 @@ interface CountryOption {
   templateUrl: './league-selector.component.html',
   styleUrl: './league-selector.component.css'
 })
-export class LeagueSelectorComponent {
+export class LeagueSelectorComponent implements OnDestroy {
 
   leagues: League[] = [];
   filteredLeagues: League[] = [];
   availableCountries: CountryOption[] = [];
   selectedCountry: string = '';
   leagueViewCounts: Map<number, number> = new Map();
+  favouriteLeagueIds: Set<number> = new Set();
   isLoading: boolean = false;
+  private userMeSubscription?: Subscription;
 
   constructor(
     private megagoal: MegaGoalService,
@@ -38,6 +42,18 @@ export class LeagueSelectorComponent {
     private router: Router,
     private leagueColorsService: LeagueColorsService
   ) {
+    this.userMeSubscription = this.megagoal.userMe$.subscribe((user) => {
+      this.userMeToFavouriteIds(user);
+      this.sortLeagues();
+      this.applyCountryFilter();
+    });
+    if (!this.megagoal.getUserMeSnapshot()) {
+      this.megagoal.getUserMe().subscribe({
+        error: (error) => console.error('Error loading user profile for favourite leagues:', error)
+      });
+    } else {
+      this.userMeToFavouriteIds(this.megagoal.getUserMeSnapshot());
+    }
     this.getLeagues();
   }
 
@@ -63,32 +79,14 @@ export class LeagueSelectorComponent {
         });
 
         // Sort leagues: first by view count (descending), then by position
-        this.leagues = result.leagues.sort((a, b) => {
-          const viewsA = this.leagueViewCounts.get(a.league.id) || 0;
-          const viewsB = this.leagueViewCounts.get(b.league.id) || 0;
-          
-          // If both have views or both don't have views, compare them
-          if ((viewsA > 0 && viewsB > 0) || (viewsA === 0 && viewsB === 0)) {
-            if (viewsA > 0 && viewsB > 0) {
-              // Both have views - sort by view count descending
-              return viewsB - viewsA;
-            } else {
-              // Neither has views - sort by position
-              const posA = a.position || Number.MAX_SAFE_INTEGER;
-              const posB = b.position || Number.MAX_SAFE_INTEGER;
-              return posA - posB;
-            }
-          }
-          
-          // One has views and one doesn't - leagues with views come first
-          return viewsB - viewsA;
-        });
+        this.leagues = [...result.leagues];
+        this.sortLeagues();
         
         // Extract unique countries for the filter
         this.extractAvailableCountries();
         
         // Initialize filtered leagues
-        this.filteredLeagues = [...this.leagues];
+        this.applyCountryFilter();
         
         // Set CSS variables for league colors
         this.leagueColorsService.setLeagueColors(result.leagues);
@@ -130,6 +128,10 @@ export class LeagueSelectorComponent {
   }
 
   onCountryFilterChange(): void {
+    this.applyCountryFilter();
+  }
+
+  private applyCountryFilter(): void {
     if (!this.selectedCountry) {
       this.filteredLeagues = [...this.leagues];
     } else {
@@ -144,11 +146,47 @@ export class LeagueSelectorComponent {
     return count && count > 0 ? count : null;
   }
 
+  isLeagueFavourite(leagueId: number): boolean {
+    return this.favouriteLeagueIds.has(leagueId);
+  }
+
   selectLeague(league: League): void {
     this.router.navigate(['/app/leagues', league.league.id]);
   }
 
   setLoading(loading: boolean): void {
     this.isLoading = loading;
+  }
+
+  private userMeToFavouriteIds(user: UserMe | null): void {
+    this.favouriteLeagueIds = new Set((user?.favouriteLeagues ?? []).map((league) => league.id));
+  }
+
+  private sortLeagues(): void {
+    this.leagues.sort((a, b) => {
+      const isFavouriteA = this.favouriteLeagueIds.has(a.league.id) ? 1 : 0;
+      const isFavouriteB = this.favouriteLeagueIds.has(b.league.id) ? 1 : 0;
+      if (isFavouriteA !== isFavouriteB) {
+        return isFavouriteB - isFavouriteA;
+      }
+
+      const viewsA = this.leagueViewCounts.get(a.league.id) || 0;
+      const viewsB = this.leagueViewCounts.get(b.league.id) || 0;
+
+      if ((viewsA > 0 && viewsB > 0) || (viewsA === 0 && viewsB === 0)) {
+        if (viewsA > 0 && viewsB > 0) {
+          return viewsB - viewsA;
+        }
+        const posA = a.position || Number.MAX_SAFE_INTEGER;
+        const posB = b.position || Number.MAX_SAFE_INTEGER;
+        return posA - posB;
+      }
+
+      return viewsB - viewsA;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.userMeSubscription?.unsubscribe();
   }
 } 

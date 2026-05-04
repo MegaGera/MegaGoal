@@ -130,6 +130,11 @@ export const createIndexes = async () => {
     
     console.log('✓ matches indexes created');
     
+    // ==================== users Collection ====================
+    const usersCollection = db.collection('users');
+    await usersCollection.createIndex({ username: 1 }, { background: true, unique: true });
+    console.log('✓ users indexes created');
+    
     console.log('✓ All database indexes created successfully');
     
   } catch (error) {
@@ -155,11 +160,13 @@ export const ensureIndexes = async () => {
     const realMatchesCollection = db.collection('real_matches');
     const playersCollection = db.collection('players');
     const matchesCollection = db.collection('matches');
+    const usersCollection = db.collection('users');
     
     // Get existing indexes
     const existingRealMatchesIndexes = await realMatchesCollection.indexes();
     const existingPlayersIndexes = await playersCollection.indexes();
     const existingMatchesIndexes = await matchesCollection.indexes();
+    const existingUsersIndexes = await usersCollection.indexes();
     
     const getIndexKey = (index) => {
       const key = index.key || {};
@@ -253,6 +260,21 @@ export const ensureIndexes = async () => {
           background: true 
         });
         console.log(`  Created index: matches.${keyString}`);
+      }
+    }
+    
+    const usersIndexes = [
+      { key: { username: 1 }, unique: true }
+    ];
+    
+    for (const idxSpec of usersIndexes) {
+      const keyString = JSON.stringify(idxSpec.key);
+      if (!indexExists(existingUsersIndexes, keyString)) {
+        await usersCollection.createIndex(idxSpec.key, {
+          background: true,
+          unique: idxSpec.unique || false
+        });
+        console.log(`  Created index: users.${keyString}`);
       }
     }
     

@@ -1,0 +1,129 @@
+<div class="container profile-page">
+  <section class="fade-in">
+    @if (loading) {
+      <div class="card profile-page-card">
+        <div class="header-section header-section--embedded">
+          <div class="header-row">
+            <div class="header-left">
+              <h1 class="section-title">Profile</h1>
+              <p class="section-description">Your account details and saved favourites</p>
+            </div>
+          </div>
+        </div>
+        <p class="status-text">Loading profile…</p>
+      </div>
+    } @else if (loadFailed) {
+      <div class="card profile-page-card">
+        <div class="header-section header-section--embedded">
+          <div class="header-row">
+            <div class="header-left">
+              <h1 class="section-title">Profile</h1>
+              <p class="section-description">Your account details and saved favourites</p>
+            </div>
+          </div>
+        </div>
+        <p class="status-text error">Could not load your profile. Try again later.</p>
+      </div>
+    } @else if (user) {
+      <div class="card profile-page-card">
+        <div class="header-section header-section--embedded">
+          <div class="header-row">
+            <div class="header-left">
+              <h1 class="section-title">Profile</h1>
+              <p class="section-description">Your account details and saved favourites</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-body">
+          <h2 class="profile-field-label">Username</h2>
+          <p class="profile-username">{{ user.username }}</p>
+
+          <h2 class="profile-field-label favourites-heading">Favourite teams</h2>
+          @if (favouriteTeams.length === 0) {
+            <p class="empty-hint">No favourite teams yet. Add them from a team page.</p>
+          } @else {
+            <ul class="favourite-list">
+              @for (t of favouriteTeams; track t.id) {
+                <li class="favourite-item" [class.favourite-item--inactive]="!t.isFavourite">
+                  <a
+                    class="favourite-item-main favourite-link"
+                    [routerLink]="['/app/team']"
+                    [queryParams]="{ id: t.id }"
+                    [attr.aria-label]="'Open ' + t.name + ' team page'">
+                    <img
+                      class="favourite-logo"
+                      [src]="images.getRouteImageTeam(t.id)"
+                      [alt]="t.name + ' logo'">
+                    <span class="favourite-name">{{ t.name }}</span>
+                  </a>
+                  <button
+                    type="button"
+                    class="favourite-toggle"
+                    [class.favourite-toggle--active]="t.isFavourite"
+                    [disabled]="t.pending"
+                    [attr.aria-label]="
+                      t.isFavourite
+                        ? 'Remove ' + t.name + ' from your favourite teams'
+                        : 'Mark ' + t.name + ' as favourite team'
+                    "
+                    (click)="toggleFavouriteTeam(t)">
+                    <ng-icon [name]="t.isFavourite ? 'jamStarF' : 'jamStar'" size="18" aria-hidden="true"></ng-icon>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+
+          <h2 class="profile-field-label favourites-heading">Favourite leagues</h2>
+          @if (favouriteLeagues.length === 0) {
+            <p class="empty-hint">No favourite leagues yet. Add them from a league page.</p>
+          } @else {
+            <ul class="favourite-list">
+              @for (l of favouriteLeagues; track l.id) {
+                <li class="favourite-item" [class.favourite-item--inactive]="!l.isFavourite">
+                  <a
+                    class="favourite-item-main favourite-link"
+                    [routerLink]="['/app/leagues', l.id]"
+                    [attr.aria-label]="'Open ' + l.name + ' league page'">
+                    <img
+                      class="favourite-logo"
+                      [src]="images.getRouteImageLeagueSm(l.id)"
+                      [alt]="l.name + ' logo'">
+                    <span class="favourite-name">{{ l.name }}</span>
+                  </a>
+                  <button
+                    type="button"
+                    class="favourite-toggle"
+                    [class.favourite-toggle--active]="l.isFavourite"
+                    [disabled]="l.pending"
+                    [attr.aria-label]="
+                      l.isFavourite
+                        ? 'Remove ' + l.name + ' from your favourite leagues'
+                        : 'Mark ' + l.name + ' as favourite league'
+                    "
+                    (click)="toggleFavouriteLeague(l)">
+                    <ng-icon [name]="l.isFavourite ? 'jamStarF' : 'jamStar'" size="18" aria-hidden="true"></ng-icon>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <div class="profile-password-row">
+          <a
+            class="btn btn-primary megaauth-link"
+            [href]="megaAuthProfileUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Change password, opens MegaAuth in a new tab"
+          >
+            <span>Change password</span>
+            <ng-icon name="jamArrowSquareUpRight" size="20" class="external-icon" aria-hidden="true"></ng-icon>
+          </a>
+        </div>
+      </div>
+    }
+  </section>
+</div>
