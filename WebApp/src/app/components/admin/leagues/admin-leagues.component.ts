@@ -2,7 +2,7 @@ import { Component, NgModule } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid } from '@ng-icons/jam-icons';
+import { jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid, jamSearch } from '@ng-icons/jam-icons';
 import { RealMatchCardComponent } from '../../real-match-card/real-match-card.component';
 
 import { MegaGoalService } from '../../../services/megagoal.service';
@@ -13,11 +13,17 @@ import { LeaguesSettings } from '../../../models/leaguesSettings';
 import { League } from '../../../models/league';
 import { Match } from '../../../models/match';
 
+interface CountryOption {
+  name: string;
+  code: string;
+  flag: string;
+}
+
 @Component({
   selector: 'app-admin-leagues',
   standalone: true,
   imports: [CommonModule, FormsModule, NgClass, NgIconComponent, RealMatchCardComponent],
-  providers: [provideIcons({ jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid })],
+  providers: [provideIcons({ jamSettingsAlt, jamClose, jamChevronUp, jamChevronDown, jamArrowRight, jamGrid, jamSearch })],
   templateUrl: './admin-leagues.component.html',
   styleUrl: './admin-leagues.component.css'
 })
@@ -25,6 +31,11 @@ export class AdminLeaguesComponent {
 
   leagues: League[] = [];
   leaguesSettings: LeaguesSettings[] = [];
+  private leagueById: Map<number, League> = new Map();
+  availableCountries: CountryOption[] = [];
+  selectedCountry: string = '';
+
+  leagueNameSearchText: string = '';
   showSettingsModal: boolean = false;
   showUpdateSections: boolean = false;
   showColorSection: boolean = false;
@@ -102,13 +113,78 @@ export class AdminLeaguesComponent {
   getLeaguesSettings() {
     this.megagoal.getLeaguesSettings().subscribe(result => {
       this.leaguesSettings = this.sortLeagues(<LeaguesSettings[]>result);
+      this.refreshAvailableCountries();
     })
   }
 
   getLeagues() {
     this.megagoal.getAllLeagues().subscribe(result => {
       this.leagues = result;
+      this.leagueById = new Map(this.leagues.map((l) => [l.league.id, l]));
+      this.refreshAvailableCountries();
     })
+  }
+
+  private refreshAvailableCountries(): void {
+    if (!this.leaguesSettings?.length || !this.leagueById.size) {
+      this.availableCountries = [];
+      this.selectedCountry = '';
+      return;
+    }
+
+    const countryMap = new Map<string, CountryOption>();
+
+    // Only include countries for leagues present in this admin list (leaguesSettings)
+    this.leaguesSettings.forEach((setting) => {
+      const league = this.leagueById.get(setting.league_id);
+      const countryName = league?.country?.name;
+      if (!countryName) return;
+      if (countryMap.has(countryName)) return;
+
+      countryMap.set(countryName, {
+        name: league!.country.name,
+        code: league!.country.code,
+        flag: league!.country.flag
+      });
+    });
+
+    this.availableCountries = Array.from(countryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+
+    // If current selection is no longer valid, reset it
+    if (this.selectedCountry && !countryMap.has(this.selectedCountry)) {
+      this.selectedCountry = '';
+    }
+  }
+
+  onCountryFilterChange(): void {
+    // template triggers filtering via computed getter
+  }
+
+  get filteredLeaguesSettings(): LeaguesSettings[] {
+    const base = (this.isPositionOrder ? this.sortedLeaguesByPosition : this.leaguesSettings) ?? [];
+    const nameNeedle = this.leagueNameSearchText.toLowerCase().trim();
+    const selectedCountry = this.selectedCountry;
+
+    if (!nameNeedle && !selectedCountry) return base;
+
+    return base.filter((setting) => {
+      const leagueName = (setting.league_name || '').toLowerCase();
+      const countryNameRaw = this.leagueById.get(setting.league_id)?.country?.name || '';
+      const countryName = countryNameRaw.toLowerCase();
+
+      const nameOk = !nameNeedle || leagueName.includes(nameNeedle) || setting.league_id.toString().includes(nameNeedle);
+      const countryOk = !selectedCountry || countryNameRaw === selectedCountry;
+
+      return nameOk && countryOk;
+    });
+  }
+
+  getLeagueCountryName(leagueId: number): string | null {
+    return this.leagueById.get(leagueId)?.country?.name ?? null;
+  }
+
+  getLeagueCountryFlag(leagueId: number): string | null {
+    return this.leagueById.get(leagueId)?.country?.flag ?? null;
   }
 
   sortLeagues(leagues: LeaguesSettings[]): LeaguesSettings[] {

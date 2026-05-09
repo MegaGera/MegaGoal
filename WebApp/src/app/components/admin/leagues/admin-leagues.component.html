@@ -14,9 +14,46 @@
       </div>
     </div>
     <p class="section-description">Configure automatic match updates for each league</p>
+
+    <div class="admin-filters">
+      <div class="team-search">
+        <ng-icon name="jamSearch" class="team-search__icon" aria-hidden="true"></ng-icon>
+        <input
+          type="search"
+          class="team-search__input"
+          placeholder="Search leagues by name or ID…"
+          [(ngModel)]="leagueNameSearchText"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Search leagues by name or ID">
+        @if (leagueNameSearchText.trim()) {
+          <button
+            type="button"
+            class="team-search__clear"
+            (click)="leagueNameSearchText = ''"
+            aria-label="Clear search">
+            <ng-icon name="jamClose" aria-hidden="true"></ng-icon>
+          </button>
+        }
+      </div>
+
+      <div class="filter-wrapper">
+        <select
+          id="country-filter"
+          class="country-filter"
+          [(ngModel)]="selectedCountry"
+          (change)="onCountryFilterChange()"
+          aria-label="Filter leagues by country">
+          <option value="">All Countries</option>
+          @for (country of availableCountries; track country.name) {
+            <option [value]="country.name">{{ country.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
     
     <div class="leagues-list">
-          @for (leaguesSetting of (isPositionOrder ? sortedLeaguesByPosition : leaguesSettings); track $index) {
+          @for (leaguesSetting of filteredLeaguesSettings; track $index) {
         <div class="league-row" [ngClass]="{
           'league-inactive': !leaguesSetting.is_active,
           'league-daily-update': leaguesSetting.is_active && leaguesSetting.daily_update
@@ -29,7 +66,22 @@
                 [alt]="leaguesSetting.league_name + ' logo'">
               <div class="league-text">
                 <h3 class="league-name">{{leaguesSetting.league_name}}</h3>
-                <span class="league-id">#{{leaguesSetting.league_id}}</span>
+                <div class="league-subline">
+                  <span class="league-id">#{{leaguesSetting.league_id}}</span>
+                  @if (getLeagueCountryName(leaguesSetting.league_id)) {
+                    <span class="country-badge" [attr.aria-label]="'Country: ' + getLeagueCountryName(leaguesSetting.league_id)">
+                      @if (getLeagueCountryFlag(leaguesSetting.league_id)) {
+                        <img
+                          class="country-flag"
+                          [src]="getLeagueCountryFlag(leaguesSetting.league_id)"
+                          [alt]="getLeagueCountryName(leaguesSetting.league_id) + ' flag'">
+                      } @else {
+                        <span class="country-flag-emoji" aria-hidden="true">🌍</span>
+                      }
+                      <span class="country-name">{{ getLeagueCountryName(leaguesSetting.league_id) }}</span>
+                    </span>
+                  }
+                </div>
               </div>
             </div>
                 </div>
@@ -548,7 +600,8 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let league of sortedLeaguesByPosition; track league?.league_id || i; let i = index">
+                  @for (league of sortedLeaguesByPosition; track league.league_id; let i = $index) {
+                  <tr>
                     <td class="position-cell">{{league?.position || "--"}}</td>
                     <td class="league-cell">
                       <div class="league-info-row">
@@ -596,6 +649,7 @@
                       </div>
                     </td>
                   </tr>
+                  }
                 </tbody>
               </table>
             </div>
