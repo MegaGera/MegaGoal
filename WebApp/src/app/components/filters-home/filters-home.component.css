@@ -213,6 +213,10 @@
   border-radius: 4px;
 }
 
+.team-filter-item--locked {
+  cursor: default;
+}
+
 .team-filter-item::before {
   content: attr(data-team-name);
   position: absolute;

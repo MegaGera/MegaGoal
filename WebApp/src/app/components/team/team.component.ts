@@ -32,7 +32,9 @@ import { StatsService } from '../../services/stats.service';
 import { provideNgIconsConfig } from '@ng-icons/core';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
-import { LeagueStats } from '../../models/league';
+import { LeagueStats, TeamsViewedStats } from '../../models/league';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { BasicPlayerStatCardComponent } from '../stats/basic-player-stat-card/basic-player-stat-card.component';
 
 interface TeamInsightsSummary {
@@ -92,7 +94,8 @@ export class TeamComponent implements OnInit, OnDestroy {
   seasons: SeasonInfo[] = [];
   seasonOptions: SeasonInfo[] = [];
   statsSeasonOptions: SeasonInfo[] = [this.allTimeSeasonOption];
-  selectedSeason!: SeasonInfo; // Season used for All Matches API calls
+  /** Kept for backwards compatibility; All Matches APIs use `filterSeasonSelected` (incl. id 0 = all seasons). */
+  selectedSeason!: SeasonInfo;
   filterSeasonSelected: SeasonInfo = this.allTimeSeasonOption; // Season selected in filters (includes All time)
 
   leagueNames: Map<string, string> = new Map();
@@ -138,6 +141,30 @@ export class TeamComponent implements OnInit, OnDestroy {
   filterPanelChipSelected: number = 1;
   filterLocationSelected: string = '';
   filterLeagueSelected: number[] = [];
+  /** Watched / stats / API: restrict to H2H vs these opponents (page team always implied). */
+  filterTeamAgainstSelected: number[] = [];
+  /** Opponents from watched matches (Stats /teams-viewed/) for current stats filters. */
+  teamsAgainstFromWatched: TeamsViewedStats[] = [];
+  /** Opponents from real_matches for the All matches season filter (+ optional leagues). */
+  teamsAgainstFromReal: TeamsViewedStats[] = [];
+  teamsAgainstLoaded: boolean = true;
+
+  /** Team against picker: real-fixture opponents on All matches; watched opponents elsewhere. */
+  get teamsAgainstDisplayed(): TeamsViewedStats[] {
+    return this.viewMode === 'allMatches' ? this.teamsAgainstFromReal : this.teamsAgainstFromWatched;
+  }
+
+  /**
+   * Last played / Next split is only for the latest season; all other seasons and "All time" use the flat list.
+   */
+  get useAllMatchesLastNextLayout(): boolean {
+    const latest = this.seasons[0];
+    if (!latest || this.viewMode !== 'allMatches') {
+      return false;
+    }
+    return this.filterSeasonSelected?.id === latest.id;
+  }
+
   filterOrder: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc' = 'date_desc'; // Order: date_desc (newest first), date_asc (oldest first), goals_desc (most goals), goals_asc (least goals)
   leaguesStats: LeagueStats[] = [];
   leaguesAllMatches: LeagueStats[] = [];
@@ -181,6 +208,7 @@ export class TeamComponent implements OnInit, OnDestroy {
         // Check if there are filter query params in the URL - if yes, restore them; if no, reset to defaults
         const hasFilterParams = params.has('season') || params.has('location') || 
                                 params.has('leagues') || params.has('order') ||
+                                params.has('vs') ||
                                 params.has('pagePersonal') || params.has('pageAllMatches') ||
                                 params.has('pageLastPlayed') || params.has('pageNextMatches');
         
@@ -298,22 +326,59 @@ export class TeamComponent implements OnInit, OnDestroy {
   }
 
   /*
-    Get Real Matches by team_id and season
+    Real fixtures for All matches: one season, or all seasons when filter is "All time" (id 0).
   */
   getRealMatches() {
-    this.megagoal.getRealMatchesByTeamIDAndSeason(this.team.team.id, this.selectedSeason.id).subscribe(result => {
-      this.realMatches = result;
-      this.realMatches.sort(function (x, y) {
-        return y.fixture.timestamp - x.fixture.timestamp;
-      })
-      // Build league names map from real matches
-      this.realMatches.forEach(match => {
-        this.leagueNames.set(match.league.id.toString(), match.league.name);
+    if (!this.team) {
+      return;
+    }
+    const teamId = this.team.team.id;
+
+    if (this.filterSeasonSelected?.id === 0) {
+      if (this.seasons.length === 0) {
+        this.realMatches = [];
+        this.finishRealMatchesLoad();
+        return;
+      }
+      forkJoin(
+        this.seasons.map((s) =>
+          this.megagoal.getRealMatchesByTeamIDAndSeason(teamId, s.id).pipe(
+            catchError(() => of([] as RealMatch[]))
+          )
+        )
+      ).subscribe((perSeason) => {
+        const byFixture = new Map<number, RealMatch>();
+        for (const arr of perSeason) {
+          for (const m of arr) {
+            const fid = m.fixture?.id;
+            if (fid != null && !byFixture.has(fid)) {
+              byFixture.set(fid, m);
+            }
+          }
+        }
+        this.realMatches = Array.from(byFixture.values());
+        this.realMatches.sort((x, y) => y.fixture.timestamp - x.fixture.timestamp);
+        this.finishRealMatchesLoad();
       });
-      this.updateLeaguesForAllMatches();
-      this.filterRealMatches();
-      this.filterCurrentLeagues();
-    })
+      return;
+    }
+
+    const seasonId =
+      this.filterSeasonSelected?.id ?? this.seasons[0]?.id;
+    this.megagoal.getRealMatchesByTeamIDAndSeason(teamId, seasonId).subscribe((result) => {
+      this.realMatches = result;
+      this.realMatches.sort((x, y) => y.fixture.timestamp - x.fixture.timestamp);
+      this.finishRealMatchesLoad();
+    });
+  }
+
+  private finishRealMatchesLoad(): void {
+    this.realMatches.forEach((match) => {
+      this.leagueNames.set(match.league.id.toString(), match.league.name);
+    });
+    this.updateLeaguesForAllMatches();
+    this.filterRealMatches();
+    this.filterCurrentLeagues();
   }
 
   filterRealMatches() {
@@ -322,6 +387,16 @@ export class TeamComponent implements OnInit, OnDestroy {
     } else {
       const selectedSet = new Set(this.filterLeagueSelected);
       this.showRealMatches = this.realMatches.filter(match => selectedSet.has(match.league.id));
+    }
+
+    if (this.team && this.filterTeamAgainstSelected.length > 0) {
+      const tid = this.team.team.id;
+      const opp = new Set(this.filterTeamAgainstSelected);
+      this.showRealMatches = this.showRealMatches.filter((m) => {
+        const h = m.teams.home.id;
+        const a = m.teams.away.id;
+        return (h === tid && opp.has(a)) || (a === tid && opp.has(h));
+      });
     }
     
     // Sort by order (create new array to trigger change detection)
@@ -485,6 +560,13 @@ export class TeamComponent implements OnInit, OnDestroy {
     }
 
     this.filterCurrentLeagues();
+
+    if (
+      this.teamsAgainstLoaded &&
+      this.syncTeamAgainstSelectionToEffectiveList()
+    ) {
+      this.fetchFavouriteTeamStats();
+    }
   }
 
   setMatchView(mode: 'lastPlayed' | 'nextMatches'): void {
@@ -545,11 +627,13 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterOrder = order;
     this.filterRealMatches();
     this.filterMatches();
+    this.filterInsightsData({ skipAgainstListFetch: true });
     this.updateQueryParams();
   }
 
   resetFilters(): void {
     this.filterLeagueSelected = [];
+    this.filterTeamAgainstSelected = [];
     this.filterLocationSelected = '';
     this.filterSeasonSelected = this.allTimeSeasonOption;
     this.selectedSeason = this.seasons[0];
@@ -566,12 +650,10 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterStatsLocations();
     this.ensureFilterLocationValidForStats();
 
-    this.updateLeaguesForAllMatches();
+    this.getRealMatches();
     this.updateLeaguesForStats();
-    this.filterRealMatches();
     this.filterMatches();
     this.filterInsightsData();
-    this.filterCurrentLeagues();
     this.updateQueryParams();
   }
 
@@ -580,6 +662,7 @@ export class TeamComponent implements OnInit, OnDestroy {
    */
   private resetFiltersToDefaults(): void {
     this.filterLeagueSelected = [];
+    this.filterTeamAgainstSelected = [];
     this.filterLocationSelected = '';
     this.filterSeasonSelected = this.allTimeSeasonOption;
     this.filterOrder = 'date_desc';
@@ -595,7 +678,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.restoredSeasonId = null;
   }
 
-  private filterInsightsData(): void {
+  private applyInsightsFiltersOnly(): void {
     const matches = this.getMatchesForInsights();
     this.filteredInsightsMatches = matches;
     this.insightsSummary = this.buildInsightsSummary(matches);
@@ -604,7 +687,123 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.competitionBreakdown = this.buildCompetitionBreakdown(this.filteredPersonalMatches);
     this.recentForm = this.buildRecentForm(matches);
     this.insightsLoaded = true;
-    this.fetchFavouriteTeamStats();
+  }
+
+  private filterInsightsData(options?: { skipAgainstListFetch?: boolean }): void {
+    this.applyInsightsFiltersOnly();
+    if (options?.skipAgainstListFetch) {
+      this.fetchFavouriteTeamStats();
+    } else {
+      this.loadTeamsAgainstThenFavouriteStats();
+    }
+  }
+
+  /**
+   * Drop opponent chips that are not in the list for the current view (watched vs real catalog).
+   * @returns true if filterTeamAgainstSelected changed
+   */
+  private syncTeamAgainstSelectionToEffectiveList(): boolean {
+    const effective = this.teamsAgainstDisplayed;
+    const allowed = new Set(effective.map((t) => t.team_id));
+    const next = this.filterTeamAgainstSelected.filter((id) => allowed.has(id));
+    if (next.length === this.filterTeamAgainstSelected.length) {
+      return false;
+    }
+    this.filterTeamAgainstSelected = next;
+    this.filterMatches();
+    this.filterRealMatches();
+    this.applyInsightsFiltersOnly();
+    this.updateQueryParams();
+    return true;
+  }
+
+  /** Merge opponent rows from several seasons (same team_id). */
+  private mergeTeamsViewedStats(rows: TeamsViewedStats[]): TeamsViewedStats[] {
+    const map = new Map<number, TeamsViewedStats>();
+    for (const r of rows) {
+      const prev = map.get(r.team_id);
+      if (!prev) {
+        map.set(r.team_id, {
+          team_id: r.team_id,
+          team_name: r.team_name,
+          count: r.count,
+          total_goals: r.total_goals ?? 0
+        });
+      } else {
+        prev.count += r.count;
+        prev.total_goals = (prev.total_goals ?? 0) + (r.total_goals ?? 0);
+      }
+    }
+    return Array.from(map.values()).sort(
+      (a, b) => b.count - a.count || a.team_name.localeCompare(b.team_name)
+    );
+  }
+
+  /** Real-match opponent summary for the current All matches season filter (all seasons if id 0). */
+  private realTeamOpponentsSummary$(teamId: number): Observable<TeamsViewedStats[]> {
+    const leagues = this.filterLeagueSelected;
+    if (this.filterSeasonSelected?.id === 0) {
+      if (this.seasons.length === 0) {
+        return of([]);
+      }
+      return forkJoin(
+        this.seasons.map((s) =>
+          this.megagoal.getRealMatchTeamOpponentsSummary(teamId, s.id, leagues).pipe(
+            catchError(() => of([] as TeamsViewedStats[]))
+          )
+        )
+      ).pipe(map((chunks) => this.mergeTeamsViewedStats(chunks.flat())));
+    }
+    const seasonId = this.filterSeasonSelected?.id ?? this.seasons[0]?.id;
+    return this.megagoal.getRealMatchTeamOpponentsSummary(teamId, seasonId, leagues);
+  }
+
+  /** Watched opponents (Stats) + real_matches opponents for All matches; then favourite stats. */
+  private loadTeamsAgainstThenFavouriteStats(): void {
+    if (!this.team) {
+      this.fetchFavouriteTeamStats();
+      return;
+    }
+    const tid = this.team.team.id;
+    this.teamsAgainstLoaded = false;
+
+    forkJoin({
+      watched: this.statsService
+        .getTeamsViewed(
+          this.filterPanelChipSelected,
+          this.filterLeagueSelected,
+          this.filterSeasonSelected?.id ?? 0,
+          this.filterLocationSelected,
+          [tid]
+        )
+        .pipe(catchError(() => of([] as TeamsViewedStats[]))),
+      real: this.realTeamOpponentsSummary$(tid).pipe(
+        catchError(() => of([] as TeamsViewedStats[]))
+      )
+    }).subscribe({
+      next: ({ watched, real }) => {
+        this.teamsAgainstFromWatched = watched.filter((r) => r.team_id !== tid);
+        this.teamsAgainstFromReal = real.filter((r) => r.team_id !== tid);
+        this.teamsAgainstLoaded = true;
+        this.syncTeamAgainstSelectionToEffectiveList();
+        this.fetchFavouriteTeamStats();
+      },
+      error: () => {
+        this.teamsAgainstFromWatched = [];
+        this.teamsAgainstFromReal = [];
+        this.teamsAgainstLoaded = true;
+        this.syncTeamAgainstSelectionToEffectiveList();
+        this.fetchFavouriteTeamStats();
+      }
+    });
+  }
+
+  onFilterTeamAgainstSelectedChange(ids: number[]): void {
+    this.filterTeamAgainstSelected = ids;
+    this.filterMatches();
+    this.filterRealMatches();
+    this.filterInsightsData({ skipAgainstListFetch: true });
+    this.updateQueryParams();
   }
 
   private getMatchesForInsights(): Match[] {
@@ -762,11 +961,17 @@ export class TeamComponent implements OnInit, OnDestroy {
 
     this.favouriteTeamLoaded = false;
 
+    const teamsParam = [this.team.team.id];
+    const againstParam =
+      this.filterTeamAgainstSelected.length > 0 ? this.filterTeamAgainstSelected : undefined;
+
     this.statsService.getFavouriteTeamStats(
       this.team.team.id,
       leaguesFilter,
       seasonFilter,
-      this.filterLocationSelected
+      this.filterLocationSelected,
+      teamsParam,
+      againstParam
     ).subscribe({
       next: (stats: FavouriteTeamStats) => {
         this.favouriteTeamStats = stats;
@@ -815,12 +1020,23 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.personalMatchesPageMatches = base.slice(startIndex, endIndex);
   }
 
+  private matchPassesOpponentFilter(match: Match): boolean {
+    if (!this.team || this.filterTeamAgainstSelected.length === 0) {
+      return true;
+    }
+    const tid = this.team.team.id;
+    const opp = new Set(this.filterTeamAgainstSelected);
+    const h = match.teams.home.id;
+    const a = match.teams.away.id;
+    return (h === tid && opp.has(a)) || (a === tid && opp.has(h));
+  }
+
   private getFilteredPersonalMatchesBase(): Match[] {
     const matches = this.allWatchedMatches.filter(match => {
       const matchesLeague = this.filterLeagueSelected.length === 0 || this.filterLeagueSelected.includes(match.league.id);
       const matchesLocation = !this.filterLocationSelected || match.location === this.filterLocationSelected;
       const matchesSeason = !this.filterSeasonSelected || this.filterSeasonSelected.id === 0 || match.league.season === this.filterSeasonSelected.id;
-      return matchesLeague && matchesLocation && matchesSeason;
+      return matchesLeague && matchesLocation && matchesSeason && this.matchPassesOpponentFilter(match);
     });
 
     // Sort by order (create new array to trigger change detection)
@@ -864,7 +1080,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     const baseMatches = this.allWatchedMatches.filter(match => {
       const matchesLocation = !this.filterLocationSelected || match.location === this.filterLocationSelected;
       const matchesSeason = !this.filterSeasonSelected || this.filterSeasonSelected.id === 0 || match.league.season === this.filterSeasonSelected.id;
-      return matchesLocation && matchesSeason;
+      return matchesLocation && matchesSeason && this.matchPassesOpponentFilter(match);
     });
 
     const leagueCounts = new Map<number, { name: string; count: number }>();
@@ -1066,9 +1282,10 @@ export class TeamComponent implements OnInit, OnDestroy {
     }
 
     const seasonId = this.filterSeasonSelected?.id ?? 0;
-    const matches = seasonId === 0
+    const matches = (seasonId === 0
       ? this.allWatchedMatches
-      : this.allWatchedMatches.filter(match => match.league?.season === seasonId);
+      : this.allWatchedMatches.filter(match => match.league?.season === seasonId)
+    ).filter((m) => this.matchPassesOpponentFilter(m));
 
     const locationIds = new Set<string>();
     matches.forEach(match => {
@@ -1197,6 +1414,10 @@ export class TeamComponent implements OnInit, OnDestroy {
       queryParams.order = this.filterOrder;
     }
 
+    if (this.filterTeamAgainstSelected.length > 0) {
+      queryParams.vs = this.filterTeamAgainstSelected.join(',');
+    }
+
     // Save pagination state
     if (this.viewMode === 'yourMatches' && this.personalMatchesCurrentPage > 1) {
       queryParams.pagePersonal = this.personalMatchesCurrentPage;
@@ -1207,7 +1428,7 @@ export class TeamComponent implements OnInit, OnDestroy {
         queryParams.pageLastPlayed = this.lastPlayedCurrentPage;
       } else if (this.matchViewMode === 'nextMatches' && this.nextMatchesCurrentPage > 1) {
         queryParams.pageNextMatches = this.nextMatchesCurrentPage;
-      } else if (this.selectedSeason.id !== this.seasons[0]?.id && this.allMatchesCurrentPage > 1) {
+      } else if (!this.useAllMatchesLastNextLayout && this.allMatchesCurrentPage > 1) {
         queryParams.pageAllMatches = this.allMatchesCurrentPage;
       }
     }
@@ -1255,6 +1476,14 @@ export class TeamComponent implements OnInit, OnDestroy {
     const order = params.get('order');
     if (order && ['date_asc', 'goals_desc', 'goals_asc'].includes(order)) {
       this.filterOrder = order as 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc';
+    }
+
+    const vs = params.get('vs');
+    if (vs) {
+      this.filterTeamAgainstSelected = vs
+        .split(',')
+        .map((id: string) => +id)
+        .filter((id: number) => !isNaN(id));
     }
 
     // Restore pagination state

@@ -4,7 +4,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
-import { League } from '../models/league';
+import { League, TeamsViewedStats } from '../models/league';
 import { Match } from '../models/match';
 import { Team, shortTeam } from '../models/team';
 import { Location } from '../models/location';
@@ -136,6 +136,25 @@ export class MegaGoalService {
   getRealMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<RealMatch[]> {
     let params = new HttpParams().set('team_id', team_id).set('season', season); 
     return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
+  }
+
+  /**
+   * Opponents from the real_matches catalog for a team + season (optional league ids).
+   * Same row shape as Stats GET /teams-viewed/.
+   */
+  getRealMatchTeamOpponentsSummary(
+    team_id: number,
+    season: number,
+    league_ids?: number[]
+  ): Observable<TeamsViewedStats[]> {
+    let params = new HttpParams().set('team_id', team_id).set('season', season);
+    if (league_ids?.length) {
+      params = params.set('league_id', league_ids.join(','));
+    }
+    return this.http.get<TeamsViewedStats[]>(
+      this.url + '/real_match/team-opponents/summary',
+      { ...this.options, params }
+    );
   }
 
   /*

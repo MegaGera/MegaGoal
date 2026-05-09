@@ -44,6 +44,10 @@ export class FiltersHomeComponent {
   @Input() showLeagues: boolean = true;
   /** When false, team grid is hidden (e.g. team page reuse without team picker data). */
   @Input() showTeams: boolean = false;
+  /** Team page: section title (default "Teams", team page uses "TEAM"). */
+  @Input() teamsSectionTitle: string = 'Teams';
+  /** When set, show a single locked badge (not togglable) instead of the multi-select grid. */
+  @Input() teamPrimaryLocked: { id: number; name: string } | null = null;
   /** Opponent picker (home only): shown when primary teams are selected. */
   @Input() showTeamAgainst: boolean = false;
   @Input() filterTeamAgainstSelected: number[] = [];

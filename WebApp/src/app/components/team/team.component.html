@@ -26,6 +26,8 @@
               class="team-filters-mobile"
               [filterPanelChipSelected]="filterPanelChipSelected"
               [filterLeagueSelected]="filterLeagueSelected"
+              [filterTeamSelected]="[team.team.id]"
+              [filterTeamAgainstSelected]="filterTeamAgainstSelected"
               [filterSeasonSelected]="filterSeasonSelected"
               [filterLocationSelected]="filterLocationSelected"
               [filterOrder]="filterOrder"
@@ -33,6 +35,14 @@
               [locations]="viewMode === 'allMatches' ? locations : statsLocations"
               [leaguesViewed]="currentLeagues"
               [leaguesLoaded]="leaguesLoaded"
+              [teamsViewed]="[]"
+              [teamsLoaded]="true"
+              [teamsSectionTitle]="'TEAM'"
+              [teamPrimaryLocked]="{ id: team.team.id, name: team.team.name }"
+              [showTeams]="true"
+              [showTeamAgainst]="true"
+              [teamsAgainstViewed]="teamsAgainstDisplayed"
+              [teamsAgainstLoaded]="teamsAgainstLoaded"
               [showPanelChips]="false"
               [showLeagues]="currentLeagues.length > 0 || !leaguesLoaded"
               [showLocations]="viewMode !== 'allMatches'"
@@ -40,6 +50,7 @@
               (collapseToggle)="toggleMobileFilters()"
               (filterPanelChipSelectedChange)="onFilterPanelChipSelectedChange($event)"
               (filterLeagueSelectedChange)="onFilterLeagueSelectedChange($event)"
+              (filterTeamAgainstSelectedChange)="onFilterTeamAgainstSelectedChange($event)"
               (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"
               (filterLocationSelectedChange)="onFilterLocationSelectedChange($event)"
               (filterOrderChange)="onFilterOrderChange($event)"
@@ -411,7 +422,7 @@
           </div>
         } @else if (viewMode === 'allMatches') {
           <div class="matches-view">
-            @if (selectedSeason.id == seasons[0].id) {
+            @if (useAllMatchesLastNextLayout) {
               <div class="matches-section">
                 <div class="row mb-0">
                   <div class="col-12">
@@ -534,6 +545,8 @@
             class="team-filters-sticky"
             [filterPanelChipSelected]="filterPanelChipSelected"
             [filterLeagueSelected]="filterLeagueSelected"
+            [filterTeamSelected]="[team.team.id]"
+            [filterTeamAgainstSelected]="filterTeamAgainstSelected"
             [filterSeasonSelected]="filterSeasonSelected"
             [filterLocationSelected]="filterLocationSelected"
             [filterOrder]="filterOrder"
@@ -541,11 +554,20 @@
             [locations]="viewMode === 'allMatches' ? locations : statsLocations"
             [leaguesViewed]="currentLeagues"
             [leaguesLoaded]="leaguesLoaded"
+            [teamsViewed]="[]"
+            [teamsLoaded]="true"
+            [teamsSectionTitle]="'TEAM'"
+            [teamPrimaryLocked]="{ id: team.team.id, name: team.team.name }"
+            [showTeams]="true"
+            [showTeamAgainst]="true"
+            [teamsAgainstViewed]="teamsAgainstDisplayed"
+            [teamsAgainstLoaded]="teamsAgainstLoaded"
             [showPanelChips]="false"
             [showLeagues]="currentLeagues.length > 0 || !leaguesLoaded"
             [showLocations]="viewMode !== 'allMatches'"
             (filterPanelChipSelectedChange)="onFilterPanelChipSelectedChange($event)"
             (filterLeagueSelectedChange)="onFilterLeagueSelectedChange($event)"
+            (filterTeamAgainstSelectedChange)="onFilterTeamAgainstSelectedChange($event)"
             (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"
             (filterLocationSelectedChange)="onFilterLocationSelectedChange($event)"
             (filterOrderChange)="onFilterOrderChange($event)"

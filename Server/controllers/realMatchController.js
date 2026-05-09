@@ -143,4 +143,90 @@ const getRealMatchById = async (req, res) => {
   }
 }
 
-export { getRealMatches, getRealMatchById };
+/**
+ * Opponents the team faces in `real_matches` for a season (optional league filter).
+ * Shape matches Stats GET /teams-viewed/ rows: team_id, team_name, count, total_goals.
+ */
+const getTeamOpponentsSummary = async (req, res) => {
+  const db = getDB();
+  try {
+    const team_id_raw = req.query.team_id;
+    const season_raw = req.query.season;
+    const league_id_raw = req.query.league_id;
+
+    if (team_id_raw == null || team_id_raw === '' || season_raw == null || season_raw === '') {
+      return res.status(400).json({ message: 'team_id and season are required' });
+    }
+
+    const teamId = +team_id_raw;
+    const season = +season_raw;
+    if (Number.isNaN(teamId) || Number.isNaN(season)) {
+      return res.status(400).json({ message: 'team_id and season must be valid numbers' });
+    }
+
+    const matchParts = [
+      {
+        $or: [{ 'teams.home.id': teamId }, { 'teams.away.id': teamId }]
+      },
+      { 'league.season': season }
+    ];
+
+    if (league_id_raw != null && league_id_raw !== '') {
+      const leagueIds = league_id_raw
+        .split(',')
+        .map((s) => +s.trim())
+        .filter((n) => !Number.isNaN(n));
+      if (leagueIds.length > 0) {
+        matchParts.push({ 'league.id': { $in: leagueIds } });
+      }
+    }
+
+    const pipeline = [
+      { $match: { $and: matchParts } },
+      {
+        $project: {
+          opponentId: {
+            $cond: [{ $eq: ['$teams.home.id', teamId] }, '$teams.away.id', '$teams.home.id']
+          },
+          opponentName: {
+            $cond: [{ $eq: ['$teams.home.id', teamId] }, '$teams.away.name', '$teams.home.name']
+          },
+          gHome: { $ifNull: ['$goals.home', 0] },
+          gAway: { $ifNull: ['$goals.away', 0] }
+        }
+      },
+      {
+        $project: {
+          opponentId: 1,
+          opponentName: 1,
+          matchGoals: { $add: ['$gHome', '$gAway'] }
+        }
+      },
+      {
+        $group: {
+          _id: '$opponentId',
+          team_name: { $first: '$opponentName' },
+          count: { $sum: 1 },
+          total_goals: { $sum: '$matchGoals' }
+        }
+      },
+      { $sort: { count: -1, team_name: 1 } },
+      {
+        $project: {
+          _id: 0,
+          team_id: '$_id',
+          team_name: 1,
+          count: 1,
+          total_goals: 1
+        }
+      }
+    ];
+
+    const rows = await db.collection('real_matches').aggregate(pipeline).toArray();
+    res.send(rows);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export { getRealMatches, getRealMatchById, getTeamOpponentsSummary };
