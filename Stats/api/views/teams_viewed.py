@@ -5,6 +5,8 @@ from rest_framework import status
 import pandas as pd
 import os
 
+from ..teams_query_filters import parse_teams_query_params, add_teams_mongo_filters
+
 class TeamsViewedAPIView(APIView):
   def get(self, request, *args, **kwargs):
 
@@ -48,6 +50,9 @@ class TeamsViewedAPIView(APIView):
 
     if location != None and location != '':
       filters.append({ 'location': location })
+
+    teams_arr, against_arr = parse_teams_query_params(request)
+    add_teams_mongo_filters(filters, teams_arr, against_arr)
 
     filters.append({ 'user.username': username });
 

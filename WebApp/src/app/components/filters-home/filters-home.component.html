@@ -40,6 +40,93 @@
       </div>
     }
 
+    <!-- Teams (optional; home passes teamsFiltered like leagues) -->
+    @if (showTeams && (!teamsLoaded || filteredTeamsOrdered.length > 0)) {
+      <div
+        class="filter-section"
+        [class.team-filter-section--expanded]="teamsLoaded && showAllTeams && teamsViewed.length > 4">
+        <div class="section-header">
+          <h5 class="section-title">Teams</h5>
+          @if (teamsLoaded && teamsViewed.length > 4) {
+            <button type="button" class="toggle-button" (click)="toggleTeamsVisibility()">
+              <ng-icon [name]="showAllTeams ? 'jamChevronUp' : 'jamChevronDown'"></ng-icon>
+              <span>{{ showAllTeams ? 'Show Less' : 'Show More' }}</span>
+            </button>
+          }
+        </div>
+        <!-- Single grid + wrapper: expanded only adds scroll + gutter (no duplicate DOM / layout swap) -->
+        <div
+          class="team-filter-body"
+          [class.team-filter-body--scroll]="teamsLoaded && showAllTeams && teamsViewed.length > 4">
+          <div class="league-grid">
+            @if (!teamsLoaded) {
+              <div class="league-item-skeleton" aria-hidden="true"></div>
+              <div class="league-item-skeleton" aria-hidden="true"></div>
+              <div class="league-item-skeleton" aria-hidden="true"></div>
+              <div class="league-item-skeleton" aria-hidden="true"></div>
+            } @else {
+              @for (team of filteredTeams; track team.team_id) {
+                <div class="league-item team-filter-item"
+                     (click)="changeFilterTeamSelected(team.team_id)"
+                     [ngClass]="{'league-item-selected': filterTeamSelected.includes(team.team_id)}"
+                     [attr.data-team-name]="team.team_name">
+                  <img class="league-icon team-filter-icon"
+                       [ngSrc]="images.getRouteImageTeam(team.team_id)"
+                       [alt]="team.team_name"
+                       width="40"
+                       height="40"
+                       priority="false">
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Team against: opponents of selected teams (matches pairing primary vs these clubs) -->
+    @if (showTeamAgainst && filterTeamSelected.length > 0 && (!teamsAgainstLoaded || filteredTeamsAgainstOrdered.length > 0)) {
+      <div
+        class="filter-section"
+        [class.team-filter-section--expanded]="teamsAgainstLoaded && showAllTeamsAgainst && teamsAgainstViewed.length > 4">
+        <div class="section-header">
+          <h5 class="section-title">Team against</h5>
+          @if (teamsAgainstLoaded && teamsAgainstViewed.length > 4) {
+            <button type="button" class="toggle-button" (click)="toggleTeamsAgainstVisibility()">
+              <ng-icon [name]="showAllTeamsAgainst ? 'jamChevronUp' : 'jamChevronDown'"></ng-icon>
+              <span>{{ showAllTeamsAgainst ? 'Show Less' : 'Show More' }}</span>
+            </button>
+          }
+        </div>
+        <div
+          class="team-filter-body"
+          [class.team-filter-body--scroll]="teamsAgainstLoaded && showAllTeamsAgainst && teamsAgainstViewed.length > 4">
+          <div class="league-grid">
+            @if (!teamsAgainstLoaded) {
+              <div class="league-item-skeleton" aria-hidden="true"></div>
+              <div class="league-item-skeleton" aria-hidden="true"></div>
+              <div class="league-item-skeleton" aria-hidden="true"></div>
+              <div class="league-item-skeleton" aria-hidden="true"></div>
+            } @else {
+              @for (team of filteredTeamsAgainst; track team.team_id) {
+                <div class="league-item team-filter-item"
+                     (click)="changeFilterTeamAgainstSelected(team.team_id)"
+                     [ngClass]="{'league-item-selected': filterTeamAgainstSelected.includes(team.team_id)}"
+                     [attr.data-team-name]="team.team_name">
+                  <img class="league-icon team-filter-icon"
+                       [ngSrc]="images.getRouteImageTeam(team.team_id)"
+                       [alt]="team.team_name"
+                       width="40"
+                       height="40"
+                       priority="false">
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Filter league selection row -->
     @if (showLeagues && (!leaguesLoaded || filteredLeagues.length > 0)) {
       <div class="filter-section">

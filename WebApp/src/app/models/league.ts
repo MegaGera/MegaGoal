@@ -57,3 +57,11 @@ export interface LeagueStats {
     league_name: string,
     count: number
 }
+
+/** Row from Stats API GET /teams-viewed/ (home filters team picker) */
+export interface TeamsViewedStats {
+    team_id: number;
+    team_name: string;
+    count: number;
+    total_goals?: number;
+}

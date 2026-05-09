@@ -9,6 +9,8 @@ import pandas as pd
 import os
 from datetime import datetime
 
+from ..teams_query_filters import parse_teams_query_params, add_teams_mongo_filters
+
 class FavouriteTeamStatsAPIView(APIView):
     def get(self, request, *args, **kwargs):
         # Access the validation data added by the middleware
@@ -57,6 +59,9 @@ class FavouriteTeamStatsAPIView(APIView):
         # Location filter
         if location != '':
             filters.append({'location': location})
+
+        teams_arr, against_arr = parse_teams_query_params(request)
+        add_teams_mongo_filters(filters, teams_arr, against_arr)
 
         # User filter
         filters.append({'user.username': username})

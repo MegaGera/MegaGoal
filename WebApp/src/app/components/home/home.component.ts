@@ -19,8 +19,7 @@ import { Location } from '../../models/location';
 import { SeasonInfo } from '../../models/season';
 import { UserStats } from '../../models/userStats';
 import { GeneralStats } from '../../models/generalStats';
-import { LeagueStats } from '../../models/league';
-import { League } from '../../models/league';
+import { League, LeagueStats, TeamsViewedStats } from '../../models/league';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { TeamStatsListComponent } from '../stats/team-stats-list/team-stats-list.component';
@@ -62,7 +61,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   leaguesViewed: LeagueStats[] = [];
   locations: Location[] = [];
   locationsFiltered: Location[] = [];
-  stats: { teamsViewed: any[] } = { teamsViewed: []};
+  stats: { teamsViewed: TeamsViewedStats[] } = { teamsViewed: []};
   statsLoaded: boolean = false;
   favouriteTeamStats: FavouriteTeamStats | null = null;
   favouriteTeamLoaded: boolean = false;
@@ -81,6 +80,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   filterPanelChipSelected: number = 0; // 0 All, 1 Watched, 2 Not Watched
   filterLeagueSelected: number[] = []; // 40: Premier League, 140: La Liga, 141: La Liga 2, 2: Champions League
+  filterTeamSelected: number[] = [];
+  /** Opponents: match must pair a selected team with one of these (home/away). */
+  filterTeamAgainstSelected: number[] = [];
   filterLocationSelected: string = ''; // Location filter
   filterOrder: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc' = 'date_desc'; // Order: date_desc (newest first), date_asc (oldest first), goals_desc (most goals), goals_asc (least goals)
 
@@ -91,11 +93,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   /* Dynamic Filter Arrays */
   leaguesFiltered: LeagueStats[] = [];
+  teamsFiltered: TeamsViewedStats[] = [];
+  /** From /teams-viewed?teams=… — opponent clubs only (excludes primary selection). */
+  teamsAgainstViewed: TeamsViewedStats[] = [];
+  teamsAgainstLoaded: boolean = true;
 
   /* View Mode */
   viewMode: 'stats' | 'matches' | 'filters' = 'matches';
 
   readonly setFavouritesNotificationName = 'set_favourites';
+
+  /** When chip/league/season/location change, refetch picker teams-viewed; team-only changes skip this. */
+  private lastStandardFiltersKey = '';
 
   constructor(
     private megagoal: MegaGoalService, 
@@ -195,6 +204,72 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.seasonsFiltered = [...this.seasons];
   }
 
+  private matchInvolvesSelectedTeams(match: Match): boolean {
+    if (this.filterTeamSelected.length === 0) return true;
+    const sel = new Set(this.filterTeamSelected);
+    return sel.has(match.teams.home.id) || sel.has(match.teams.away.id);
+  }
+
+  private matchPassesTeamAgainst(match: Match): boolean {
+    if (this.filterTeamAgainstSelected.length === 0) return true;
+    const h = match.teams.home.id;
+    const a = match.teams.away.id;
+    const p = new Set(this.filterTeamSelected);
+    const q = new Set(this.filterTeamAgainstSelected);
+    return (p.has(h) && q.has(a)) || (p.has(a) && q.has(h));
+  }
+
+  private appendTeamFilterForCrossFilters(matches: Match[]): Match[] {
+    if (this.filterTeamSelected.length === 0) return matches;
+    let m = matches.filter(x => this.matchInvolvesSelectedTeams(x));
+    if (this.filterTeamAgainstSelected.length > 0) {
+      m = m.filter(x => this.matchPassesTeamAgainst(x));
+    }
+    return m;
+  }
+
+  private standardFiltersKey(): string {
+    const seasonId = this.filterSeasonSelected?.id ?? 0;
+    const leagues = [...this.filterLeagueSelected].sort((a, b) => a - b).join(',');
+    return [
+      this.filterPanelChipSelected,
+      leagues,
+      seasonId,
+      this.filterLocationSelected || ''
+    ].join('|');
+  }
+
+  /** Chip + league + season + location only (used for team picker list and match filtering base). */
+  private applyStandardMatchFilters(matches: Match[]): Match[] {
+    let m = matches;
+    if (this.filterPanelChipSelected == 1) {
+      m = m.filter(match => !NATIONS_LEAGUE_IDS.includes(match.league.id));
+    } else if (this.filterPanelChipSelected == 2) {
+      m = m.filter(match => NATIONS_LEAGUE_IDS.includes(match.league.id));
+    }
+    if (this.filterLeagueSelected.length > 0) {
+      m = m.filter(match => this.filterLeagueSelected.includes(match.league.id));
+    }
+    const seasonId = this.filterSeasonSelected?.id ?? 0;
+    if (seasonId !== 0) {
+      m = m.filter(match => match.league.season == seasonId);
+    }
+    if (this.filterLocationSelected) {
+      m = m.filter(match => match.location === this.filterLocationSelected);
+    }
+    return m;
+  }
+
+  private rebuildTeamsFiltered(): void {
+    const m = this.applyStandardMatchFilters([...this.matchesOriginal]);
+    const ids = new Set<number>();
+    for (const match of m) {
+      ids.add(match.teams.home.id);
+      ids.add(match.teams.away.id);
+    }
+    this.teamsFiltered = this.stats.teamsViewed.filter(t => ids.has(t.team_id));
+  }
+
   /*
     Update filtered arrays based on current filter selections
   */
@@ -232,6 +307,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         match.location === this.filterLocationSelected
       );
     }
+
+    seasonsFilteredMatches = this.appendTeamFilterForCrossFilters(seasonsFilteredMatches);
     
     // Update seasons filtered array
     const availableSeasonIds = [...new Set(seasonsFilteredMatches.map(match => match.league.season))];
@@ -260,6 +337,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         match.location === this.filterLocationSelected
       );
     }
+
+    leaguesFilteredMatches = this.appendTeamFilterForCrossFilters(leaguesFilteredMatches);
     
     // Update leagues filtered array
     const availableLeagueIds = [...new Set(leaguesFilteredMatches.map(match => match.league.id))];
@@ -288,12 +367,16 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.filterLeagueSelected.includes(match.league.id)
       );
     }
+
+    locationsFilteredMatches = this.appendTeamFilterForCrossFilters(locationsFilteredMatches);
     
     // Update locations filtered array
     const availableLocationIds = [...new Set(locationsFilteredMatches.map(match => match.location))];
     this.locationsFiltered = this.locations.filter(location => 
       availableLocationIds.includes(location.id)
     );
+
+    this.rebuildTeamsFiltered();
 
     // Clean up invalid selections
     this.cleanupInvalidSelections();
@@ -320,6 +403,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.filterSeasonSelected && !availableSeasonIds.includes(this.filterSeasonSelected.id)) {
       this.filterSeasonSelected = this.seasonsFiltered[0] || this.seasons[0];
     }
+
+    if (this.statsLoaded) {
+      const availableTeamIds = this.teamsFiltered.map(t => t.team_id);
+      this.filterTeamSelected = this.filterTeamSelected.filter((id: number) => availableTeamIds.includes(id));
+    }
+
+    if (this.teamsAgainstLoaded && this.filterTeamSelected.length > 0) {
+      const againstIds = new Set(this.teamsAgainstViewed.map(t => t.team_id));
+      this.filterTeamAgainstSelected = this.filterTeamAgainstSelected.filter((id: number) =>
+        againstIds.has(id)
+      );
+    }
+    if (this.filterTeamSelected.length === 0) {
+      this.filterTeamAgainstSelected = [];
+    }
   }
 
   getLocations() {
@@ -329,13 +427,85 @@ export class HomeComponent implements OnInit, OnDestroy {
     })
   }
 
-  getStats() {
-    this.statsService.getTeamsViewed(this.filterPanelChipSelected, this.filterLeagueSelected, this.filterSeasonSelected.id, this.filterLocationSelected).subscribe(result => {
-      this.stats.teamsViewed = result;
-      this.statsLoaded = true;
+  /** Picker list + scoped opponent list + stats; skips picker refetch when only team / team-against changes. */
+  private refreshStatsPipeline(): void {
+    const key = this.standardFiltersKey();
+    const needPicker = key !== this.lastStandardFiltersKey || !this.statsLoaded;
+
+    const afterPicker = (): void => {
+      this.updateFilteredArrays();
+      this.applyMatchFiltering();
+      this.loadScopedTeamsAndStats();
+    };
+
+    if (needPicker) {
+      this.lastStandardFiltersKey = key;
+      this.statsLoaded = false;
+      this.statsService.getTeamsViewed(
+        this.filterPanelChipSelected,
+        this.filterLeagueSelected,
+        this.filterSeasonSelected?.id ?? 0,
+        this.filterLocationSelected
+      ).subscribe({
+        next: (result: TeamsViewedStats[]) => {
+          this.stats.teamsViewed = result;
+          this.statsLoaded = true;
+          afterPicker();
+        },
+        error: () => {
+          this.stats.teamsViewed = [];
+          this.statsLoaded = true;
+          afterPicker();
+        }
+      });
+    } else {
+      afterPicker();
+    }
+  }
+
+  /** /teams-viewed with ?teams= for opponent picker + stats with team filters when primary teams selected. */
+  private loadScopedTeamsAndStats(): void {
+    if (this.filterTeamSelected.length === 0) {
+      this.teamsAgainstViewed = [];
+      this.teamsAgainstLoaded = true;
+      this.filterTeamAgainstSelected = [];
       this.getFavouriteTeamStats();
       this.getGeneralStats();
-    })
+      this.changeDetectorRef.detectChanges();
+      return;
+    }
+
+    this.teamsAgainstLoaded = false;
+    this.statsService.getTeamsViewed(
+      this.filterPanelChipSelected,
+      this.filterLeagueSelected,
+      this.filterSeasonSelected?.id ?? 0,
+      this.filterLocationSelected,
+      this.filterTeamSelected
+    ).subscribe({
+      next: (rows: TeamsViewedStats[]) => {
+        const primary = new Set(this.filterTeamSelected);
+        this.teamsAgainstViewed = rows.filter((r) => !primary.has(r.team_id));
+        this.teamsAgainstLoaded = true;
+        this.cleanupInvalidSelections();
+        this.updateFilteredArrays();
+        this.applyMatchFiltering();
+        this.getFavouriteTeamStats();
+        this.getGeneralStats();
+        this.changeDetectorRef.detectChanges();
+      },
+      error: () => {
+        this.teamsAgainstViewed = [];
+        this.teamsAgainstLoaded = true;
+        this.filterTeamAgainstSelected = [];
+        this.cleanupInvalidSelections();
+        this.updateFilteredArrays();
+        this.applyMatchFiltering();
+        this.getFavouriteTeamStats();
+        this.getGeneralStats();
+        this.changeDetectorRef.detectChanges();
+      }
+    });
   }
 
   getLeaguesStats() {
@@ -387,12 +557,28 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getFavouriteTeamStats() {
     this.favouriteTeamLoaded = false;
-    
+
+    const favouriteId =
+      this.filterTeamSelected.length > 0
+        ? this.filterTeamSelected[0]
+        : this.stats.teamsViewed?.[0]?.team_id;
+    if (favouriteId == null) {
+      this.favouriteTeamStats = null;
+      this.favouriteTeamLoaded = true;
+      return;
+    }
+
+    const teamsArg = this.filterTeamSelected.length > 0 ? this.filterTeamSelected : undefined;
+    const againstArg =
+      this.filterTeamAgainstSelected.length > 0 ? this.filterTeamAgainstSelected : undefined;
+
     this.statsService.getFavouriteTeamStats(
-      this.stats.teamsViewed[0].team_id,
+      favouriteId,
       this.filterLeagueSelected,
-      this.filterSeasonSelected.id,
-      this.filterLocationSelected
+      this.filterSeasonSelected?.id ?? 0,
+      this.filterLocationSelected,
+      teamsArg,
+      againstArg
     ).subscribe({
       next: (stats: FavouriteTeamStats) => {
         this.favouriteTeamStats = stats;
@@ -408,12 +594,18 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getGeneralStats() {
     this.generalStatsLoaded = false;
-    
+
+    const teamsArg = this.filterTeamSelected.length > 0 ? this.filterTeamSelected : undefined;
+    const againstArg =
+      this.filterTeamAgainstSelected.length > 0 ? this.filterTeamAgainstSelected : undefined;
+
     this.statsService.getGeneralStats(
       this.filterPanelChipSelected,
       this.filterLeagueSelected,
-      this.filterSeasonSelected.id,
-      this.filterLocationSelected
+      this.filterSeasonSelected?.id ?? 0,
+      this.filterLocationSelected,
+      teamsArg,
+      againstArg
     ).subscribe({
       next: (stats: GeneralStats) => {
         this.generalStats = stats;
@@ -427,42 +619,24 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  filterMatches() {
-
-    // First: Take all the matches
-    this.statsLoaded = false;
-    this.matches = this.matchesOriginal;
-
-    // Filter by team selection
-    if (this.filterPanelChipSelected == 1) {
-      // Show only club leagues (exclude national leagues)
-      this.matches = this.matches.filter(match => !NATIONS_LEAGUE_IDS.includes(match.league.id));
-    } else if (this.filterPanelChipSelected == 2) {
-      // Show only national leagues
-      this.matches = this.matches.filter(match => NATIONS_LEAGUE_IDS.includes(match.league.id));
+  /**
+   * Applies chip, league, season, location and multi-team filters, then sorts (no stats refresh).
+   */
+  private applyMatchFiltering(): void {
+    let m = this.applyStandardMatchFilters([...this.matchesOriginal]);
+    if (this.filterTeamSelected.length > 0) {
+      m = m.filter(match => this.matchInvolvesSelectedTeams(match));
+      m = m.filter(match => this.matchPassesTeamAgainst(match));
     }
-
-    // Filter by league selection
-    if (this.filterLeagueSelected.length > 0) {
-      this.matches = this.matches.filter(match => this.filterLeagueSelected.includes(match.league.id));
-    }
-
-    // Filter by season
-    if (this.filterSeasonSelected.id != 0) {
-      this.matches = this.matches.filter(match => match.league.season == this.filterSeasonSelected.id);
-    }
-
-    // Filter by location
-    if (this.filterLocationSelected) {
-      this.matches = this.matches.filter(match => match.location === this.filterLocationSelected);
-    }
-
-    // Sort by order
+    this.matches = m;
     this.sortMatches();
-
     this.changeDetectorRef.detectChanges();
     this.matchesLoaded = true;
-    this.getStats();
+  }
+
+  filterMatches() {
+    this.applyMatchFiltering();
+    this.refreshStatsPipeline();
   }
 
   /*
@@ -519,6 +693,25 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.filterMatches();
   }
 
+  changeFilterTeamSelected(teams: number[]) {
+    this.filterTeamSelected = teams;
+    if (teams.length === 0) {
+      this.filterTeamAgainstSelected = [];
+      this.teamsAgainstViewed = [];
+      this.teamsAgainstLoaded = true;
+    }
+    this.updateFilteredArrays();
+    this.filterMatches();
+  }
+
+  changeFilterTeamAgainstSelected(ids: number[]) {
+    this.filterTeamAgainstSelected = ids;
+    this.updateFilteredArrays();
+    this.applyMatchFiltering();
+    this.getFavouriteTeamStats();
+    this.getGeneralStats();
+  }
+
   changeFilterOrder(order: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc') {
     this.filterOrder = order;
     // Only sort matches, don't recalculate stats since filtered matches are the same
@@ -529,6 +722,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   resetFilters() {
     this.filterPanelChipSelected = 0; // All
     this.filterLeagueSelected = []; // No leagues selected
+    this.filterTeamSelected = [];
+    this.filterTeamAgainstSelected = [];
+    this.teamsAgainstViewed = [];
+    this.teamsAgainstLoaded = true;
     this.filterSeasonSelected = this.seasons[0]; // All time
     this.filterLocationSelected = ''; // All locations
     this.filterOrder = 'date_desc'; // Reset to descending (newest first)
