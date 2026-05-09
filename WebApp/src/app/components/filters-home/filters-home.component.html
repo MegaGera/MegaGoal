@@ -73,6 +73,29 @@
             </div>
           </div>
         } @else {
+          @if (enableTeamsSearch && teamsLoaded && teamsViewed.length > 1) {
+            <div class="team-search">
+              <ng-icon name="jamSearch" class="team-search__icon" aria-hidden="true"></ng-icon>
+              <input
+                type="search"
+                class="team-search__input"
+                placeholder="Search teams by name…"
+                [(ngModel)]="teamSearchQuery"
+                (ngModelChange)="onTeamSearchChange()"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Search teams by name">
+              @if (teamSearchQuery.trim()) {
+                <button
+                  type="button"
+                  class="team-search__clear"
+                  (click)="clearTeamSearch()"
+                  aria-label="Clear search">
+                  <ng-icon name="jamClose" aria-hidden="true"></ng-icon>
+                </button>
+              }
+            </div>
+          }
           <div
             class="team-filter-body"
             [class.team-filter-body--scroll]="teamsLoaded && showAllTeams && teamsViewed.length > 4">
@@ -82,6 +105,14 @@
                 <div class="league-item-skeleton" aria-hidden="true"></div>
                 <div class="league-item-skeleton" aria-hidden="true"></div>
                 <div class="league-item-skeleton" aria-hidden="true"></div>
+              } @else if (filteredTeams.length === 0) {
+                <div class="team-against-empty" role="status">
+                  @if (teamSearchQuery.trim()) {
+                    No teams match your search.
+                  } @else {
+                    No teams for this filter.
+                  }
+                </div>
               } @else {
                 @for (team of filteredTeams; track team.team_id) {
                   <div class="league-item team-filter-item"
@@ -104,28 +135,59 @@
     }
 
     <!-- Team against: opponents of selected teams (matches pairing primary vs these clubs) -->
-    @if (showTeamAgainst && filterTeamSelected.length > 0 && (!teamsAgainstLoaded || filteredTeamsAgainstOrdered.length > 0)) {
+    @if (showTeamAgainst && filterTeamSelected.length > 0 && (!teamsAgainstLoaded || teamsAgainstViewed.length > 0)) {
       <div
         class="filter-section"
-        [class.team-filter-section--expanded]="teamsAgainstLoaded && showAllTeamsAgainst && teamsAgainstViewed.length > 4">
+        [class.team-filter-section--expanded]="teamsAgainstLoaded && showAllTeamsAgainst && filteredTeamsAgainstOrdered.length > 4">
         <div class="section-header">
           <h5 class="section-title">Team against</h5>
-          @if (teamsAgainstLoaded && teamsAgainstViewed.length > 4) {
+          @if (teamsAgainstLoaded && filteredTeamsAgainstOrdered.length > 4) {
             <button type="button" class="toggle-button" (click)="toggleTeamsAgainstVisibility()">
               <ng-icon [name]="showAllTeamsAgainst ? 'jamChevronUp' : 'jamChevronDown'"></ng-icon>
               <span>{{ showAllTeamsAgainst ? 'Show Less' : 'Show More' }}</span>
             </button>
           }
         </div>
+        @if (teamsAgainstLoaded && teamsAgainstViewed.length > 0) {
+          <div class="team-against-search">
+            <ng-icon name="jamSearch" class="team-against-search__icon" aria-hidden="true"></ng-icon>
+            <input
+              type="search"
+              class="team-against-search__input"
+              placeholder="Search by name…"
+              [(ngModel)]="teamAgainstSearchQuery"
+              (ngModelChange)="onTeamAgainstSearchChange()"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Search by name">
+            @if (teamAgainstSearchQuery.trim()) {
+              <button
+                type="button"
+                class="team-against-search__clear"
+                (click)="clearTeamAgainstSearch()"
+                aria-label="Clear search">
+                <ng-icon name="jamClose" aria-hidden="true"></ng-icon>
+              </button>
+            }
+          </div>
+        }
         <div
           class="team-filter-body"
-          [class.team-filter-body--scroll]="teamsAgainstLoaded && showAllTeamsAgainst && teamsAgainstViewed.length > 4">
+          [class.team-filter-body--scroll]="teamsAgainstLoaded && showAllTeamsAgainst && filteredTeamsAgainstOrdered.length > 4">
           <div class="league-grid">
             @if (!teamsAgainstLoaded) {
               <div class="league-item-skeleton" aria-hidden="true"></div>
               <div class="league-item-skeleton" aria-hidden="true"></div>
               <div class="league-item-skeleton" aria-hidden="true"></div>
               <div class="league-item-skeleton" aria-hidden="true"></div>
+            } @else if (filteredTeamsAgainst.length === 0) {
+              <div class="team-against-empty" role="status">
+                @if (teamAgainstSearchQuery.trim()) {
+                  No opponents match your search.
+                } @else {
+                  No opponents for this filter.
+                }
+              </div>
             } @else {
               @for (team of filteredTeamsAgainst; track team.team_id) {
                 <div class="league-item team-filter-item"

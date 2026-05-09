@@ -3,7 +3,7 @@ import { CommonModule, NgClass, NgOptimizedImage } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { jamFilterF, jamChevronUp, jamChevronDown } from '@ng-icons/jam-icons';
+import { jamFilterF, jamChevronUp, jamChevronDown, jamSearch, jamClose } from '@ng-icons/jam-icons';
 import { SeasonInfo } from '../../models/season';
 import { LeagueStats, TeamsViewedStats } from '../../models/league';
 import { Location } from '../../models/location';
@@ -24,7 +24,7 @@ import { GeneralCardComponent } from '../general-card/general-card.component';
   ],
   templateUrl: './filters-home.component.html',
   styleUrls: ['./filters-home.component.css'],
-  providers: [ImagesService, provideIcons({ jamFilterF, jamChevronUp, jamChevronDown })]
+  providers: [ImagesService, provideIcons({ jamFilterF, jamChevronUp, jamChevronDown, jamSearch, jamClose })]
 })
 export class FiltersHomeComponent {
   @Input() filterPanelChipSelected: number = 1;
@@ -40,6 +40,8 @@ export class FiltersHomeComponent {
   /** Rows from /teams-viewed intersected with match context (same pattern as leagues). */
   @Input() teamsViewed: TeamsViewedStats[] = [];
   @Input() teamsLoaded: boolean = false;
+  /** Home page only: enable name search in the Teams picker. */
+  @Input() enableTeamsSearch: boolean = false;
   @Input() showPanelChips: boolean = true;
   @Input() showLeagues: boolean = true;
   /** When false, team grid is hidden (e.g. team page reuse without team picker data). */
@@ -70,12 +72,35 @@ export class FiltersHomeComponent {
   showAllTeams = false;
   showAllTeamsAgainst = false;
 
+  /** Substring filter on team names (case-insensitive). */
+  teamSearchQuery = '';
+  /** Substring filter on opponent names (case-insensitive); does not affect selected chips until user toggles. */
+  teamAgainstSearchQuery = '';
+
   constructor(public images: ImagesService) {}
+
+  private teamsPassesSearch(t: TeamsViewedStats): boolean {
+    const q = this.teamSearchQuery.trim().toLowerCase();
+    if (!q) {
+      return true;
+    }
+    return (t.team_name ?? '').toLowerCase().includes(q);
+  }
+
+  private teamsAgainstPassesSearch(t: TeamsViewedStats): boolean {
+    const q = this.teamAgainstSearchQuery.trim().toLowerCase();
+    if (!q) {
+      return true;
+    }
+    return (t.team_name ?? '').toLowerCase().includes(q);
+  }
 
   /** Full list with selected teams first (no slice). */
   get filteredTeamsOrdered(): TeamsViewedStats[] {
-    const selectedTeams = this.teamsViewed.filter(team => this.filterTeamSelected.includes(team.team_id));
-    const nonSelectedTeams = this.teamsViewed.filter(team => !this.filterTeamSelected.includes(team.team_id));
+    const selectedSet = new Set(this.filterTeamSelected);
+    const pool = this.teamsViewed.filter((t) => this.teamsPassesSearch(t) || selectedSet.has(t.team_id));
+    const selectedTeams = pool.filter(team => selectedSet.has(team.team_id));
+    const nonSelectedTeams = pool.filter(team => !selectedSet.has(team.team_id));
     return [...selectedTeams, ...nonSelectedTeams];
   }
 
@@ -86,8 +111,12 @@ export class FiltersHomeComponent {
   }
 
   get filteredTeamsAgainstOrdered(): TeamsViewedStats[] {
-    const sel = this.teamsAgainstViewed.filter((t) => this.filterTeamAgainstSelected.includes(t.team_id));
-    const rest = this.teamsAgainstViewed.filter((t) => !this.filterTeamAgainstSelected.includes(t.team_id));
+    const selectedSet = new Set(this.filterTeamAgainstSelected);
+    const pool = this.teamsAgainstViewed.filter(
+      (t) => this.teamsAgainstPassesSearch(t) || selectedSet.has(t.team_id)
+    );
+    const sel = pool.filter((t) => selectedSet.has(t.team_id));
+    const rest = pool.filter((t) => !selectedSet.has(t.team_id));
     return [...sel, ...rest];
   }
 
@@ -151,6 +180,24 @@ export class FiltersHomeComponent {
     this.showAllTeamsAgainst = !this.showAllTeamsAgainst;
   }
 
+  clearTeamSearch(): void {
+    this.teamSearchQuery = '';
+    this.showAllTeams = false;
+  }
+
+  onTeamSearchChange(): void {
+    this.showAllTeams = false;
+  }
+
+  clearTeamAgainstSearch(): void {
+    this.teamAgainstSearchQuery = '';
+    this.showAllTeamsAgainst = false;
+  }
+
+  onTeamAgainstSearchChange(): void {
+    this.showAllTeamsAgainst = false;
+  }
+
   changeFilterTeamSelected(teamId: number) {
     let next: number[];
     if (this.filterTeamSelected.includes(teamId)) {
@@ -177,6 +224,8 @@ export class FiltersHomeComponent {
     this.showAllLeagues = false;
     this.showAllTeams = false;
     this.showAllTeamsAgainst = false;
+    this.teamSearchQuery = '';
+    this.teamAgainstSearchQuery = '';
     this.resetFiltersChange.emit();
   }
 
