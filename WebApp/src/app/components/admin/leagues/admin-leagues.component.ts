@@ -95,6 +95,9 @@ export class AdminLeaguesComponent {
   previewMatch: Match | null = null;
   originalColors: { base_color?: string, card_main_color?: string, card_trans_color?: string } | null = null;
 
+  showDeleteLeagueConfirm: boolean = false;
+  isDeletingLeagueSetting: boolean = false;
+
   constructor(
     private megagoal: MegaGoalService,
     public images: ImagesService,
@@ -234,6 +237,7 @@ export class AdminLeaguesComponent {
     
     this.showSettingsModal = true;
     this.showUpdateSections = false;
+    this.showDeleteLeagueConfirm = false;
     this.createPreviewMatch(league);
     this.updatePreviewColors();
   }
@@ -243,7 +247,6 @@ export class AdminLeaguesComponent {
   }
 
   closeSettingsModal(): void {
-    // Restore original colors if they were changed
     if (this.selectedLeague && this.originalColors && this.originalColors.card_main_color && this.originalColors.card_trans_color) {
       const leagueId = this.selectedLeague.league_id;
       this.leagueColorsService.setTemporaryColors(
@@ -252,13 +255,43 @@ export class AdminLeaguesComponent {
         this.originalColors.card_trans_color
       );
     }
-    
+    this.clearSettingsModalUiState();
+  }
+
+  private clearSettingsModalUiState(): void {
     this.showSettingsModal = false;
     this.selectedLeague = null;
     this.selectedNewLeague = null;
     this.leagueSearchText = '';
     this.previewMatch = null;
     this.originalColors = null;
+    this.showDeleteLeagueConfirm = false;
+    this.isDeletingLeagueSetting = false;
+  }
+
+  promptDeleteLeagueSetting(): void {
+    this.showDeleteLeagueConfirm = true;
+  }
+
+  cancelDeleteLeagueSetting(): void {
+    this.showDeleteLeagueConfirm = false;
+  }
+
+  confirmDeleteLeagueSetting(): void {
+    if (!this.selectedLeague || this.isDeletingLeagueSetting) return;
+    const leagueId = this.selectedLeague.league_id;
+    this.isDeletingLeagueSetting = true;
+    this.megagoal.deleteLeagueSetting(leagueId).subscribe({
+      next: () => {
+        this.isDeletingLeagueSetting = false;
+        this.leagueColorsService.removeLeagueColors(leagueId);
+        this.clearSettingsModalUiState();
+        this.getLeaguesSettings();
+      },
+      error: () => {
+        this.isDeletingLeagueSetting = false;
+      }
+    });
   }
 
   changeIsActive(league_id: number, is_active: boolean) {

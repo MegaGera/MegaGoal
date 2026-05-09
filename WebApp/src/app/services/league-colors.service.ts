@@ -160,4 +160,9 @@ export class LeagueColorsService {
       card_trans_color: card_trans_color
     });
   }
+
+  /** Remove cached colors for a league (e.g. after deleting league settings or clearing preview overrides). */
+  removeLeagueColors(leagueId: number): void {
+    this.leagueColorsMap.delete(leagueId);
+  }
 }

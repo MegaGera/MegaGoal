@@ -360,6 +360,14 @@ export class MegaGoalService {
   }
 
   /*
+    Method to delete a league setting (automation config only)
+  */
+  deleteLeagueSetting(league_id: number): Observable<any> {
+    const body = { league_id };
+    return this.http.request<any>('delete', this.url + '/admin/leagues_settings/delete', { ...this.options, body });
+  }
+
+  /*
     Method to get real matches without statistics that have been marked by users
   */
   getRealMatchesWithoutStatistics(page: number = 1): Observable<{ matches: RealMatch[], total: number, page: number, totalPages: number }> {

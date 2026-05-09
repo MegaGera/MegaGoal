@@ -509,6 +509,38 @@
             </table>
           </div>
 
+          <div class="modal-delete-section">
+            @if (!showDeleteLeagueConfirm) {
+              <button
+                type="button"
+                class="delete-league-btn"
+                (click)="promptDeleteLeagueSetting()">
+                Delete league
+              </button>
+            } @else {
+              <p class="delete-league-confirm-text">
+                Are you sure you want to remove <strong>{{ selectedLeague?.league_name }}</strong> from league automation?
+                This deletes only the league settings document (same as undoing “Add league”); it does not remove the league from the global catalog.
+              </p>
+              <div class="delete-league-confirm-actions">
+                <button
+                  type="button"
+                  class="delete-league-cancel-btn"
+                  [disabled]="isDeletingLeagueSetting"
+                  (click)="cancelDeleteLeagueSetting()">
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  class="delete-league-proceed-btn"
+                  [disabled]="isDeletingLeagueSetting"
+                  (click)="confirmDeleteLeagueSetting()">
+                  {{ isDeletingLeagueSetting ? 'Deleting…' : 'Proceed' }}
+                </button>
+              </div>
+            }
+          </div>
+
         </div>
       </div>
     </div>

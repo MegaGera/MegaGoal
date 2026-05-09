@@ -103,6 +103,10 @@ const createLeagueSettingPayloadSchema = z.object({
   league_name: z.string().min(1)
 });
 
+const deleteLeagueSettingPayloadSchema = z.object({
+  league_id: z.coerce.number().int()
+});
+
 const leagueColorEntrySchema = z.object({
   league_id: z.number().int(),
   colors: leagueColorsSchema.optional()
@@ -131,6 +135,7 @@ const parseChangeUpdateFrequencyPayload = (body) => changeUpdateFrequencyPayload
 const parseChangeDailyUpdatePayload = (body) => changeDailyUpdatePayloadSchema.parse(body);
 const parseChangeLeagueColorsPayload = (body) => changeLeagueColorsPayloadSchema.parse(body);
 const parseCreateLeagueSettingPayload = (body) => createLeagueSettingPayloadSchema.parse(body);
+const parseDeleteLeagueSettingPayload = (body) => deleteLeagueSettingPayloadSchema.parse(body);
 
 const buildNewLeagueSetting = ({ league_id, league_name, position }) => parseLeagueSettingsDocument({
   league_id,
@@ -151,6 +156,7 @@ export {
   parseChangeLeagueColorsPayload,
   parseChangeUpdateFrequencyPayload,
   parseCreateLeagueSettingPayload,
+  parseDeleteLeagueSettingPayload,
   parseLeagueSettings,
   parseLeagues,
   parseTopLeagues

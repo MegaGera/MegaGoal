@@ -8,6 +8,7 @@ import {
   parseChangeLeagueColorsPayload,
   parseChangeUpdateFrequencyPayload,
   parseCreateLeagueSettingPayload,
+  parseDeleteLeagueSettingPayload,
   parseLeagueSettings
 } from '../entities/leagueEntity.js';
 import {
@@ -143,6 +144,23 @@ export const createLeagueSetting = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 }
+
+// Delete a league setting (removes automation config; does not delete catalog league data)
+export const deleteLeagueSetting = async (req, res) => {
+  const db = getDB();
+  try {
+    const { league_id } = parseDeleteLeagueSettingPayload(req.body);
+    const result = await db.collection('league_settings').deleteOne({ league_id });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'League setting not found' });
+    }
+    console.log('Deleted league setting for league ' + league_id);
+    await logAdminAction(req.validateData.username, 'DELETE_LEAGUE_SETTING', { league_id }, req);
+    res.status(200).json({ success: true, acknowledged: true, deletedCount: result.deletedCount });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 // Get real matches without statistics that have been marked by users
 export const getRealMatchesWithoutStatistics = async (req, res) => {
