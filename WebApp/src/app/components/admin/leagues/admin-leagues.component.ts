@@ -57,6 +57,7 @@ export class AdminLeaguesComponent {
   isUpdateStatisticsMissingLoading: boolean = false;
   isUpdateLineupsMissingLoading: boolean = false;
   isUpdateEventsMissingLoading: boolean = false;
+  isUpdateStandingsLoading: boolean = false;
   isMultiUpdateLoading: boolean = false;
   
   multiUpdateOptions = {
@@ -68,7 +69,8 @@ export class AdminLeaguesComponent {
     lineups: false,
     lineups_missing: false,
     events: false,
-    events_missing: false
+    events_missing: false,
+    standings: false
   };
 
   shortSeasonsList: number[] = [2024, 2025, 2026];
@@ -117,6 +119,12 @@ export class AdminLeaguesComponent {
     this.megagoal.getLeaguesSettings().subscribe(result => {
       this.leaguesSettings = this.sortLeagues(<LeaguesSettings[]>result);
       this.refreshAvailableCountries();
+      if (this.selectedLeague) {
+        const refreshed = this.leaguesSettings.find((s) => s.league_id === this.selectedLeague!.league_id);
+        if (refreshed) {
+          this.selectedLeague = refreshed;
+        }
+      }
     })
   }
 
@@ -536,6 +544,18 @@ export class AdminLeaguesComponent {
     });
   }
 
+  triggerStandingsUpdate(): void {
+    if (!this.selectedLeague || this.selectedDataUpdateSeason === null) return;
+    this.isUpdateStandingsLoading = true;
+    this.updater.updateLeagueStandings(this.selectedLeague.league_id, this.selectedDataUpdateSeason).subscribe({
+      next: () => {
+        this.isUpdateStandingsLoading = false;
+        this.getLeaguesSettings();
+      },
+      error: () => { this.isUpdateStandingsLoading = false; }
+    });
+  }
+
   // Multi-season update methods
   hasSelectedOptions(): boolean {
     return Object.values(this.multiUpdateOptions).some(option => option === true);
@@ -551,7 +571,8 @@ export class AdminLeaguesComponent {
       lineups: true,
       lineups_missing: true,
       events: true,
-      events_missing: true
+      events_missing: true,
+      standings: true
     };
   }
 
@@ -565,7 +586,8 @@ export class AdminLeaguesComponent {
       lineups: false,
       lineups_missing: false,
       events: false,
-      events_missing: false
+      events_missing: false,
+      standings: false
     };
   }
 

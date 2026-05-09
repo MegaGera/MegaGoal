@@ -382,6 +382,12 @@
                   class="modal-action-btn events-btn">
                   {{ isUpdateEventsMissingLoading ? 'Updating...' : 'Events - Missing' }}
                 </button>
+                <button 
+                  (click)="triggerStandingsUpdate()"
+                  [disabled]="isUpdateStandingsLoading"
+                  class="modal-action-btn standings-btn">
+                  {{ isUpdateStandingsLoading ? 'Updating...' : 'Standings' }}
+                </button>
               </div>
             </div>
           </div>
@@ -444,6 +450,10 @@
                     <input type="checkbox" [(ngModel)]="multiUpdateOptions.events_missing">
                     <span class="checkbox-label events-label">Events - Missing</span>
                   </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox" [(ngModel)]="multiUpdateOptions.standings">
+                    <span class="checkbox-label standings-label">Standings</span>
+                  </label>
                 </div>
               </div>
               
@@ -481,6 +491,7 @@
                   <th class="season-status-statistics">Statistics</th>
                   <th class="season-status-lineups">Lineups</th>
                   <th class="season-status-events">Events</th>
+                  <th class="season-status-standings" title="Whether a standings snapshot exists in the database for this league and season">Standings</th>
                 </tr>
               </thead>
               <tbody>
@@ -503,6 +514,18 @@
                   </td>
                   <td class="season-status-events" [ngClass]="{'no-data': seasonDetail.events === null}">
                     {{ seasonDetail.events ? seasonDetail.events : 'No data' }}
+                  </td>
+                  <td
+                    class="season-status-standings-cell"
+                    [ngClass]="{
+                      'standings-registry-yes': seasonDetail.has_standings_registry === true,
+                      'standings-registry-no': seasonDetail.has_standings_registry !== true
+                    }">
+                    @if (seasonDetail.has_standings_registry === true) {
+                      <span class="standings-registry-mark" title="Standings stored for this league and season">Yes</span>
+                    } @else {
+                      <span class="standings-registry-empty" title="No standings snapshot stored yet">—</span>
+                    }
                   </td>
                 </tr>
               </tbody>

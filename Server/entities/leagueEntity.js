@@ -60,7 +60,11 @@ const availableSeasonSchema = z.object({
   players: z.number().int().nullable().optional(),
   lineups: z.number().int().nullable().optional(),
   events: z.number().int().nullable().optional(),
-  statistics: z.number().int().nullable().optional()
+  statistics: z.number().int().nullable().optional(),
+  /** Legacy flag (no longer used by cron); optional on old documents */
+  standings: z.boolean().optional(),
+  /** Present on GET /league/settings only: league_standings has a block for this season */
+  has_standings_registry: z.boolean().optional()
 });
 
 const leagueSettingsSchema = z.object({

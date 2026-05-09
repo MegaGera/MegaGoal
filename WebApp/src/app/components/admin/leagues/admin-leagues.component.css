@@ -1739,6 +1739,17 @@ input:disabled + .toggle-slider {
   box-shadow: 0 6px 20px rgba(190, 24, 93, 0.20) !important;
 }
 
+.standings-btn {
+  background: linear-gradient(90deg, #047857 0%, #10b981 100%) !important;
+  color: #fff !important;
+}
+
+.standings-btn:hover:not(:disabled) {
+  background: linear-gradient(90deg, #065f46 0%, #047857 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(4, 120, 87, 0.20) !important;
+}
+
 /* --- Seasons Status Table Styles --- */
 .modal-seasons-status-table {
   margin-top: 24px;
@@ -1784,6 +1795,31 @@ input:disabled + .toggle-slider {
 
 .seasons-table th.season-status-events {
   background-color: #fecaca;
+}
+
+.seasons-table th.season-status-standings {
+  background-color: #d1fae5;
+}
+
+.season-status-standings-cell {
+  vertical-align: middle;
+}
+
+.standings-registry-yes {
+  color: #047857;
+  font-weight: 600;
+}
+
+.standings-registry-no {
+  color: #9ca3af;
+}
+
+.standings-registry-mark {
+  font-weight: 700;
+}
+
+.standings-registry-empty {
+  font-style: italic;
 }
 
 .seasons-table th {
@@ -1984,6 +2020,7 @@ input:disabled + .toggle-slider {
 .statistics-label { color: #ea580c; }
 .lineups-label { color: #0891b2; }
 .events-label { color: #be185d; }
+.standings-label { color: #047857; }
 
 .multi-update-actions {
   display: flex;

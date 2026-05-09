@@ -21,6 +21,10 @@ export interface LeaguesSettings {
         players?: number,
         lineups?: number,
         events?: number,
-        statistics?: number
+        statistics?: number,
+        /** Legacy; optional on old documents */
+        standings?: boolean,
+        /** True if league_standings collection has data for this league_id + season */
+        has_standings_registry?: boolean
     }[]
 }

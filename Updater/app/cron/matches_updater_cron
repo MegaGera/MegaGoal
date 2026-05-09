@@ -8,3 +8,9 @@
 
 # Leagues update runs daily at 1am
 0 1 * * * cd /app && /usr/local/bin/python -m app.cron.leagues_updater >> /var/log/cron_leagues_updater.log 2>&1
+
+# Standings: all leagues in league_settings at 23:30 UTC (current season on each row)
+30 23 * * * cd /app && /usr/local/bin/python -m app.cron.standings_updater_daily >> /var/log/cron_standings_updater_daily.log 2>&1
+
+# Standings: hourly at :15 for competitions that have a real_match today (UTC day), by league_settings.season
+15 * * * * cd /app && /usr/local/bin/python -m app.cron.standings_updater_matchday_hourly >> /var/log/cron_standings_matchday_hourly.log 2>&1

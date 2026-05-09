@@ -73,6 +73,17 @@ export class UpdaterService {
   }
 
   /**
+   * Fetch and store league standings for a league and season (API-Football /standings)
+   */
+  updateLeagueStandings(league_id: number, season: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_league_standings/',
+      { league_id, season },
+      this.options
+    );
+  }
+
+  /**
    * Move league position up or down
    */
   moveLeaguePosition(league_id: number, direction: 'up' | 'down'): Observable<any> {
@@ -244,7 +255,8 @@ export class UpdaterService {
         update_lineups: options.lineups,
         update_lineups_missing: options.lineups_missing,
         update_events: options.events,
-        update_events_missing: options.events_missing
+        update_events_missing: options.events_missing,
+        update_standings: options.standings
       },
       this.options
     );

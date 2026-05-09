@@ -9,6 +9,7 @@ from .players import PlayersUpdater
 from .lineups import LineupsUpdater
 from .events import EventsUpdater
 from .statistics import StatisticsUpdater
+from .standings import StandingsUpdater
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -129,6 +130,7 @@ class MultiSeasonUpdateRequest(BaseModel):
     update_lineups_missing: bool = False
     update_events: bool = False
     update_events_missing: bool = False
+    update_standings: bool = False
 
 @app.get("/health/")
 async def health_check():
@@ -228,6 +230,24 @@ async def check_available_seasons(request: Request):
         return {"status": "success", "message": "Available seasons checked and updated for all leagues"}
     except Exception as e:
         logger.error(f"Error in check_available_seasons: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_league_standings/")
+async def update_league_standings(req: UpdateRequest, request: Request):
+    await validate_admin(request)
+    updater = StandingsUpdater()
+    try:
+        ok = updater.update_standings_by_league_and_season(req.league_id, req.season)
+        if ok:
+            return {
+                "status": "success",
+                "message": f"Updated standings for league {req.league_id}, season {req.season}"
+            }
+        return {
+            "status": "empty",
+            "message": f"No standings returned by API for league {req.league_id}, season {req.season}"
+        }
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/update_teams/")
@@ -392,7 +412,7 @@ async def multi_season_update(req: MultiSeasonUpdateRequest, request: Request):
     await validate_admin(request)
     
     logger.info(f"Starting multi-season update for league {req.league_id} from season {req.season_from} to {req.season_to}")
-    logger.info(f"Update options: matches={req.update_matches}, teams={req.update_teams}, players={req.update_players}, statistics={req.update_statistics}, statistics_missing={req.update_statistics_missing}, lineups={req.update_lineups}, lineups_missing={req.update_lineups_missing}, events={req.update_events}, events_missing={req.update_events_missing}")
+    logger.info(f"Update options: matches={req.update_matches}, teams={req.update_teams}, players={req.update_players}, statistics={req.update_statistics}, statistics_missing={req.update_statistics_missing}, lineups={req.update_lineups}, lineups_missing={req.update_lineups_missing}, events={req.update_events}, events_missing={req.update_events_missing}, standings={req.update_standings}")
     
     results = {
         "league_id": req.league_id,
@@ -408,7 +428,8 @@ async def multi_season_update(req: MultiSeasonUpdateRequest, request: Request):
             "lineups": 0,
             "lineups_missing": 0,
             "events": 0,
-            "events_missing": 0
+            "events_missing": 0,
+            "standings": 0
         }
     }
     
@@ -479,6 +500,12 @@ async def multi_season_update(req: MultiSeasonUpdateRequest, request: Request):
                 updater.update_events_by_league_and_season_missing(req.league_id, season)
                 season_result["updates"]["events_missing"] = "completed"
                 results["total_updates"]["events_missing"] += 1
+            
+            if req.update_standings:
+                updater = StandingsUpdater()
+                updater.update_standings_by_league_and_season(req.league_id, season)
+                season_result["updates"]["standings"] = "completed"
+                results["total_updates"]["standings"] += 1
             
             results["seasons_processed"].append(season_result)
             logger.info(f"Season {season} processing completed for league {req.league_id}")

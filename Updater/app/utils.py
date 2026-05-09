@@ -303,7 +303,8 @@ class MatchUpdater:
         if not season_found and count > 0:
             available_seasons.append({
                 "season": season,
-                field_name: count if count > 0 else None
+                field_name: count if count > 0 else None,
+                "standings": False
             })
         
         # Update the settings
@@ -414,6 +415,8 @@ class MatchUpdater:
                     # Keep existing players value if it exists, otherwise set to None
                     if "players" not in existing_season:
                         existing_season["players"] = None
+                    if "standings" not in existing_season:
+                        existing_season["standings"] = False
                 else:
                     # Create new season entry
                     seasons_dict[season] = {
@@ -423,7 +426,8 @@ class MatchUpdater:
                         "statistics": statistics_count if statistics_count > 0 else None,
                         "events": events_count if events_count > 0 else None,
                         "lineups": lineups_count if lineups_count > 0 else None,
-                        "players": None  # Players are updated separately
+                        "players": None,  # Players are updated separately
+                        "standings": False
                     }
 
                 print(f"Finished checking league {league_id} and season {season}")

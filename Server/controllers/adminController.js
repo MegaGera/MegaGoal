@@ -17,18 +17,54 @@ import {
   parseLandingMatchSettings
 } from '../entities/settingsEntity.js';
 
+const enrichSettingsWithStandingsRegistry = (settingsRows, standingsDocs) => {
+  const seasonsByLeague = new Map();
+  for (const doc of standingsDocs) {
+    const id = doc.league_id;
+    if (id == null) continue;
+    let set = seasonsByLeague.get(id);
+    if (!set) {
+      set = new Set();
+      seasonsByLeague.set(id, set);
+    }
+    for (const entry of doc.seasons || []) {
+      if (entry?.season != null) set.add(entry.season);
+    }
+  }
+
+  return settingsRows.map((setting) => {
+    const seasonSet = seasonsByLeague.get(setting.league_id) ?? new Set();
+    const availableSeasons = setting.available_seasons || [];
+    const available_seasons = availableSeasons.map((row) => ({
+      ...row,
+      has_standings_registry: seasonSet.has(row.season)
+    }));
+    return { ...setting, available_seasons };
+  });
+};
+
 // Get leagues settings
 export const getLeaguesSettings = async (req, res) => {
   const db = getDB();
   try {
     const result = await db.collection('league_settings').find().toArray();
-    const validatedResult = parseLeagueSettings(result);
-    console.log("Leagues Settings Getted");
+    const leagueIds = [...new Set(result.map((r) => r.league_id).filter((id) => id != null))];
+    const standingsDocs =
+      leagueIds.length === 0
+        ? []
+        : await db
+            .collection('league_standings')
+            .find({ league_id: { $in: leagueIds } })
+            .project({ league_id: 1, seasons: 1 })
+            .toArray();
+    const enriched = enrichSettingsWithStandingsRegistry(result, standingsDocs);
+    const validatedResult = parseLeagueSettings(enriched);
+    console.log('Leagues Settings Getted');
     res.send(validatedResult);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+};
 
 // Patch change daily_update of a leagues settings
 export const changeIsActive = async (req, res) => {
