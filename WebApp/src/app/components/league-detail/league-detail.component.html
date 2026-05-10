@@ -88,12 +88,57 @@
         </div>
       </div>
 
+      @if (showLeagueMobileTabs) {
+        <div class="view-toggle-card league-detail-view-toggle">
+          <div class="view-toggle" role="tablist" [attr.aria-label]="selectedLeague.league.name + ' content'">
+            @if (showTeams.length > 0) {
+              <button
+                type="button"
+                class="toggle-btn"
+                role="tab"
+                [attr.aria-selected]="mobileSection === 'teams'"
+                [class.active]="mobileSection === 'teams'"
+                (click)="setMobileSection('teams')">
+                Teams
+              </button>
+            }
+            @if (standingsLayoutTop) {
+              <button
+                type="button"
+                class="toggle-btn"
+                role="tab"
+                [attr.aria-selected]="mobileSection === 'standings'"
+                [class.active]="mobileSection === 'standings'"
+                (click)="setMobileSection('standings')">
+                Table
+              </button>
+            }
+            @if (groupedRealMatches.length > 0 || isLoadingMatches) {
+              <button
+                type="button"
+                class="toggle-btn"
+                role="tab"
+                [attr.aria-selected]="mobileSection === 'matches'"
+                [class.active]="mobileSection === 'matches'"
+                (click)="setMobileSection('matches')">
+                Matches
+              </button>
+            }
+          </div>
+        </div>
+      }
+
       <!-- Teams and Matches Container -->
-      <div class="teams-matches-container">
-        <!-- Teams grid -->
+      <div
+        class="teams-matches-container"
+        [class.desktop-standings-top]="standingsLayoutTop">
         @if (showTeams.length > 0) {
-          <div class="teams-section">
-            <h2 class="section-title">Teams</h2>
+          <div
+            class="teams-section"
+            [class.league-mobile-pane-hidden]="isMobileLayout && showLeagueMobileTabs && mobileSection !== 'teams'">
+            @if (!hideMobileSectionTitles) {
+              <h2 class="section-title">Teams</h2>
+            }
             <div class="teams-grid">
               @for (team of showTeams; track team.team.id) {
                 <a 
@@ -118,7 +163,6 @@
               }
             </div>
 
-            <!-- Show all teams button -->
             @if (teams.length > 24 && showTeams.length === 24) {
               <button 
                 class="show-all-btn"
@@ -131,10 +175,27 @@
           </div>
         }
 
+        @if (showTeams.length > 0 && selectedSeason) {
+          <div
+            class="league-standings-slot"
+            [class.league-mobile-pane-hidden]="isMobileLayout && showLeagueMobileTabs && mobileSection !== 'standings'">
+            <app-league-standings-table
+              [leagueId]="selectedLeague.league.id"
+              [seasonId]="selectedSeason.id"
+              [hideSectionTitle]="hideMobileSectionTitles"
+              (hasStandingsChange)="onStandingsAvailability($event)">
+            </app-league-standings-table>
+          </div>
+        }
+
         <!-- Matches section -->
         @if (groupedRealMatches.length > 0 || isLoadingMatches) {
-          <div class="matches-section">
-            <h2 class="section-title">Matches</h2>
+          <div
+            class="matches-section"
+            [class.league-mobile-pane-hidden]="isMobileLayout && showLeagueMobileTabs && mobileSection !== 'matches'">
+            @if (!hideMobileSectionTitles) {
+              <h2 class="section-title">Matches</h2>
+            }
             
             @if (!isLoadingMatches && groupedRealMatches.length > 0) {
               <!-- Matchday selector -->
@@ -147,7 +208,7 @@
                   <span>&laquo;</span>
                 </button>
                 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
                   <mat-label>Matchday</mat-label>
                   <mat-select 
                     [(ngModel)]="selectedMatchday"
@@ -232,7 +293,7 @@
       </div>
 
       <!-- Empty matches state -->
-      @if (groupedRealMatches.length === 0 && !isLoadingMatches) {
+      @if (groupedRealMatches.length === 0 && !isLoadingMatches && (!isMobileLayout || mobileSection === 'matches')) {
         <div class="empty-state">
           <div class="empty-state-icon">⚽</div>
           <h2 class="empty-state-title">No Matches Available</h2>

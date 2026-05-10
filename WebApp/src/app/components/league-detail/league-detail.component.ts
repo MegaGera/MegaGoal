@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,6 +10,7 @@ import { Subscription } from 'rxjs';
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
+import { LeagueStandingsTableComponent } from './league-standings-table/league-standings-table.component';
 import { MatchParserService } from '../../services/match-parser.service';
 import { League } from '../../models/league';
 import { SeasonInfo } from '../../models/season';
@@ -27,7 +28,8 @@ import { UserMe } from '../../models/userMe';
     MatFormFieldModule, 
     MatSelectModule, 
     RouterModule,
-    RealMatchCardComponent, 
+    RealMatchCardComponent,
+    LeagueStandingsTableComponent,
     NgIconComponent
   ],
   templateUrl: './league-detail.component.html',
@@ -60,6 +62,13 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
   showMatches: RealMatch[] = [];
   matchesPerPage: number = 50;
   currentMatchesPage: number = 1;
+
+  /** Desktop: teams row above table+matches when standings exist (from table component). */
+  standingsLayoutTop = false;
+
+  /** Same breakpoint as league-detail CSS (max-width 1024px): tabbed Teams / Table / Matches. */
+  isMobileLayout = false;
+  mobileSection: 'teams' | 'standings' | 'matches' = 'matches';
 
   /* UI State */
   isLoading: boolean = false;
@@ -111,6 +120,28 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
+  /** Hide Teams / Table / Matches h2 when mobile tabs duplicate those labels. */
+  get hideMobileSectionTitles(): boolean {
+    return this.isMobileLayout && this.showLeagueMobileTabs;
+  }
+
+  get showLeagueMobileTabs(): boolean {
+    if (!this.isMobileLayout) {
+      return false;
+    }
+    let tabs = 0;
+    if (this.showTeams.length > 0) {
+      tabs++;
+    }
+    if (this.standingsLayoutTop) {
+      tabs++;
+    }
+    if (this.groupedRealMatches.length > 0 || this.isLoadingMatches) {
+      tabs++;
+    }
+    return tabs > 1;
+  }
+
   get isFavourite(): boolean {
     const id = this.selectedLeague?.league?.id;
     if (id == null) {
@@ -141,6 +172,8 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
         error: (err) => console.error('Error loading user profile for favourite leagues:', err)
       });
     }
+
+    this.updateMobileLayout();
 
     // Read query params synchronously first
     const queryParams = this.route.snapshot.queryParamMap;
@@ -199,6 +232,26 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.userMeSubscription?.unsubscribe();
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateMobileLayout();
+  }
+
+  private updateMobileLayout(): void {
+    this.isMobileLayout = typeof window !== 'undefined' && window.innerWidth < 1025;
+  }
+
+  setMobileSection(section: 'teams' | 'standings' | 'matches'): void {
+    this.mobileSection = section;
+  }
+
+  onStandingsAvailability(has: boolean): void {
+    this.standingsLayoutTop = has;
+    if (!has && this.mobileSection === 'standings') {
+      this.mobileSection = 'matches';
+    }
   }
 
   // This method load the league and the teams by league and season

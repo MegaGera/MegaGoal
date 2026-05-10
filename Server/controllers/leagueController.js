@@ -71,6 +71,58 @@ const getTopLeagues = async (req, res) => {
   }
 }
 
+/**
+ * Slim standings for one league season (for WebApp table). Does not return full
+ * home/away splits, form strings, or other seasons on the same document.
+ * Query: league_id, season (both required integers).
+ */
+const getLeagueStandingsSummary = async (req, res) => {
+  const league_id = Number(req.query.league_id);
+  const season = Number(req.query.season);
+  if (!Number.isFinite(league_id) || !Number.isFinite(season)) {
+    return res.status(400).json({ message: 'Query parameters league_id and season are required as numbers' });
+  }
+
+  const db = getDB();
+  try {
+    const doc = await db
+      .collection('league_standings')
+      .findOne({ league_id }, { projection: { league_id: 1, seasons: 1 } });
+
+    if (!doc || !Array.isArray(doc.seasons)) {
+      return res.send({ league_id, season, groups: [] });
+    }
+
+    const entry = doc.seasons.find((s) => s && s.season === season);
+    if (!entry || !Array.isArray(entry.standings)) {
+      return res.send({ league_id, season, groups: [] });
+    }
+
+    const groups = entry.standings.map((groupRows) => {
+      const rows = (groupRows || []).map((row) => ({
+        position: row.rank,
+        team: {
+          id: row.team.id,
+          name: row.team.name,
+          logo: row.team.logo
+        },
+        points: row.points,
+        played: row.all.played,
+        win: row.all.win,
+        draw: row.all.draw,
+        lose: row.all.lose
+      }));
+      const groupLabel =
+        groupRows && groupRows.length > 0 ? groupRows[0].group ?? null : null;
+      return { group: groupLabel, rows };
+    });
+
+    res.send({ league_id, season, groups });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Get league colors only (lightweight endpoint for colors)
 const getLeagueColors = async (req, res) => {
   const db = getDB();
@@ -88,4 +140,4 @@ const getLeagueColors = async (req, res) => {
   }
 }
 
-export { getLeagues, getTopLeagues, getLeagueColors };
+export { getLeagues, getTopLeagues, getLeagueColors, getLeagueStandingsSummary };

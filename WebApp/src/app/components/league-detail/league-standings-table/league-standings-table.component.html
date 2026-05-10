@@ -1,0 +1,57 @@
+@if (loaded && groups.length > 0) {
+  <section
+    class="standings-section"
+    [attr.aria-labelledby]="hideSectionTitle ? null : 'league-standings-heading'"
+    [attr.aria-label]="hideSectionTitle ? 'Table' : null">
+    @if (!hideSectionTitle) {
+      <h2 id="league-standings-heading" class="section-title">Table</h2>
+    }
+
+    @for (block of groups; track $index) {
+      <div class="standings-block">
+        <div class="standings-table-wrap" tabindex="0">
+          <table class="standings-table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-pos">#</th>
+                <th scope="col" class="col-team">Team</th>
+                <th scope="col" class="col-num">Pts</th>
+                <th scope="col" class="col-num">MP</th>
+                <th scope="col" class="col-num">W</th>
+                <th scope="col" class="col-num">D</th>
+                <th scope="col" class="col-num">L</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of block.rows; track trackRow($index, row)) {
+                <tr>
+                  <td class="col-pos">{{ row.position }}</td>
+                  <td class="col-team">
+                    <a
+                      class="standings-team-link"
+                      routerLink="/app/team"
+                      [queryParams]="{ id: row.team.id }"
+                      [attr.aria-label]="'Open ' + row.team.name + ' team page'">
+                      <img
+                        class="standings-team-badge"
+                        [src]="images.getRouteImageTeam(row.team.id)"
+                        [alt]="''"
+                        width="28"
+                        height="28">
+                      <span class="standings-team-name">{{ row.team.name }}</span>
+                    </a>
+                  </td>
+                  <td class="col-num standings-em">{{ row.points }}</td>
+                  <td class="col-num">{{ row.played }}</td>
+                  <td class="col-num">{{ row.win }}</td>
+                  <td class="col-num">{{ row.draw }}</td>
+                  <td class="col-num">{{ row.lose }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </section>
+}

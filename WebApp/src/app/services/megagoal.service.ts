@@ -17,6 +17,7 @@ import { MatchRequest } from '../models/matchRequest';
 import { UserFeedback } from '../models/user_feedback';
 import { Player } from '../models/player';
 import { UserMe } from '../models/userMe';
+import { LeagueStandingsSummaryResponse } from '../models/leagueStandingsSummary';
 
 @Injectable({
   providedIn: 'root'
@@ -112,6 +113,17 @@ export class MegaGoalService {
   */
   getTopLeagues(): Observable<League[]> {
     return this.http.get<League[]>(this.url + '/league/top/', this.options);
+  }
+
+  /**
+   * Slim standings for one league season (position, team badge/name, Pts, MP, W, D, L).
+   */
+  getLeagueStandingsSummary(league_id: number, season: number): Observable<LeagueStandingsSummaryResponse> {
+    const params = new HttpParams().set('league_id', league_id).set('season', season);
+    return this.http.get<LeagueStandingsSummaryResponse>(
+      this.url + '/league/standings/summary',
+      { ...this.options, params }
+    );
   }
 
   /*

@@ -504,15 +504,28 @@
 .round-selector mat-form-field {
   min-width: 350px;
   flex-shrink: 0;
+  align-self: center;
+  margin-block: 0;
 }
 
-/* Matches section */
+/* Outline field + arrows: keep vertical rhythm without Material’s empty hint reserve */
+:host ::ng-deep .round-selector mat-form-field .mat-mdc-form-field-subscript-wrapper {
+  min-height: 0;
+}
+
+:host ::ng-deep .round-selector mat-form-field .mat-mdc-text-field-wrapper {
+  align-items: center;
+}
+
+/* Matches section — same card treatment as Stats on team page (app-general-card / insights-card) */
 .matches-section {
-  background: white;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe4e4 50%, #ffd1d1 100%);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e9ecef;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #ffb3b3;
+  position: relative;
+  overflow: hidden;
 }
 
 .matches-grid {
@@ -528,6 +541,54 @@
 
 .match-card-wrapper:hover {
   transform: translateY(-2px);
+}
+
+/* Mobile tabs (same pattern as team page) */
+.view-toggle-card {
+  margin-bottom: 1.25rem;
+  display: flex;
+  justify-content: center;
+}
+
+.view-toggle {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid #dee2e6;
+  padding: 0.25rem;
+  background: #f8f9fa;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #495057;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.toggle-btn.active {
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  color: #0d6efd;
+}
+
+.league-mobile-pane-hidden {
+  display: none !important;
+}
+
+.league-standings-slot {
+  min-width: 0;
 }
 
 /* Section titles and descriptions */
@@ -674,32 +735,106 @@
   100% { background-position: -200% 0; }
 }
 
-/* Desktop layout with teams on left and matches on right */
+/* Desktop: grid — sidebar mode (teams + table left, matches right) or top mode (teams row, then table | matches) */
 @media (min-width: 1025px) {
   .teams-matches-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 30%) minmax(0, 70%);
+    grid-template-rows: auto auto;
     gap: 30px;
     margin-top: 30px;
+    align-items: start;
   }
-  
+
   .teams-section {
-    width: 25%;
-    flex-shrink: 0;
+    grid-column: 1;
+    grid-row: 1;
+    margin-bottom: 0;
+    min-width: 0;
   }
-  
+
+  /* Wrapper keeps mobile tab target; grid applies to this slot (not the component host). */
+  .teams-matches-container > .league-standings-slot {
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+  }
+
   .matches-section {
-    width: 75%;
+    grid-column: 2;
+    min-width: 0;
   }
-  
+
+  /*
+   * Sidebar mode only: matches share the right column and span both rows next to teams + table.
+   * When .desktop-standings-top is set, matches must stay on row 2 only (see below) so they never
+   * sit beside the full-width teams strip on row 1.
+   */
+  .teams-matches-container:has(> .league-standings-slot):not(.desktop-standings-top) .matches-section {
+    grid-row: 1 / span 2;
+    align-self: start;
+  }
+
+  .teams-matches-container:not(:has(> .league-standings-slot)) .matches-section {
+    grid-row: 1;
+  }
+
+  /* Standings available: row 1 = teams (full width); row 2 = standings | matches */
+  .teams-matches-container.desktop-standings-top .teams-section {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .teams-matches-container.desktop-standings-top > .league-standings-slot {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .teams-matches-container.desktop-standings-top .matches-section {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+  }
+
+  /* Up to 10 teams per row, wrap to further rows — no horizontal scroll */
+  .teams-matches-container.desktop-standings-top .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 12px 10px;
+    overflow: visible;
+    margin-bottom: 8px;
+  }
+
+  .teams-matches-container.desktop-standings-top .team-card {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    padding: 10px 8px;
+    box-sizing: border-box;
+  }
+
+  .teams-matches-container.desktop-standings-top .team-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .teams-matches-container.desktop-standings-top .team-name {
+    font-size: 11px;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
   .matches-grid {
     grid-template-columns: repeat(2, 1fr);
-    /* gap: 25px; */
   }
-  
+
   .match-card-wrapper {
     margin: 0 4% 3% 4%;
   }
-  
+
   .teams-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -710,7 +845,7 @@
   .teams-matches-container {
     display: block;
   }
-  
+
   .teams-section {
     width: 100%;
     margin-bottom: 30px;
