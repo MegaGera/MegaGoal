@@ -162,7 +162,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     Get all matches from the service
   */
   getAllMatches() {
-    this.megagoal.getAllMatches().subscribe(result => {
+    this.megagoal.getAllMatches(true).subscribe(result => {
       this.matchesOriginal = <Match[]>result;
       this.matchesOriginal.sort(function(x, y){
         return y.fixture.timestamp - x.fixture.timestamp;

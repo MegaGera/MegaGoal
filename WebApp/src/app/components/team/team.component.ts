@@ -342,7 +342,7 @@ export class TeamComponent implements OnInit, OnDestroy {
       }
       forkJoin(
         this.seasons.map((s) =>
-          this.megagoal.getRealMatchesByTeamIDAndSeason(teamId, s.id).pipe(
+          this.megagoal.getRealMatchesByTeamIDAndSeason(teamId, s.id, true).pipe(
             catchError(() => of([] as RealMatch[]))
           )
         )
@@ -365,7 +365,7 @@ export class TeamComponent implements OnInit, OnDestroy {
 
     const seasonId =
       this.filterSeasonSelected?.id ?? this.seasons[0]?.id;
-    this.megagoal.getRealMatchesByTeamIDAndSeason(teamId, seasonId).subscribe((result) => {
+    this.megagoal.getRealMatchesByTeamIDAndSeason(teamId, seasonId, true).subscribe((result) => {
       this.realMatches = result;
       this.realMatches.sort((x, y) => y.fixture.timestamp - x.fixture.timestamp);
       this.finishRealMatchesLoad();

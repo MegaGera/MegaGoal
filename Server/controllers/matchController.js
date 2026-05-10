@@ -16,14 +16,18 @@ import {
 } from '../entities/locationEntity.js';
 import { parseVenueReference } from '../entities/venueEntity.js';
 import { parseLandingMatchSettings } from '../entities/settingsEntity.js';
+import {
+  getWatchedCountsByFixtureIds,
+  mergeWatchedCountIntoDocuments,
+} from '../services/watchedMatchCounts.js';
 
 // Get matches
 const getMatches = async (req, res) => {
   try {
-    let { team_id, season, league_id, location, fixture_id } = req.query;
+    let { team_id, season, league_id, location, fixture_id, include_watched_counts } = req.query;
     let username = req.validateData.username;
 
-    const result = await getWatchedMatchesForUser({
+    let result = await getWatchedMatchesForUser({
       username,
       team_id,
       season,
@@ -31,6 +35,11 @@ const getMatches = async (req, res) => {
       location,
       fixture_id,
     });
+    if (include_watched_counts === 'true' || include_watched_counts === '1') {
+      const ids = result.map((r) => r.fixture?.id).filter((id) => id != null);
+      const counts = await getWatchedCountsByFixtureIds(ids);
+      result = mergeWatchedCountIntoDocuments(result, counts);
+    }
     const validatedResult = parseMatches(result);
 
     console.log("Matches Getted");

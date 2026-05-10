@@ -1,11 +1,15 @@
 import { getDB } from '../config/db.js';
 import { parseFixtureId, parseRealMatch, parseRealMatches } from '../entities/realMatchEntity.js';
+import {
+  getWatchedCountsByFixtureIds,
+  mergeWatchedCountIntoDocuments,
+} from '../services/watchedMatchCounts.js';
 
 // Get real matches
 const getRealMatches = async (req, res) => {
   const db = getDB();
   try {
-    let { league_id, team_id, team_2_id, season, finished, date, country } = req.query;
+    let { league_id, team_id, team_2_id, season, finished, date, country, include_watched_counts } = req.query;
 
     // Count non-finished parameters to ensure minimum 2 (unless date is provided)
     const nonFinishedParams = [league_id, team_id, team_2_id, season, date].filter(param => param !== undefined && param !== null);
@@ -92,7 +96,12 @@ const getRealMatches = async (req, res) => {
     
     // console.log("Real Matches query:", JSON.stringify(query, null, 2));
     
-    const result = await db.collection('real_matches').find(query).toArray();
+    let result = await db.collection('real_matches').find(query).toArray();
+    if (include_watched_counts === 'true' || include_watched_counts === '1') {
+      const ids = result.map((r) => r.fixture?.id).filter((id) => id != null);
+      const counts = await getWatchedCountsByFixtureIds(ids);
+      result = mergeWatchedCountIntoDocuments(result, counts);
+    }
     const validatedResult = parseRealMatches(result);
 
     console.log(`Real Matches found: ${validatedResult.length} matches`);
@@ -132,7 +141,11 @@ const getRealMatchById = async (req, res) => {
       }
     }
 
-    const validatedResult = parseRealMatch(payload);
+    const ids = [payload.fixture?.id].filter((id) => id != null);
+    const counts = await getWatchedCountsByFixtureIds(ids);
+    const withCounts = mergeWatchedCountIntoDocuments([payload], counts)[0];
+
+    const validatedResult = parseRealMatch(withCounts);
     console.log(`Real Match found: ${validatedResult.fixture.id}`);
     res.send(validatedResult);
   } catch (error) {

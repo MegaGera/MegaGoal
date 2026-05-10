@@ -247,7 +247,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
   getMatchesForDate(): void {
     this.isLoading = true;
     
-    this.megaGoalService.getRealMatchesByDate(this.selectedDate).subscribe({
+    this.megaGoalService.getRealMatchesByDate(this.selectedDate, true).subscribe({
       next: (matches: RealMatch[]) => {
         this.matches = matches;
         this.groupMatchesByLeague();
