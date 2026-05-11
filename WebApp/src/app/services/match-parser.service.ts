@@ -41,6 +41,9 @@ export class MatchParserService {
       status: realMatch.fixture.status.short,
       venue: {id: realMatch.fixture.venue.id, name: realMatch.fixture.venue.name},
       statistics: realMatch.statistics
+    };
+    if (realMatch.watched_count != null) {
+      matchModel.watched_count = realMatch.watched_count;
     }
     return matchModel;
   }

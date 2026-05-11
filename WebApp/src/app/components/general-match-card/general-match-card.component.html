@@ -31,6 +31,7 @@
     <div class="center-section">
       <!-- Eye Button -->
       <div class="controls-row">
+        <app-match-views-count-badge [count]="viewsDisplayCount" layout="matchInfo" [notStarted]="viewsBadgeMatchNotStarted()"></app-match-views-count-badge>
         <div class="match-eye-button" [ngClass]="{'match-eye-button-unwatched': !watched}" (click)="createMatch()">
           @if (watched) {
             <ng-icon name="jamEyeF"></ng-icon>

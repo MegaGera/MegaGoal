@@ -256,11 +256,19 @@ export class MegaGoalService {
     return this.http.get<Match[]>(`${this.url}/match/team/${team_id}`, { ...this.options, params });
   }
 
-  /*
-    Method to get all matches watched for a team
-  */
-  getMatchesByTeam(team_id: number): Observable<Match[]> {
-    return this.http.get<Match[]>(`${this.url}/match/team/${team_id}`, this.options);
+  /**
+   * Watched matches involving this team (`GET /match/team/:teamId`).
+   * @param includeWatchedCounts adds global `watched_count` per fixture (optional).
+   */
+  getMatchesByTeam(team_id: number, includeWatchedCounts = false): Observable<Match[]> {
+    let params = new HttpParams();
+    if (includeWatchedCounts) {
+      params = params.set('include_watched_counts', 'true');
+    }
+    return this.http.get<Match[]>(`${this.url}/match/team/${team_id}`, {
+      ...this.options,
+      params,
+    });
   }
 
   /*

@@ -42,6 +42,12 @@
 
           @if (interactable) {
             <div class="button-row">
+                <div
+                  class="views-badge-slot"
+                  [class.views-badge-slot--visible]="viewsBadgeSlotExpanded"
+                  [class.views-badge-slot--animate]="viewsBadgeAnimateTransitions">
+                  <app-match-views-count-badge [count]="viewsBadgeCountForChip" [notStarted]="viewsBadgeMatchNotStarted()"></app-match-views-count-badge>
+                </div>
                 <div class="match-eye-button" [ngClass]="{'match-eye-button-unwatched': !watched}" (click)="createMatch()">
                   @if (watched) {
                     <ng-icon name="jamEyeF"></ng-icon>

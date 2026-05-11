@@ -378,9 +378,47 @@
 	gap: 0.5rem;
 	justify-content: center;
 	align-items: center;
+	flex-wrap: nowrap;
 	width: fit-content;
 	height: 30%;
 	margin: auto;
+}
+
+/* Expands/collapses when global viewer count goes from 0 ↔ visible (eye/info shift with flex gap) */
+.views-badge-slot {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	flex-shrink: 0;
+	min-width: 0;
+	max-width: 0;
+	opacity: 0;
+	padding: 0;
+	margin: 0;
+	pointer-events: none;
+}
+
+.views-badge-slot--visible {
+	max-width: 5.25rem;
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.views-badge-slot--animate.views-badge-slot {
+	transition:
+		max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+		opacity 0.32s ease;
+}
+
+.views-badge-slot:not(.views-badge-slot--animate) {
+	transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.views-badge-slot {
+		transition: none !important;
+	}
 }
 
 .center-score-column {
@@ -446,6 +484,12 @@
 /* Middle column must shrink so long location labels do not widen the card */
 .matchCard .row.h-100 > .col-4:nth-child(2) {
 	min-width: 0;
+}
+
+@media only screen and (max-width: 768px) {
+	.matchCard .row.h-100 > .col-4:nth-child(2) {
+		padding: 0;
+	}
 }
 
 .location-selector-row {

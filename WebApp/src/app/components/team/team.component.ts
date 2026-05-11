@@ -504,7 +504,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.favouriteTeamLoaded = false;
     this.insightsLoaded = false;
     this.yourMatchesLoaded = false;
-    this.megagoal.getMatchesByTeam(this.team.team.id).subscribe({
+    this.megagoal.getMatchesByTeam(this.team.team.id, true).subscribe({
       next: matches => {
         this.allWatchedMatches = [...matches].sort((a, b) => (b.fixture.timestamp ?? 0) - (a.fixture.timestamp ?? 0));
         this.updateStatsSeasonOptions();

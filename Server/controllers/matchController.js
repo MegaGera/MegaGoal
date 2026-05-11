@@ -53,14 +53,14 @@ const getMatches = async (req, res) => {
 const getMatchesByTeamId = async (req, res) => {
   try {
     const parsedTeamId = parseTeamId(req.params.teamId);
-    const { season, league_id, location, fixture_id } = req.query;
+    const { season, league_id, location, fixture_id, include_watched_counts } = req.query;
     const username = req.validateData.username;
 
     if (!parsedTeamId) {
       return res.status(400).json({ message: "Team ID is required" });
     }
 
-    const result = await getWatchedMatchesForUser({
+    let result = await getWatchedMatchesForUser({
       username,
       team_id: parsedTeamId,
       season,
@@ -68,6 +68,11 @@ const getMatchesByTeamId = async (req, res) => {
       location,
       fixture_id,
     });
+    if (include_watched_counts === 'true' || include_watched_counts === '1') {
+      const ids = result.map((r) => r.fixture?.id).filter((id) => id != null);
+      const counts = await getWatchedCountsByFixtureIds(ids);
+      result = mergeWatchedCountIntoDocuments(result, counts);
+    }
     const validatedResult = parseMatches(result);
 
     console.log(`Matches retrieved for team ${parsedTeamId}`);
