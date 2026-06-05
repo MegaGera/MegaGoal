@@ -56,7 +56,9 @@ const matchSchema = z.object({
   status: z.string().optional(),
   venue: matchVenueSchema.nullable().optional(),
   statistics: z.array(teamStatisticsSchema).optional(),
-  player_stats: matchPlayerStatsSchema.optional()
+  player_stats: matchPlayerStatsSchema.optional(),
+  /** Global watched-user count for this fixture; only when requested */
+  watched_count: z.number().int().optional()
 });
 
 const setLocationPayloadSchema = z.object({
@@ -72,7 +74,7 @@ const parseMatches = (documents) => z.array(matchSchema).parse(documents);
 const parseMatch = (document) => matchSchema.parse(document);
 const parseFixtureId = (fixtureId) => z.coerce.number().int().parse(fixtureId);
 const parseTeamId = (teamId) => z.coerce.number().int().parse(teamId);
-const parseCreateMatchBody = (body) => matchSchema.omit({ user: true }).parse(body);
+const parseCreateMatchBody = (body) => matchSchema.omit({ user: true, watched_count: true }).parse(body);
 const buildMatchDocument = ({ body, username }) => matchSchema.parse({
   ...body,
   user: { username }

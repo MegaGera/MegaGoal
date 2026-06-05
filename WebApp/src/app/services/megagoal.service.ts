@@ -65,11 +65,16 @@ export class MegaGoalService {
     return this.selectedTeam;
   }
  
-  /*
-    Method to get all the Matches from the API
-  */
-  getAllMatches(): Observable<Match[]> {
-    return this.http.get<Match[]>(this.url + '/match/', this.options);
+  /**
+   * Watched matches for the current user (`GET /match/`).
+   * @param includeWatchedCounts when true, adds global `watched_count` per fixture (extra aggregation).
+   */
+  getAllMatches(includeWatchedCounts = false): Observable<Match[]> {
+    let params = new HttpParams();
+    if (includeWatchedCounts) {
+      params = params.set('include_watched_counts', 'true');
+    }
+    return this.http.get<Match[]>(this.url + '/match/', { ...this.options, params });
   }
 
   /*
@@ -142,11 +147,19 @@ export class MegaGoalService {
     return this.http.get<RealMatch>(this.url + '/real_match/' + match_id, this.options);
   }
 
-  /*
-    Method to get Real Matches by team and season from the API
-  */
-  getRealMatchesByTeamIDAndSeason(team_id: number, season: number): Observable<RealMatch[]> {
-    let params = new HttpParams().set('team_id', team_id).set('season', season); 
+  /**
+   * Real matches for a team and season.
+   * @param includeWatchedCounts adds global `watched_count` per fixture (server aggregation).
+   */
+  getRealMatchesByTeamIDAndSeason(
+    team_id: number,
+    season: number,
+    includeWatchedCounts = false
+  ): Observable<RealMatch[]> {
+    let params = new HttpParams().set('team_id', team_id).set('season', season);
+    if (includeWatchedCounts) {
+      params = params.set('include_watched_counts', 'true');
+    }
     return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
   }
 
@@ -169,11 +182,19 @@ export class MegaGoalService {
     );
   }
 
-  /*
-    Method to get Real Matches by league and season from the API
-  */
-  getRealMatchesByLeagueIDAndSeason(league_id: number, season: number): Observable<RealMatch[]> {
+  /**
+   * Real matches for a league and season.
+   * @param includeWatchedCounts adds global `watched_count` per fixture (server aggregation).
+   */
+  getRealMatchesByLeagueIDAndSeason(
+    league_id: number,
+    season: number,
+    includeWatchedCounts = false
+  ): Observable<RealMatch[]> {
     let params = new HttpParams().set('league_id', league_id).set('season', season);
+    if (includeWatchedCounts) {
+      params = params.set('include_watched_counts', 'true');
+    }
     return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
   }
 
@@ -193,11 +214,15 @@ export class MegaGoalService {
     return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
   }
 
-  /*
-    Method to get Real Matches by date from the API
-  */
-  getRealMatchesByDate(date: string): Observable<RealMatch[]> {
+  /**
+   * Real matches on a calendar day (UTC window as defined by the API).
+   * @param includeWatchedCounts adds global `watched_count` per fixture (server aggregation).
+   */
+  getRealMatchesByDate(date: string, includeWatchedCounts = false): Observable<RealMatch[]> {
     let params = new HttpParams().set('date', date);
+    if (includeWatchedCounts) {
+      params = params.set('include_watched_counts', 'true');
+    }
     return this.http.get<RealMatch[]>(this.url + '/real_match/', { ...this.options, params: params });
   }
 
@@ -231,11 +256,19 @@ export class MegaGoalService {
     return this.http.get<Match[]>(`${this.url}/match/team/${team_id}`, { ...this.options, params });
   }
 
-  /*
-    Method to get all matches watched for a team
-  */
-  getMatchesByTeam(team_id: number): Observable<Match[]> {
-    return this.http.get<Match[]>(`${this.url}/match/team/${team_id}`, this.options);
+  /**
+   * Watched matches involving this team (`GET /match/team/:teamId`).
+   * @param includeWatchedCounts adds global `watched_count` per fixture (optional).
+   */
+  getMatchesByTeam(team_id: number, includeWatchedCounts = false): Observable<Match[]> {
+    let params = new HttpParams();
+    if (includeWatchedCounts) {
+      params = params.set('include_watched_counts', 'true');
+    }
+    return this.http.get<Match[]>(`${this.url}/match/team/${team_id}`, {
+      ...this.options,
+      params,
+    });
   }
 
   /*

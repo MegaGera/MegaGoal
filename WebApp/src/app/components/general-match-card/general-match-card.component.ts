@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,26 +12,39 @@ import { ImagesService } from '../../services/images.service';
 import { MegaGoalService } from '../../services/megagoal.service';
 import { MatchParserService } from '../../services/match-parser.service';
 import { LeagueColorsService } from '../../services/league-colors.service';
+import { isNotStartedStatus } from '../../config/matchStatus';
 import { RealMatch } from '../../models/realMatch';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
+import { MatchViewsCountBadgeComponent } from '../real-match-card/match-views-count-badge/match-views-count-badge.component';
 
 @Component({
   selector: 'app-general-match-card',
   standalone: true,
-  imports: [NgIconComponent, CommonModule, MatFormFieldModule, MatSelectModule, FormsModule],
+  imports: [NgIconComponent, CommonModule, MatFormFieldModule, MatSelectModule, FormsModule, MatchViewsCountBadgeComponent],
   templateUrl: './general-match-card.component.html',
   styleUrl: './general-match-card.component.css',
   providers: [ImagesService, MegaGoalService, provideNgIconsConfig({
     size: '1.2em',
   }), provideIcons({ jamEyeCloseF, jamEyeF })]
 })
-export class GeneralMatchCardComponent implements OnInit {
+export class GeneralMatchCardComponent implements OnInit, OnChanges {
   @Input() realMatch!: RealMatch;
   
   match!: Match;
   watched: boolean = false;
   locations: Location[] = [];
+
+  private viewsAdjustment = 0;
+
+  get viewsDisplayCount(): number {
+    const base = this.realMatch.watched_count ?? this.match?.watched_count ?? 0;
+    return Math.max(0, base + this.viewsAdjustment);
+  }
+
+  viewsBadgeMatchNotStarted(): boolean {
+    return isNotStartedStatus(this.realMatch?.fixture?.status?.short);
+  }
 
   constructor(
     public images: ImagesService, 
@@ -44,6 +57,13 @@ export class GeneralMatchCardComponent implements OnInit {
   ngOnInit() {
     this.loadMatchData();
     this.getLocations();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const rm = changes['realMatch'];
+    if (rm && rm.currentValue?.fixture?.id !== rm.previousValue?.fixture?.id) {
+      this.viewsAdjustment = 0;
+    }
   }
 
   loadMatchData() {
@@ -92,11 +112,13 @@ export class GeneralMatchCardComponent implements OnInit {
   createMatch() {
     if (!this.watched) {
       this.watched = true;
+      this.viewsAdjustment += 1;
       this.megaGoal.createMatch(this.matchParser.matchToMatchRequest(this.match)).subscribe(result => {
         this.loadMatchData(); // Reload to get the created match with _id
       });
     } else {
       this.watched = false;
+      this.viewsAdjustment -= 1;
       this.megaGoal.deleteMatch(this.match.fixture.id).subscribe(result => {});
     }
   }

@@ -1,0 +1,32 @@
+.match-views-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.85rem;
+  min-height: 1.85rem;
+  padding: 3px 7px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
+  border-radius: 6px;
+  background: rgba(226, 232, 240, 0.92);
+  box-shadow:
+    0 0 2px 0 rgba(48, 48, 48, 0.1),
+    0 2px 3px 0 rgba(48, 48, 48, 0.12);
+  color: #334155;
+  cursor: default;
+  user-select: none;
+}
+
+/* Match-info page (general-match-card): prominent count on desktop only */
+@media only screen and (min-width: 769px) {
+  .match-views-count-badge--match-info {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 6px 12px;
+    font-size: 1.5rem;
+    font-weight: 900;
+    border-radius: 10px;
+    letter-spacing: -0.02em;
+  }
+}

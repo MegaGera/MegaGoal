@@ -10,7 +10,9 @@ export interface RealMatch {
     statistics?: TeamStatistics[],
     lineups?: LineupData[],
     events?: MatchEvent[],
-    usernames?: string[]  // Array of usernames tracking this match
+    usernames?: string[],  // Array of usernames tracking this match
+    /** Global users who marked this fixture as watched; present only on selected catalog GETs */
+    watched_count?: number
 }
 
 interface fixture {

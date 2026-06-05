@@ -329,7 +329,7 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
   getRealMatches() {
     if (this.selectedLeague !== undefined && this.selectedSeason !== undefined) {
       this.isLoadingMatches = true;
-      this.megagoal.getRealMatchesByLeagueIDAndSeason(this.selectedLeague.league.id, this.selectedSeason.id).subscribe({
+      this.megagoal.getRealMatchesByLeagueIDAndSeason(this.selectedLeague.league.id, this.selectedSeason.id, true).subscribe({
         next: (result) => {
           this.realMatches = result;
           this.realMatches.sort(function(x, y){

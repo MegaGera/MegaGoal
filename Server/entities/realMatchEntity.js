@@ -130,7 +130,9 @@ const realMatchSchema = z.object({
   })).optional(),
   lineups: z.array(lineupSchema).optional(),
   events: z.array(eventSchema).optional(),
-  usernames: z.array(z.string()).optional()
+  usernames: z.array(z.string()).optional(),
+  /** Users who marked this fixture as watched (global); only on selected GET responses */
+  watched_count: z.number().int().optional()
 });
 
 const parseRealMatch = (document) => realMatchSchema.parse(document);

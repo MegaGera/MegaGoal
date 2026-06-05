@@ -1,0 +1,14 @@
+@if (count > 0) {
+  <span
+    #viewsTip="matTooltip"
+    [matTooltip]="resolvedTooltip"
+    matTooltipPosition="above"
+    matTooltipTouchGestures="off"
+    [matTooltipShowDelay]="200"
+    class="match-views-count-badge"
+    [class.match-views-count-badge--match-info]="layout === 'matchInfo'"
+    role="note"
+    [attr.aria-label]="resolvedTooltip"
+    (click)="onBadgeClick($event)"
+  >{{ count }}</span>
+}

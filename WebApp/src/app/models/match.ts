@@ -42,5 +42,7 @@ export interface Match {
         assists: number,
         yellow_cards: number,
         red_cards: number
-    }
+    },
+    /** Global users who marked this fixture as watched; present only when requested (e.g. home list). */
+    watched_count?: number
 }

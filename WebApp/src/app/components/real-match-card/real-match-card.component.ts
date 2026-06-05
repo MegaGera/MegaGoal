@@ -1,5 +1,6 @@
-import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatchViewsCountBadgeComponent } from './match-views-count-badge/match-views-count-badge.component';
 import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
@@ -22,19 +23,60 @@ import { isNotStartedStatus } from '../../config/matchStatus';
 @Component({
   selector: 'app-real-match-card',
   standalone: true,
-  imports: [NgIconComponent, CommonModule, MatFormFieldModule, MatSelectModule, FormsModule, RouterLink],
+  imports: [
+    NgIconComponent,
+    CommonModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    FormsModule,
+    RouterLink,
+    MatchViewsCountBadgeComponent,
+  ],
   templateUrl: './real-match-card.component.html',
   styleUrl: './real-match-card.component.css',
   providers: [ImagesService, MegaGoalService, provideNgIconsConfig({
     size: window.innerWidth < 769 ? '1.2em' : '1.5em',
   }), provideIcons({ jamEyeCloseF, jamEyeF, jamInfoF })]
 })
-export class RealMatchCardComponent implements OnChanges, OnDestroy {
+export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() match!: Match;
   @Input() watched: boolean = false;
   @Input() locations!: Location[];
   @Input() size: string = 'lg';
   @Input() interactable: boolean = true;
+
+  /** Session delta after mark/unmark watched (global watched_count is optimistic). */
+  private viewsAdjustment = 0;
+
+  /**
+   * When false, views-badge slot snaps without CSS transition (avoids animate on first paint).
+   * Set true after mount / fixture change so only user-driven 0↔N count toggles animate.
+   */
+  viewsBadgeAnimateTransitions = false;
+
+  /** Drives slot width/opacity; stays true briefly after count→0 so collapse CSS can run */
+  viewsBadgeSlotExpanded = false;
+
+  /** Last positive count kept visible until collapse animation finishes */
+  private viewsBadgeGhostCount = 0;
+
+  private viewsBadgeCollapseKickTimer: ReturnType<typeof setTimeout> | null = null;
+  private viewsBadgeGhostClearTimer: ReturnType<typeof setTimeout> | null = null;
+
+  private static readonly VIEWS_BADGE_COLLAPSE_MS = 420;
+
+  get viewsDisplayCount(): number {
+    return Math.max(0, (this.match?.watched_count ?? 0) + this.viewsAdjustment);
+  }
+
+  /** Number shown in chip: ghost holds previous value during collapse transition */
+  get viewsBadgeCountForChip(): number {
+    const v = this.viewsDisplayCount;
+    if (v > 0) {
+      return v;
+    }
+    return this.viewsBadgeGhostCount;
+  }
 
   /**
    * Location mat-select stays disabled until the user has "entered" the card
@@ -59,6 +101,72 @@ export class RealMatchCardComponent implements OnChanges, OnDestroy {
     this.orderLocations();
   }
 
+  ngAfterViewInit(): void {
+    this.syncViewsBadgeSlot();
+    this.enableViewsBadgeTransitionsDeferred();
+  }
+
+  /** Enables CSS transitions after the current paint (initial state stays instant). */
+  private enableViewsBadgeTransitionsDeferred(): void {
+    queueMicrotask(() => {
+      this.viewsBadgeAnimateTransitions = true;
+    });
+  }
+
+  /**
+   * Keeps slot + ghost count in sync with viewsDisplayCount.
+   * On collapse to 0, defers removing `--visible` and clearing ghost until after CSS transition
+   * so max-width/opacity animate (inner badge used to unmount instantly and kill the effect).
+   */
+  private syncViewsBadgeSlot(): void {
+    const v = this.viewsDisplayCount;
+
+    if (v > 0) {
+      this.clearViewsBadgeCollapseTimers();
+      this.viewsBadgeGhostCount = v;
+      this.viewsBadgeSlotExpanded = true;
+      return;
+    }
+
+    if (!this.viewsBadgeSlotExpanded) {
+      if (this.viewsBadgeGhostClearTimer == null) {
+        this.viewsBadgeGhostCount = 0;
+      }
+      return;
+    }
+
+    if (!this.viewsBadgeAnimateTransitions) {
+      this.clearViewsBadgeCollapseTimers();
+      this.viewsBadgeSlotExpanded = false;
+      this.viewsBadgeGhostCount = 0;
+      return;
+    }
+
+    if (this.viewsBadgeCollapseKickTimer != null || this.viewsBadgeGhostClearTimer != null) {
+      return;
+    }
+
+    this.viewsBadgeCollapseKickTimer = window.setTimeout(() => {
+      this.viewsBadgeCollapseKickTimer = null;
+      this.viewsBadgeSlotExpanded = false;
+      this.viewsBadgeGhostClearTimer = window.setTimeout(() => {
+        this.viewsBadgeGhostClearTimer = null;
+        this.viewsBadgeGhostCount = 0;
+      }, RealMatchCardComponent.VIEWS_BADGE_COLLAPSE_MS);
+    }, 0);
+  }
+
+  private clearViewsBadgeCollapseTimers(): void {
+    if (this.viewsBadgeCollapseKickTimer != null) {
+      clearTimeout(this.viewsBadgeCollapseKickTimer);
+      this.viewsBadgeCollapseKickTimer = null;
+    }
+    if (this.viewsBadgeGhostClearTimer != null) {
+      clearTimeout(this.viewsBadgeGhostClearTimer);
+      this.viewsBadgeGhostClearTimer = null;
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['watched']) {
       this.resetLocationSelectInteraction();
@@ -68,13 +176,23 @@ export class RealMatchCardComponent implements OnChanges, OnDestroy {
       matchCh &&
       matchCh.currentValue?.fixture?.id !== matchCh.previousValue?.fixture?.id
     ) {
+      this.viewsAdjustment = 0;
+      this.clearViewsBadgeCollapseTimers();
+      this.viewsBadgeSlotExpanded = false;
+      this.viewsBadgeGhostCount = 0;
+      this.viewsBadgeAnimateTransitions = false;
       this.resetLocationSelectInteraction();
+      this.enableViewsBadgeTransitionsDeferred();
+      queueMicrotask(() => this.syncViewsBadgeSlot());
+    } else if (matchCh) {
+      this.syncViewsBadgeSlot();
     }
   }
 
   ngOnDestroy(): void {
     this.clearLocationInteractableTimer();
     this.clearLocationLeaveCheckTimer();
+    this.clearViewsBadgeCollapseTimers();
   }
 
   onMatchCardPointerEnter(): void {
@@ -152,6 +270,11 @@ export class RealMatchCardComponent implements OnChanges, OnDestroy {
     return !isNotStartedStatus(this.match?.status);
   }
 
+  /** Tooltip on views badge: waiting vs started/finished */
+  viewsBadgeMatchNotStarted(): boolean {
+    return isNotStartedStatus(this.match?.status);
+  }
+
   handleTeamClick(teamId: number): void {
     if (!this.interactable) {
       return;
@@ -172,15 +295,18 @@ export class RealMatchCardComponent implements OnChanges, OnDestroy {
   createMatch() {
     if (!this.watched) {
       this.watched = true;
+      this.viewsAdjustment += 1;
       this.resetLocationSelectInteraction();
       this.megaGoal.createMatch(this.matchParser.matchToMatchRequest(this.match)).subscribe(result => { });
       // Pointer may still be over the card; mouseenter will not fire again.
       setTimeout(() => this.onMatchCardPointerEnter(), 0);
     } else {
       this.watched = false;
+      this.viewsAdjustment -= 1;
       this.resetLocationSelectInteraction();
       this.megaGoal.deleteMatch(this.match.fixture.id).subscribe(result => { });
     }
+    this.syncViewsBadgeSlot();
   }
 
   /*
