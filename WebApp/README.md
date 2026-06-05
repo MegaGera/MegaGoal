@@ -77,3 +77,9 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The appli
 [`Dockerfile`](Dockerfile) file builds the app for production and generates de Docker container.
 
 [`docker-compose.yml`](docker-compose.yml) file manages the image and handle it easily within the *Mega* network.
+
+### Progressive Web App (PWA) and Google Play
+
+Production builds include an Angular **service worker** and a **web app manifest** for installability and [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap) / **Trusted Web Activity (TWA)** packaging.
+
+See **[PWA.md](PWA.md)** for deploy checks, Digital Asset Links (`/.well-known/assetlinks.json`), and Play Store steps.
