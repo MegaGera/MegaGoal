@@ -12,17 +12,20 @@ import { ImagesService } from '../../services/images.service';
 import { AuthService } from '../../services/auth.service';
 import { UpdaterService } from '../../services/updater.service';
 import { RealMatch, TeamStatistics } from '../../models/realMatch';
+import { Match, MatchReaction, MatchUserPicks } from '../../models/match';
 import { isFinishedStatus } from '../../config/matchStatus';
 import { LeagueHeaderComponent } from './league-header/league-header.component';
 import { GeneralMatchCardComponent } from '../general-match-card/general-match-card.component';
 import { MatchEventsComponent } from '../match-events/match-events.component';
 import { MatchStatisticsComponent } from '../match-statistics/match-statistics.component';
 import { MatchLineupsComponent } from '../match-lineups/match-lineups.component';
+import { MatchUserPicksComponent } from '../match-user-picks/match-user-picks.component';
+import { MatchReactionsComponent } from './match-reactions/match-reactions.component';
 
 @Component({
   selector: 'app-match-info',
   standalone: true,
-  imports: [CommonModule, LeagueHeaderComponent, GeneralMatchCardComponent, MatchEventsComponent, MatchStatisticsComponent, MatchLineupsComponent],
+  imports: [CommonModule, LeagueHeaderComponent, GeneralMatchCardComponent, MatchEventsComponent, MatchStatisticsComponent, MatchLineupsComponent, MatchUserPicksComponent, MatchReactionsComponent],
   templateUrl: './match-info.component.html',
   styleUrl: './match-info.component.css',
   providers: [ImagesService]
@@ -38,8 +41,10 @@ export class MatchInfoComponent {
   isUpdating: boolean = false;
   highlightsVideo: any = null;
   loadingVideo: boolean = false;
-  viewMode: 'events' | 'statistics' | 'lineups' = 'events';
+  viewMode: 'events' | 'statistics' | 'lineups' | 'rating' = 'events';
   isMobileView: boolean = false;
+  watched = false;
+  watchedMatch: Match | null = null;
 
   constructor(
     private megagoal: MegaGoalService, 
@@ -68,8 +73,63 @@ export class MatchInfoComponent {
     this.updateViewportMode();
   }
 
-  setView(mode: 'events' | 'statistics' | 'lineups'): void {
+  setView(mode: 'events' | 'statistics' | 'lineups' | 'rating'): void {
     this.viewMode = mode;
+  }
+
+  onWatchedChange(watched: boolean): void {
+    this.watched = watched;
+    if (!watched) {
+      this.watchedMatch = null;
+      if (this.viewMode === 'rating') {
+        this.viewMode = 'events';
+      }
+    }
+  }
+
+  onWatchedMatchChange(match: Match | null): void {
+    this.watchedMatch = match;
+    this.watched = match != null;
+  }
+
+  onUserPicksChange(userPicks: MatchUserPicks | undefined): void {
+    if (this.watchedMatch) {
+      this.watchedMatch = {
+        ...this.watchedMatch,
+        user_picks: userPicks
+      };
+    }
+  }
+
+  onReactionsChange(reactions: MatchReaction[] | undefined): void {
+    if (this.watchedMatch) {
+      this.watchedMatch = {
+        ...this.watchedMatch,
+        reactions
+      };
+    }
+  }
+
+  onFirstReactionAdded(): void {
+    this.scrollToVotingSection();
+  }
+
+  private scrollToVotingSection(): void {
+    if (this.isMobileView) {
+      this.viewMode = 'rating';
+    }
+
+    const delay = this.isMobileView ? 80 : 0;
+    setTimeout(() => {
+      const votingSection = document.getElementById('voting-section');
+      if (!votingSection) {
+        return;
+      }
+
+      const scrollOffset = this.isMobileView ? 80 : 25;
+      const top = votingSection.getBoundingClientRect().top + window.scrollY - scrollOffset;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }, delay);
   }
 
   private updateViewportMode(): void {

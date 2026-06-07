@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -30,7 +30,9 @@ import { MatchViewsCountBadgeComponent } from '../real-match-card/match-views-co
 })
 export class GeneralMatchCardComponent implements OnInit, OnChanges {
   @Input() realMatch!: RealMatch;
-  
+  @Output() watchedChange = new EventEmitter<boolean>();
+  @Output() watchedMatchChange = new EventEmitter<Match | null>();
+
   match!: Match;
   watched: boolean = false;
   locations: Location[] = [];
@@ -72,14 +74,22 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
       if (result && result.length > 0) {
         this.match = result[0];
         this.watched = true;
+        this.emitWatchedState();
       } else {
         this.match = this.matchParser.realMatchToMatch(this.realMatch);
         this.watched = false;
+        this.emitWatchedState();
       }
     }, (error: any) => {
       this.match = this.matchParser.realMatchToMatch(this.realMatch);
       this.watched = false;
+      this.emitWatchedState();
     });
+  }
+
+  private emitWatchedState(): void {
+    this.watchedChange.emit(this.watched);
+    this.watchedMatchChange.emit(this.watched ? this.match : null);
   }
 
   getLocations() {
@@ -113,12 +123,14 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
     if (!this.watched) {
       this.watched = true;
       this.viewsAdjustment += 1;
+      this.emitWatchedState();
       this.megaGoal.createMatch(this.matchParser.matchToMatchRequest(this.match)).subscribe(result => {
         this.loadMatchData(); // Reload to get the created match with _id
       });
     } else {
       this.watched = false;
       this.viewsAdjustment -= 1;
+      this.emitWatchedState();
       this.megaGoal.deleteMatch(this.match.fixture.id).subscribe(result => {});
     }
   }

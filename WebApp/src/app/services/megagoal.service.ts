@@ -5,7 +5,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { League, TeamsViewedStats } from '../models/league';
-import { Match } from '../models/match';
+import { Match, MatchReaction, MatchUserPicks } from '../models/match';
 import { Team, shortTeam } from '../models/team';
 import { Location } from '../models/location';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -304,6 +304,36 @@ export class MegaGoalService {
       venue: venue
     }
     return this.http.post<number>(this.url + '/match/set_location', body, this.options);
+  }
+
+  setUserPicks(
+    fixtureId: number,
+    userPicks: Partial<MatchUserPicks>
+  ): Observable<{ acknowledged: boolean; user_picks: MatchUserPicks | null }> {
+    const body = {
+      fixtureId,
+      user_picks: userPicks
+    };
+    return this.http.post<{ acknowledged: boolean; user_picks: MatchUserPicks | null }>(
+      this.url + '/match/set_user_picks',
+      body,
+      this.options
+    );
+  }
+
+  setReactions(
+    fixtureId: number,
+    reactions: MatchReaction[]
+  ): Observable<{ acknowledged: boolean; reactions: MatchReaction[] | null }> {
+    const body = {
+      fixtureId,
+      reactions
+    };
+    return this.http.post<{ acknowledged: boolean; reactions: MatchReaction[] | null }>(
+      this.url + '/match/set_reactions',
+      body,
+      this.options
+    );
   }
 
   /*

@@ -3,13 +3,19 @@ import { logMatchCreated, logMatchDeleted, logMatchUpdateLocation } from './logC
 import { getWatchedMatchesForUser } from '../mcp/services/watchedMatchesQuery.js';
 import {
   buildMatchDocument,
+  mergeUserPicks,
   parseCreateMatchBody,
   parseFixtureId,
   parseMatch,
   parseMatches,
   parseSetLocationPayload,
-  parseTeamId
+  parseSetReactionsPayload,
+  parseSetUserPicksPayload,
+  parseTeamId,
+  normalizeReactions,
+  parseMatchReactions
 } from '../entities/matchEntity.js';
+import { findPlayerTeam } from '../mcp/services/playerWatchedPlayedQuery.js';
 import {
   buildOfficialVenueLocation,
   parseVenueLocationId
@@ -299,4 +305,132 @@ const getUsersMatchCounts = async (req, res) => {
   }
 }
 
-export { getMatches, getMatchesByTeamId, createMatch, deleteMatch, changeLocation, getLandingPageInfo, getUsersMatchCounts };
+const teamLabelFromRealMatch = (realMatch, teamId) => {
+  const homeId = realMatch?.teams?.home?.id;
+  const awayId = realMatch?.teams?.away?.id;
+  if (teamId === homeId) return realMatch.teams.home.name;
+  if (teamId === awayId) return realMatch.teams.away.name;
+  for (const lineup of realMatch?.lineups || []) {
+    if (lineup?.team?.id === teamId) return lineup.team.name;
+  }
+  return undefined;
+};
+
+const validatePlayerPick = (realMatch, pick) => {
+  if (pick == null) {
+    return { ok: true, pick: null };
+  }
+  const playerId = Number(pick.id);
+  const { teamId, participated } = findPlayerTeam(realMatch, playerId);
+  if (!participated || teamId == null) {
+    return { ok: false, message: `Player ${pick.name} did not participate in this match` };
+  }
+  if (Number(pick.team_id) !== Number(teamId)) {
+    return { ok: false, message: `Player ${pick.name} team_id does not match lineup data` };
+  }
+  return {
+    ok: true,
+    pick: {
+      id: playerId,
+      name: String(pick.name),
+      team_id: Number(teamId),
+      team_name: pick.team_name ?? teamLabelFromRealMatch(realMatch, teamId)
+    }
+  };
+};
+
+const USER_PICK_PLAYER_KEYS = [
+  'mvp',
+  'bluff',
+  'underrated',
+  'most_entertaining'
+];
+
+// Post user picks (rating, mvp, bluff, underrated, most_entertaining) for a watched match
+const setUserPicks = async (req, res) => {
+  const db = getDB();
+  try {
+    const { fixtureId, user_picks: incomingPicks } = parseSetUserPicksPayload(req.body);
+    const username = req.validateData.username;
+
+    if (!fixtureId || !username) {
+      return res.status(400).json({ message: 'Invalid request' });
+    }
+
+    const filter = { 'fixture.id': fixtureId, 'user.username': username };
+    const existing = await db.collection('matches').findOne(filter);
+    if (!existing) {
+      return res.status(404).json({ message: 'Match not found' });
+    }
+
+    const realMatch = await db.collection('real_matches').findOne({ 'fixture.id': fixtureId });
+    if (!realMatch) {
+      return res.status(404).json({ message: 'Fixture not found in catalog' });
+    }
+
+    const normalizedIncoming = { ...incomingPicks };
+    for (const key of USER_PICK_PLAYER_KEYS) {
+      if (incomingPicks[key] === undefined) {
+        continue;
+      }
+      const pickResult = validatePlayerPick(realMatch, incomingPicks[key]);
+      if (!pickResult.ok) {
+        return res.status(400).json({ message: pickResult.message });
+      }
+      normalizedIncoming[key] = pickResult.pick;
+    }
+
+    const merged = mergeUserPicks(existing.user_picks, normalizedIncoming);
+    const update =
+      merged == null
+        ? { $unset: { user_picks: '' } }
+        : { $set: { user_picks: merged } };
+
+    const result = await db.collection('matches').updateOne(filter, update);
+    console.log(`User picks updated for fixture ${fixtureId} by ${username}`);
+
+    res.status(201).json({ acknowledged: result.acknowledged, user_picks: merged });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Post match reactions (multi-select emojis) for a watched match
+const setReactions = async (req, res) => {
+  const db = getDB();
+  try {
+    const { fixtureId, reactions } = parseSetReactionsPayload(req.body);
+    const username = req.validateData.username;
+
+    if (!fixtureId || !username) {
+      return res.status(400).json({ message: 'Invalid request' });
+    }
+
+    const filter = { 'fixture.id': fixtureId, 'user.username': username };
+    const existing = await db.collection('matches').findOne(filter);
+    if (!existing) {
+      return res.status(404).json({ message: 'Match not found' });
+    }
+
+    const normalized = normalizeReactions(reactions);
+    const validated =
+      normalized.length > 0 ? parseMatchReactions(normalized) : [];
+
+    const update =
+      validated.length === 0
+        ? { $unset: { reactions: '' } }
+        : { $set: { reactions: validated } };
+
+    const result = await db.collection('matches').updateOne(filter, update);
+    console.log(`Reactions updated for fixture ${fixtureId} by ${username}`);
+
+    res.status(201).json({
+      acknowledged: result.acknowledged,
+      reactions: validated.length > 0 ? validated : null
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export { getMatches, getMatchesByTeamId, createMatch, deleteMatch, changeLocation, setUserPicks, setReactions, getLandingPageInfo, getUsersMatchCounts };

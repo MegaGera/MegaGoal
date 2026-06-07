@@ -3,6 +3,36 @@
 */
 import { TeamStatistics } from './realMatch';
 
+export interface MatchPlayerPick {
+    id: number;
+    name: string;
+    team_id: number;
+    team_name?: string;
+}
+
+export type PlayerPickKey = 'mvp' | 'bluff' | 'underrated' | 'most_entertaining';
+
+export const MATCH_REACTIONS = [
+  '🔥',
+  '😭',
+  '🤩',
+  '😡',
+  '🍿',
+  '😴',
+  '🤯',
+  '🚌'
+] as const;
+
+export type MatchReaction = (typeof MATCH_REACTIONS)[number];
+
+export interface MatchUserPicks {
+    rating?: number | null;
+    mvp?: MatchPlayerPick | null;
+    bluff?: MatchPlayerPick | null;
+    underrated?: MatchPlayerPick | null;
+    most_entertaining?: MatchPlayerPick | null;
+}
+
 export interface Match {
     _id: string,
     fixture: {
@@ -43,6 +73,8 @@ export interface Match {
         yellow_cards: number,
         red_cards: number
     },
+    user_picks?: MatchUserPicks,
+    reactions?: MatchReaction[],
     /** Global users who marked this fixture as watched; present only when requested (e.g. home list). */
     watched_count?: number
 }

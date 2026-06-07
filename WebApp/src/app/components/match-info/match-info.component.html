@@ -12,7 +12,11 @@
   </app-league-header>
 
   <!-- General Match Card Component -->
-  <app-general-match-card [realMatch]="match"></app-general-match-card>
+  <app-general-match-card
+    [realMatch]="match"
+    (watchedChange)="onWatchedChange($event)"
+    (watchedMatchChange)="onWatchedMatchChange($event)">
+  </app-general-match-card>
 
   <!-- Extra Time and Penalties (if applicable) -->
   <div class="score-details" *ngIf="match.score && (match.score.extratime.home !== null || match.score.penalty.home !== null)">
@@ -24,6 +28,15 @@
       <span class="score-label">Penalties:</span>
       <span class="score-value">{{ match.score.penalty.home }} - {{ match.score.penalty.away }}</span>
     </div>
+  </div>
+
+  <div class="match-reactions-section" *ngIf="watched">
+    <app-match-reactions
+      [fixtureId]="match.fixture.id"
+      [reactions]="watchedMatch?.reactions"
+      (reactionsChange)="onReactionsChange($event)"
+      (firstReactionAdded)="onFirstReactionAdded()">
+    </app-match-reactions>
   </div>
 
   <!-- Match Highlights Video Section -->
@@ -44,11 +57,25 @@
     </div>
   </div>
 
+  <div class="desktop-user-picks-section" id="voting-section" *ngIf="!isMobileView && watched">
+    <div class="match-panel-card desktop-user-picks-card">
+      <h3 class="match-panel-title">Voting</h3>
+      <app-match-user-picks
+        layout="horizontal"
+        [realMatch]="match"
+        [fixtureId]="match.fixture.id"
+        [userPicks]="watchedMatch?.user_picks"
+        (userPicksChange)="onUserPicksChange($event)">
+      </app-match-user-picks>
+    </div>
+  </div>
+
   <div class="view-toggle-card" *ngIf="isMobileView">
     <div class="view-toggle">
       <button class="toggle-btn" [class.active]="viewMode === 'statistics'" (click)="setView('statistics')">Statistics</button>
       <button class="toggle-btn" [class.active]="viewMode === 'events'" (click)="setView('events')">Events</button>
       <button class="toggle-btn" [class.active]="viewMode === 'lineups'" (click)="setView('lineups')">Lineups</button>
+      <button class="toggle-btn" *ngIf="watched" [class.active]="viewMode === 'rating'" (click)="setView('rating')">Voting</button>
     </div>
   </div>
 
@@ -87,6 +114,17 @@
         [homeTeamId]="match.teams.home.id"
         [awayTeamId]="match.teams.away.id">
       </app-match-lineups>
+    </div>
+
+    <div class="mobile-tab-pane" id="voting-section" [class.show]="viewMode === 'rating'" *ngIf="watched">
+      <h3 class="match-panel-title">Voting</h3>
+      <app-match-user-picks
+        *ngIf="viewMode === 'rating'"
+        [realMatch]="match"
+        [fixtureId]="match.fixture.id"
+        [userPicks]="watchedMatch?.user_picks"
+        (userPicksChange)="onUserPicksChange($event)">
+      </app-match-user-picks>
     </div>
   </div>
 

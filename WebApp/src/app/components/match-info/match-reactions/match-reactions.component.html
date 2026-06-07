@@ -1,0 +1,12 @@
+<div class="match-reactions" role="group" aria-label="Match reactions">
+  <button
+    type="button"
+    class="reaction-btn"
+    *ngFor="let reaction of matchReactions; trackBy: trackByReaction"
+    [class.is-selected]="isReactionSelected(reaction)"
+    [attr.aria-pressed]="isReactionSelected(reaction)"
+    [attr.aria-label]="'Reaction ' + reaction"
+    (click)="toggleReaction(reaction)">
+    <span class="reaction-emoji" aria-hidden="true">{{ reaction }}</span>
+  </button>
+</div>

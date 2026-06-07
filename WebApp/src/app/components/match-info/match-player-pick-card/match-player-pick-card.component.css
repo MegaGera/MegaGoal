@@ -1,0 +1,114 @@
+.match-player-pick-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  width: 132px;
+  padding: 0.65rem 0.6rem 0.7rem;
+  border-radius: 14px;
+  background: #fff;
+  border: 2px solid #e9ecef;
+  box-shadow: 0 6px 14px rgba(31, 41, 55, 0.07);
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.match-player-pick-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 22px rgba(50, 60, 90, 0.12);
+  border-color: #ced4da;
+}
+
+.match-player-pick-card.is-selected {
+  border-color: #dc143c;
+  box-shadow: 0 0 0 2px rgba(220, 20, 60, 0.18), 0 10px 20px rgba(220, 20, 60, 0.12);
+}
+
+.match-player-pick-card.is-selected::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: calc(100% - 10px);
+  height: 3px;
+  background: linear-gradient(90deg, #dc143c, #ff6b6b);
+  transform: translateX(-50%);
+  border-radius: 999px;
+}
+
+.player-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.team-badge {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.player-avatar {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #eef2ff, #dbeafe);
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.14);
+  flex-shrink: 0;
+}
+
+.player-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.player-avatar-fallback {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #4b4f72;
+}
+
+.player-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.25;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+@media (max-width: 768px) {
+  .match-player-pick-card {
+    width: 124px;
+    padding: 0.6rem 0.55rem 0.65rem;
+  }
+
+  .player-avatar {
+    width: 42px;
+    height: 42px;
+  }
+
+  .team-badge {
+    width: 22px;
+    height: 22px;
+  }
+}

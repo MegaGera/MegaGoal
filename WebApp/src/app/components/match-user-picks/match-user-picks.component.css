@@ -1,0 +1,250 @@
+.user-picks-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.picks-rating-row,
+.picks-players-row {
+  display: contents;
+}
+
+.user-picks-panel.layout-horizontal {
+  gap: 1.25rem;
+}
+
+.user-picks-panel.layout-horizontal .picks-rating-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.user-picks-panel.layout-horizontal .picks-players-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  justify-content: center;
+  align-items: start;
+  gap: 1.25rem 1.5rem;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.user-picks-panel.layout-horizontal .pick-block-rating {
+  align-items: center;
+  width: 100%;
+  max-width: 920px;
+}
+
+.user-picks-panel.layout-horizontal .pick-block-player {
+  align-items: center;
+}
+
+.user-picks-panel.layout-horizontal .pick-label {
+  text-align: center;
+}
+
+.user-picks-panel.layout-horizontal .pick-block-player {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.user-picks-panel.layout-horizontal .picks-players-empty {
+  width: 100%;
+  text-align: center;
+}
+
+.user-picks-empty {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #6c757d;
+  line-height: 1.45;
+}
+
+.picks-players-empty {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e8edf3;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  padding: 1rem 0.85rem;
+  width: 100%;
+}
+
+.pick-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.pick-block-rating,
+.pick-block-player {
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e8edf3;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.pick-block-rating {
+  padding: 1.15rem 1rem 1rem;
+}
+
+.pick-block-player {
+  padding: 1rem 0.75rem 0.75rem;
+}
+
+.pick-label {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #343a40;
+}
+
+.star-rating-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.star-unit {
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+}
+
+.star-visual {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.star-empty,
+.star-filled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.star-empty {
+  color: #dee2e6;
+}
+
+.star-filled {
+  color: #dc143c;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: width 0.08s ease-out;
+}
+
+.star-rating.is-hovering .star-filled {
+  color: #e8355a;
+}
+
+.star-hit {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1;
+}
+
+.star-hit-left {
+  left: 0;
+}
+
+.star-hit-right {
+  right: 0;
+}
+
+.rating-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #495057;
+  min-width: 3rem;
+}
+
+.rating-value.is-preview {
+  color: #dc143c;
+}
+
+.player-pick-list {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.35rem 0.15rem 0.45rem;
+  margin: 0;
+  scroll-behavior: smooth;
+}
+
+.user-picks-panel.layout-horizontal .player-pick-list {
+  max-width: 100%;
+}
+
+.player-pick-list::-webkit-scrollbar {
+  height: 6px;
+}
+
+.player-pick-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 999px;
+}
+
+.player-pick-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pick-block-player {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .user-picks-panel:not(.layout-horizontal) {
+    align-items: center;
+  }
+
+  .user-picks-panel:not(.layout-horizontal) .pick-block-rating,
+  .user-picks-panel:not(.layout-horizontal) .pick-block-player {
+    align-items: center;
+    width: 100%;
+  }
+
+  .user-picks-panel:not(.layout-horizontal) .pick-label {
+    text-align: center;
+    width: 100%;
+  }
+
+  .user-picks-panel:not(.layout-horizontal) .user-picks-empty {
+    text-align: center;
+  }
+
+  .star-unit {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+
+  .star-empty,
+  .star-filled {
+    font-size: 1.85rem;
+  }
+}
