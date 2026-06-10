@@ -3,6 +3,7 @@ import { logUserAction } from './logController.js';
 import {
   buildNewUserDocument,
   buildUserMeResponse,
+  findMissingHomeNotifications,
   parseMarkHomeNotificationPayload,
   parseSetFavouriteLeaguePayload,
   parseSetFavouriteTeamPayload,
@@ -27,7 +28,22 @@ const getMe = async (req, res) => {
       return res.status(500).json({ message: 'Failed to load user profile' });
     }
 
-    const validated = parseUserDocument(doc);
+    const missingNotifications = findMissingHomeNotifications(doc.notifications?.home ?? []);
+    let profileDoc = doc;
+
+    if (missingNotifications.length > 0) {
+      const synced = await db.collection('users').findOneAndUpdate(
+        { username },
+        { $push: { 'notifications.home': { $each: missingNotifications } } },
+        { returnDocument: 'after' }
+      );
+      if (!synced) {
+        return res.status(500).json({ message: 'Failed to sync user notifications' });
+      }
+      profileDoc = synced;
+    }
+
+    const validated = parseUserDocument(profileDoc);
     res.send(buildUserMeResponse(validated));
   } catch (error) {
     console.error('Error fetching user profile:', error);

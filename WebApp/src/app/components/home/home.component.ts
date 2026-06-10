@@ -101,8 +101,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   /* View Mode */
   viewMode: 'stats' | 'matches' | 'filters' = 'matches';
 
-  readonly setFavouritesNotificationName = 'set_favourites';
-
   /** When chip/league/season/location change, refetch picker teams-viewed; team-only changes skip this. */
   private lastStandardFiltersKey = '';
 
@@ -544,15 +542,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.userMeLoaded = true;
       }
     });
-  }
-
-  showSetFavouritesNotification(): boolean {
-    if (!this.userMeLoaded || !this.userMe) {
-      return false;
-    }
-    return this.userMe.notifications.home.some(
-      (n) => n.name === this.setFavouritesNotificationName && n.status === 'active'
-    );
   }
 
   getFavouriteTeamStats() {

@@ -6,6 +6,9 @@ export interface HomeNotification {
   name: string;
   status: HomeNotificationStatus;
   clickedOn?: string | null;
+  message: string;
+  actionPath: string;
+  actionAriaLabel: string;
 }
 
 export interface UserMeNotifications {

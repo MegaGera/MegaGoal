@@ -3,12 +3,12 @@
   <!-- Hero Section -->
   <app-hero-section [userStats]="userStats" [userStatsLoaded]="userStatsLoaded"></app-hero-section>
 
-  @if (showSetFavouritesNotification()) {
+  @if (userMeLoaded && userMe && userMe.notifications.home[0]; as notification) {
     <app-notification
-      message="You can now add your favourite teams and leagues! Give it a try by clicking on the star on a team or league page, and watch it in the profile page"
-      [actionRouterLink]="['/app/profile']"
-      actionAriaLabel="Open profile"
-      [notificationName]="setFavouritesNotificationName"
+      [message]="notification.message"
+      [actionRouterLink]="[notification.actionPath]"
+      [actionAriaLabel]="notification.actionAriaLabel"
+      [notificationName]="notification.name"
     />
   }
 
