@@ -86,6 +86,18 @@ const logMatchUpdateLocation = async (username, data, req) => {
   );
 };
 
+const logMatchInteraction = async (username, data, req) => {
+  await logUserAction(
+    username,
+    'MATCH_INTERACTION',
+    data,
+    {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }
+  );
+};
+
 // Send message to mailing queue
 const sendMailingMessage = async (email, username, template = 'feedback') => {
   try {
@@ -162,6 +174,7 @@ export {
   logMatchCreated,
   logMatchUpdateLocation,
   logMatchDeleted,
+  logMatchInteraction,
   logFeedbackSubmitted,
   logAdminAction,
   sendMailingMessage,

@@ -33,6 +33,25 @@ export interface MatchUserPicks {
     most_entertaining?: MatchPlayerPick | null;
 }
 
+export interface MatchReactionCount {
+    reaction: MatchReaction;
+    count: number;
+}
+
+export interface MatchPlayerVoteCount extends MatchPlayerPick {
+    votes: number;
+}
+
+export interface MatchEngagementAggregate {
+    fixture_id: number;
+    reactions: MatchReactionCount[];
+    rating: {
+        average: number | null;
+        count: number;
+    };
+    player_votes: Record<PlayerPickKey, MatchPlayerVoteCount[]>;
+}
+
 export interface Match {
     _id: string,
     fixture: {

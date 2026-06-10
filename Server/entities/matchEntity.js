@@ -176,6 +176,33 @@ const USER_PICK_PLAYER_KEYS = [
   'most_entertaining'
 ];
 
+const matchReactionCountSchema = z.object({
+  reaction: matchReactionEmojiSchema,
+  count: z.number().int().nonnegative()
+});
+
+const matchPlayerVoteCountSchema = matchPlayerPickSchema.extend({
+  votes: z.number().int().positive()
+});
+
+const matchEngagementAggregateSchema = z.object({
+  fixture_id: z.number().int(),
+  reactions: z.array(matchReactionCountSchema),
+  rating: z.object({
+    average: z.number().min(1).max(5).nullable(),
+    count: z.number().int().nonnegative()
+  }),
+  player_votes: z.object({
+    mvp: z.array(matchPlayerVoteCountSchema),
+    bluff: z.array(matchPlayerVoteCountSchema),
+    underrated: z.array(matchPlayerVoteCountSchema),
+    most_entertaining: z.array(matchPlayerVoteCountSchema)
+  })
+});
+
+const parseMatchEngagementAggregate = (document) =>
+  matchEngagementAggregateSchema.parse(document);
+
 const mergeUserPicks = (existing, incoming) => {
   const base = normalizeUserPicksDocument(existing ?? {});
   const merged = { ...base };
@@ -199,12 +226,14 @@ const mergeUserPicks = (existing, incoming) => {
 
 export {
   MATCH_REACTION_EMOJIS,
+  USER_PICK_PLAYER_KEYS,
   buildMatchDocument,
   mergeUserPicks,
   normalizeReactions,
   parseCreateMatchBody,
   parseFixtureId,
   parseMatch,
+  parseMatchEngagementAggregate,
   parseMatchReactions,
   parseMatches,
   parseSetLocationPayload,

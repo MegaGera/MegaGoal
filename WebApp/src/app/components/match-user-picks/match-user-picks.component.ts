@@ -1,17 +1,19 @@
 import {
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
   Output,
-  QueryList,
-  SimpleChanges,
-  ViewChildren
+  SimpleChanges
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MegaGoalService } from '../../services/megagoal.service';
-import { MatchUserPicks, MatchPlayerPick, PlayerPickKey } from '../../models/match';
+import {
+  MatchPlayerVoteCount,
+  MatchUserPicks,
+  MatchPlayerPick,
+  PlayerPickKey
+} from '../../models/match';
 import { RealMatch } from '../../models/realMatch';
 import { MatchPlayerPickCardComponent } from '../match-info/match-player-pick-card/match-player-pick-card.component';
 
@@ -34,9 +36,9 @@ export class MatchUserPicksComponent implements OnChanges {
   @Input() fixtureId!: number;
   @Input() userPicks: MatchUserPicks | undefined;
   @Input() layout: 'stacked' | 'horizontal' = 'stacked';
+  @Input() overallRating: number | null = null;
+  @Input() playerVotes: Record<PlayerPickKey, MatchPlayerVoteCount[]> | null = null;
   @Output() userPicksChange = new EventEmitter<MatchUserPicks | undefined>();
-
-  @ViewChildren('playerPickList') playerPickLists!: QueryList<ElementRef<HTMLElement>>;
 
   readonly playerPickSections: PlayerPickSection[] = [
     { key: 'mvp', label: '🏆 MVP' },
@@ -72,6 +74,8 @@ export class MatchUserPicksComponent implements OnChanges {
       this.hasLineups = (this.realMatch?.lineups?.length ?? 0) > 0;
       this.syncFromInput();
       this.rebuildDisplayLists();
+    } else if (changes['playerVotes']) {
+      this.rebuildDisplayLists();
     }
   }
 
@@ -102,9 +106,8 @@ export class MatchUserPicksComponent implements OnChanges {
     const current = this.selectedPlayerIds[key];
     const nextId = current === playerId ? null : playerId;
     this.selectedPlayerIds[key] = nextId;
-    this.displayLists[key] = this.orderPlayersForDisplay(this.participants, nextId);
+    this.rebuildDisplayLists();
     this.persist({ [key]: this.playerIdToPick(nextId) });
-    this.scrollListToStart(key);
   }
 
   isPlayerSelected(key: PlayerPickKey, playerId: number): boolean {
@@ -113,6 +116,23 @@ export class MatchUserPicksComponent implements OnChanges {
 
   getDisplayList(key: PlayerPickKey): ParticipantPlayer[] {
     return this.displayLists[key];
+  }
+
+  getPlayerVotePercent(key: PlayerPickKey, playerId: number): number | null {
+    const votes = this.getVoteCountMap(key).get(playerId) ?? 0;
+    if (votes <= 0) {
+      return null;
+    }
+    const total = this.getSectionTotalVotes(key);
+    if (total <= 0) {
+      return null;
+    }
+    return Math.round((votes / total) * 100);
+  }
+
+  formatOverallRating(value: number): string {
+    const rounded = Math.round(value * 10) / 10;
+    return Number.isInteger(rounded) ? `${rounded}` : rounded.toFixed(1);
   }
 
   clearRating(): void {
@@ -165,34 +185,46 @@ export class MatchUserPicksComponent implements OnChanges {
 
   private rebuildDisplayLists(): void {
     for (const section of this.playerPickSections) {
-      this.displayLists[section.key] = this.orderPlayersForDisplay(
-        this.participants,
-        this.selectedPlayerIds[section.key]
-      );
+      this.displayLists[section.key] = this.orderPlayersForDisplay(section.key);
     }
   }
 
-  private orderPlayersForDisplay(
-    players: ParticipantPlayer[],
-    selectedId: number | null
-  ): ParticipantPlayer[] {
-    if (selectedId == null) {
-      return [...players];
-    }
-    const selected = players.find((p) => p.id === selectedId);
-    if (!selected) {
-      return [...players];
-    }
-    return [selected, ...players.filter((p) => p.id !== selectedId)];
-  }
-
-  private scrollListToStart(key: PlayerPickKey): void {
-    requestAnimationFrame(() => {
-      const listRef = this.playerPickLists?.find(
-        (ref) => ref.nativeElement.dataset['pick'] === key
-      );
-      listRef?.nativeElement.scrollTo({ left: 0, behavior: 'smooth' });
+  private orderPlayersForDisplay(key: PlayerPickKey): ParticipantPlayer[] {
+    const voteMap = this.getVoteCountMap(key);
+    const selectedId = this.selectedPlayerIds[key];
+    const sorted = [...this.participants].sort((a, b) => {
+      const voteDiff = (voteMap.get(b.id) ?? 0) - (voteMap.get(a.id) ?? 0);
+      if (voteDiff !== 0) {
+        return voteDiff;
+      }
+      if (a.team_id !== b.team_id) {
+        return a.team_id - b.team_id;
+      }
+      return a.name.localeCompare(b.name);
     });
+
+    if (selectedId == null) {
+      return sorted;
+    }
+
+    const selected = sorted.find((player) => player.id === selectedId);
+    if (!selected) {
+      return sorted;
+    }
+
+    return [selected, ...sorted.filter((player) => player.id !== selectedId)];
+  }
+
+  private getSectionTotalVotes(key: PlayerPickKey): number {
+    return (this.playerVotes?.[key] ?? []).reduce((sum, entry) => sum + entry.votes, 0);
+  }
+
+  private getVoteCountMap(key: PlayerPickKey): Map<number, number> {
+    const map = new Map<number, number>();
+    for (const entry of this.playerVotes?.[key] ?? []) {
+      map.set(entry.id, entry.votes);
+    }
+    return map;
   }
 
   private playerIdToPick(playerId: number | null): MatchPlayerPick | null {

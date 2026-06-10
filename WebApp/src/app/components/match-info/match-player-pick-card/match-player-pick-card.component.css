@@ -96,6 +96,22 @@
   -webkit-box-orient: vertical;
 }
 
+.engagement-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.15rem;
+  padding: 0 0.35rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+  background: linear-gradient(135deg, #dc143c 0%, #b31336 100%);
+  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.22);
+}
+
 @media (max-width: 768px) {
   .match-player-pick-card {
     width: 124px;

@@ -5,7 +5,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { League, TeamsViewedStats } from '../models/league';
-import { Match, MatchReaction, MatchUserPicks } from '../models/match';
+import { Match, MatchEngagementAggregate, MatchReaction, MatchUserPicks } from '../models/match';
 import { Team, shortTeam } from '../models/team';
 import { Location } from '../models/location';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -332,6 +332,13 @@ export class MegaGoalService {
     return this.http.post<{ acknowledged: boolean; reactions: MatchReaction[] | null }>(
       this.url + '/match/set_reactions',
       body,
+      this.options
+    );
+  }
+
+  getMatchEngagement(fixtureId: number): Observable<MatchEngagementAggregate> {
+    return this.http.get<MatchEngagementAggregate>(
+      `${this.url}/match/engagement/${fixtureId}`,
       this.options
     );
   }

@@ -1,4 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -119,14 +121,30 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
     return date.toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit' });
   }
 
+  markAsWatchedIfNeeded(): Observable<void> {
+    if (this.watched) {
+      return of(void 0);
+    }
+
+    this.watched = true;
+    this.viewsAdjustment += 1;
+    this.emitWatchedState();
+
+    return this.megaGoal.createMatch(this.matchParser.matchToMatchRequest(this.match)).pipe(
+      tap(() => this.loadMatchData()),
+      map(() => void 0),
+      catchError((error) => {
+        this.watched = false;
+        this.viewsAdjustment -= 1;
+        this.emitWatchedState();
+        return throwError(() => error);
+      })
+    );
+  }
+
   createMatch() {
     if (!this.watched) {
-      this.watched = true;
-      this.viewsAdjustment += 1;
-      this.emitWatchedState();
-      this.megaGoal.createMatch(this.matchParser.matchToMatchRequest(this.match)).subscribe(result => {
-        this.loadMatchData(); // Reload to get the created match with _id
-      });
+      this.markAsWatchedIfNeeded().subscribe();
     } else {
       this.watched = false;
       this.viewsAdjustment -= 1;

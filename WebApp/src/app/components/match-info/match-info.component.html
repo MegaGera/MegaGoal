@@ -13,6 +13,7 @@
 
   <!-- General Match Card Component -->
   <app-general-match-card
+    #generalMatchCard
     [realMatch]="match"
     (watchedChange)="onWatchedChange($event)"
     (watchedMatchChange)="onWatchedMatchChange($event)">
@@ -30,12 +31,15 @@
     </div>
   </div>
 
-  <div class="match-reactions-section" *ngIf="watched">
+  <div class="match-reactions-section" id="match-reactions-section">
     <app-match-reactions
       [fixtureId]="match.fixture.id"
+      [watched]="watched"
       [reactions]="watchedMatch?.reactions"
+      [reactionCounts]="matchEngagement?.reactions ?? null"
       (reactionsChange)="onReactionsChange($event)"
-      (firstReactionAdded)="onFirstReactionAdded()">
+      (ensureWatched)="ensureWatchedForReaction($event)"
+      (reactionChanged)="onReactionChanged()">
     </app-match-reactions>
   </div>
 
@@ -65,6 +69,8 @@
         [realMatch]="match"
         [fixtureId]="match.fixture.id"
         [userPicks]="watchedMatch?.user_picks"
+        [overallRating]="matchEngagement?.rating?.average ?? null"
+        [playerVotes]="matchEngagement?.player_votes ?? null"
         (userPicksChange)="onUserPicksChange($event)">
       </app-match-user-picks>
     </div>
@@ -123,6 +129,8 @@
         [realMatch]="match"
         [fixtureId]="match.fixture.id"
         [userPicks]="watchedMatch?.user_picks"
+        [overallRating]="matchEngagement?.rating?.average ?? null"
+        [playerVotes]="matchEngagement?.player_votes ?? null"
         (userPicksChange)="onUserPicksChange($event)">
       </app-match-user-picks>
     </div>

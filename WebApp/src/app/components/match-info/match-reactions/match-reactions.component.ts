@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MegaGoalService } from '../../../services/megagoal.service';
-import { MATCH_REACTIONS, MatchReaction } from '../../../models/match';
+import { MATCH_REACTIONS, MatchReaction, MatchReactionCount } from '../../../models/match';
 
 @Component({
   selector: 'app-match-reactions',
@@ -12,9 +12,12 @@ import { MATCH_REACTIONS, MatchReaction } from '../../../models/match';
 })
 export class MatchReactionsComponent implements OnChanges {
   @Input() fixtureId!: number;
+  @Input() watched = false;
   @Input() reactions: MatchReaction[] | undefined;
+  @Input() reactionCounts: MatchReactionCount[] | null = null;
   @Output() reactionsChange = new EventEmitter<MatchReaction[] | undefined>();
-  @Output() firstReactionAdded = new EventEmitter<void>();
+  @Output() ensureWatched = new EventEmitter<() => void>();
+  @Output() reactionChanged = new EventEmitter<void>();
 
   readonly matchReactions = MATCH_REACTIONS;
   selectedReactions = new Set<MatchReaction>();
@@ -32,23 +35,39 @@ export class MatchReactionsComponent implements OnChanges {
     return this.selectedReactions.has(reaction);
   }
 
+  isReactionSelectedByOthers(reaction: MatchReaction): boolean {
+    return !this.isReactionSelected(reaction) && this.getReactionCount(reaction) > 0;
+  }
+
+  getReactionCount(reaction: MatchReaction): number {
+    return this.reactionCounts?.find((entry) => entry.reaction === reaction)?.count ?? 0;
+  }
+
   toggleReaction(reaction: MatchReaction): void {
-    const wasEmpty = this.selectedReactions.size === 0;
-    const next = new Set(this.selectedReactions);
-    if (next.has(reaction)) {
-      next.delete(reaction);
-    } else {
-      next.add(reaction);
+    const performToggle = () => {
+      const next = new Set(this.selectedReactions);
+      if (next.has(reaction)) {
+        next.delete(reaction);
+      } else {
+        next.add(reaction);
+      }
+      this.selectedReactions = next;
+      this.persistReactions([...next]);
+    };
+
+    if (!this.watched) {
+      this.ensureWatched.emit(performToggle);
+      return;
     }
-    this.selectedReactions = next;
-    this.persistReactions([...next], wasEmpty && next.size > 0);
+
+    performToggle();
   }
 
   trackByReaction(_index: number, reaction: MatchReaction): string {
     return reaction;
   }
 
-  private persistReactions(reactions: MatchReaction[], isFirstAdd: boolean): void {
+  private persistReactions(reactions: MatchReaction[]): void {
     if (!this.fixtureId || this.saving) {
       return;
     }
@@ -61,9 +80,7 @@ export class MatchReactionsComponent implements OnChanges {
         const next = result.reactions ?? undefined;
         this.reactionsChange.emit(next);
         this.selectedReactions = new Set(next ?? []);
-        if (isFirstAdd && (next?.length ?? 0) > 0) {
-          this.firstReactionAdded.emit();
-        }
+        this.reactionChanged.emit();
       },
       error: () => {
         this.saving = false;

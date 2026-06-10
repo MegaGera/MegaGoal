@@ -15,6 +15,7 @@ export class MatchPlayerPickCardComponent implements OnChanges {
   @Input() playerName!: string;
   @Input() teamId!: number;
   @Input() selected = false;
+  @Input() votePercent: number | null = null;
   @Output() cardClick = new EventEmitter<void>();
 
   avatarError = false;

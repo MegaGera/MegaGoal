@@ -1,5 +1,10 @@
 import { getDB } from '../config/db.js';
-import { logMatchCreated, logMatchDeleted, logMatchUpdateLocation } from './logController.js';
+import {
+  logMatchCreated,
+  logMatchDeleted,
+  logMatchInteraction,
+  logMatchUpdateLocation
+} from './logController.js';
 import { getWatchedMatchesForUser } from '../mcp/services/watchedMatchesQuery.js';
 import {
   buildMatchDocument,
@@ -13,7 +18,8 @@ import {
   parseSetUserPicksPayload,
   parseTeamId,
   normalizeReactions,
-  parseMatchReactions
+  parseMatchReactions,
+  parseMatchEngagementAggregate
 } from '../entities/matchEntity.js';
 import { findPlayerTeam } from '../mcp/services/playerWatchedPlayedQuery.js';
 import {
@@ -26,6 +32,7 @@ import {
   getWatchedCountsByFixtureIds,
   mergeWatchedCountIntoDocuments,
 } from '../services/watchedMatchCounts.js';
+import { getMatchEngagementByFixtureId } from '../services/matchEngagementAggregate.js';
 
 // Get matches
 const getMatches = async (req, res) => {
@@ -346,6 +353,69 @@ const USER_PICK_PLAYER_KEYS = [
   'most_entertaining'
 ];
 
+const buildMatchInteractionContext = (fixtureId, matchDoc) => ({
+  fixtureId,
+  fixture: matchDoc?.fixture,
+  league: matchDoc?.league,
+  teams: matchDoc?.teams
+});
+
+const logReactionChanges = async (username, fixtureId, matchDoc, previousReactions, nextReactions, req) => {
+  const previous = new Set(normalizeReactions(previousReactions ?? []));
+  const next = new Set(normalizeReactions(nextReactions ?? []));
+  const context = buildMatchInteractionContext(fixtureId, matchDoc);
+
+  for (const reaction of next) {
+    if (!previous.has(reaction)) {
+      await logMatchInteraction(username, {
+        ...context,
+        type: 'reaction',
+        change: 'added',
+        reaction
+      }, req);
+    }
+  }
+
+  for (const reaction of previous) {
+    if (!next.has(reaction)) {
+      await logMatchInteraction(username, {
+        ...context,
+        type: 'reaction',
+        change: 'removed',
+        reaction
+      }, req);
+    }
+  }
+};
+
+const logUserPicksChanges = async (username, fixtureId, matchDoc, incomingPicks, mergedPicks, req) => {
+  const context = buildMatchInteractionContext(fixtureId, matchDoc);
+
+  if (incomingPicks.rating !== undefined) {
+    const rating = mergedPicks?.rating ?? null;
+    await logMatchInteraction(username, {
+      ...context,
+      type: 'match_rating',
+      change: rating == null ? 'cleared' : 'set',
+      rating
+    }, req);
+  }
+
+  for (const category of USER_PICK_PLAYER_KEYS) {
+    if (incomingPicks[category] === undefined) {
+      continue;
+    }
+    const player = mergedPicks?.[category] ?? null;
+    await logMatchInteraction(username, {
+      ...context,
+      type: 'player_voted',
+      change: player == null ? 'cleared' : 'set',
+      category,
+      player
+    }, req);
+  }
+};
+
 // Post user picks (rating, mvp, bluff, underrated, most_entertaining) for a watched match
 const setUserPicks = async (req, res) => {
   const db = getDB();
@@ -389,6 +459,8 @@ const setUserPicks = async (req, res) => {
     const result = await db.collection('matches').updateOne(filter, update);
     console.log(`User picks updated for fixture ${fixtureId} by ${username}`);
 
+    await logUserPicksChanges(username, fixtureId, existing, incomingPicks, merged, req);
+
     res.status(201).json({ acknowledged: result.acknowledged, user_picks: merged });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -424,6 +496,15 @@ const setReactions = async (req, res) => {
     const result = await db.collection('matches').updateOne(filter, update);
     console.log(`Reactions updated for fixture ${fixtureId} by ${username}`);
 
+    await logReactionChanges(
+      username,
+      fixtureId,
+      existing,
+      existing.reactions,
+      validated.length > 0 ? validated : [],
+      req
+    );
+
     res.status(201).json({
       acknowledged: result.acknowledged,
       reactions: validated.length > 0 ? validated : null
@@ -433,4 +514,31 @@ const setReactions = async (req, res) => {
   }
 };
 
-export { getMatches, getMatchesByTeamId, createMatch, deleteMatch, changeLocation, setUserPicks, setReactions, getLandingPageInfo, getUsersMatchCounts };
+// Get aggregated reactions, rating, and player votes for a fixture (all users)
+const getMatchEngagement = async (req, res) => {
+  try {
+    const fixtureId = parseFixtureId(req.params.fixtureId);
+    const aggregate = await getMatchEngagementByFixtureId(fixtureId);
+    const validated = parseMatchEngagementAggregate(aggregate);
+    console.log(`Match engagement aggregate retrieved for fixture ${fixtureId}`);
+    res.send(validated);
+  } catch (error) {
+    if (error?.issues) {
+      return res.status(500).json({ message: error.message });
+    }
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export {
+  getMatches,
+  getMatchesByTeamId,
+  createMatch,
+  deleteMatch,
+  changeLocation,
+  setUserPicks,
+  setReactions,
+  getMatchEngagement,
+  getLandingPageInfo,
+  getUsersMatchCounts
+};

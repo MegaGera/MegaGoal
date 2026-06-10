@@ -2,7 +2,7 @@
   Match Info component to display detailed information about a specific match
 */
 
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -12,7 +12,7 @@ import { ImagesService } from '../../services/images.service';
 import { AuthService } from '../../services/auth.service';
 import { UpdaterService } from '../../services/updater.service';
 import { RealMatch, TeamStatistics } from '../../models/realMatch';
-import { Match, MatchReaction, MatchUserPicks } from '../../models/match';
+import { Match, MatchEngagementAggregate, MatchReaction, MatchUserPicks } from '../../models/match';
 import { isFinishedStatus } from '../../config/matchStatus';
 import { LeagueHeaderComponent } from './league-header/league-header.component';
 import { GeneralMatchCardComponent } from '../general-match-card/general-match-card.component';
@@ -31,6 +31,7 @@ import { MatchReactionsComponent } from './match-reactions/match-reactions.compo
   providers: [ImagesService]
 })
 export class MatchInfoComponent {
+  @ViewChild('generalMatchCard') generalMatchCard!: GeneralMatchCardComponent;
 
   queryMatchId!: number;
   match!: RealMatch;
@@ -45,6 +46,7 @@ export class MatchInfoComponent {
   isMobileView: boolean = false;
   watched = false;
   watchedMatch: Match | null = null;
+  matchEngagement: MatchEngagementAggregate | null = null;
 
   constructor(
     private megagoal: MegaGoalService, 
@@ -99,6 +101,7 @@ export class MatchInfoComponent {
         user_picks: userPicks
       };
     }
+    this.refreshMatchEngagement();
   }
 
   onReactionsChange(reactions: MatchReaction[] | undefined): void {
@@ -108,26 +111,33 @@ export class MatchInfoComponent {
         reactions
       };
     }
+    this.refreshMatchEngagement();
   }
 
-  onFirstReactionAdded(): void {
-    this.scrollToVotingSection();
+  ensureWatchedForReaction(performToggle: () => void): void {
+    if (!this.generalMatchCard) {
+      return;
+    }
+
+    this.generalMatchCard.markAsWatchedIfNeeded().subscribe({
+      next: () => performToggle(),
+      error: (error) => console.error('Failed to mark match as watched:', error)
+    });
   }
 
-  private scrollToVotingSection(): void {
+  onReactionChanged(): void {
     if (this.isMobileView) {
       this.viewMode = 'rating';
     }
 
     const delay = this.isMobileView ? 80 : 0;
     setTimeout(() => {
-      const votingSection = document.getElementById('voting-section');
-      if (!votingSection) {
+      const reactionsSection = document.getElementById('match-reactions-section');
+      if (!reactionsSection) {
         return;
       }
 
-      const scrollOffset = this.isMobileView ? 80 : 25;
-      const top = votingSection.getBoundingClientRect().top + window.scrollY - scrollOffset;
+      const top = reactionsSection.getBoundingClientRect().top + window.scrollY - 10;
       window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
     }, delay);
   }
@@ -145,6 +155,7 @@ export class MatchInfoComponent {
           this.awayStatistics = this.match.statistics[1];
         }
         this.loading = false;
+        this.loadMatchEngagement(this.match.fixture.id);
         
         // Log page visit with match information
         this.megagoal.logPageVisit('match-info', {
@@ -167,6 +178,25 @@ export class MatchInfoComponent {
       }
     }, error => {
       this.router.navigate(["/app/matches"]);
+    });
+  }
+
+  private refreshMatchEngagement(): void {
+    if (!this.match?.fixture?.id) {
+      return;
+    }
+    this.loadMatchEngagement(this.match.fixture.id);
+  }
+
+  private loadMatchEngagement(fixtureId: number): void {
+    this.megagoal.getMatchEngagement(fixtureId).subscribe({
+      next: (aggregate) => {
+        this.matchEngagement = aggregate;
+      },
+      error: (error) => {
+        console.error('Error loading match engagement aggregate:', error);
+        this.matchEngagement = null;
+      }
     });
   }
 
