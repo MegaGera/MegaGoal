@@ -1,0 +1,26 @@
+<button
+  type="button"
+  class="match-player-pick-card"
+  [class.is-selected]="selected"
+  [attr.aria-pressed]="selected"
+  [attr.aria-label]="playerName + (selected ? ', selected' : '')"
+  (click)="onClick()">
+  <div class="player-top-row">
+    <img
+      class="team-badge"
+      [src]="images.getRouteImageTeam(teamId)"
+      [alt]="'Team badge'"
+      loading="lazy" />
+    <div class="player-avatar">
+      <img
+        *ngIf="!avatarError"
+        [src]="images.getRouteImagePlayer(playerId)"
+        [alt]="playerName"
+        loading="lazy"
+        (error)="onAvatarError()" />
+      <div class="player-avatar-fallback" *ngIf="avatarError">{{ playerName | slice:0:1 }}</div>
+    </div>
+  </div>
+  <span class="player-name">{{ playerName }}</span>
+  <span class="engagement-count-badge" *ngIf="votePercent != null && votePercent > 0">{{ votePercent }}%</span>
+</button>

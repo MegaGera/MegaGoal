@@ -36,12 +36,26 @@
   font-weight: 500;
 }
 
-/* Desktop three-column layout: Statistics | Events | Lineups */
+/* Desktop layout: Statistics | Events | Lineups */
 .desktop-main-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 2rem;
   align-items: start;
+}
+
+.match-reactions-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.desktop-user-picks-section {
+  width: 100%;
+}
+
+.desktop-user-picks-card {
+  width: 100%;
 }
 
 .desktop-column {
@@ -77,11 +91,14 @@
 
 .view-toggle {
   display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
   border-radius: 999px;
   border: 1px solid #dee2e6;
   padding: 0.25rem;
   background: #f8f9fa;
   gap: 0.5rem;
+  max-width: 100%;
 }
 
 .toggle-btn {

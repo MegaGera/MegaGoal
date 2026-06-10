@@ -1,0 +1,98 @@
+.match-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.55rem 0.7rem;
+  width: 100%;
+  padding: 0.25rem 0;
+}
+
+.reaction-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.engagement-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.15rem;
+  padding: 0 0.35rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+  background: linear-gradient(135deg, #dc143c 0%, #b31336 100%);
+  box-shadow: 0 2px 8px rgba(220, 20, 60, 0.22);
+}
+
+.reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 10px;
+  box-sizing: border-box;
+  transition: transform 0.16s ease, opacity 0.16s ease, border-color 0.16s ease;
+}
+
+.reaction-btn.is-selected {
+  border-color: #dc143c;
+}
+
+.reaction-emoji {
+  font-size: 1.65rem;
+  line-height: 1;
+  opacity: 0.28;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+.reaction-btn.is-community-selected:not(:hover) .reaction-emoji {
+  opacity: 0.68;
+}
+
+.reaction-btn:hover .reaction-emoji {
+  opacity: 1;
+  transform: scale(1.28);
+}
+
+.reaction-btn.is-selected .reaction-emoji {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (max-width: 768px) {
+  .match-reactions {
+    flex-wrap: nowrap;
+    gap: 0.35rem 0.45rem;
+    justify-content: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .match-reactions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .reaction-btn {
+    flex: 0 0 auto;
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  .reaction-emoji {
+    font-size: 1.45rem;
+  }
+}

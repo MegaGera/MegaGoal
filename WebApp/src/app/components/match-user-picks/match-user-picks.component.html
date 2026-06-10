@@ -1,0 +1,74 @@
+<div class="user-picks-panel" [class.layout-horizontal]="layout === 'horizontal'">
+  <div class="picks-rating-row">
+    <div class="pick-block pick-block-rating">
+      <label class="pick-label">Match rating</label>
+      <div class="star-rating-row">
+        <div class="star-rating-center">
+          <div
+            class="star-rating"
+            [class.is-hovering]="hoverRating != null"
+            role="group"
+            aria-label="Match rating from 1 to 5 in half-star steps"
+            (mouseleave)="clearStarHover()">
+            <div class="star-unit" *ngFor="let star of starIndexes">
+              <div class="star-visual" aria-hidden="true">
+                <span class="star-empty">★</span>
+                <span class="star-filled" [style.width.%]="getStarFillPercent(star)">★</span>
+              </div>
+              <button
+                type="button"
+                class="star-hit star-hit-left"
+                [attr.aria-label]="'Rate ' + (star - 0.5) + ' stars'"
+                (mouseenter)="onStarHover(star, 'left')"
+                (click)="setRatingFromStar(star, 'left')">
+              </button>
+              <button
+                type="button"
+                class="star-hit star-hit-right"
+                [attr.aria-label]="'Rate ' + star + ' stars'"
+                (mouseenter)="onStarHover(star, 'right')"
+                (click)="setRatingFromStar(star, 'right')">
+              </button>
+            </div>
+          </div>
+          <span class="rating-value" [class.is-preview]="hoverRating != null" *ngIf="displayRating != null">
+            {{ displayRating }} / 5
+          </span>
+        </div>
+      </div>
+      <div class="overall-rating-total" *ngIf="overallRating != null">
+        <span class="overall-rating-legend">Total</span>
+        <span class="overall-rating-value">
+          {{ formatOverallRating(overallRating) }}
+          <span class="overall-rating-star" aria-hidden="true">★</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="picks-players-row" *ngIf="hasLineups && participants.length > 0; else noPlayers">
+    <div
+      class="pick-block pick-block-player"
+      *ngFor="let section of playerPickSections; trackBy: trackByPickKey">
+      <label class="pick-label">{{ section.label }}</label>
+      <div
+        class="player-pick-list"
+        #playerPickList
+        [attr.data-pick]="section.key">
+        <app-match-player-pick-card
+          *ngFor="let player of getDisplayList(section.key); trackBy: trackByPlayerId"
+          [playerId]="player.id"
+          [playerName]="player.name"
+          [teamId]="player.team_id"
+          [selected]="isPlayerSelected(section.key, player.id)"
+          [votePercent]="getPlayerVotePercent(section.key, player.id)"
+          (cardClick)="onPlayerPickSelect(section.key, player.id)">
+        </app-match-player-pick-card>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noPlayers>
+    <p class="user-picks-empty picks-players-empty">Player picks will appear when lineups are available.</p>
+  </ng-template>
+</div>

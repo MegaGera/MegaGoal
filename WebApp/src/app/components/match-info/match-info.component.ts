@@ -2,7 +2,7 @@
   Match Info component to display detailed information about a specific match
 */
 
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -12,22 +12,26 @@ import { ImagesService } from '../../services/images.service';
 import { AuthService } from '../../services/auth.service';
 import { UpdaterService } from '../../services/updater.service';
 import { RealMatch, TeamStatistics } from '../../models/realMatch';
+import { Match, MatchEngagementAggregate, MatchReaction, MatchUserPicks } from '../../models/match';
 import { isFinishedStatus } from '../../config/matchStatus';
 import { LeagueHeaderComponent } from './league-header/league-header.component';
 import { GeneralMatchCardComponent } from '../general-match-card/general-match-card.component';
 import { MatchEventsComponent } from '../match-events/match-events.component';
 import { MatchStatisticsComponent } from '../match-statistics/match-statistics.component';
 import { MatchLineupsComponent } from '../match-lineups/match-lineups.component';
+import { MatchUserPicksComponent } from '../match-user-picks/match-user-picks.component';
+import { MatchReactionsComponent } from './match-reactions/match-reactions.component';
 
 @Component({
   selector: 'app-match-info',
   standalone: true,
-  imports: [CommonModule, LeagueHeaderComponent, GeneralMatchCardComponent, MatchEventsComponent, MatchStatisticsComponent, MatchLineupsComponent],
+  imports: [CommonModule, LeagueHeaderComponent, GeneralMatchCardComponent, MatchEventsComponent, MatchStatisticsComponent, MatchLineupsComponent, MatchUserPicksComponent, MatchReactionsComponent],
   templateUrl: './match-info.component.html',
   styleUrl: './match-info.component.css',
   providers: [ImagesService]
 })
 export class MatchInfoComponent {
+  @ViewChild('generalMatchCard') generalMatchCard!: GeneralMatchCardComponent;
 
   queryMatchId!: number;
   match!: RealMatch;
@@ -38,8 +42,11 @@ export class MatchInfoComponent {
   isUpdating: boolean = false;
   highlightsVideo: any = null;
   loadingVideo: boolean = false;
-  viewMode: 'events' | 'statistics' | 'lineups' = 'events';
+  viewMode: 'events' | 'statistics' | 'lineups' | 'rating' = 'events';
   isMobileView: boolean = false;
+  watched = false;
+  watchedMatch: Match | null = null;
+  matchEngagement: MatchEngagementAggregate | null = null;
 
   constructor(
     private megagoal: MegaGoalService, 
@@ -68,8 +75,71 @@ export class MatchInfoComponent {
     this.updateViewportMode();
   }
 
-  setView(mode: 'events' | 'statistics' | 'lineups'): void {
+  setView(mode: 'events' | 'statistics' | 'lineups' | 'rating'): void {
     this.viewMode = mode;
+  }
+
+  onWatchedChange(watched: boolean): void {
+    this.watched = watched;
+    if (!watched) {
+      this.watchedMatch = null;
+      if (this.viewMode === 'rating') {
+        this.viewMode = 'events';
+      }
+    }
+  }
+
+  onWatchedMatchChange(match: Match | null): void {
+    this.watchedMatch = match;
+    this.watched = match != null;
+  }
+
+  onUserPicksChange(userPicks: MatchUserPicks | undefined): void {
+    if (this.watchedMatch) {
+      this.watchedMatch = {
+        ...this.watchedMatch,
+        user_picks: userPicks
+      };
+    }
+    this.refreshMatchEngagement();
+  }
+
+  onReactionsChange(reactions: MatchReaction[] | undefined): void {
+    if (this.watchedMatch) {
+      this.watchedMatch = {
+        ...this.watchedMatch,
+        reactions
+      };
+    }
+    this.refreshMatchEngagement();
+  }
+
+  ensureWatchedForReaction(performToggle: () => void): void {
+    if (!this.generalMatchCard) {
+      return;
+    }
+
+    this.generalMatchCard.markAsWatchedIfNeeded().subscribe({
+      next: () => performToggle(),
+      error: (error) => console.error('Failed to mark match as watched:', error)
+    });
+  }
+
+  onReactionChanged(): void {
+    if (this.isMobileView) {
+      this.viewMode = 'rating';
+    }
+
+    const delay = this.isMobileView ? 80 : 0;
+    setTimeout(() => {
+      const reactionsSection = document.getElementById('match-reactions-section');
+      if (!reactionsSection) {
+        return;
+      }
+
+      const top = reactionsSection.getBoundingClientRect().top + window.scrollY - 10;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }, delay);
   }
 
   private updateViewportMode(): void {
@@ -85,6 +155,7 @@ export class MatchInfoComponent {
           this.awayStatistics = this.match.statistics[1];
         }
         this.loading = false;
+        this.loadMatchEngagement(this.match.fixture.id);
         
         // Log page visit with match information
         this.megagoal.logPageVisit('match-info', {
@@ -107,6 +178,25 @@ export class MatchInfoComponent {
       }
     }, error => {
       this.router.navigate(["/app/matches"]);
+    });
+  }
+
+  private refreshMatchEngagement(): void {
+    if (!this.match?.fixture?.id) {
+      return;
+    }
+    this.loadMatchEngagement(this.match.fixture.id);
+  }
+
+  private loadMatchEngagement(fixtureId: number): void {
+    this.megagoal.getMatchEngagement(fixtureId).subscribe({
+      next: (aggregate) => {
+        this.matchEngagement = aggregate;
+      },
+      error: (error) => {
+        console.error('Error loading match engagement aggregate:', error);
+        this.matchEngagement = null;
+      }
     });
   }
 
