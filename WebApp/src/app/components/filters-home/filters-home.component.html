@@ -41,7 +41,7 @@
     }
 
     <!-- Teams (optional; home passes teamsFiltered like leagues; team page uses locked single badge) -->
-    @if (showTeams && (teamPrimaryLocked != null || !teamsLoaded || filteredTeamsOrdered.length > 0)) {
+    @if (showTeams && (teamPrimaryLocked != null || !teamsLoaded || teamsViewed.length > 0)) {
       <div
         class="filter-section"
         [class.team-filter-section--expanded]="teamPrimaryLocked == null && teamsLoaded && showAllTeams && teamsViewed.length > 4">
