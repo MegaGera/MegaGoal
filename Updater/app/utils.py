@@ -135,10 +135,19 @@ class MatchUpdater:
         """Check if real_match is finished"""
         return real_match["fixture"]["status"]["short"] in Config.get_finished_match_status_array()
     
+    # Top-level fields returned by the fixtures API; everything else (events, statistics,
+    # lineups, *_checked, usernames, etc.) is enriched separately and must be preserved.
+    FIXTURE_API_FIELDS = ("fixture", "league", "teams", "goals", "score")
+
     def update_real_match(self, match):
-        """Update real_match in database"""
+        """Update real_match fixture data without overwriting enriched fields."""
         query_filter = {"fixture.id": match["fixture"]["id"]}
-        self.collection_real_matches.replace_one(query_filter, match)
+        update_fields = {
+            field: match[field]
+            for field in self.FIXTURE_API_FIELDS
+            if field in match
+        }
+        self.collection_real_matches.update_one(query_filter, {"$set": update_fields})
     
     def update_matches(self, match):
         """Update matches in database"""
