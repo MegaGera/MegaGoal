@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { CommonModule, NgClass, NgOptimizedImage } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -8,7 +8,7 @@ import { MatSelectModule } from '@angular/material/select'
 import { FormsModule } from '@angular/forms';
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamFilterF, jamEyeF, jamHomeF } from '@ng-icons/jam-icons';
+import { jamSettingsAlt, jamEyeF, jamHomeF } from '@ng-icons/jam-icons';
 import { ionFootball } from '@ng-icons/ionicons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
@@ -29,6 +29,7 @@ import { FavouriteTeamCardComponent } from '../stats/favourite-team-card/favouri
 import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { GeneralStatsComponent } from '../stats/general-stats/general-stats.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
+import { MobileFiltersInlineRowComponent } from '../mobile-filters-inline-row/mobile-filters-inline-row.component';
 import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
 import { UserMe } from '../../models/userMe';
 import { NotificationComponent } from '../notification/notification.component';
@@ -37,12 +38,12 @@ import { NotificationComponent } from '../notification/notification.component';
   selector: 'app-home',
   standalone: true,
   imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, RealMatchCardComponent, PaginationComponent, MatProgressSpinnerModule, 
-    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent, FiltersHomeComponent, NotificationComponent],
+    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent, FiltersHomeComponent, NotificationComponent, MobileFiltersInlineRowComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   providers: [ImagesService, provideNgIconsConfig({
     size: '1.2rem',
-  }), provideIcons({ jamFilterF, jamEyeF, jamHomeF, ionFootball })]
+  }), provideIcons({ jamSettingsAlt, jamEyeF, jamHomeF, ionFootball })]
 })
 export class HomeComponent implements OnInit, OnDestroy {
 
@@ -99,7 +100,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   teamsAgainstLoaded: boolean = true;
 
   /* View Mode */
-  viewMode: 'stats' | 'matches' | 'filters' = 'matches';
+  viewMode: 'stats' | 'matches' = 'matches';
+
+  /* Mobile layout */
+  isMobileView: boolean = false;
+  mobileFiltersExpanded: boolean = false;
 
   /** When chip/league/season/location change, refetch picker teams-viewed; team-only changes skip this. */
   private lastStandardFiltersKey = '';
@@ -112,11 +117,25 @@ export class HomeComponent implements OnInit, OnDestroy {
     private leagueColorsService: LeagueColorsService
   ) { }
 
-  setView(mode: 'stats' | 'matches' | 'filters'): void {
+  setView(mode: 'stats' | 'matches'): void {
     this.viewMode = mode;
   }
 
+  @HostListener('window:resize')
+  onResize(): void {
+    this.updateScreenSize();
+  }
+
+  private updateScreenSize(): void {
+    this.isMobileView = window.innerWidth < 768;
+  }
+
+  toggleMobileFilters(): void {
+    this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
+  }
+
   ngOnInit(): void {
+    this.updateScreenSize();
     this.userMeSubscription = this.megagoal.userMe$.subscribe((user) => {
       this.userMe = user;
     });

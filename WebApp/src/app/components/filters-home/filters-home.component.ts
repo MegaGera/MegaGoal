@@ -1,9 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, HostBinding, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, NgClass, NgOptimizedImage } from '@angular/common';
 import { MatChipsModule } from '@angular/material/chips';
 import { FormsModule } from '@angular/forms';
-import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { jamFilterF, jamChevronUp, jamChevronDown, jamSearch, jamClose } from '@ng-icons/jam-icons';
+import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
+import { jamSettingsAlt, jamChevronUp, jamChevronDown, jamSearch, jamClose } from '@ng-icons/jam-icons';
 import { SeasonInfo } from '../../models/season';
 import { LeagueStats, TeamsViewedStats } from '../../models/league';
 import { Location } from '../../models/location';
@@ -24,7 +24,11 @@ import { GeneralCardComponent } from '../general-card/general-card.component';
   ],
   templateUrl: './filters-home.component.html',
   styleUrls: ['./filters-home.component.css'],
-  providers: [ImagesService, provideIcons({ jamFilterF, jamChevronUp, jamChevronDown, jamSearch, jamClose })]
+  providers: [
+    ImagesService,
+    provideIcons({ jamSettingsAlt, jamChevronUp, jamChevronDown, jamSearch, jamClose }),
+    provideNgIconsConfig({ size: '1em' })
+  ]
 })
 export class FiltersHomeComponent {
   @Input() filterPanelChipSelected: number = 1;
@@ -57,6 +61,13 @@ export class FiltersHomeComponent {
   @Input() teamsAgainstLoaded: boolean = true;
   @Input() showLocations: boolean = true;
   @Input() collapsed: boolean = false;
+  /** When true and collapsed, header is a single settings icon aligned right (no title/chevron). */
+  @Input() iconOnlyCollapsed: boolean = false;
+
+  @HostBinding('class.filters-home--icon-only-collapsed')
+  get iconOnlyCollapsedActive(): boolean {
+    return this.iconOnlyCollapsed && this.collapsed;
+  }
 
   @Output() filterPanelChipSelectedChange = new EventEmitter<number>();
   @Output() filterLeagueSelectedChange = new EventEmitter<number[]>();

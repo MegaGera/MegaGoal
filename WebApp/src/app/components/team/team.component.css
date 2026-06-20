@@ -1,3 +1,5 @@
+@import '../mobile-filters-inline-row/mobile-filters-layout.css';
+
 @media (min-width: 768px) {
   .tab-content > .tab-pane {
     display: block !important;
@@ -89,10 +91,6 @@
   gap: 0.5rem;
 }
 
-.mobile-filters-wrapper {
-  margin-bottom: 1.5rem;
-}
-
 .toggle-btn {
   border: none;
   background: transparent;
@@ -116,7 +114,17 @@
 .insights-view {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0;
+}
+
+/* Match count pill — same spacing as home (no flex gap stacking on margin-bottom) */
+.team-page .matches-header {
+  padding: 8px 50px;
+  margin-bottom: 16px;
+}
+
+.team-page .matches-view {
+  gap: 0;
 }
 
 .spinner-wrapper {
@@ -538,7 +546,7 @@
 .matches-view {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0;
 }
 
 .personal-matches .matches-list {
@@ -596,6 +604,31 @@
 
 .matchCardAdapterTwoColumns {
   width: 100%;
+}
+
+@media (max-width: 767px) {
+  .team-page .mobile-filters-wrapper {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+  }
+
+  .team-page .mobile-filters-inline-row {
+    padding: 0 0.5rem;
+    margin-bottom: 16px;
+  }
+
+  .team-page .mobile-filters-inline-row__toggle {
+    right: 0.5rem;
+  }
+
+  .team-page .mobile-filters-inline-row__main:not(:empty) ::ng-deep .matches-header {
+    padding: 6px 50px;
+    margin-bottom: 0;
+  }
+
+  .team-page .mobile-filters-inline-row__main:not(:empty) ::ng-deep .matches-title {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 768px) {

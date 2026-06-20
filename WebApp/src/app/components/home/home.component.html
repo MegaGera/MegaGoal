@@ -19,11 +19,20 @@
         <div class="view-toggle">
           <button class="toggle-btn" [class.active]="viewMode === 'stats'" (click)="setView('stats')">Stats</button>
           <button class="toggle-btn" [class.active]="viewMode === 'matches'" (click)="setView('matches')">Matches</button>
-          <button class="toggle-btn" [class.active]="viewMode === 'filters'" (click)="setView('filters')">Filters</button>
         </div>
       </div>
     </div>
   </div>
+
+  @if (isMobileView && this.matchesLoaded && this.matchesOriginal.length > 0 && (mobileFiltersExpanded || viewMode !== 'matches')) {
+    <div class="row">
+      <div class="col-12">
+        <div class="mobile-filters-wrapper" [class.mobile-filters-wrapper--expanded]="mobileFiltersExpanded">
+          <ng-container *ngTemplateOutlet="homeMobileFilters; context: { inline: false, collapsed: !mobileFiltersExpanded }" />
+        </div>
+      </div>
+    </div>
+  }
 
   <div class="tab-content row m-auto" id="nav-tabContent">
     <div class="tab-pane col-md-3 col-12" 
@@ -52,7 +61,7 @@
           <div class="no-stats-container">
             <div class="no-stats-card">
               <div class="no-stats-icon">
-                <ng-icon name="jamFilterF" size="3rem" class="filter-icon"></ng-icon>
+                <ng-icon name="jamSettingsAlt" size="3rem" class="filter-icon"></ng-icon>
               </div>
               <h3 class="no-stats-title">No stats available</h3>
               <p class="no-stats-description">
@@ -72,10 +81,20 @@
       
       <!-- Center column: Matches -->
       @if (this.matchesLoaded && this.matches.length > 0) {
-                  <!-- Matches Header -->
+        @if (isMobileView) {
+          <app-mobile-filters-inline-row>
+            <div class="matches-header">
+              <h3 class="matches-title">{{ matches.length }} matches</h3>
+            </div>
+            <div mobileFilterToggle>
+              <ng-container *ngTemplateOutlet="homeMobileFilters; context: { inline: true, collapsed: true }" />
+            </div>
+          </app-mobile-filters-inline-row>
+        } @else {
           <div class="matches-header">
             <h3 class="matches-title">{{ matches.length }} matches</h3>
           </div>
+        }
 
         <!-- Iterate the matches filtered array -->
         @for (match of matchesFiltered; track $index) {
@@ -100,7 +119,7 @@
             </p>
             <div class="no-matches-actions">
               <button class="reset-filters-btn" (click)="resetFilters()">
-                <ng-icon name="jamFilterF"></ng-icon>
+                <ng-icon name="jamSettingsAlt"></ng-icon>
                 Reset Filters
               </button>
             </div>
@@ -113,44 +132,76 @@
       }
 
     </div>
-    <div class="tab-pane col-md-3 col-12" 
-         [class.show]="viewMode === 'filters'"
-         [class.d-md-block]="true"
-         id="nav-filters" 
-         role="tabpanel">
-      
-      <!-- Filters Component -->
-      @if (this.matchesLoaded && this.matchesOriginal.length > 0) {
-        <app-filters-home
-          [filterPanelChipSelected]="filterPanelChipSelected"
-          [filterLeagueSelected]="filterLeagueSelected"
-          [filterTeamSelected]="filterTeamSelected"
-          [filterSeasonSelected]="filterSeasonSelected"
-          [filterLocationSelected]="filterLocationSelected"
-          [filterOrder]="filterOrder"
-          [seasons]="seasonsFiltered"
-          [locations]="locationsFiltered"
-          [leaguesViewed]="leaguesFiltered"
-          [leaguesLoaded]="leaguesLoaded"
-          [teamsViewed]="teamsFiltered"
-          [teamsLoaded]="statsLoaded"
-          [enableTeamsSearch]="true"
-          [showTeams]="true"
-          [showTeamAgainst]="true"
-          [filterTeamAgainstSelected]="filterTeamAgainstSelected"
-          [teamsAgainstViewed]="teamsAgainstViewed"
-          [teamsAgainstLoaded]="teamsAgainstLoaded"
-          (filterPanelChipSelectedChange)="changeFilterPanelChipSelected($event)"
-          (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"
-          (filterTeamSelectedChange)="changeFilterTeamSelected($event)"
-          (filterTeamAgainstSelectedChange)="changeFilterTeamAgainstSelected($event)"
-          (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
-          (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
-          (filterOrderChange)="changeFilterOrder($event)"
-          (resetFiltersChange)="resetFilters()">
-        </app-filters-home>
-      }
-    </div>
+    @if (!isMobileView) {
+      <div class="tab-pane col-md-3 col-12 d-md-block" id="nav-filters" role="tabpanel">
+        @if (this.matchesLoaded && this.matchesOriginal.length > 0) {
+          <app-filters-home
+            [filterPanelChipSelected]="filterPanelChipSelected"
+            [filterLeagueSelected]="filterLeagueSelected"
+            [filterTeamSelected]="filterTeamSelected"
+            [filterSeasonSelected]="filterSeasonSelected"
+            [filterLocationSelected]="filterLocationSelected"
+            [filterOrder]="filterOrder"
+            [seasons]="seasonsFiltered"
+            [locations]="locationsFiltered"
+            [leaguesViewed]="leaguesFiltered"
+            [leaguesLoaded]="leaguesLoaded"
+            [teamsViewed]="teamsFiltered"
+            [teamsLoaded]="statsLoaded"
+            [enableTeamsSearch]="true"
+            [showTeams]="true"
+            [showTeamAgainst]="true"
+            [filterTeamAgainstSelected]="filterTeamAgainstSelected"
+            [teamsAgainstViewed]="teamsAgainstViewed"
+            [teamsAgainstLoaded]="teamsAgainstLoaded"
+            (filterPanelChipSelectedChange)="changeFilterPanelChipSelected($event)"
+            (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"
+            (filterTeamSelectedChange)="changeFilterTeamSelected($event)"
+            (filterTeamAgainstSelectedChange)="changeFilterTeamAgainstSelected($event)"
+            (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
+            (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
+            (filterOrderChange)="changeFilterOrder($event)"
+            (resetFiltersChange)="resetFilters()">
+          </app-filters-home>
+        }
+      </div>
+    }
   </div>
+
+  <ng-template #homeMobileFilters let-inline="inline" let-collapsed="collapsed">
+    <app-filters-home
+      class="mobile-filters-panel"
+      [class.mobile-filters-inline]="inline"
+      [filterPanelChipSelected]="filterPanelChipSelected"
+      [filterLeagueSelected]="filterLeagueSelected"
+      [filterTeamSelected]="filterTeamSelected"
+      [filterSeasonSelected]="filterSeasonSelected"
+      [filterLocationSelected]="filterLocationSelected"
+      [filterOrder]="filterOrder"
+      [seasons]="seasonsFiltered"
+      [locations]="locationsFiltered"
+      [leaguesViewed]="leaguesFiltered"
+      [leaguesLoaded]="leaguesLoaded"
+      [teamsViewed]="teamsFiltered"
+      [teamsLoaded]="statsLoaded"
+      [enableTeamsSearch]="true"
+      [showTeams]="true"
+      [showTeamAgainst]="true"
+      [filterTeamAgainstSelected]="filterTeamAgainstSelected"
+      [teamsAgainstViewed]="teamsAgainstViewed"
+      [teamsAgainstLoaded]="teamsAgainstLoaded"
+      [collapsed]="collapsed"
+      [iconOnlyCollapsed]="true"
+      (collapseToggle)="toggleMobileFilters()"
+      (filterPanelChipSelectedChange)="changeFilterPanelChipSelected($event)"
+      (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"
+      (filterTeamSelectedChange)="changeFilterTeamSelected($event)"
+      (filterTeamAgainstSelectedChange)="changeFilterTeamAgainstSelected($event)"
+      (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
+      (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
+      (filterOrderChange)="changeFilterOrder($event)"
+      (resetFiltersChange)="resetFilters()">
+    </app-filters-home>
+  </ng-template>
 
 </div>

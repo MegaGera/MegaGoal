@@ -1,4 +1,6 @@
 /* View Toggle Styles */
+@import '../mobile-filters-inline-row/mobile-filters-layout.css';
+
 .view-toggle-card {
   margin-bottom: 1rem;
   display: flex;
@@ -86,15 +88,6 @@
   .no-matches-description {
     font-size: 14px;
   }
-
-  .matches-header {
-    padding: 6px 50px;
-    margin-bottom: 12px;
-  }
-
-  .matches-title {
-    font-size: 16px;
-  }
 }
 
 @media only screen and (max-width: 1200px) and (min-width: 769px) {
@@ -111,28 +104,6 @@
 
 .matchCardAdapter {
   width: 90%;
-}
-
-/* Matches Header */
-.matches-header {
-  background: linear-gradient(135deg, #dc143c, #ff6b6b);
-  border-radius: 12px;
-  padding: 8px 50px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border: 2px solid #dc143c;
-  text-align: center;
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.matches-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-  margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .paginationDiv {

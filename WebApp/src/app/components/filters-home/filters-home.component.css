@@ -11,6 +11,15 @@
 .filter-icon {
   color: #dc143c;
   --ng-icon__size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.filter-icon svg {
+  display: block;
 }
 
 .filter-title {
@@ -43,6 +52,107 @@
 
 .collapse-toggle-btn ng-icon {
   --ng-icon__size: 1.1rem;
+}
+
+.filter-header.filter-header--icon-only {
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0;
+  border-bottom: none;
+  gap: 0;
+}
+
+.filter-header.filter-header--compact-expanded {
+  justify-content: flex-end;
+  gap: 0;
+}
+
+.filter-compact-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.filter-compact-toggle-btn:hover .filter-title,
+.filter-compact-toggle-btn:focus-visible .filter-title {
+  color: #dc143c;
+}
+
+.filter-compact-toggle-btn:focus-visible {
+  outline: none;
+}
+
+.filter-compact-toggle-btn .filter-title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.filter-compact-toggle-btn .filter-icon {
+  --ng-icon__size: 1.4rem;
+}
+
+.filter-icon-only-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 1.5px solid transparent;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 8px;
+  cursor: pointer;
+  line-height: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.filter-icon-only-btn .filter-icon {
+  --ng-icon__size: 1.4rem;
+}
+
+.filter-icon-only-btn:hover {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.filter-icon-only-btn:focus-visible {
+  outline: none;
+}
+
+.filter-icon-only-btn:active {
+  background: #fff5f5;
+  border-color: rgba(220, 20, 60, 0.4);
+  box-shadow: none;
+}
+
+:host(.filters-home--icon-only-collapsed) {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0;
+}
+
+:host ::ng-deep .general-card.filters-card--icon-only {
+  width: fit-content;
+  margin-left: auto;
+  margin-bottom: 0;
+  padding: 8px 10px;
+}
+
+:host ::ng-deep .general-card.filters-card--icon-only:hover {
+  transform: translateY(-2px);
+}
+
+.filter-header.filter-header--collapsed {
+  margin: 0;
+  padding: 0;
+  border-bottom: none;
 }
 
 /* Filter Sections */
@@ -287,7 +397,16 @@
   flex-shrink: 0;
   color: #94a3b8;
   --ng-icon__size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  line-height: 0;
   transition: color 0.2s ease;
+}
+
+.team-search__icon svg {
+  display: block;
 }
 
 .team-search:focus-within .team-search__icon {
@@ -303,6 +422,9 @@
   font-weight: 500;
   color: #1e293b;
   outline: none;
+  line-height: 1.25;
+  padding: 0;
+  margin: 0;
 }
 
 .team-search__input::placeholder {
@@ -337,6 +459,14 @@
 
 .team-search__clear ng-icon {
   --ng-icon__size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.team-search__clear ng-icon svg {
+  display: block;
 }
 
 /* Team against: search */
@@ -364,7 +494,16 @@
   flex-shrink: 0;
   color: #94a3b8;
   --ng-icon__size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  line-height: 0;
   transition: color 0.2s ease;
+}
+
+.team-against-search__icon svg {
+  display: block;
 }
 
 .team-against-search:focus-within .team-against-search__icon {
@@ -380,6 +519,9 @@
   font-weight: 500;
   color: #1e293b;
   outline: none;
+  line-height: 1.25;
+  padding: 0;
+  margin: 0;
 }
 
 .team-against-search__input::placeholder {
@@ -414,6 +556,14 @@
 
 .team-against-search__clear ng-icon {
   --ng-icon__size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.team-against-search__clear ng-icon svg {
+  display: block;
 }
 
 .team-against-empty {
@@ -527,6 +677,26 @@
     padding-bottom: 8px;
   }
 
+  .filter-header.filter-header--collapsed {
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .filter-header.filter-header--icon-only {
+    margin: 0;
+    padding: 0;
+  }
+
+  .filter-header.filter-header--compact-expanded {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .filter-compact-toggle-btn .filter-title {
+    font-size: 20px;
+  }
+
   .filter-title {
     font-size: 16px;
   }
@@ -624,6 +794,7 @@
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
+  line-height: 1.25;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(220, 20, 60, 0.2);
@@ -641,6 +812,15 @@
 
 .reset-filters-btn ng-icon {
   --ng-icon__size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.reset-filters-btn ng-icon svg {
+  display: block;
 }
 
 .league-item-skeleton {

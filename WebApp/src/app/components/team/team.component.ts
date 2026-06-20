@@ -4,7 +4,7 @@
 
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { NgClass, NgFor } from '@angular/common';
+import { NgClass, NgFor, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select'
@@ -32,6 +32,7 @@ import { StatsService } from '../../services/stats.service';
 import { provideNgIconsConfig } from '@ng-icons/core';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
+import { MobileFiltersInlineRowComponent } from '../mobile-filters-inline-row/mobile-filters-inline-row.component';
 import { LeagueStats, TeamsViewedStats } from '../../models/league';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -73,7 +74,9 @@ interface TeamInsightsSummary {
     MatProgressSpinnerModule,
     TeamHeaderComponent,
     TeamCardComponent,
-    TeamPerformanceOverviewComponent
+    TeamPerformanceOverviewComponent,
+    CommonModule,
+    MobileFiltersInlineRowComponent
   ],
   templateUrl: './team.component.html',
   styleUrl: './team.component.css',
@@ -172,6 +175,29 @@ export class TeamComponent implements OnInit, OnDestroy {
   currentLeagues: LeagueStats[] = [];
   statsLocations: Location[] = [];
   mobileFiltersExpanded: boolean = false;
+
+  get isTeamMatchesView(): boolean {
+    return this.viewMode === 'yourMatches' || this.viewMode === 'allMatches';
+  }
+
+  get statsAppliedMatchesCount(): number {
+    return this.filteredPersonalMatches.length;
+  }
+
+  get teamMobileMatchesCount(): number {
+    if (this.viewMode === 'yourMatches') {
+      return this.statsAppliedMatchesCount;
+    }
+    if (this.viewMode === 'allMatches') {
+      if (this.useAllMatchesLastNextLayout) {
+        return this.matchViewMode === 'lastPlayed'
+          ? this.startedRealMatches.length
+          : this.notStartedRealMatches.length;
+      }
+      return this.showRealMatches.length;
+    }
+    return 0;
+  }
 
   insightsSummary: TeamInsightsSummary = this.resetInsightsSummary();
 
@@ -679,7 +705,7 @@ export class TeamComponent implements OnInit, OnDestroy {
   }
 
   private applyInsightsFiltersOnly(): void {
-    const matches = this.getMatchesForInsights();
+    const matches = this.getFilteredPersonalMatchesBase();
     this.filteredInsightsMatches = matches;
     this.insightsSummary = this.buildInsightsSummary(matches);
     this.seasonBreakdown = this.buildSeasonBreakdown(this.filteredPersonalMatches);
@@ -804,18 +830,6 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterRealMatches();
     this.filterInsightsData({ skipAgainstListFetch: true });
     this.updateQueryParams();
-  }
-
-  private getMatchesForInsights(): Match[] {
-    const base = this.getFilteredPersonalMatchesBase();
-
-    // If "All time" is selected (id: 0), return all matches
-    if (this.filterSeasonSelected?.id === 0) {
-      return [...base];
-    }
-
-    // Otherwise filter by the selected season
-    return base.filter(match => match.league.season === this.filterSeasonSelected?.id);
   }
 
   private buildInsightsSummary(matches: Match[]): TeamInsightsSummary {
@@ -1014,6 +1028,9 @@ export class TeamComponent implements OnInit, OnDestroy {
     const base = this.getFilteredPersonalMatchesBase();
     this.filteredPersonalMatches = base;
     
+    // Keep insights list aligned with Your Matches filters
+    this.filteredInsightsMatches = base;
+    
     // Apply restored pagination state
     const startIndex = (this.personalMatchesCurrentPage - 1) * this.personalMatchesPerPage;
     const endIndex = startIndex + this.personalMatchesPerPage;
@@ -1036,7 +1053,8 @@ export class TeamComponent implements OnInit, OnDestroy {
       const matchesLeague = this.filterLeagueSelected.length === 0 || this.filterLeagueSelected.includes(match.league.id);
       const matchesLocation = !this.filterLocationSelected || match.location === this.filterLocationSelected;
       const matchesSeason = !this.filterSeasonSelected || this.filterSeasonSelected.id === 0 || match.league.season === this.filterSeasonSelected.id;
-      return matchesLeague && matchesLocation && matchesSeason && this.matchPassesOpponentFilter(match);
+      const hasValidGoals = match.goals?.home != null && match.goals?.away != null;
+      return matchesLeague && matchesLocation && matchesSeason && hasValidGoals && this.matchPassesOpponentFilter(match);
     });
 
     // Sort by order (create new array to trigger change detection)
@@ -1362,11 +1380,11 @@ export class TeamComponent implements OnInit, OnDestroy {
       return true;
     }
 
-    return this.filteredPersonalMatches.length > 0 || this.filteredInsightsMatches.length > 0;
+    return this.filteredPersonalMatches.length > 0;
   }
 
   get insightsReady(): boolean {
-    return this.insightsLoaded && this.filteredInsightsMatches.length > 0;
+    return this.insightsLoaded && this.statsAppliedMatchesCount > 0;
   }
 
   formatSeason(season: number): string {

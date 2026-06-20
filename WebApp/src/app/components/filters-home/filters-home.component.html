@@ -1,16 +1,41 @@
-<app-general-card>
+<app-general-card [customClass]="iconOnlyCollapsed && collapsed ? 'filters-card--icon-only' : ''">
   <!-- Filter Header -->
-  <div class="filter-header">
-    <ng-icon name="jamFilterF" class="filter-icon"></ng-icon>
-    <h4 class="filter-title">Filters</h4>
-    <button
-      type="button"
-      class="collapse-toggle-btn"
-      (click)="onCollapseToggle()"
-      [attr.aria-expanded]="!collapsed"
-      aria-label="Toggle filters">
-      <ng-icon [name]="collapsed ? 'jamChevronDown' : 'jamChevronUp'"></ng-icon>
-    </button>
+  <div
+    class="filter-header"
+    [class.filter-header--collapsed]="collapsed"
+    [class.filter-header--icon-only]="iconOnlyCollapsed && collapsed"
+    [class.filter-header--compact-expanded]="iconOnlyCollapsed && !collapsed">
+    @if (iconOnlyCollapsed && collapsed) {
+      <button
+        type="button"
+        class="filter-icon-only-btn"
+        (click)="onCollapseToggle()"
+        [attr.aria-expanded]="false"
+        aria-label="Show filters">
+        <ng-icon name="jamSettingsAlt" class="filter-icon" size="1.4rem"></ng-icon>
+      </button>
+    } @else if (iconOnlyCollapsed && !collapsed) {
+      <button
+        type="button"
+        class="filter-compact-toggle-btn"
+        (click)="onCollapseToggle()"
+        [attr.aria-expanded]="true"
+        aria-label="Hide filters">
+        <h4 class="filter-title">Filters</h4>
+        <ng-icon name="jamSettingsAlt" class="filter-icon" size="1.4rem"></ng-icon>
+      </button>
+    } @else {
+      <ng-icon name="jamSettingsAlt" class="filter-icon" size="1.5rem"></ng-icon>
+      <h4 class="filter-title">Filters</h4>
+      <button
+        type="button"
+        class="collapse-toggle-btn"
+        (click)="onCollapseToggle()"
+        [attr.aria-expanded]="!collapsed"
+        aria-label="Toggle filters">
+        <ng-icon [name]="collapsed ? 'jamChevronDown' : 'jamChevronUp'"></ng-icon>
+      </button>
+    }
   </div>
 
   @if (!collapsed) {
@@ -75,7 +100,7 @@
         } @else {
           @if (enableTeamsSearch && teamsLoaded && teamsViewed.length > 1) {
             <div class="team-search">
-              <ng-icon name="jamSearch" class="team-search__icon" aria-hidden="true"></ng-icon>
+              <ng-icon name="jamSearch" class="team-search__icon" size="1.1rem" aria-hidden="true"></ng-icon>
               <input
                 type="search"
                 class="team-search__input"
@@ -91,7 +116,7 @@
                   class="team-search__clear"
                   (click)="clearTeamSearch()"
                   aria-label="Clear search">
-                  <ng-icon name="jamClose" aria-hidden="true"></ng-icon>
+                  <ng-icon name="jamClose" size="0.85rem" aria-hidden="true"></ng-icon>
                 </button>
               }
             </div>
@@ -150,7 +175,7 @@
         </div>
         @if (teamsAgainstLoaded && teamsAgainstViewed.length > 0) {
           <div class="team-against-search">
-            <ng-icon name="jamSearch" class="team-against-search__icon" aria-hidden="true"></ng-icon>
+            <ng-icon name="jamSearch" class="team-against-search__icon" size="1.1rem" aria-hidden="true"></ng-icon>
             <input
               type="search"
               class="team-against-search__input"
@@ -166,7 +191,7 @@
                 class="team-against-search__clear"
                 (click)="clearTeamAgainstSearch()"
                 aria-label="Clear search">
-                <ng-icon name="jamClose" aria-hidden="true"></ng-icon>
+                <ng-icon name="jamClose" size="0.85rem" aria-hidden="true"></ng-icon>
               </button>
             }
           </div>
@@ -296,7 +321,7 @@
     <!-- Reset Filters Button -->
     <div class="filter-section">
       <button class="reset-filters-btn" (click)="resetFilters()">
-        <ng-icon name="jamFilterF"></ng-icon>
+        <ng-icon name="jamSettingsAlt" size="1rem"></ng-icon>
         Reset Filters
       </button>
     </div>

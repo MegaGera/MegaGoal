@@ -1,0 +1,40 @@
+.mobile-filters-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.mobile-filters-wrapper--expanded {
+  margin-bottom: 1.5rem;
+}
+
+/* Matches count pill (shared by home + team mobile filter rows) */
+.matches-header {
+  background: linear-gradient(135deg, #dc143c, #ff6b6b);
+  border-radius: 12px;
+  padding: 8px 50px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #dc143c;
+  text-align: center;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.matches-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 767px) {
+  .mobile-filters-wrapper {
+    margin-left: 1.25rem;
+    margin-right: 1.25rem;
+  }
+
+  .mobile-filters-wrapper:not(.mobile-filters-wrapper--expanded):has(.filters-home--icon-only-collapsed) {
+    margin-bottom: 0;
+  }
+}
