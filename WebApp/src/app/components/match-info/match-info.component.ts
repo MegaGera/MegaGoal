@@ -41,6 +41,7 @@ export class MatchInfoComponent {
   isAdmin: boolean = false;
   isUpdating: boolean = false;
   highlightsVideo: any = null;
+  highlightsEmbedUrl: SafeResourceUrl | null = null;
   loadingVideo: boolean = false;
   viewMode: 'events' | 'statistics' | 'lineups' | 'rating' = 'events';
   isMobileView: boolean = false;
@@ -213,10 +214,15 @@ export class MatchInfoComponent {
     this.megagoal.getMatchHighlights(homeTeam, awayTeam, homeScore, awayScore, date).subscribe({
       next: (video) => {
         this.highlightsVideo = video;
+        this.highlightsEmbedUrl = video?.embedUrl
+          ? this.sanitizer.bypassSecurityTrustResourceUrl(video.embedUrl)
+          : null;
         this.loadingVideo = false;
       },
       error: (error) => {
         console.error('Error loading highlights:', error);
+        this.highlightsVideo = null;
+        this.highlightsEmbedUrl = null;
         this.loadingVideo = false;
       }
     });
@@ -228,10 +234,6 @@ export class MatchInfoComponent {
 
   isFinished(): boolean {
     return isFinishedStatus(this.match?.fixture.status?.short);
-  }
-
-  getSafeUrl(url: string): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
   updateStatistics(): void {
