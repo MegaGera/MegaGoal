@@ -115,13 +115,13 @@ export class MatchInfoComponent {
     this.refreshMatchEngagement();
   }
 
-  ensureWatchedForReaction(performToggle: () => void): void {
+  ensureWatchedThen(performAction: () => void): void {
     if (!this.generalMatchCard) {
       return;
     }
 
     this.generalMatchCard.markAsWatchedIfNeeded().subscribe({
-      next: () => performToggle(),
+      next: () => performAction(),
       error: (error) => console.error('Failed to mark match as watched:', error)
     });
   }

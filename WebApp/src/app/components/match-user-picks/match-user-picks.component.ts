@@ -38,7 +38,9 @@ export class MatchUserPicksComponent implements OnChanges {
   @Input() layout: 'stacked' | 'horizontal' = 'stacked';
   @Input() overallRating: number | null = null;
   @Input() playerVotes: Record<PlayerPickKey, MatchPlayerVoteCount[]> | null = null;
+  @Input() watched = false;
   @Output() userPicksChange = new EventEmitter<MatchUserPicks | undefined>();
+  @Output() ensureWatched = new EventEmitter<() => void>();
 
   readonly playerPickSections: PlayerPickSection[] = [
     { key: 'mvp', label: '🏆 MVP' },
@@ -98,16 +100,20 @@ export class MatchUserPicksComponent implements OnChanges {
   }
 
   onRatingChange(value: number | null): void {
-    this.rating = value;
-    this.persist({ rating: value });
+    this.withWatchedGuard(() => {
+      this.rating = value;
+      this.persist({ rating: value });
+    });
   }
 
   onPlayerPickSelect(key: PlayerPickKey, playerId: number): void {
-    const current = this.selectedPlayerIds[key];
-    const nextId = current === playerId ? null : playerId;
-    this.selectedPlayerIds[key] = nextId;
-    this.rebuildDisplayLists();
-    this.persist({ [key]: this.playerIdToPick(nextId) });
+    this.withWatchedGuard(() => {
+      const current = this.selectedPlayerIds[key];
+      const nextId = current === playerId ? null : playerId;
+      this.selectedPlayerIds[key] = nextId;
+      this.rebuildDisplayLists();
+      this.persist({ [key]: this.playerIdToPick(nextId) });
+    });
   }
 
   isPlayerSelected(key: PlayerPickKey, playerId: number): boolean {
@@ -136,8 +142,10 @@ export class MatchUserPicksComponent implements OnChanges {
   }
 
   clearRating(): void {
-    this.rating = null;
-    this.persist({ rating: null });
+    this.withWatchedGuard(() => {
+      this.rating = null;
+      this.persist({ rating: null });
+    });
   }
 
   get displayRating(): number | null {
@@ -233,6 +241,14 @@ export class MatchUserPicksComponent implements OnChanges {
     }
     const player = this.participants.find((p) => p.id === playerId);
     return player ?? null;
+  }
+
+  private withWatchedGuard(action: () => void): void {
+    if (!this.watched) {
+      this.ensureWatched.emit(action);
+      return;
+    }
+    action();
   }
 
   private persist(patch: Partial<MatchUserPicks>): void {

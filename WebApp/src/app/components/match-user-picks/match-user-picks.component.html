@@ -31,16 +31,16 @@
               </button>
             </div>
           </div>
-          <span class="rating-value" [class.is-preview]="hoverRating != null" *ngIf="displayRating != null">
-            {{ displayRating }} / 5
+          <span class="rating-value" [class.is-preview]="hoverRating != null">
+            {{ displayRating ?? 0 }} / 5
           </span>
         </div>
       </div>
-      <div class="overall-rating-total" *ngIf="overallRating != null">
+      <div class="overall-rating-total">
         <span class="overall-rating-legend">Total</span>
         <span class="overall-rating-value">
-          {{ formatOverallRating(overallRating) }}
-          <span class="overall-rating-star" aria-hidden="true">★</span>
+          {{ overallRating != null ? formatOverallRating(overallRating) : '-' }}
+          <span class="overall-rating-star" aria-hidden="true" *ngIf="overallRating != null">★</span>
         </span>
       </div>
     </div>
