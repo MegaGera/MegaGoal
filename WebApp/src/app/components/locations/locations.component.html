@@ -1,87 +1,121 @@
 <div class="container-fluid">
-  <!-- Top Section - Location Management -->
-  <div class="row mb-3 main-top-row">
-    <div class="col-12">
-      <div class="d-flex align-items-center gap-3">
-        <div class="row w-100">
-
-          <div class="col-12 col-lg-8">
-            <mat-form-field appearance="outline" class="small-form-field">
-              <mat-label>Select Location</mat-label>
-              <mat-select 
-                [(ngModel)]="selectedLocation" 
-                (selectionChange)="onLocationChange()"
-                aria-label="Select location">
-                <mat-option [value]="null">Select Location</mat-option>
-                @for (location of locations; track location.id) {
-                  <mat-option [value]="location">
-                    @if (location.stadium) {
-                      🏟️ 
-                    }
-                    {{location.name}} ({{location.matchCount}})
-                  </mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-
-          @if (!showAddLocationForm) {
-            <div class="col-12 col-lg-4 m-auto">
-              <button class="btn btn-sm btn-add-location btn-outline-primary" (click)="showAddLocationForm = !showAddLocationForm">
-                <span class="m-auto">+ Add new location</span>
-              </button>
-            </div>
-            <!-- <div class="col-lg-6"></div> -->
-          }
-
-          @if (showAddLocationForm) {
-            <div class="w-100">
-              <hr>
-            </div>
-            <div class="w-100">
-              <form class="d-flex align-items-center" [formGroup]="newLocationForm" (ngSubmit)="addLocation()">
-                <div class="row w-100 m-auto">
-                  <div class="col-12 col-lg-8 p-0">
-                    <input
-                      type="text"
-                      class="form-control form-control-sm"
-                      placeholder="New location name"
-                      formControlName="name"
-                    />
-                  </div>
-                  <div class="col-6 col-lg-2">
-                    <button class="btn btn-sm btn-primary w-100 btn-add-location-form" type="submit">
-                      <span class="m-auto">Add</span>
-                    </button>
-                  </div>
-                  <div class="col-6 col-lg-2">
-                    <button class="btn btn-sm btn-outline-secondary w-100 btn-add-location-form" type="button" (click)="showAddLocationForm = false">
-                      <span class="m-auto">Cancel</span>
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          }
-          
+  <section class="fade-in">
+    <div class="header-section">
+      <div class="header-row">
+        <div class="header-left">
+          <h1 class="section-title">Locations</h1>
+          <p class="section-description">View, create, and manage your locations where you watched the matches</p>
         </div>
       </div>
-      
+    </div>
+
+  <!-- Location picker & create -->
+  <div class="location-management-section">
+    <div class="location-management-layout">
+      <div class="location-picker-panel">
+        <div class="location-panel-header">
+          <h2 class="location-panel-title">Your locations</h2>
+          <p class="location-panel-subtitle">Search and select a location to filter your matches</p>
+        </div>
+
+        <mat-form-field appearance="outline" class="small-form-field location-search-field">
+          <mat-label>Search locations</mat-label>
+          <input
+            type="text"
+            matInput
+            [(ngModel)]="locationSearchQuery"
+            placeholder="Search by name…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Search locations by name"
+          />
+          <ng-icon matSuffix name="jamSearch" class="location-search-icon" aria-hidden="true"></ng-icon>
+        </mat-form-field>
+
+        <div class="location-list" role="listbox" aria-label="Locations">
+          <button
+            type="button"
+            class="location-list-item"
+            [class.location-list-item--selected]="!selectedLocation"
+            (click)="clearLocationSelection()"
+            role="option"
+            [attr.aria-selected]="!selectedLocation">
+            <span class="location-list-item__name">All locations</span>
+            <span class="location-list-item__count">{{viewedMatches.length}}</span>
+          </button>
+
+          @for (location of displayLocations; track location.id) {
+            <button
+              type="button"
+              class="location-list-item"
+              [class.location-list-item--selected]="isLocationSelected(location)"
+              (click)="selectLocation(location)"
+              role="option"
+              [attr.aria-selected]="isLocationSelected(location)">
+              <span class="location-list-item__name">
+                @if (location.stadium) {
+                  <span class="location-stadium-badge" aria-hidden="true">🏟️</span>
+                }
+                {{location.name}}
+              </span>
+              <span class="location-list-item__count">{{location.matchCount}}</span>
+            </button>
+          } @empty {
+            <div class="location-list-empty" role="status">
+              @if (locationSearchQuery.trim()) {
+                No locations match your search.
+              } @else {
+                You have no locations yet. Create one to get started.
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="location-create-panel">
+        <div class="location-create-card location-panel-card">
+          <div class="location-create-card__header">
+            <h2 class="location-panel-title">Create location</h2>
+            <p class="location-panel-subtitle">Give your viewing spot a name</p>
+          </div>
+
+          <form class="location-create-form" [formGroup]="newLocationForm" (ngSubmit)="addLocation()">
+            <label class="location-create-label" for="new-location-name">Location name</label>
+            <input
+              id="new-location-name"
+              type="text"
+              class="form-control location-create-input"
+              placeholder="e.g. Home, Sports Bar, Camp Nou…"
+              formControlName="name"
+              autocomplete="off"
+            />
+
+            <div class="location-create-actions">
+              <button class="btn btn-primary location-create-submit" type="submit" [disabled]="!newLocationForm.valid">
+                <ng-icon name="jamPlus" aria-hidden="true"></ng-icon>
+                <span>Add location</span>
+              </button>
+              <button class="btn btn-outline-secondary location-create-cancel" type="button" (click)="resetAddLocationForm()">
+                Clear
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="row">
+  <div class="row matches-row">
     <!-- Left Column - Available Matches -->
     <div class="col-6 main-column">
-      <div class="card" [class.collapsed]="!showAvailableMatches">
-        <div class="card-header clickable-header" (click)="toggleAvailableMatches()">
-          <h6 class="mb-0">Available Matches</h6>
-          <ng-icon name="jamChevronDown" class="collapse-icon" [class.rotated]="!showAvailableMatches"></ng-icon>
+      <div class="location-management-section matches-section-panel">
+        <div class="location-panel-header">
+          <h2 class="location-panel-title">Available Matches</h2>
+          <p class="location-panel-subtitle">Filter finished games and assign them to your locations</p>
         </div>
-        <div class="card-body" [class.collapsed]="!showAvailableMatches">
+
           <!-- Filters -->
-          <div class="mb-3">
+          <div class="matches-filters">
             <div class="d-flex align-items-center mb-2">
               <ng-icon name="jamFilter" class="me-2"></ng-icon>
               <strong>Filters (select 2 or more filters):</strong>
@@ -89,49 +123,125 @@
             </div>
             <div class="row g-2">
               <div class="col-6">
-                <select class="form-select form-select-sm" 
-                        [class.filter-active]="selectedLeague !== null"
-                        [(ngModel)]="selectedLeague" 
-                        (change)="applyFilters()">
-                  <option [ngValue]="null">All Leagues</option>
-                  @for (league of leagues; track league.league_id) {
-                    <option [ngValue]="league">{{league.league_name}}</option>
-                  }
-                </select>
+                <mat-form-field appearance="outline" class="small-form-field filter-autocomplete-field" [class.filter-autocomplete-active]="selectedLeague !== null">
+                  <mat-label>League</mat-label>
+                  <input
+                    type="text"
+                    matInput
+                    [(ngModel)]="leagueSearchQuery"
+                    (ngModelChange)="onLeagueInputChange()"
+                    [matAutocomplete]="leagueAuto"
+                    placeholder="Search leagues…"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search and select league"
+                  />
+                  <mat-autocomplete #leagueAuto="matAutocomplete" panelClass="locations-filter-autocomplete-panel" (optionSelected)="onLeagueSelected($event)">
+                    @if (!leagueSearchQuery.trim()) {
+                      <mat-option [value]="null">All Leagues</mat-option>
+                    }
+                    @for (league of displayLeagues; track league.league_id) {
+                      <mat-option [value]="league">{{league.league_name}}</mat-option>
+                    }
+                    @if (displayLeagues.length === 0 && leagueSearchQuery.trim()) {
+                      <mat-option disabled>No leagues match your search</mat-option>
+                    }
+                    @if (hasMoreLeaguesThanDisplayed) {
+                      <mat-option disabled>Showing {{displayLeagues.length}} of {{matchingLeagueCount}} — keep typing to narrow</mat-option>
+                    }
+                  </mat-autocomplete>
+                </mat-form-field>
               </div>
               <div class="col-6">
-                <select class="form-select form-select-sm" 
-                        [class.filter-active]="selectedTeam_1 !== null"
-                        [(ngModel)]="selectedTeam_1" 
-                        (change)="applyFilters()">
-                  <option [ngValue]="null">All Teams</option>
-                  @for (team of filteredTeams; track team.id) {
-                    <option [ngValue]="team">{{team.name}}</option>
-                  }
-                </select>
+                <mat-form-field appearance="outline" class="small-form-field filter-autocomplete-field" [class.filter-autocomplete-active]="selectedTeam_1 !== null">
+                  <mat-label>Team</mat-label>
+                  <input
+                    type="text"
+                    matInput
+                    [(ngModel)]="teamSearchQuery1"
+                    (ngModelChange)="onTeam1InputChange()"
+                    [matAutocomplete]="teamAuto1"
+                    placeholder="Search teams…"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search and select team"
+                  />
+                  <mat-autocomplete #teamAuto1="matAutocomplete" panelClass="locations-filter-autocomplete-panel" (optionSelected)="onTeam1Selected($event)">
+                    @if (!teamSearchQuery1.trim()) {
+                      <mat-option [value]="null">All Teams</mat-option>
+                    }
+                    @for (team of displayTeams1; track team.id) {
+                      <mat-option [value]="team">{{team.name}}</mat-option>
+                    }
+                    @if (displayTeams1.length === 0 && teamSearchQuery1.trim()) {
+                      <mat-option disabled>No teams match your search</mat-option>
+                    }
+                    @if (hasMoreTeamsThanDisplayed1) {
+                      <mat-option disabled>Showing {{displayTeams1.length}} of {{matchingTeamCount1}} — keep typing to narrow</mat-option>
+                    }
+                  </mat-autocomplete>
+                </mat-form-field>
               </div>
               <div class="col-6">
-                <select class="form-select form-select-sm" 
-                        [class.filter-active]="selectedSeason !== null"
-                        [(ngModel)]="selectedSeason" 
-                        (change)="applyFilters()">
-                  <option [ngValue]="null">All Seasons</option>
-                  @for (season of seasons; track season.id) {
-                    <option [ngValue]="season">{{season.text}}</option>
-                  }
-                </select>
+                <mat-form-field appearance="outline" class="small-form-field filter-autocomplete-field" [class.filter-autocomplete-active]="selectedSeason !== null">
+                  <mat-label>Season</mat-label>
+                  <input
+                    type="text"
+                    matInput
+                    [(ngModel)]="seasonSearchQuery"
+                    (ngModelChange)="onSeasonInputChange()"
+                    [matAutocomplete]="seasonAuto"
+                    placeholder="Search seasons…"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search and select season"
+                  />
+                  <mat-autocomplete #seasonAuto="matAutocomplete" panelClass="locations-filter-autocomplete-panel" (optionSelected)="onSeasonSelected($event)">
+                    @if (!seasonSearchQuery.trim()) {
+                      <mat-option [value]="null">All Seasons</mat-option>
+                    }
+                    @for (season of displaySeasons; track season.id) {
+                      <mat-option [value]="season">{{season.text}}</mat-option>
+                    }
+                    @if (displaySeasons.length === 0 && seasonSearchQuery.trim()) {
+                      <mat-option disabled>No seasons match your search</mat-option>
+                    }
+                    @if (hasMoreSeasonsThanDisplayed) {
+                      <mat-option disabled>Showing {{displaySeasons.length}} of {{matchingSeasonCount}} — keep typing to narrow</mat-option>
+                    }
+                  </mat-autocomplete>
+                </mat-form-field>
               </div>
               <div class="col-6">
-                <select class="form-select form-select-sm" 
-                        [class.filter-active]="selectedTeam_2 !== null"
-                        [(ngModel)]="selectedTeam_2" 
-                        (change)="applyFilters()" 
-                        [disabled]="!selectedTeam_1">
-                  <option [ngValue]="null">{{selectedTeam_1 ? 'Rival Team' : 'Select Team First'}}</option>
-                  @for (team of filteredTeams; track team.id) {
-                    <option [ngValue]="team">{{team.name}}</option>
-                  }
-                </select>
+                <mat-form-field appearance="outline" class="small-form-field filter-autocomplete-field" [class.filter-autocomplete-active]="selectedTeam_2 !== null">
+                  <mat-label>Rival team</mat-label>
+                  <input
+                    type="text"
+                    matInput
+                    [(ngModel)]="teamSearchQuery2"
+                    (ngModelChange)="onTeam2InputChange()"
+                    [matAutocomplete]="teamAuto2"
+                    [placeholder]="selectedTeam_1 ? 'Search rival team…' : 'Select team first'"
+                    [disabled]="!selectedTeam_1"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search and select rival team"
+                  />
+                  <mat-autocomplete #teamAuto2="matAutocomplete" panelClass="locations-filter-autocomplete-panel" (optionSelected)="onTeam2Selected($event)">
+                    @if (!teamSearchQuery2.trim()) {
+                      <mat-option [value]="null">{{selectedTeam_1 ? 'Rival Team' : 'Select Team First'}}</mat-option>
+                    }
+                    @for (team of displayTeams2; track team.id) {
+                      <mat-option [value]="team">{{team.name}}</mat-option>
+                    }
+                    @if (displayTeams2.length === 0 && teamSearchQuery2.trim()) {
+                      <mat-option disabled>No teams match your search</mat-option>
+                    }
+                    @if (hasMoreTeamsThanDisplayed2) {
+                      <mat-option disabled>Showing {{displayTeams2.length}} of {{matchingTeamCount2}} — keep typing to narrow</mat-option>
+                    }
+                  </mat-autocomplete>
+                </mat-form-field>
               </div>
             </div>
           </div>
@@ -216,24 +326,29 @@
               }
             </cdk-virtual-scroll-viewport>
           }
-        </div>
       </div>
     </div>
 
     <!-- Right Column - Viewed Matches -->
     <div class="col-6 main-column">
-      <div class="card" [class.collapsed]="!showViewedMatches">
-        <div class="card-header clickable-header" (click)="toggleViewedMatches()">
-          <h6 class="mb-0">
+      <div class="location-management-section matches-section-panel">
+        <div class="location-panel-header">
+          <h2 class="location-panel-title">
             @if (selectedLocation) {
-              Viewed Matches - {{selectedLocation.name}} ({{filteredViewedMatches.length}})
+              Viewed Matches — {{selectedLocation.name}}
             } @else {
-              Viewed Matches ({{filteredViewedMatches.length}})
+              Viewed Matches
             }
-          </h6>
-          <ng-icon name="jamChevronDown" class="collapse-icon" [class.rotated]="!showViewedMatches"></ng-icon>
+          </h2>
+          <p class="location-panel-subtitle">
+            @if (selectedLocation) {
+              {{filteredViewedMatches.length}} matches watched at this location
+            } @else {
+              {{filteredViewedMatches.length}} matches across all your locations
+            }
+          </p>
         </div>
-        <div class="card-body" [class.collapsed]="!showViewedMatches">
+
           @if (loadingViewedMatches) {
             <div class="text-center">
               <div class="spinner-border spinner-border-sm" role="status">
@@ -261,11 +376,12 @@
                     <span class="match-info"> • {{match.fixture.timestamp * 1000 | date:'dd/MM/yyyy'}}</span>
                   </div>
                   <button 
-                    class="btn btn-sm btn-danger match-action" 
+                    class="btn btn-sm btn-danger match-action match-remove-action" 
                     (click)="deleteMatch(match)"
-                    title="Delete"
+                    title="Remove match"
+                    aria-label="Remove match"
                   >
-                    <ng-icon name="jamMinus"></ng-icon>
+                    <ng-icon name="jamClose" aria-hidden="true"></ng-icon>
                   </button>
                 </div>
               }
@@ -276,8 +392,8 @@
               }
             </cdk-virtual-scroll-viewport>
           }
-        </div>
       </div>
     </div>
   </div>
+  </section>
 </div>

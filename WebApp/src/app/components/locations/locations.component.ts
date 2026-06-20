@@ -5,10 +5,11 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { NgOptimizedImage } from '@angular/common';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatInputModule } from '@angular/material/input';
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamChevronDown } from '@ng-icons/jam-icons';
+import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose } from '@ng-icons/jam-icons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -23,27 +24,36 @@ import { MatchParserService } from '../../services/match-parser.service';
 @Component({
   selector: 'app-locations',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, NgIconComponent, CommonModule, ScrollingModule, NgOptimizedImage, MatFormFieldModule, MatSelectModule],
+  imports: [FormsModule, ReactiveFormsModule, NgIconComponent, CommonModule, ScrollingModule, NgOptimizedImage, MatFormFieldModule, MatAutocompleteModule, MatInputModule],
   templateUrl: './locations.component.html',
   styleUrl: './locations.component.css',
   providers: [provideNgIconsConfig({
     size: '1.5em',
-  }), provideIcons({ jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamChevronDown })]
+  }), provideIcons({ jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose })]
 })
 export class LocationsComponent implements OnInit {
 
   locations: Location[] = [];
   selectedLocation: Location | null = null;
+  locationSearchQuery = '';
   newLocationForm: any;
-  showAddLocationForm = false;
   
   // Left column - Available matches
   availableRealMatches: RealMatch[] = [];
   filteredRealMatches: RealMatch[] = [];
   leagues: LeaguesSettings[] = [];
+  displayLeagues: LeaguesSettings[] = [];
+  leagueSearchQuery = '';
   teams: shortTeam[] = [];
   filteredTeams: shortTeam[] = [];
+  displayTeams1: shortTeam[] = [];
+  displayTeams2: shortTeam[] = [];
+  teamSearchQuery1 = '';
+  teamSearchQuery2 = '';
+  private readonly autocompleteDisplayLimit = 50;
   seasons: SeasonInfo[] = [];
+  displaySeasons: SeasonInfo[] = [];
+  seasonSearchQuery = '';
   
   // Right column - Viewed matches
   viewedMatches: Match[] = [];
@@ -58,10 +68,6 @@ export class LocationsComponent implements OnInit {
   // Loading states
   loadingAvailableRealMatches = false;
   loadingViewedMatches = false;
-  
-  // Collapsible states
-  showAvailableMatches = true;
-  showViewedMatches = true;
   
   constructor(
     private megagoal: MegaGoalService, 
@@ -108,10 +114,36 @@ export class LocationsComponent implements OnInit {
     if (this.newLocationForm?.valid) {
       this.megagoal.createLocation(this.newLocationForm.value).subscribe(result => {
         this.init();
-        this.showAddLocationForm = false;
         this.newLocationForm.reset();
       })
     }
+  }
+
+  get displayLocations(): Location[] {
+    const q = this.locationSearchQuery.trim().toLowerCase();
+    if (!q) {
+      return this.locations;
+    }
+
+    return this.locations.filter(location => location.name.toLowerCase().includes(q));
+  }
+
+  isLocationSelected(location: Location): boolean {
+    return this.selectedLocation?.id === location.id;
+  }
+
+  selectLocation(location: Location): void {
+    this.selectedLocation = this.isLocationSelected(location) ? null : location;
+    this.onLocationChange();
+  }
+
+  clearLocationSelection(): void {
+    this.selectedLocation = null;
+    this.onLocationChange();
+  }
+
+  resetAddLocationForm(): void {
+    this.newLocationForm.reset();
   }
 
   checkRealMatchesByLocation() {
@@ -141,13 +173,215 @@ export class LocationsComponent implements OnInit {
     this.megagoal.getTeamsByTopLeague().subscribe(teams => {
       this.teams = teams.sort((a, b) => a.name.localeCompare(b.name));
       this.filteredTeams = [...this.teams];
+      this.updateTeamDisplayLists();
     });
+  }
+
+  onLeagueInputChange(): void {
+    this.updateLeagueDisplayList();
+    const query = this.leagueSearchQuery.trim();
+
+    if (!query) {
+      if (this.selectedLeague !== null) {
+        this.selectedLeague = null;
+        this.applyFilters();
+      }
+      return;
+    }
+
+    if (this.selectedLeague && query !== this.selectedLeague.league_name) {
+      this.selectedLeague = null;
+      this.applyFilters();
+    }
+  }
+
+  onSeasonInputChange(): void {
+    this.updateSeasonDisplayList();
+    const query = this.seasonSearchQuery.trim();
+
+    if (!query) {
+      if (this.selectedSeason !== null) {
+        this.selectedSeason = null;
+        this.applyFilters();
+      }
+      return;
+    }
+
+    if (this.selectedSeason && query !== this.selectedSeason.text) {
+      this.selectedSeason = null;
+      this.applyFilters();
+    }
+  }
+
+  onLeagueSelected(event: MatAutocompleteSelectedEvent): void {
+    const value = event.option.value as LeaguesSettings | null;
+    this.selectedLeague = value;
+    this.leagueSearchQuery = value?.league_name ?? '';
+    this.updateLeagueDisplayList();
+    this.applyFilters();
+  }
+
+  onSeasonSelected(event: MatAutocompleteSelectedEvent): void {
+    const value = event.option.value as SeasonInfo | null;
+    this.selectedSeason = value;
+    this.seasonSearchQuery = value?.text ?? '';
+    this.updateSeasonDisplayList();
+    this.applyFilters();
+  }
+
+  onTeam1InputChange(): void {
+    this.updateTeamDisplayLists();
+    const query = this.teamSearchQuery1.trim();
+
+    if (!query) {
+      if (this.selectedTeam_1 !== null) {
+        this.selectedTeam_1 = null;
+        this.applyFilters();
+      }
+      return;
+    }
+
+    if (this.selectedTeam_1 && query !== this.selectedTeam_1.name) {
+      this.selectedTeam_1 = null;
+      this.applyFilters();
+    }
+  }
+
+  onTeam2InputChange(): void {
+    this.updateTeamDisplayLists();
+    const query = this.teamSearchQuery2.trim();
+
+    if (!query) {
+      if (this.selectedTeam_2 !== null) {
+        this.selectedTeam_2 = null;
+        this.applyFilters();
+      }
+      return;
+    }
+
+    if (this.selectedTeam_2 && query !== this.selectedTeam_2.name) {
+      this.selectedTeam_2 = null;
+      this.applyFilters();
+    }
+  }
+
+  onTeam1Selected(event: MatAutocompleteSelectedEvent): void {
+    const value = event.option.value as shortTeam | null;
+    this.selectedTeam_1 = value;
+    this.teamSearchQuery1 = value?.name ?? '';
+    this.updateTeamDisplayLists();
+    this.applyFilters();
+  }
+
+  onTeam2Selected(event: MatAutocompleteSelectedEvent): void {
+    const value = event.option.value as shortTeam | null;
+    this.selectedTeam_2 = value;
+    this.teamSearchQuery2 = value?.name ?? '';
+    this.updateTeamDisplayLists();
+    this.applyFilters();
+  }
+
+  private updateLeagueDisplayList(): void {
+    this.displayLeagues = this.buildLeagueDisplayList(this.leagueSearchQuery, this.selectedLeague);
+  }
+
+  private updateSeasonDisplayList(): void {
+    this.displaySeasons = this.buildSeasonDisplayList(this.seasonSearchQuery, this.selectedSeason);
+  }
+
+  private updateTeamDisplayLists(): void {
+    this.displayTeams1 = this.buildTeamDisplayList(this.teamSearchQuery1, this.selectedTeam_1);
+    this.displayTeams2 = this.buildTeamDisplayList(this.teamSearchQuery2, this.selectedTeam_2);
+  }
+
+  private buildLeagueDisplayList(searchQuery: string, selected: LeaguesSettings | null): LeaguesSettings[] {
+    const pool = this.getLeaguesMatchingSearch(searchQuery);
+    const visible = pool.slice(0, this.autocompleteDisplayLimit);
+    const selectedExtra = selected && !visible.some(l => l.league_id === selected.league_id) ? [selected] : [];
+
+    return [...selectedExtra, ...visible].sort((a, b) => a.league_name.localeCompare(b.league_name));
+  }
+
+  private buildSeasonDisplayList(searchQuery: string, selected: SeasonInfo | null): SeasonInfo[] {
+    const pool = this.getSeasonsMatchingSearch(searchQuery);
+    const visible = pool.slice(0, this.autocompleteDisplayLimit);
+    const selectedExtra = selected && !visible.some(s => s.id === selected.id) ? [selected] : [];
+
+    return [...selectedExtra, ...visible].sort((a, b) => b.id - a.id);
+  }
+
+  private buildTeamDisplayList(searchQuery: string, selected: shortTeam | null): shortTeam[] {
+    const pool = this.getTeamsMatchingSearch(searchQuery);
+    const visible = pool.slice(0, this.autocompleteDisplayLimit);
+    const selectedExtra = selected && !visible.some(t => t.id === selected.id) ? [selected] : [];
+
+    return [...selectedExtra, ...visible].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  private getLeaguesMatchingSearch(searchQuery: string): LeaguesSettings[] {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) {
+      return [...this.leagues];
+    }
+
+    return this.leagues.filter(league => league.league_name.toLowerCase().includes(q));
+  }
+
+  private getSeasonsMatchingSearch(searchQuery: string): SeasonInfo[] {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) {
+      return [...this.seasons];
+    }
+
+    return this.seasons.filter(season => season.text.toLowerCase().includes(q));
+  }
+
+  private getTeamsMatchingSearch(searchQuery: string): shortTeam[] {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) {
+      return [...this.filteredTeams];
+    }
+
+    return this.filteredTeams.filter(team => team.name.toLowerCase().includes(q));
+  }
+
+  get matchingLeagueCount(): number {
+    return this.getLeaguesMatchingSearch(this.leagueSearchQuery).length;
+  }
+
+  get matchingSeasonCount(): number {
+    return this.getSeasonsMatchingSearch(this.seasonSearchQuery).length;
+  }
+
+  get hasMoreLeaguesThanDisplayed(): boolean {
+    return this.matchingLeagueCount > this.displayLeagues.length;
+  }
+
+  get hasMoreSeasonsThanDisplayed(): boolean {
+    return this.matchingSeasonCount > this.displaySeasons.length;
+  }
+
+  get matchingTeamCount1(): number {
+    return this.getTeamsMatchingSearch(this.teamSearchQuery1).length;
+  }
+
+  get matchingTeamCount2(): number {
+    return this.getTeamsMatchingSearch(this.teamSearchQuery2).length;
+  }
+
+  get hasMoreTeamsThanDisplayed1(): boolean {
+    return this.matchingTeamCount1 > this.displayTeams1.length;
+  }
+
+  get hasMoreTeamsThanDisplayed2(): boolean {
+    return this.matchingTeamCount2 > this.displayTeams2.length;
   }
 
   loadLeagues() {
     this.megagoal.getLeaguesSettings().subscribe(leagues => {
-      this.leagues = leagues;
+      this.leagues = leagues.sort((a, b) => a.league_name.localeCompare(b.league_name));
       this.loadSeasons();
+      this.updateLeagueDisplayList();
     });
   }
 
@@ -174,7 +408,7 @@ export class LocationsComponent implements OnInit {
         text: `${year}-${year + 1}`
       }));
 
-    //this.selectedSeason = this.seasons[0];
+    this.updateSeasonDisplayList();
   }
 
   loadAvailableRealMatches(league_id?: number, season?: number, team_1_id?: number, team_2_id?: number) {    
@@ -257,6 +491,7 @@ export class LocationsComponent implements OnInit {
     if (!this.selectedLeague && !this.selectedSeason) {
       // If no league and no season selected, show all teams
       this.filteredTeams = [...this.teams];
+      this.updateTeamDisplayLists();
       return;
     }
 
@@ -291,15 +526,20 @@ export class LocationsComponent implements OnInit {
     // Reset team selections if they're no longer in the filtered list
     if (this.selectedTeam_1 && !this.filteredTeams.find(t => t.id === this.selectedTeam_1!.id)) {
       this.selectedTeam_1 = null;
+      this.teamSearchQuery1 = '';
     }
     if (this.selectedTeam_2 && !this.filteredTeams.find(t => t.id === this.selectedTeam_2!.id)) {
       this.selectedTeam_2 = null;
+      this.teamSearchQuery2 = '';
     }
     
     // Reset rival team if main team is unselected
     if (!this.selectedTeam_1) {
       this.selectedTeam_2 = null;
+      this.teamSearchQuery2 = '';
     }
+
+    this.updateTeamDisplayLists();
   }
 
   addMatchWithLocation(realMatch: RealMatch, locationId: string | number) {
@@ -372,24 +612,15 @@ export class LocationsComponent implements OnInit {
     this.selectedTeam_1 = null;
     this.selectedTeam_2 = null;
     this.selectedSeason = null;
+    this.leagueSearchQuery = '';
+    this.seasonSearchQuery = '';
+    this.teamSearchQuery1 = '';
+    this.teamSearchQuery2 = '';
     this.filteredTeams = [...this.teams];
+    this.updateLeagueDisplayList();
+    this.updateSeasonDisplayList();
+    this.updateTeamDisplayLists();
     this.applyFilters();
-  }
-
-  toggleAvailableMatches() {
-    this.showAvailableMatches = !this.showAvailableMatches;
-    // Force virtual scroll to recalculate after a short delay
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 100);
-  }
-
-  toggleViewedMatches() {
-    this.showViewedMatches = !this.showViewedMatches;
-    // Force virtual scroll to recalculate after a short delay
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 100);
   }
 
   isMatchAlreadyViewed(realMatch: RealMatch): boolean {
