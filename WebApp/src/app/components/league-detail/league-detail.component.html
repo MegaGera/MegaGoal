@@ -1,12 +1,104 @@
-<!-- Loading overlay -->
-@if (isLoading) {
-  <div class="loading-overlay">
-    <div class="loading-spinner"></div>
-  </div>
-}
-
 <div class="container">
-  @if (selectedLeague) {
+  @if (isLoading) {
+    <section class="slide-in league-detail-skeleton" aria-busy="true" aria-label="Loading league">
+      <div class="league-header-skeleton" aria-hidden="true">
+        <div class="league-header-skeleton-top">
+          <div class="league-header-skeleton-info">
+            <div class="league-header-skeleton-crest">
+              <div class="skeleton-block skeleton-league-crest"></div>
+            </div>
+            <div class="league-header-skeleton-main">
+              <div class="skeleton-block skeleton-league-title"></div>
+              @if (!isMobileLayout) {
+                <div class="skeleton-block skeleton-league-country-pill"></div>
+              }
+            </div>
+          </div>
+          <div class="league-header-skeleton-season">
+            <div class="skeleton-block skeleton-season-field"></div>
+          </div>
+        </div>
+      </div>
+
+      @if (isMobileLayout) {
+        <div class="view-toggle-card league-detail-view-toggle" aria-hidden="true">
+          <div class="view-toggle">
+            <button type="button" class="toggle-btn" disabled>Teams</button>
+            <button type="button" class="toggle-btn" disabled>Table</button>
+            <button type="button" class="toggle-btn active" disabled>Matches</button>
+          </div>
+        </div>
+      }
+
+      <div class="teams-matches-container desktop-standings-top">
+        <div
+          class="teams-section league-page-skeleton-section"
+          [class.league-mobile-pane-hidden]="isMobileLayout && mobileSection !== 'teams'"
+          aria-hidden="true">
+          @if (!isMobileLayout) {
+            <div class="skeleton-block skeleton-section-heading"></div>
+          }
+          <div class="teams-grid">
+            @for (item of skeletonTeamSlots; track item) {
+              <div class="team-card-skeleton">
+                <div class="skeleton-block skeleton-team-card-logo"></div>
+                <div class="skeleton-block skeleton-team-card-name"></div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div
+          class="league-standings-slot league-page-skeleton-section"
+          [class.league-mobile-pane-hidden]="isMobileLayout && mobileSection !== 'standings'"
+          aria-hidden="true">
+          @if (!isMobileLayout) {
+            <div class="skeleton-block skeleton-section-heading"></div>
+          }
+          <div class="standings-skeleton-card">
+            @for (row of skeletonStandingSlots; track row) {
+              <div class="skeleton-block skeleton-standing-row"></div>
+            }
+          </div>
+        </div>
+
+        <div
+          class="matches-section league-page-skeleton-section"
+          [class.league-mobile-pane-hidden]="isMobileLayout && mobileSection !== 'matches'"
+          aria-hidden="true">
+          @if (!isMobileLayout) {
+            <div class="skeleton-block skeleton-section-heading"></div>
+          }
+          <div class="round-selector">
+            <div class="skeleton-nav-btn"></div>
+            <div class="skeleton-select"></div>
+            <div class="skeleton-nav-btn"></div>
+          </div>
+          <div class="matches-grid">
+            @for (item of skeletonMatchSlots; track item) {
+              <div class="match-card-wrapper">
+                <div class="match-skeleton-card">
+                  <div class="skeleton-match-content">
+                    <div class="skeleton-team">
+                      <div class="skeleton-team-logo"></div>
+                      <div class="skeleton-team-name"></div>
+                    </div>
+                    <div class="skeleton-score">
+                      <div class="skeleton-score-value"></div>
+                    </div>
+                    <div class="skeleton-team">
+                      <div class="skeleton-team-logo"></div>
+                      <div class="skeleton-team-name"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+  } @else if (selectedLeague) {
     <section class="slide-in">
       <!-- Header card: same structure as app-team-header (info + season column) -->
       <div
@@ -255,7 +347,7 @@
 
               <!-- Skeleton matches grid -->
               <div class="matches-grid">
-                @for (item of [1,2,3,4,5,6]; track item) {
+                @for (item of skeletonMatchSlots; track item) {
                   <div class="match-card-wrapper">
                     <div class="match-skeleton-card">
                       <div class="skeleton-match-content">
@@ -315,4 +407,5 @@
       }
     </section>
   }
-</div> 
+</div>
+ 

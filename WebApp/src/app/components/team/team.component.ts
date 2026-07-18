@@ -8,7 +8,6 @@ import { NgClass, NgFor, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select'
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -71,7 +70,6 @@ interface TeamInsightsSummary {
     PaginationComponent,
     FiltersHomeComponent,
     GeneralCardComponent,
-    MatProgressSpinnerModule,
     TeamHeaderComponent,
     TeamCardComponent,
     TeamPerformanceOverviewComponent,
@@ -126,7 +124,11 @@ export class TeamComponent implements OnInit, OnDestroy {
   favouriteTeamLoaded: boolean = false;
   insightsLoaded: boolean = false;
   yourMatchesLoaded: boolean = false;
+  allMatchesLoaded: boolean = false;
   viewMode: 'insights' | 'yourMatches' | 'allMatches' = 'insights';
+
+  readonly skeletonMatchSlots = [1, 2, 3, 4, 5, 6];
+  readonly skeletonInsightCardSlots = [1, 2, 3, 4];
   matchViewMode: 'lastPlayed' | 'nextMatches' = 'lastPlayed';
   personalMatchesPerPage: number = 10;
   personalMatchesPageMatches: Match[] = [];
@@ -358,6 +360,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     if (!this.team) {
       return;
     }
+    this.allMatchesLoaded = false;
     const teamId = this.team.team.id;
 
     if (this.filterSeasonSelected?.id === 0) {
@@ -405,6 +408,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.updateLeaguesForAllMatches();
     this.filterRealMatches();
     this.filterCurrentLeagues();
+    this.allMatchesLoaded = true;
   }
 
   filterRealMatches() {

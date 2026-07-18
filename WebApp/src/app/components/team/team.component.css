@@ -127,10 +127,129 @@
   gap: 0;
 }
 
-.spinner-wrapper {
+/* ---- Column loading skeletons ---- */
+@keyframes team-skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.team-column-skeleton {
   display: flex;
-  justify-content: center;
-  padding: 2rem 0;
+  flex-direction: column;
+  gap: 0;
+}
+
+.skeleton-block {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: team-skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 10px;
+}
+
+.skeleton-matches-count {
+  height: 2.25rem;
+  width: 8rem;
+  margin: 8px 50px 16px;
+  border-radius: 999px;
+}
+
+.skeleton-insight-card {
+  min-height: 10rem;
+  width: 100%;
+  border-radius: 16px;
+}
+
+.match-card-skeleton {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e9ecef;
+  min-height: 180px;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-match-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.skeleton-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeleton-team-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: team-skeleton-loading 1.5s infinite;
+}
+
+.skeleton-team-name {
+  height: 14px;
+  width: 72px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: team-skeleton-loading 1.5s infinite;
+}
+
+.skeleton-score {
+  height: 36px;
+  width: 52px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: team-skeleton-loading 1.5s infinite;
+}
+
+.skeleton-match-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-info-line {
+  height: 12px;
+  width: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: team-skeleton-loading 1.5s infinite;
+}
+
+.skeleton-info-line.short {
+  width: 55%;
+}
+
+.team-all-matches-skeleton {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+@media (min-width: 768px) {
+  .team-all-matches-skeleton {
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .skeleton-matches-count {
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 .insights-header {

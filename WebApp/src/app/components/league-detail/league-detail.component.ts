@@ -76,6 +76,10 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
   favouritePending = false;
   readonly favouriteIconSize = '1.25rem';
 
+  readonly skeletonTeamSlots = [1, 2, 3, 4, 5, 6, 7, 8];
+  readonly skeletonStandingSlots = [1, 2, 3, 4, 5, 6, 7, 8];
+  readonly skeletonMatchSlots = [1, 2, 3, 4, 5, 6];
+
   /* Query params storage */
   querySeasonId: number | null = null;
   queryMatchday: number | null = null;
@@ -257,6 +261,12 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
   // This method load the league and the teams by league and season
   loadLeague(leagueId: number): void {
     this.setLoading(true);
+    this.mobileSection = 'matches';
+    this.standingsLayoutTop = false;
+    this.selectedLeague = undefined;
+    this.showTeams = [];
+    this.teams = [];
+    this.groupedRealMatches = [];
     this.megagoal.getTopLeagues().subscribe({
       next: (leagues: League[]) => {
         this.selectedLeague = leagues.find(league => league.league.id === leagueId);
@@ -274,6 +284,7 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
             }
           }
           
+          // Keeps isLoading until teams resolve (avoids header flash then skeleton again).
           this.getTeamsByLeagueAndSeason(leagueId, this.selectedSeason.id);
           this.getRealMatches();
           this.getMatches();
@@ -289,9 +300,9 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
           });
         } else {
           // League not found, redirect to league selector
+          this.setLoading(false);
           this.router.navigate(['/app/leagues']);
         }
-        this.setLoading(false);
       },
       error: (error: any) => {
         console.error('Error fetching league:', error);

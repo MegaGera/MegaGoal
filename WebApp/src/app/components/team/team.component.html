@@ -66,8 +66,18 @@
         @if (viewMode === 'insights') {
           <div class="insights-view">
             @if (!insightsLoaded) {
-              <div class="spinner-wrapper">
-                <mat-spinner></mat-spinner>
+              <div class="team-column-skeleton" aria-busy="true" aria-label="Loading stats">
+                <div class="skeleton-block skeleton-matches-count" aria-hidden="true"></div>
+                <div class="insights-grid" aria-hidden="true">
+                  @for (item of skeletonInsightCardSlots; track item) {
+                    <div
+                      class="insights-grid-item"
+                      [class.insights-grid-item--full]="item <= 2"
+                      [class.insights-grid-item--half]="item > 2">
+                      <div class="skeleton-block skeleton-insight-card"></div>
+                    </div>
+                  }
+                </div>
               </div>
             } @else if (statsAppliedMatchesCount === 0) {
               <app-general-card customClass="insights-card">
@@ -358,8 +368,31 @@
           <div class="matches-view personal-matches">
 
             @if (!yourMatchesLoaded) {
-              <div class="spinner-wrapper">
-                <mat-spinner></mat-spinner>
+              <div class="team-column-skeleton" aria-busy="true" aria-label="Loading your matches">
+                <div class="skeleton-block skeleton-matches-count" aria-hidden="true"></div>
+                <div class="matches-list" aria-hidden="true">
+                  @for (item of skeletonMatchSlots; track item) {
+                    <div class="matchCardAdapter">
+                      <div class="match-card-skeleton">
+                        <div class="skeleton-match-header">
+                          <div class="skeleton-team">
+                            <div class="skeleton-team-logo"></div>
+                            <div class="skeleton-team-name"></div>
+                          </div>
+                          <div class="skeleton-score"></div>
+                          <div class="skeleton-team">
+                            <div class="skeleton-team-logo"></div>
+                            <div class="skeleton-team-name"></div>
+                          </div>
+                        </div>
+                        <div class="skeleton-match-info">
+                          <div class="skeleton-info-line"></div>
+                          <div class="skeleton-info-line short"></div>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
               </div>
             } @else if (filteredPersonalMatches.length === 0) {
               <app-general-card customClass="insights-card">
@@ -399,6 +432,34 @@
           </div>
         } @else if (viewMode === 'allMatches') {
           <div class="matches-view">
+            @if (!allMatchesLoaded) {
+              <div class="team-column-skeleton" aria-busy="true" aria-label="Loading all matches">
+                <div class="skeleton-block skeleton-matches-count" aria-hidden="true"></div>
+                <div class="matches-list team-all-matches-skeleton" aria-hidden="true">
+                  @for (item of skeletonMatchSlots; track item) {
+                    <div class="matchCardAdapter" [class.matchCardAdapterTwoColumns]="!isMobileView">
+                      <div class="match-card-skeleton">
+                        <div class="skeleton-match-header">
+                          <div class="skeleton-team">
+                            <div class="skeleton-team-logo"></div>
+                            <div class="skeleton-team-name"></div>
+                          </div>
+                          <div class="skeleton-score"></div>
+                          <div class="skeleton-team">
+                            <div class="skeleton-team-logo"></div>
+                            <div class="skeleton-team-name"></div>
+                          </div>
+                        </div>
+                        <div class="skeleton-match-info">
+                          <div class="skeleton-info-line"></div>
+                          <div class="skeleton-info-line short"></div>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            } @else {
             @if (!isMobileView && teamMobileMatchesCount > 0) {
               <ng-container *ngTemplateOutlet="teamDesktopMatchesCountHeader; context: { count: teamMobileMatchesCount }" />
             } @else if (isMobileView && teamMobileMatchesCount > 0) {
@@ -516,6 +577,7 @@
                   </app-pagination>
                 </div>
               </div>
+            }
             }
           </div>
         }

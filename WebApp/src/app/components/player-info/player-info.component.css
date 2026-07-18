@@ -106,6 +106,12 @@
   height: 100%;
 }
 
+.teams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .teams-card-header {
   margin-bottom: 1rem;
 }
@@ -126,10 +132,48 @@
   gap: 0.5rem;
 }
 
-.teams-list {
+/* Mobile tabs (same pattern as team / league detail) */
+.view-toggle-card {
+  margin-bottom: 1.25rem;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  justify-content: center;
+}
+
+.view-toggle {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid #dee2e6;
+  padding: 0.25rem;
+  background: #f8f9fa;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #495057;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.toggle-btn.active {
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  color: #0d6efd;
+}
+
+.player-mobile-pane-hidden {
+  display: none !important;
 }
 
 /* No Teams Message */
@@ -142,29 +186,143 @@
   color: #64748b;
 }
 
-/* Loading State */
-.loading-container {
+/* ---- Skeletons ---- */
+@keyframes player-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-block {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: player-skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 10px;
+}
+
+.player-header-skeleton {
+  margin: 1.5rem 0 2rem;
+  padding: 1.75rem;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.08),
+    0 2px 4px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.player-header-skeleton-top {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1.75rem;
+  align-items: flex-start;
+}
+
+.player-header-skeleton-crest {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+.skeleton-team-mark {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+}
+
+.skeleton-avatar {
+  width: 116px;
+  height: 116px;
+  border-radius: 18px;
+}
+
+.player-header-skeleton-main {
+  flex: 1 1 220px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.35rem;
+}
+
+.player-header-skeleton-name-row {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  text-align: center;
+  gap: 0.8rem;
 }
 
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
+.skeleton-title {
+  height: 2rem;
+  width: min(280px, 70%);
+  border-radius: 8px;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.skeleton-chips {
+  height: 1.75rem;
+  width: min(100px, 30%);
+  border-radius: 999px;
+}
+
+.skeleton-meta {
+  height: 1rem;
+  width: min(220px, 55%);
+  border-radius: 6px;
+}
+
+.player-header-skeleton-stats {
+  flex: 1 1 280px;
+  min-width: min(280px, 100%);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.skeleton-quick-stats {
+  width: 100%;
+  max-width: 420px;
+  height: 88px;
+  border-radius: 16px;
+  margin-left: auto;
+}
+
+.player-section-skeleton {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 2px solid #ffb3b3;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 1.75rem;
+  min-height: 12rem;
+}
+
+.player-stats-skeleton .skeleton-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.skeleton-stat-card {
+  height: 5.5rem;
+  border-radius: 12px;
+}
+
+.player-teams-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.skeleton-section-title {
+  height: 1.35rem;
+  width: 11rem;
+  margin-bottom: 0.25rem;
+}
+
+.skeleton-team-row {
+  height: 4.5rem;
+  width: 100%;
+  border-radius: 12px;
 }
 
 /* Responsive Design */
@@ -194,6 +352,104 @@
     grid-template-columns: 1fr;
   }
 
+  .player-header-skeleton {
+    padding: 1.25rem;
+    margin: 1.5rem 0 2rem;
+  }
+
+  .player-header-skeleton-top {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .player-header-skeleton-crest {
+    order: 0;
+    position: relative;
+    flex: 0 0 auto;
+    width: 100%;
+    justify-content: center;
+    min-height: 92px;
+    gap: 0;
+  }
+
+  .skeleton-team-mark {
+    position: absolute;
+    left: max(0px, calc(50% - (92px / 2) - 0.5rem - 56px));
+    top: 50%;
+    transform: translateY(-50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+  }
+
+  .skeleton-avatar {
+    width: 92px;
+    height: 92px;
+    border-radius: 18px;
+  }
+
+  .player-header-skeleton-main {
+    order: -1;
+    flex: 0 0 auto;
+    align-items: center;
+    width: 100%;
+    gap: 0.45rem;
+    padding-top: 0;
+  }
+
+  .player-header-skeleton-name-row {
+    justify-content: center;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .skeleton-title {
+    height: 1.65rem;
+    width: 58%;
+    max-width: 12rem;
+  }
+
+  .skeleton-chips {
+    height: 1.4rem;
+    width: 4.25rem;
+  }
+
+  .skeleton-meta {
+    height: 0.85rem;
+    width: 42%;
+    max-width: 9rem;
+  }
+
+  .player-header-skeleton-stats {
+    order: 1;
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    justify-content: stretch;
+    margin-top: 0.25rem;
+  }
+
+  .skeleton-quick-stats {
+    max-width: none;
+    margin-left: 0;
+    height: 5.5rem;
+    border-radius: 12px;
+  }
+
+  .player-section-skeleton {
+    padding: 1.25rem;
+  }
+
+  .player-stats-skeleton .skeleton-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .player-teams-skeleton {
+    padding: 1.5rem;
+  }
+
   .profile-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -220,6 +476,5 @@
   .profile-item-expandable.profile-expanded {
     display: flex;
   }
-
 }
 

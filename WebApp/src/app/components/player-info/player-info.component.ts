@@ -2,7 +2,7 @@
   Player Info component to display detailed information about a specific player
 */
 
-import { Component } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { forkJoin, of } from 'rxjs';
@@ -27,7 +27,7 @@ import { GeneralCardComponent } from '../general-card/general-card.component';
   styleUrl: './player-info.component.css',
   providers: [ImagesService]
 })
-export class PlayerInfoComponent {
+export class PlayerInfoComponent implements OnInit {
 
   queryPlayerId!: number;
   player!: Player;
@@ -47,16 +47,48 @@ export class PlayerInfoComponent {
   /** Preferred club for the header (non-national if possible, else first). */
   currentClub: Team | null = null;
 
+  isMobileView = false;
+  mobileSection: 'stats' | 'teams' = 'stats';
+
+  readonly skeletonStatSlots = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  readonly skeletonTeamSlots = [1, 2, 3, 4];
+
   constructor(
     private megagoal: MegaGoalService, 
     private router: Router, 
     private activatedRoute: ActivatedRoute,
     private statsService: StatsService
   ) {
+    this.updateIsMobileView();
     this.activatedRoute.queryParamMap.subscribe(params => {
       this.queryPlayerId = +params.get('id')! || 0;
       this.init();
     });
+  }
+
+  ngOnInit(): void {
+    this.updateIsMobileView();
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateIsMobileView();
+  }
+
+  private updateIsMobileView(): void {
+    this.isMobileView = typeof window !== 'undefined' && window.innerWidth < 768;
+  }
+
+  get showPlayerMobileTabs(): boolean {
+    return this.isMobileView && (this.hasStatsSection || this.hasTeams() || this.statsLoading);
+  }
+
+  get hasStatsSection(): boolean {
+    return !this.statsLoading && !!this.playerStats;
+  }
+
+  setMobileSection(section: 'stats' | 'teams'): void {
+    this.mobileSection = section;
   }
 
   init() {
@@ -64,6 +96,9 @@ export class PlayerInfoComponent {
     this.statsLoading = true;
     this.currentSeasonTeams = [];
     this.currentClub = null;
+    this.mobileSection = 'stats';
+    this.playerStats = undefined;
+    this.teamsSeasonsList = [];
     
     this.megagoal.getPlayerById(this.queryPlayerId).subscribe(result => {
       if (result != undefined) {
@@ -73,6 +108,7 @@ export class PlayerInfoComponent {
         this.loading = false;
         this.loadPlayerStats();
         this.loadCurrentSeasonTeams();
+        this.syncMobileSection();
         
         // Log page visit with player information
         this.megagoal.logPageVisit('player-info', {
@@ -96,10 +132,22 @@ export class PlayerInfoComponent {
       this.playerStats = result;
       this.statsLoading = false;
       this.updateTeamsSeasonsList();
+      this.syncMobileSection();
     }, error => {
       console.error('Error loading player stats:', error);
       this.statsLoading = false;
+      this.syncMobileSection();
     });
+  }
+
+  private syncMobileSection(): void {
+    if (this.mobileSection === 'stats' && !this.hasStatsSection && this.hasTeams()) {
+      this.mobileSection = 'teams';
+      return;
+    }
+    if (this.mobileSection === 'teams' && !this.hasTeams() && this.hasStatsSection) {
+      this.mobileSection = 'stats';
+    }
   }
 
   /**
