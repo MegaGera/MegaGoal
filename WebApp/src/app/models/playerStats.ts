@@ -28,9 +28,41 @@ export interface TeamSeasonStats {
   team_name: string;
   matches: Match[];
   matches_viewed: number;
+  /** Appearances in real_matches for this team/season (career). */
+  matches_played?: number;
   goals: number;
   assists: number;
   yellow_cards: number;
   red_cards: number;
 }
 
+/** Response from GET /player-career-stats/ (no match lists). */
+export interface PlayerCareerStats {
+  player_id: number;
+  seasons: PlayerCareerSeasonStats[];
+}
+
+export interface PlayerCareerSeasonStats {
+  season: number;
+  teams: PlayerCareerTeamStats[];
+}
+
+export interface PlayerCareerTeamStats {
+  team_id: number;
+  team_name: string;
+  matches_played: number;
+  matches_viewed: number;
+  goals: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
+}
+
+/** Response from GET /player-team-season-matches/ */
+export interface PlayerTeamSeasonMatchesResponse {
+  player_id: number;
+  team_id: number;
+  season: number;
+  matches: Match[];
+  count: number;
+}

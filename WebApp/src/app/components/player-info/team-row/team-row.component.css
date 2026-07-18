@@ -41,11 +41,6 @@
   transform: scaleY(1);
 }
 
-.season-section {
-  margin-right: 1rem;
-  flex-shrink: 0;
-}
-
 .team-info-section {
   display: flex;
   align-items: center;
@@ -94,18 +89,6 @@
   flex-wrap: wrap;
   position: relative;
   overflow: visible;
-}
-
-.season-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
-  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
-  white-space: nowrap;
-  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .stats-badges {
@@ -200,11 +183,6 @@
     font-size: 11px;
   }
 
-  .season-badge {
-    padding: 5px 12px;
-    font-size: 12px;
-  }
-
   .stats-section {
     gap: 6px;
     margin-left: 0;
@@ -212,10 +190,6 @@
     width: 100%;
     order: 3;
     justify-content: flex-end;
-  }
-
-  .season-section {
-    margin-right: 10px;
   }
 
   .toggle-matches-btn {

@@ -92,6 +92,8 @@ export interface Match {
         yellow_cards: number,
         red_cards: number
     },
+    /** Present on career match lists: whether the user marked the fixture as watched. */
+    watched?: boolean,
     user_picks?: MatchUserPicks,
     reactions?: MatchReaction[],
     /** Global users who marked this fixture as watched; present only when requested (e.g. home list). */

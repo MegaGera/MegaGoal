@@ -1,9 +1,5 @@
 <div class="team-row-wrapper">
   <div class="team-row-card">
-    <div class="season-section">
-      <span class="season-badge">{{ getSeasonDisplay() }}</span>
-    </div>
-    
     <div class="team-info-section">
       <a [routerLink]="['/app/team']" [queryParams]="{ id: teamData.team.id }" class="team-link">
         <img 
@@ -66,4 +62,3 @@
     <app-match-row *ngFor="let match of getSortedMatches()" [match]="match"></app-match-row>
   </div>
 </div>
-

@@ -194,14 +194,125 @@
           <div class="teams-card-header insights-card-header" *ngIf="!isMobileView">
             <h3>🏆 Teams & Seasons</h3>
           </div>
-          <div class="teams-list">
-            <app-team-row
-              *ngFor="let item of getTeamsAndSeasonsFlat()"
-              [teamData]="item.team"
-              [season]="item.season"
-              [teamStats]="item.teamStats">
-            </app-team-row>
+          <div class="view-toggle-card teams-seasons-mode-toggle">
+            <div class="view-toggle" role="group" aria-label="Teams and seasons filter">
+              <button
+                type="button"
+                class="toggle-btn"
+                [class.active]="teamsSeasonsMode === 'watched'"
+                (click)="setTeamsSeasonsMode('watched')">
+                Only watched
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                [class.active]="teamsSeasonsMode === 'all'"
+                (click)="setTeamsSeasonsMode('all')">
+                All Career
+              </button>
+            </div>
           </div>
+          @if (teamsSeasonsGroups.length > 0) {
+            <div class="teams-list">
+              <div class="teams-stats-table-wrap">
+                <table class="teams-stats-table">
+                  <colgroup>
+                    <col class="teams-stats-col-expand">
+                    <col class="teams-stats-col-team">
+                    @for (entry of visibleTeamsStatsLegend; track entry.icon) {
+                      <col class="teams-stats-col-stat">
+                    }
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th scope="col" class="teams-stats-expand-col">
+                        <span class="visually-hidden">Expand matches</span>
+                      </th>
+                      <th scope="col" class="teams-stats-team-col">Team</th>
+                      @for (entry of visibleTeamsStatsLegend; track entry.icon) {
+                        <th scope="col" class="teams-stats-num-col">
+                          <span aria-hidden="true">{{ entry.icon }}</span>
+                          <span class="visually-hidden">{{ entry.label }}</span>
+                        </th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (group of teamsSeasonsGroups; track group.season) {
+                      <tr class="teams-stats-season-row">
+                        <td [attr.colspan]="2 + visibleTeamsStatsLegend.length">
+                          <div class="season-divider" role="separator" [attr.aria-label]="'Season ' + formatSeasonDisplay(group.season)">
+                            <span class="season-divider-line" aria-hidden="true"></span>
+                            <span class="season-divider-label">{{ formatSeasonDisplay(group.season) }}</span>
+                            <span class="season-divider-line" aria-hidden="true"></span>
+                          </div>
+                        </td>
+                      </tr>
+                      @for (item of group.items; track item.team.team.id) {
+                        <tr>
+                          <td class="teams-stats-expand-col">
+                            @if (hasExpandableMatches(item.teamStats)) {
+                              <button
+                                type="button"
+                                class="teams-stats-expand-hit"
+                                [attr.aria-expanded]="isTeamMatchesExpanded(group.season, item.team.team.id)"
+                                [attr.aria-label]="(isTeamMatchesExpanded(group.season, item.team.team.id) ? 'Hide' : 'Show') + ' matches for ' + item.team.team.name"
+                                (click)="toggleTeamMatches(group.season, item.team.team.id)">
+                                <span class="teams-stats-expand-icon" aria-hidden="true">
+                                  {{ isTeamMatchesExpanded(group.season, item.team.team.id) ? '▲' : '▼' }}
+                                </span>
+                              </button>
+                            }
+                          </td>
+                          <td class="teams-stats-team-col">
+                            <a
+                              class="teams-stats-team-link"
+                              [routerLink]="['/app/team']"
+                              [queryParams]="{ id: item.team.team.id }">
+                              <img
+                                class="teams-stats-team-logo"
+                                [src]="images.getRouteImageTeam(item.team.team.id)"
+                                [alt]="item.team.team.name"
+                                width="28"
+                                height="28"
+                                (error)="onTeamImageError($event)">
+                              <span class="teams-stats-team-name">{{ item.team.team.name }}</span>
+                            </a>
+                          </td>
+                          @for (entry of visibleTeamsStatsLegend; track entry.icon) {
+                            <td class="teams-stats-num-col">{{ teamStatValue(item.teamStats, entry.key) }}</td>
+                          }
+                        </tr>
+                        @if (isTeamMatchesExpanded(group.season, item.team.team.id)) {
+                          <tr class="teams-stats-matches-row">
+                            <td [attr.colspan]="2 + visibleTeamsStatsLegend.length">
+                              <div class="teams-stats-matches">
+                                @if (isCareerMatchesLoading(group.season, item.team.team.id)) {
+                                  <p class="teams-stats-matches-loading">Loading matches…</p>
+                                } @else {
+                                  @for (match of getExpandedMatches(group.season, item.team.team.id, item.teamStats); track match.fixture.id) {
+                                    <app-match-row [match]="match"></app-match-row>
+                                  }
+                                }
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          } @else {
+            <p class="teams-seasons-empty">
+              @if (teamsSeasonsMode === 'watched') {
+                No watched matches for this player yet. Switch to All Career to see career clubs.
+              } @else {
+                No team history available for this player.
+              }
+            </p>
+          }
         </app-general-card>
       }
     </div>
@@ -210,7 +321,7 @@
     <div
       class="no-teams-message"
       *ngIf="!statsLoading && !hasTeams() && (!isMobileView || mobileSection === 'teams' || !hasStatsSection)">
-      <p>No team information available for this player.</p>
+      <p>No team or watched match history for this player.</p>
     </div>
 
   </div>

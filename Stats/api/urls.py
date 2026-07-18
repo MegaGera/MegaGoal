@@ -9,6 +9,8 @@ from .views import (
     PlayerStatsAPIView,
     TeamGeneralStatsAPIView,
     PlayerGeneralStatsAPIView,
+    PlayerCareerStatsAPIView,
+    PlayerTeamSeasonMatchesAPIView,
 )
 
 urlpatterns = [
@@ -19,6 +21,8 @@ urlpatterns = [
     path('general-stats/', GeneralStatsAPIView.as_view(), name='general-stats'),
     path('landing-page-team-stats/', LandingPageTeamStatsAPIView.as_view(), name='landing-page-team-stats'),
     path('player-stats/', PlayerStatsAPIView.as_view(), name='player-stats'),
+    path('player-career-stats/', PlayerCareerStatsAPIView.as_view(), name='player-career-stats'),
+    path('player-team-season-matches/', PlayerTeamSeasonMatchesAPIView.as_view(), name='player-team-season-matches'),
     path('team-general-stats/', TeamGeneralStatsAPIView.as_view(), name='team-general-stats'),
     path('player-general-stats/', PlayerGeneralStatsAPIView.as_view(), name='player-general-stats'),
 ]

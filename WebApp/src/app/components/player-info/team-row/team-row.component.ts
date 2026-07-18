@@ -15,7 +15,6 @@ import { PlayerStatBadgeComponent } from '../../stats/player-stat-badge/player-s
 })
 export class TeamRowComponent {
   @Input() teamData: any;
-  @Input() season!: number;
   @Input() teamStats?: TeamSeasonStats;
   
   matchesExpanded: boolean = false;
@@ -27,10 +26,6 @@ export class TeamRowComponent {
     if (target) {
       target.src = 'assets/img/default-player.png';
     }
-  }
-
-  getSeasonDisplay(): string {
-    return `${this.season}/${(this.season + 1).toString().slice(-2)}`;
   }
   
   toggleMatches(): void {

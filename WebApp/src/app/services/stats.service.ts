@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 import { UserStats } from '../models/userStats';
 import { FavouriteTeamStats } from '../models/favouriteTeamStats';
 import { GeneralStats } from '../models/generalStats';
-import { PlayerStats } from '../models/playerStats';
+import { PlayerStats, PlayerCareerStats, PlayerTeamSeasonMatchesResponse } from '../models/playerStats';
 
 @Injectable({
   providedIn: 'root'
@@ -146,6 +146,31 @@ export class StatsService {
   getPlayerStats(playerId: number): Observable<PlayerStats> {
     let params = new HttpParams().set('player_id', playerId.toString());
     return this.http.get<PlayerStats>(this.url + '/player-stats/', { ...this.options, params: params });
+  }
+
+  /** Career aggregates per season/team (all appearances in real_matches). */
+  getPlayerCareerStats(playerId: number): Observable<PlayerCareerStats> {
+    const params = new HttpParams().set('player_id', playerId.toString());
+    return this.http.get<PlayerCareerStats>(this.url + '/player-career-stats/', {
+      ...this.options,
+      params
+    });
+  }
+
+  /** Lazy match list for one player + team + season (watched flag included). */
+  getPlayerTeamSeasonMatches(
+    playerId: number,
+    teamId: number,
+    season: number
+  ): Observable<PlayerTeamSeasonMatchesResponse> {
+    const params = new HttpParams()
+      .set('player_id', playerId.toString())
+      .set('team_id', teamId.toString())
+      .set('season', season.toString());
+    return this.http.get<PlayerTeamSeasonMatchesResponse>(
+      this.url + '/player-team-season-matches/',
+      { ...this.options, params }
+    );
   }
 
   /*

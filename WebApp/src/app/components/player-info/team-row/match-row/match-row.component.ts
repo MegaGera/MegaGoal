@@ -17,6 +17,11 @@ export class MatchRowComponent {
 
   constructor(public images: ImagesService) {}
 
+  /** Watched list rows always highlight; career lists use match.watched. */
+  isWatched(): boolean {
+    return this.match.watched !== false;
+  }
+
   onImageError(event: Event): void {
     const target = event.target as HTMLImageElement;
     if (target) {

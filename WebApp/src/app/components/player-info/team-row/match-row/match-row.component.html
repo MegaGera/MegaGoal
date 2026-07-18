@@ -1,5 +1,5 @@
 <a [routerLink]="['/app/match']" [queryParams]="{ id: match.fixture.id }" class="match-row-link">
-  <div class="match-row">
+  <div class="match-row" [class.match-row--watched]="isWatched()">
     <div class="match-content">
       <!-- Teams and Score Row -->
       <div class="match-teams-row">

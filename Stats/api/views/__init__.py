@@ -7,6 +7,8 @@ from .team_general_stats import TeamGeneralStatsAPIView
 from .player_general_stats import PlayerGeneralStatsAPIView
 from .landing_page_team_stats import LandingPageTeamStatsAPIView
 from .player_stats import PlayerStatsAPIView
+from .player_career_stats import PlayerCareerStatsAPIView
+from .player_team_season_matches import PlayerTeamSeasonMatchesAPIView
 
 __all__ = [
     'TeamsViewedAPIView',
@@ -17,5 +19,7 @@ __all__ = [
     'LandingPageTeamStatsAPIView',
     'PlayerStatsAPIView',
     'TeamGeneralStatsAPIView',
-    'PlayerGeneralStatsAPIView'
+    'PlayerGeneralStatsAPIView',
+    'PlayerCareerStatsAPIView',
+    'PlayerTeamSeasonMatchesAPIView',
 ] 
