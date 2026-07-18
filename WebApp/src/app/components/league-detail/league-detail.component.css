@@ -1,11 +1,6 @@
 /* Modern League Detail Component Styling */
 
-/* Global container improvements */
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
-}
+/* Container: Bootstrap gutters/max-width (same as team page) */
 
 /* Loading states */
 .loading-overlay {
@@ -204,7 +199,7 @@
   color: #101828;
 }
 
-/* Country pill: fully rounded; desktop sits under title (document order) */
+/* Country pill: fully rounded under title — desktop only */
 .league-country-pill {
   display: inline-flex;
   align-items: center;
@@ -241,6 +236,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Corner nation badge — mobile only (same as team-header) */
+.league-country-badge {
+  display: none;
 }
 
 .league-detail-header-top::after {
@@ -877,10 +877,6 @@
     margin: 6px 0 0 6px;
   }
 
-  .container {
-    padding: 16px;
-  }
-  
   .league-detail-header-card {
     padding: 1.25rem;
     gap: 1rem;
@@ -901,7 +897,7 @@
     text-align: center;
   }
 
-  /* Same visual order as team-header mobile: title → crest → country pill */
+  /* Same visual order as team-header mobile: title → crest */
   .league-detail-main {
     display: contents;
   }
@@ -920,11 +916,45 @@
   }
 
   .league-country-pill {
-    order: 1;
-    align-self: center;
-    max-width: min(100%, 320px);
-    font-size: 11px;
-    padding: 6px 14px;
+    display: none;
+  }
+
+  .league-country-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    max-width: min(62%, calc(100% - 2.75rem));
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 0 0 0 8px;
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+  }
+
+  .league-country-badge .country-flag {
+    width: 14px;
+    height: 10px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
+  }
+
+  .league-country-badge .country-name {
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .league-name {
@@ -1056,21 +1086,6 @@
 }
 
 @media (max-width: 480px) {
-  .league-country-pill {
-    font-size: 10px;
-    padding: 5px 12px;
-    gap: 6px;
-  }
-
-  .league-country-pill-flag {
-    width: 16px;
-    height: 12px;
-  }
-
-  .league-country-pill-emoji {
-    font-size: 12px;
-  }
-
   .season-info {
     gap: 6px;
   }

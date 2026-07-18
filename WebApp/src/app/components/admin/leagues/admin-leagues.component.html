@@ -590,6 +590,16 @@
               </button>
               <p class="button-description">Trigger API update for all the leagues</p>
             </div>
+
+            <div class="button-with-description">
+              <button
+                class="modal-action-btn"
+                (click)="triggerUpdateCountries()"
+                [disabled]="isUpdateCountriesLoading">
+                {{ isUpdateCountriesLoading ? 'Updating...' : 'Update Countries' }}
+              </button>
+              <p class="button-description">Fetch API countries and insert only new ones into the countries collection</p>
+            </div>
             
             <div class="button-with-description">
               <button 

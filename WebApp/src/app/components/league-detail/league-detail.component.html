@@ -35,6 +35,19 @@
             aria-hidden="true">
           </ng-icon>
         </button>
+        @if (selectedLeague.country.name) {
+          <div class="league-country-badge" aria-hidden="true">
+            @if (selectedLeague.country.flag) {
+              <img
+                class="country-flag"
+                [src]="selectedLeague.country.flag"
+                [alt]="selectedLeague.country.name + ' flag'"
+                width="16"
+                height="12">
+            }
+            <span class="country-name">{{ selectedLeague.country.name }}</span>
+          </div>
+        }
         <div class="league-detail-header-top">
           <div class="league-detail-header-info">
             <div class="league-crest-row">

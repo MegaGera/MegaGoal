@@ -4,8 +4,7 @@
   gap: 1.5rem;
   padding: 1.75rem;
   border-radius: 24px;
-  background: radial-gradient(circle at top left, rgba(220, 20, 60, 0.18), transparent 55%), #ffffff;
-  border: 1px solid rgba(220, 20, 60, 0.08);
+  background: radial-gradient(circle at top left, var(--league-glow-18, rgba(220, 20, 60, 0.18)), transparent 55%), #ffffff;
   box-shadow:
     0 18px 40px rgba(15, 23, 42, 0.08),
     0 2px 4px rgba(15, 23, 42, 0.06);
@@ -20,7 +19,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(135deg, rgba(220, 20, 60, 0.12), transparent 60%);
+  background: linear-gradient(135deg, var(--league-glow-12, rgba(220, 20, 60, 0.12)), transparent 60%);
   mix-blend-mode: screen;
 }
 
@@ -36,7 +35,7 @@
 .player-header-info {
   display: flex;
   gap: 1.5rem;
-  align-items: center;
+  align-items: flex-start;
   flex: 1 1 360px;
   min-width: min(360px, 100%);
 }
@@ -54,24 +53,119 @@
   margin-left: auto;
 }
 
+.player-crest-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* Club crest — same tile as team-header .team-league-mark; border uses league accent */
+.player-team-mark {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 18px;
+  background: #f8f9fa;
+  box-sizing: border-box;
+  box-shadow: 0 8px 18px var(--league-shadow-16, rgba(148, 163, 184, 0.16));
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.player-team-mark:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px var(--league-shadow-hover, rgba(148, 163, 184, 0.2));
+}
+
+.player-team-mark:focus {
+  outline: 2px solid #dc143c;
+  outline-offset: 2px;
+}
+
+.player-team-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+/* Photo tile — same footprint as team-header .team-avatar */
 .player-avatar {
   width: 116px;
   height: 116px;
   display: grid;
   place-items: center;
-  border-radius: 40px;
-  background: linear-gradient(135deg, rgba(220, 20, 60, 0.25), rgba(255, 107, 107, 0.18));
-  box-shadow:
-    0 22px 38px rgba(220, 20, 60, 0.28),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.65);
+  flex-shrink: 0;
+  border-radius: 18px;
+  background: #f8f9fa;
+  box-sizing: border-box;
+  box-shadow: 0 8px 18px var(--league-shadow-16, rgba(148, 163, 184, 0.16));
 }
 
 .player-avatar-img {
   width: 82px;
   height: 82px;
   object-fit: cover;
-  border-radius: 28px;
-  filter: drop-shadow(0 14px 20px rgba(220, 20, 60, 0.3));
+  border-radius: 8px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+/* Nation badge — same corner placement as team-header (left desktop, right mobile) */
+.player-header-badge-cluster {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  pointer-events: none;
+}
+
+.player-header-badge-cluster .country-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  max-width: min(85%, calc(100% - 3rem));
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 0 0 0 8px;
+  box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.player-header-badge-cluster .country-badge .country-flag {
+  width: 16px;
+  height: 12px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.player-header-badge-cluster .country-badge .country-name {
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .player-main {
@@ -79,6 +173,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
+  min-width: 0;
 }
 
 .player-name-row {
@@ -129,10 +224,42 @@
   color: rgba(71, 84, 103, 0.7);
 }
 
+@media (min-width: 769px) {
+  .player-header-badge-cluster {
+    top: -1px;
+    left: 0;
+    right: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    width: auto;
+    max-width: min(100%, 92%);
+    gap: 0.4rem;
+  }
+
+  .player-header-badge-cluster .country-badge {
+    max-width: none;
+    border-radius: 0 0 8px 0;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 768px) {
   .player-header-card {
     padding: 1.25rem;
     gap: 1rem;
+  }
+
+  .player-header-badge-cluster .country-badge {
+    font-size: 10px;
+    padding: 5px 10px;
+    gap: 5px;
+    max-width: min(62%, calc(100% - 2.75rem));
+  }
+
+  .player-header-badge-cluster .country-badge .country-flag {
+    width: 14px;
+    height: 10px;
   }
 
   .player-header-top {
@@ -162,6 +289,56 @@
     max-width: 100%;
   }
 
+  /*
+    Stack: title → crest → meta (display:contents flattens player-main
+    so name, photo, details are ordered siblings — same as team-header).
+  */
+  .player-main {
+    display: contents;
+  }
+
+  .player-name-row {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+  }
+
+  /*
+    Player photo stays centered; league sits just left of it
+    (same pattern as team-header mobile crest row).
+  */
+  .player-crest-row {
+    order: 0;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    min-height: 92px;
+    gap: 0;
+  }
+
+  .player-team-mark {
+    position: absolute;
+    left: max(0px, calc(50% - (92px / 2) - 0.5rem - 56px));
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    width: 56px;
+    height: 56px;
+  }
+
+  .player-team-mark:hover {
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  .player-team-logo {
+    width: 36px;
+    height: 36px;
+  }
+
   .player-avatar {
     width: 92px;
     height: 92px;
@@ -172,16 +349,14 @@
     height: 64px;
   }
 
-  .player-main {
-    align-items: center;
-  }
-
-  .player-name-row {
-    justify-content: center;
-  }
-
   .player-meta {
+    order: 1;
+    width: 100%;
     justify-content: center;
+  }
+
+  .player-name {
+    font-size: 1.8rem;
   }
 }
 
@@ -201,4 +376,3 @@
     max-width: calc(50% - 0.875rem);
   }
 }
-

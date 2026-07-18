@@ -15,6 +15,7 @@ class MatchUpdater:
         self.collection_leagues = self.db['leagues']
         self.collection_teams = self.db['teams']
         self.collection_players = self.db['players']
+        self.collection_countries = self.db['countries']
         self.headers = Config.get_api_headers()
         self.url = Config.RAPIDAPI_HOST
 
@@ -122,6 +123,62 @@ class MatchUpdater:
         """Add leagues to database"""
         leagues = self.get_leagues_from_api()
         self.add_leagues_to_db(leagues)
+
+    def get_countries_from_api(self):
+        """Fetch all countries from API-Football /countries"""
+        endpoint = "/countries"
+        return self._make_api_request_with_retry(endpoint)
+
+    def country_exists(self, name):
+        """Check if a country already exists by exact API name"""
+        if not name:
+            return False
+        return self.collection_countries.find_one({"name": name}) is not None
+
+    def add_countries(self):
+        """
+        Sync countries into the `countries` collection.
+        Inserts only countries that are not already present (matched by name).
+        Does not replace or update existing documents.
+        """
+        # Unique name for nationality lookups; code when present for secondary lookups
+        self.collection_countries.create_index("name", unique=True, background=True)
+        self.collection_countries.create_index("code", background=True, sparse=True)
+
+        payload = self.get_countries_from_api()
+        response = payload.get("response") if isinstance(payload, dict) else None
+        if not isinstance(response, list):
+            raise Exception("Unexpected /countries API response shape")
+
+        inserted = 0
+        skipped = 0
+        for item in response:
+            if not isinstance(item, dict):
+                skipped += 1
+                continue
+            name = item.get("name")
+            if not name or not str(name).strip():
+                skipped += 1
+                continue
+            name = str(name).strip()
+            if self.country_exists(name):
+                skipped += 1
+                continue
+            doc = {
+                "name": name,
+                "code": item.get("code"),
+                "flag": item.get("flag"),
+            }
+            self.collection_countries.insert_one(doc)
+            inserted += 1
+            print(f"Inserted country: {name}")
+
+        print(f"Countries sync done: inserted={inserted}, skipped={skipped}, fetched={len(response)}")
+        return {
+            "inserted": inserted,
+            "skipped": skipped,
+            "fetched": len(response),
+        }
 
     def real_match_exists(self, match_id):
         """Check if real_match exists in database"""

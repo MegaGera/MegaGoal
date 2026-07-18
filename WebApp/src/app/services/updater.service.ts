@@ -51,6 +51,17 @@ export class UpdaterService {
   }
 
   /**
+   * Sync countries from API-Football (/countries). Inserts only new names.
+   */
+  updateCountries(): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_countries/',
+      {},
+      this.options
+    );
+  }
+
+  /**
    * Check and update available seasons for all leagues
    */
   checkAvailableSeasons(): Observable<any> {

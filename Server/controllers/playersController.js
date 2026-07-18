@@ -8,6 +8,7 @@ import {
   defaultPlayersApiInfoSetting,
   parsePlayersApiInfoSetting
 } from '../entities/settingsEntity.js';
+import { resolveNationalityCountry } from '../services/nationalityCountryService.js';
 
 // Get players from database with search and pagination
 export const getPlayers = async (req, res) => {
@@ -120,8 +121,16 @@ export const getPlayerById = async (req, res) => {
     if (!player) {
       return res.status(404).json({ error: 'Player not found' });
     }
+
+    const nationalityCountry = await resolveNationalityCountry(
+      db,
+      player.player?.nationality
+    );
     
-    const validatedPlayer = parsePlayer(player);
+    const validatedPlayer = parsePlayer({
+      ...player,
+      nationality_country: nationalityCountry
+    });
     res.json(validatedPlayer);
   } catch (error) {
     if (error.name === 'ZodError') {

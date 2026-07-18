@@ -5,12 +5,15 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
 import { StatsService } from '../../services/stats.service';
 import { Player } from '../../models/player';
 import { PlayerStats } from '../../models/playerStats';
+import { Team } from '../../models/team';
 import { TeamRowComponent } from './team-row/team-row.component';
 import { PlayerHeaderComponent } from './player-header/player-header.component';
 import { BasicStatCardComponent } from '../stats/basic-stat-card/basic-stat-card.component';
@@ -36,6 +39,14 @@ export class PlayerInfoComponent {
   playerAge: number | null = null;
   playerBirthPlace: string | null = null;
 
+  /**
+   * Full Team docs for every club that shares the player's latest season year.
+   * Kept for a future “last match played” picker; selection uses {@link currentClub} only.
+   */
+  currentSeasonTeams: Team[] = [];
+  /** Preferred club for the header (non-national if possible, else first). */
+  currentClub: Team | null = null;
+
   constructor(
     private megagoal: MegaGoalService, 
     private router: Router, 
@@ -51,6 +62,8 @@ export class PlayerInfoComponent {
   init() {
     this.loading = true;
     this.statsLoading = true;
+    this.currentSeasonTeams = [];
+    this.currentClub = null;
     
     this.megagoal.getPlayerById(this.queryPlayerId).subscribe(result => {
       if (result != undefined) {
@@ -59,6 +72,7 @@ export class PlayerInfoComponent {
         this.playerBirthPlace = this.buildBirthPlace(this.player.player?.birth);
         this.loading = false;
         this.loadPlayerStats();
+        this.loadCurrentSeasonTeams();
         
         // Log page visit with player information
         this.megagoal.logPageVisit('player-info', {
@@ -86,6 +100,67 @@ export class PlayerInfoComponent {
       console.error('Error loading player stats:', error);
       this.statsLoading = false;
     });
+  }
+
+  /**
+   * Teams whose seasons include the max year on the player doc; fetch full Team payloads.
+   */
+  private loadCurrentSeasonTeams(): void {
+    this.currentSeasonTeams = [];
+    this.currentClub = null;
+
+    const history = this.player?.teams;
+    if (!Array.isArray(history) || history.length === 0) {
+      return;
+    }
+
+    let maxSeason = -Infinity;
+    for (const entry of history) {
+      for (const season of entry.seasons ?? []) {
+        const y = Number(season);
+        if (!Number.isNaN(y)) {
+          maxSeason = Math.max(maxSeason, y);
+        }
+      }
+    }
+    if (maxSeason === -Infinity) {
+      return;
+    }
+
+    const candidateIds = history
+      .filter((entry) =>
+        (entry.seasons ?? []).some((s: number) => Number(s) === maxSeason)
+      )
+      .map((entry) => entry.team.id as number)
+      .filter((id, index, arr) => id != null && arr.indexOf(id) === index);
+
+    if (candidateIds.length === 0) {
+      return;
+    }
+
+    forkJoin(
+      candidateIds.map((id) =>
+        this.megagoal.getTeamById(id).pipe(
+          catchError((err) => {
+            console.error(`Error fetching team ${id} for player header:`, err);
+            return of(null);
+          })
+        )
+      )
+    ).subscribe((results) => {
+      const teams = results.filter((t): t is Team => t != null && t.team?.id != null);
+      this.currentSeasonTeams = teams;
+      this.currentClub = this.pickCurrentClub(teams);
+    });
+  }
+
+  /** Prefer a club side over a national team; otherwise first entry. */
+  private pickCurrentClub(teams: Team[]): Team | null {
+    if (teams.length === 0) {
+      return null;
+    }
+    const clubSide = teams.find((t) => t.team?.national === false);
+    return clubSide ?? teams[0];
   }
   
   updateTeamsSeasonsList(): void {
@@ -158,4 +233,3 @@ export class PlayerInfoComponent {
   }
   
 }
-

@@ -181,6 +181,25 @@ async def update_leagues(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/update_countries/")
+async def update_countries(request: Request):
+    """Fetch API-Football /countries and insert only new countries into MongoDB."""
+    await validate_admin(request)
+    updater = MatchUpdater()
+    try:
+        result = updater.add_countries()
+        return {
+            "status": "success",
+            "message": (
+                f"Countries synced: {result['inserted']} inserted, "
+                f"{result['skipped']} already present "
+                f"({result['fetched']} from API)"
+            ),
+            **result,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/update_match_statistics/")
 async def update_match_statistics(req: UpdateStatisticsRequest, request: Request):
     await validate_admin(request)

@@ -1,14 +1,55 @@
-<div class="player-header-card">
+<div
+  class="player-header-card"
+  [style.border]="'1px solid ' + leagueAccentBorderColor"
+  [style.--league-glow-18]="leagueAccentRgba(0.18)"
+  [style.--league-glow-12]="leagueAccentRgba(0.12)"
+  [style.--league-shadow-16]="leagueAccentRgba(0.16)"
+  [style.--league-shadow-hover]="leagueAccentRgba(0.2)">
+  @if (badgeCountryName) {
+    <div class="player-header-badge-cluster">
+      <div class="country-badge" aria-hidden="true">
+        @if (badgeCountryFlag) {
+          <img
+            class="country-flag"
+            [src]="badgeCountryFlag"
+            [alt]="badgeCountryName + ' flag'"
+            width="16"
+            height="12">
+        }
+        <span class="country-name">{{ badgeCountryName }}</span>
+      </div>
+    </div>
+  }
+
   <div class="player-header-top">
     <div class="player-header-info">
-      <div class="player-avatar">
-        <img
-          [src]="getPlayerImageUrl()"
-          [alt]="player.player.name"
-          width="112"
-          height="112"
-          class="player-avatar-img"
-          (error)="onImageError($event)">
+      <div class="player-crest-row">
+        @if (currentClubId; as teamId) {
+          <a
+            class="player-team-mark"
+            [routerLink]="['/app/team']"
+            [queryParams]="{ id: teamId }"
+            [attr.aria-label]="'Open ' + (currentClubName ?? 'team') + ' team page'"
+            [style.border]="'2px solid ' + leagueAccentBorderColor">
+            <img
+              class="player-team-logo"
+              [src]="images.getRouteImageTeam(teamId)"
+              [alt]="currentClubName ?? 'Team'"
+              width="44"
+              height="44">
+          </a>
+        }
+        <div
+          class="player-avatar"
+          [style.border]="'2px solid ' + leagueAccentBorderColor">
+          <img
+            [src]="getPlayerImageUrl()"
+            [alt]="player.player.name"
+            width="112"
+            height="112"
+            class="player-avatar-img"
+            (error)="onImageError($event)">
+        </div>
       </div>
 
       <div class="player-main">
@@ -25,10 +66,8 @@
         </div>
 
         <div class="player-meta" *ngIf="hasMetaInfo()">
-          <span *ngIf="player.player.nationality">{{ player.player.nationality }}</span>
-          <span class="dot" aria-hidden="true" *ngIf="player.player.nationality && playerBirthPlace">•</span>
           <span *ngIf="playerBirthPlace">{{ playerBirthPlace }}</span>
-          <span class="dot" aria-hidden="true" *ngIf="(player.player.nationality || playerBirthPlace) && playerAge !== null">•</span>
+          <span class="dot" aria-hidden="true" *ngIf="playerBirthPlace && playerAge !== null">•</span>
           <span *ngIf="playerAge !== null">Age {{ playerAge }}</span>
         </div>
       </div>
@@ -44,4 +83,3 @@
     </div>
   </div>
 </div>
-

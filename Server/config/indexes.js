@@ -87,6 +87,12 @@ export const createIndexes = async () => {
     await playersCollection.createIndex({ 'player.name': 1, 'player.position': 1 }, { background: true });
     
     console.log('✓ players indexes created');
+
+    // ==================== countries Collection ====================
+    const countriesCollection = db.collection('countries');
+    await countriesCollection.createIndex({ name: 1 }, { background: true, unique: true });
+    await countriesCollection.createIndex({ code: 1 }, { background: true, sparse: true });
+    console.log('✓ countries indexes created');
     
     // ==================== matches Collection ====================
     const matchesCollection = db.collection('matches');
@@ -161,12 +167,14 @@ export const ensureIndexes = async () => {
     const playersCollection = db.collection('players');
     const matchesCollection = db.collection('matches');
     const usersCollection = db.collection('users');
+    const countriesCollection = db.collection('countries');
     
     // Get existing indexes
     const existingRealMatchesIndexes = await realMatchesCollection.indexes();
     const existingPlayersIndexes = await playersCollection.indexes();
     const existingMatchesIndexes = await matchesCollection.indexes();
     const existingUsersIndexes = await usersCollection.indexes();
+    const existingCountriesIndexes = await countriesCollection.indexes();
     
     const getIndexKey = (index) => {
       const key = index.key || {};
@@ -236,6 +244,23 @@ export const ensureIndexes = async () => {
           sparse: idxSpec.sparse || false 
         });
         console.log(`  Created index: players.${keyString}`);
+      }
+    }
+
+    const countriesIndexes = [
+      { key: { name: 1 }, unique: true },
+      { key: { code: 1 }, sparse: true },
+    ];
+
+    for (const idxSpec of countriesIndexes) {
+      const keyString = JSON.stringify(idxSpec.key);
+      if (!indexExists(existingCountriesIndexes, keyString)) {
+        await countriesCollection.createIndex(idxSpec.key, {
+          background: true,
+          unique: idxSpec.unique || false,
+          sparse: idxSpec.sparse || false
+        });
+        console.log(`  Created index: countries.${keyString}`);
       }
     }
     

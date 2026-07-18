@@ -33,10 +33,21 @@ const playerTeamHistorySchema = z.object({
   seasons: z.array(z.number().int())
 });
 
+/** Country row from `countries` collection, attached on GET /players/:id */
+const nationalityCountrySchema = z
+  .object({
+    name: z.string(),
+    code: z.string().nullable(),
+    flag: z.string().nullable()
+  })
+  .nullable()
+  .optional();
+
 const playerSchema = z.object({
   player: playerInfoSchema,
   teams: z.array(playerTeamHistorySchema).optional(),
-  last_update: z.date().nullable().optional()
+  last_update: z.date().nullable().optional(),
+  nationality_country: nationalityCountrySchema
 });
 
 const playerListResponseSchema = z.object({

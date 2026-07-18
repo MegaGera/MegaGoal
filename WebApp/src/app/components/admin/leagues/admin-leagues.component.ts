@@ -48,6 +48,7 @@ export class AdminLeaguesComponent {
   isMatchesUpdateLoading: boolean = false;
   showGeneralModal: boolean = false;
   isUpdateLeaguesLoading: boolean = false;
+  isUpdateCountriesLoading: boolean = false;
   isCheckSeasonsLoading: boolean = false;
   isUpdateTeamsLoading: boolean = false;
   isUpdatePlayersLoading: boolean = false;
@@ -426,6 +427,14 @@ export class AdminLeaguesComponent {
     this.updater.updateLeagues().subscribe({
       next: () => { this.isUpdateLeaguesLoading = false; },
       error: () => { this.isUpdateLeaguesLoading = false; }
+    });
+  }
+
+  triggerUpdateCountries(): void {
+    this.isUpdateCountriesLoading = true;
+    this.updater.updateCountries().subscribe({
+      next: () => { this.isUpdateCountriesLoading = false; },
+      error: () => { this.isUpdateCountriesLoading = false; }
     });
   }
 
