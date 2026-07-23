@@ -60,6 +60,8 @@ export class FiltersHomeComponent {
   @Input() teamsAgainstViewed: TeamsViewedStats[] = [];
   @Input() teamsAgainstLoaded: boolean = true;
   @Input() showLocations: boolean = true;
+  /** When false, Order select is hidden (e.g. players page uses server ranking). */
+  @Input() showOrder: boolean = true;
   @Input() collapsed: boolean = false;
   /** When true and collapsed, header is a single settings icon aligned right (no title/chevron). */
   @Input() iconOnlyCollapsed: boolean = false;

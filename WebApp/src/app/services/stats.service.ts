@@ -6,6 +6,7 @@ import { UserStats } from '../models/userStats';
 import { FavouriteTeamStats } from '../models/favouriteTeamStats';
 import { GeneralStats } from '../models/generalStats';
 import { PlayerStats, PlayerCareerStats, PlayerTeamSeasonMatchesResponse } from '../models/playerStats';
+import { PlayerViewedStats } from '../models/playerViewedStats';
 
 @Injectable({
   providedIn: 'root'
@@ -61,6 +62,33 @@ export class StatsService {
     params = this.withTeamsParams(params, teams, teamsAgainst);
     
     return this.http.get<any[]>(this.url + '/teams-viewed/', { ...this.options, params: params });
+  }
+
+  /*
+    Players ranked by watched appearances (startXI or sub), same filters as teams-viewed
+  */
+  getPlayersViewed(
+    teamSelection: number,
+    leagues: number[],
+    season: number,
+    location: string = '',
+    teams?: number[],
+    teamsAgainst?: number[]
+  ): Observable<PlayerViewedStats[]> {
+    let params = new HttpParams()
+      .set('team_selection', teamSelection)
+      .set('leagues', leagues.toString())
+      .set('season', season);
+
+    if (location) {
+      params = params.set('location', location);
+    }
+    params = this.withTeamsParams(params, teams, teamsAgainst);
+
+    return this.http.get<PlayerViewedStats[]>(this.url + '/players-viewed/', {
+      ...this.options,
+      params,
+    });
   }
 
   /*

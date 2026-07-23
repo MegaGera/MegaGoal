@@ -1,0 +1,160 @@
+@import '../mobile-filters-inline-row/mobile-filters-layout.css';
+
+@media (min-width: 768px) {
+  .tab-content > .tab-pane {
+    display: block !important;
+  }
+
+  .tab-content > .tab-pane:last-child {
+    margin-top: 20px;
+  }
+}
+
+/* Mobile: Bootstrap hides .tab-pane without .active — show panes marked .show (same as home) */
+@media only screen and (max-width: 767px) {
+  .tab-content > .tab-pane {
+    display: none !important;
+  }
+
+  .tab-content > .tab-pane.show {
+    display: block !important;
+  }
+
+  .tab-content > .tab-pane {
+    margin-top: 20px;
+  }
+}
+
+.players-header {
+  margin: 0.5rem 0 1rem;
+}
+
+.players-header.matches-header {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.players-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.players-header.matches-header .players-title {
+  color: white;
+}
+
+.playerCardAdapter {
+  width: 96%;
+  max-width: 920px;
+  margin: 0.6rem auto;
+}
+
+.paginationDiv {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.no-players-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 20px;
+}
+
+.no-players-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(220, 20, 60, 0.1);
+  max-width: 500px;
+  width: 100%;
+}
+
+.no-players-icon {
+  margin-bottom: 24px;
+}
+
+.football-icon {
+  color: #dc143c;
+  opacity: 0.8;
+}
+
+.no-players-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.no-players-description {
+  font-size: 16px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 32px 0;
+}
+
+.no-players-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.reset-filters-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #dc143c, #ff6b6b);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+}
+
+.reset-filters-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220, 20, 60, 0.4);
+}
+
+.reset-filters-btn:active {
+  transform: translateY(0);
+}
+
+.reset-filters-btn ng-icon {
+  --ng-icon__size: 1rem;
+}
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 4%;
+}
+
+@media only screen and (max-width: 767px) {
+  .playerCardAdapter {
+    width: 100%;
+    margin: 0.65rem auto;
+  }
+
+  .no-players-card {
+    padding: 24px;
+    margin: 20px;
+  }
+
+  .no-players-title {
+    font-size: 20px;
+  }
+
+  .no-players-description {
+    font-size: 14px;
+  }
+}
