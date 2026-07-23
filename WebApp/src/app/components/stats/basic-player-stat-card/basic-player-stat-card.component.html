@@ -1,22 +1,117 @@
-<a class="player-card" [routerLink]="['/app/player']" [queryParams]="{ id: playerId }">
-  <div class="player-card__content">
+<a
+  class="player-card"
+  [class.player-card--row]="variant === 'row'"
+  [class.player-card--top]="variant === 'row' && rank != null && rank <= 3"
+  [routerLink]="['/app/player']"
+  [queryParams]="{ id: playerId }">
+
+  @if (variant === 'row') {
+    @if (rank != null) {
+      <div class="player-card__rank" [attr.data-rank]="rank">
+        <span class="player-card__rank-num">{{ rank }}</span>
+      </div>
+    }
+
     <div class="player-card__avatar">
-      <img *ngIf="avatarUrl; else placeholder" [src]="avatarUrl" [alt]="playerName" />
+      <img
+        *ngIf="avatarUrl && !imageFailed; else placeholder"
+        [src]="avatarUrl"
+        [alt]="playerName"
+        (error)="onImageError()" />
       <ng-template #placeholder>
         <div class="player-card__placeholder">
           {{ playerName | slice:0:1 }}
         </div>
       </ng-template>
     </div>
+
     <div class="player-card__details">
-      <span class="player-card__name">{{ playerName }}</span>
-      <div class="player-card__badges">
-        <app-player-stat-badge *ngFor="let badge of badges"
-                               [icon]="badge.icon"
-                               [value]="badge.value">
-        </app-player-stat-badge>
+      <div class="player-card__identity">
+        <span class="player-card__name">{{ playerName }}</span>
+        <div class="player-card__meta">
+          @if (nationality) {
+            <span class="player-card__nation">
+              @if (nationalityFlag) {
+                <img class="player-card__flag" [src]="nationalityFlag" [alt]="nationality" />
+              }
+              <span class="player-card__nation-name">{{ nationality }}</span>
+            </span>
+          } @else {
+            <span class="player-card__subtitle">Player profile</span>
+          }
+        </div>
       </div>
     </div>
-  </div>
-</a>
 
+    @if (topTeams.length) {
+      <div class="player-card__teams" aria-label="Top watched teams">
+        @for (team of topTeams; track team.team_id) {
+          <span class="player-team-chip" [title]="team.team_name">
+            @if (!teamLogoFailed(team.team_id)) {
+              <img
+                class="player-team-chip__logo"
+                [src]="teamLogoUrl(team.team_id)"
+                [alt]="team.team_name"
+                (error)="onTeamLogoError(team.team_id)" />
+            } @else {
+              <span class="player-team-chip__fallback">{{ team.team_name | slice:0:1 }}</span>
+            }
+          </span>
+        }
+      </div>
+    }
+
+    <div class="player-card__trailing">
+      @if (matchesWatched != null || goals != null || assists != null) {
+        <div class="player-card__stat-badges">
+          @if (matchesWatched != null) {
+            <app-player-stat-badge icon="👁️" [value]="matchesWatched"></app-player-stat-badge>
+          }
+          @if (goals != null) {
+            <app-player-stat-badge icon="⚽" [value]="goals"></app-player-stat-badge>
+          }
+          @if (assists != null) {
+            <app-player-stat-badge icon="🎯" [value]="assists"></app-player-stat-badge>
+          }
+        </div>
+      } @else if (badges.length) {
+        <div class="player-card__stat-badges">
+          <app-player-stat-badge *ngFor="let badge of badges"
+                                 [icon]="badge.icon"
+                                 [value]="badge.value">
+          </app-player-stat-badge>
+        </div>
+      }
+    </div>
+
+    <div class="player-card__chevron" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+    </div>
+  } @else {
+    <div class="player-card__content">
+      <div class="player-card__avatar">
+        <img
+          *ngIf="avatarUrl && !imageFailed; else tilePlaceholder"
+          [src]="avatarUrl"
+          [alt]="playerName"
+          (error)="onImageError()" />
+        <ng-template #tilePlaceholder>
+          <div class="player-card__placeholder">
+            {{ playerName | slice:0:1 }}
+          </div>
+        </ng-template>
+      </div>
+      <div class="player-card__details">
+        <span class="player-card__name">{{ playerName }}</span>
+        <div class="player-card__badges">
+          <app-player-stat-badge *ngFor="let badge of badges"
+                                 [icon]="badge.icon"
+                                 [value]="badge.value">
+          </app-player-stat-badge>
+        </div>
+      </div>
+    </div>
+  }
+</a>

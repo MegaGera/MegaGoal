@@ -11,6 +11,7 @@ import { MatchesComponent } from './components/matches/matches.component';
 import { LandingPageComponent } from './components/landing-page/landing-page.component';
 import { MatchInfoComponent } from './components/match-info/match-info.component';
 import { PlayerInfoComponent } from './components/player-info/player-info.component';
+import { PlayersComponent } from './components/players/players.component';
 
 import { adminGuard } from './guards/admin.guard';
 
@@ -23,6 +24,7 @@ export const routes: Routes = [
         { path: 'team', component: TeamComponent },
         { path: 'matches', component: MatchesComponent },
         { path: 'match', component: MatchInfoComponent },
+        { path: 'players', component: PlayersComponent },
         { path: 'player', component: PlayerInfoComponent },
         { path: 'locations', component: LocationsComponent },
         { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },

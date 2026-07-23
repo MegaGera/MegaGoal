@@ -11,11 +11,13 @@ from .views import (
     PlayerGeneralStatsAPIView,
     PlayerCareerStatsAPIView,
     PlayerTeamSeasonMatchesAPIView,
+    PlayersViewedAPIView,
 )
 
 urlpatterns = [
     path('teams-viewed/', TeamsViewedAPIView.as_view(), name='match-stats'),
     path('leagues-viewed/', LeaguesViewedAPIView.as_view(), name='leagues-viewed'),
+    path('players-viewed/', PlayersViewedAPIView.as_view(), name='players-viewed'),
     path('user-general-stats/', UserGeneralStatsAPIView.as_view(), name='user-general-stats'),
     path('favourite-team-stats/', FavouriteTeamStatsAPIView.as_view(), name='favourite-team-stats'),
     path('general-stats/', GeneralStatsAPIView.as_view(), name='general-stats'),

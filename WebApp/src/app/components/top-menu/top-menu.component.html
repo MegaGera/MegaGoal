@@ -1,24 +1,38 @@
 <!--
   Top Menu Bar Component. Includes:
   - Button to go to Home Component
-  - Button to go to Leagues Component
+  - Scrollable nav links (Leagues, Matches, Players)
   - User dropdown with Profile, Locations, and Admin options
 -->
 <nav class="top-menu">
     <div class="top-menu-container">
         <div class="nav-section">
-            <a class="nav-link" routerLink="/app/home" routerLinkActive="active">
+            <a class="nav-link nav-link--home" routerLink="/app/home" routerLinkActive="active">
                 <img src="https://server.megamedia.megagera.com/megagera/MG.png" 
                      alt="Home" 
                      class="nav-logo"
                      title="Home">
             </a>
-            <a class="nav-link" routerLink="/app/leagues" routerLinkActive="active" ariaCurrentWhenActive="page">
-                <span class="nav-text">Leagues</span>
-            </a>
-            <a class="nav-link" routerLink="/app/matches" routerLinkActive="active" ariaCurrentWhenActive="page">
-                <span class="nav-text">Matches</span>
-            </a>
+
+            <div
+              class="nav-links-scroll"
+              [class.nav-links-scroll--fade-left]="navFadeLeft"
+              [class.nav-links-scroll--fade-right]="navFadeRight">
+              <div
+                class="nav-links-track"
+                #navLinksTrack
+                (scroll)="onNavLinksScroll()">
+                <a class="nav-link nav-link--page" routerLink="/app/leagues" routerLinkActive="active" ariaCurrentWhenActive="page">
+                    <span class="nav-text">Leagues</span>
+                </a>
+                <a class="nav-link nav-link--page" routerLink="/app/matches" routerLinkActive="active" ariaCurrentWhenActive="page">
+                    <span class="nav-text">Matches</span>
+                </a>
+                <a class="nav-link nav-link--page" routerLink="/app/players" routerLinkActive="active" ariaCurrentWhenActive="page">
+                    <span class="nav-text">Players</span>
+                </a>
+              </div>
+            </div>
         </div>
         
         <div class="right-section">
@@ -57,4 +71,3 @@
         </div>
     </div>
 </nav>
-
