@@ -46,3 +46,4 @@ testem.log
 
 *ideas.txt
 .cursor/
+__pycache__

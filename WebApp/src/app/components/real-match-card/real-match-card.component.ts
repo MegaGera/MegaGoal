@@ -339,11 +339,16 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
   }
 
   setLocation(fixtureId: number, location: string) {
+    const selectedVenue = this.match.venue?.id != null
+      && String(location) === String(this.getLocationIdFromVenueId(this.match.venue.id));
+
     const existingLocation = this.locations.find(loc => loc.venue_id === parseInt(location));
     if (existingLocation) {
       location = existingLocation.id;
     }
-    this.megaGoal.setLocation(fixtureId, location, this.match.venue).subscribe(result => { });
+
+    const venue = selectedVenue ? this.match.venue : undefined;
+    this.megaGoal.setLocation(fixtureId, location, venue).subscribe(result => { });
   }
 
   getDefaultLeagueImg(event: any) {

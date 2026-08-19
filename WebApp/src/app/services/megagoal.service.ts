@@ -297,11 +297,13 @@ export class MegaGoalService {
   /*
     Method to set a Location for a Match
   */
-  setLocation(fixtureId: number, location: string, venue?: any): Observable<number> {
-    let body = {
-      fixtureId: fixtureId,
-      location: location,
-      venue: venue
+  setLocation(fixtureId: number, location: string, venue?: { id: number; name: string }): Observable<number> {
+    const body: { fixtureId: number; location: string; venue?: { id: number; name: string } } = {
+      fixtureId,
+      location,
+    };
+    if (venue?.id != null) {
+      body.venue = venue;
     }
     return this.http.post<number>(this.url + '/match/set_location', body, this.options);
   }
