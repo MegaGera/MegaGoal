@@ -22,6 +22,7 @@ import playersRoutes from './routes/playersRoutes.js';
 import youtubeRoutes from './routes/youtubeRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import onzeRoutes from './routes/onzeRoutes.js';
 import { startMcpHttpIfEnabled } from './mcp/createMcpServer.js';
 
 const app = express();
@@ -53,15 +54,20 @@ if (process.env.NODE_ENV === 'production') {
 
   app.use(cors(corsOptions));
 } else {
-  
-  // Normal use in development
-  app.use(cors());
+  const localDevOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
-  // Only use if send credentials in development
-  // app.use(cors({
-  //   origin: 'http://localhost:3000',
-  //   credentials: true,
-  // }));
+  app.use(
+    cors({
+      origin(origin, callback) {
+        if (!origin || localDevOrigin.test(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true,
+    })
+  );
 }
 
 // Public routes (no authentication required) - must be defined before middleware
@@ -138,6 +144,7 @@ app.use('/players', playersRoutes);
 app.use('/youtube', youtubeRoutes);
 app.use('/analytics', analyticsRoutes);
 app.use('/user', userRoutes);
+app.use('/onze', onzeRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3150;
