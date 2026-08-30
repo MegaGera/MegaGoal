@@ -9,9 +9,10 @@ import {
 } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamUserCircle, jamEyeF, jamUser, jamMessage, jamSettingsAlt, jamLogOut } from '@ng-icons/jam-icons';
+import { jamUser, jamMessage, jamSettingsAlt, jamLogOut } from '@ng-icons/jam-icons';
 import { ionLocation } from '@ng-icons/ionicons';
 import { AuthService } from '../../services/auth.service';
+import { MegaGoalService } from '../../services/megagoal.service';
 import { filter, Subscription } from 'rxjs';
 
 @Component({
@@ -22,20 +23,23 @@ import { filter, Subscription } from 'rxjs';
   styleUrl: './top-menu.component.css',
   providers: [provideNgIconsConfig({
     size: '2.5em',
-  }), provideIcons({ jamUserCircle, jamEyeF, jamUser, jamMessage, jamSettingsAlt, jamLogOut, ionLocation })]
+  }), provideIcons({ jamUser, jamMessage, jamSettingsAlt, jamLogOut, ionLocation })]
 })
 export class TopMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('navLinksTrack') navLinksTrack?: ElementRef<HTMLElement>;
 
   isUserMenuOpen = false;
   isAdmin = false;
+  username: string | null = null;
   navFadeLeft = false;
   navFadeRight = false;
 
   private routerSubscription?: Subscription;
+  private userSubscription?: Subscription;
 
   constructor(
     private authService: AuthService,
+    private megaGoalService: MegaGoalService,
     private router: Router,
   ) {}
 
@@ -43,6 +47,11 @@ export class TopMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     this.authService.isAdmin().subscribe(isAdmin => {
       this.isAdmin = isAdmin;
     });
+
+    this.userSubscription = this.megaGoalService.userMe$.subscribe(user => {
+      this.username = user?.username ?? null;
+    });
+    this.megaGoalService.getUserMe().subscribe({ error: () => {} });
 
     this.routerSubscription = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
@@ -58,6 +67,7 @@ export class TopMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routerSubscription?.unsubscribe();
+    this.userSubscription?.unsubscribe();
   }
 
   onNavLinksScroll(): void {

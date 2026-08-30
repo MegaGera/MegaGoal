@@ -39,25 +39,30 @@
             
             <!-- User dropdown -->
             <div class="user-dropdown">
-                <button class="user-button" (click)="toggleUserMenu()" [class.active]="isUserMenuOpen">
-                    <ng-icon class="user-icon" name="jamUserCircle"></ng-icon>
+                <button class="user-button" (click)="toggleUserMenu()" [class.active]="isUserMenuOpen" aria-label="Account menu" [attr.aria-expanded]="isUserMenuOpen">
+                    <svg class="user-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 12c4.42 0 8 2.24 8 5v1H4v-1c0-2.76 3.58-5 8-5Z" />
+                    </svg>
                 </button>
                 
                 <div class="user-panel" [class.open]="isUserMenuOpen">
-                    <a class="user-panel-link" routerLink="/app/profile" routerLinkActive="active">
+                    @if (username) {
+                        <p class="user-panel-username">{{ username }}</p>
+                    }
+                    <a class="user-panel-link" routerLink="/app/profile" routerLinkActive="active" (click)="isUserMenuOpen = false">
                         <ng-icon name="jamUser" class="user-panel-icon" size="18"></ng-icon>
                         <span class="user-panel-text">Profile</span>
                     </a>
-                    <a class="user-panel-link" routerLink="/app/feedback" routerLinkActive="active">
+                    <a class="user-panel-link" routerLink="/app/feedback" routerLinkActive="active" (click)="isUserMenuOpen = false">
                         <ng-icon name="jamMessage" class="user-panel-icon" size="18"></ng-icon>
                         <span class="user-panel-text">Feedback</span>
                     </a>
-                    <a class="user-panel-link" routerLink="/app/locations" routerLinkActive="active">
+                    <a class="user-panel-link" routerLink="/app/locations" routerLinkActive="active" (click)="isUserMenuOpen = false">
                         <ng-icon name="ionLocation" class="user-panel-icon" size="18"></ng-icon>
                         <span class="user-panel-text">Locations</span>
                     </a>
                     @if (isAdmin) {
-                        <a class="user-panel-link" routerLink="/app/admin" routerLinkActive="active">
+                        <a class="user-panel-link" routerLink="/app/admin" routerLinkActive="active" (click)="isUserMenuOpen = false">
                             <ng-icon name="jamSettingsAlt" class="user-panel-icon" size="18"></ng-icon>
                             <span class="user-panel-text">Admin</span>
                         </a>

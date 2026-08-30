@@ -269,75 +269,53 @@
   border: 2px solid rgba(255, 255, 255, 0.3);
   color: white;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  padding: 0; /* Desktop: no padding */
-  padding-left: 0.1em;
+  transition: all 0.25s ease;
+  padding: 0;
 }
 
-.user-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.user-button:hover::before {
-  opacity: 1;
-}
-
-.user-button:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.03);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-}
-
+.user-button:hover,
 .user-button.active {
-  background: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.14);
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 .user-icon {
-  color: white;
+  width: 2rem;
+  height: 2rem;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 /* User Panel */
 .user-panel {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 0.65rem);
   right: 0;
-  margin-top: 10px;
-  min-width: 200px;
-  background: white;
+  min-width: 210px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.14), transparent 42%),
+    linear-gradient(165deg, #b91c3c 0%, #7a1228 100%);
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px) scale(0.95);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(-8px) scale(0.97);
+  transition: all 0.25s ease;
   overflow: hidden;
 }
 
 .user-panel::before {
   content: '';
   position: absolute;
-  top: -8px;
-  right: 20px;
-  width: 16px;
-  height: 16px;
-  background: white;
+  top: -7px;
+  right: 18px;
+  width: 14px;
+  height: 14px;
+  background: #b91c3c;
   transform: rotate(45deg);
-  border-left: 1px solid rgba(0, 0, 0, 0.1);
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .user-panel.open {
@@ -346,48 +324,50 @@
   transform: translateY(0) scale(1);
 }
 
+.user-panel-username {
+  margin: 0;
+  padding: 0.9rem 1rem 0.65rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
 .user-panel-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  color: #333;
+  gap: 0.72rem;
+  width: 100%;
+  padding: 0.82rem 1rem;
+  color: rgba(255, 255, 255, 0.78);
   text-decoration: none;
   font-weight: 500;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  position: relative;
-  overflow: hidden;
-  transform: scale(0.9);
+  font-size: 0.88rem;
+  line-height: 1.2;
+  transition: background 0.15s ease, color 0.15s ease;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
 }
 
-.user-panel-link:last-child {
-  border-bottom: none;
-}
-
-.user-panel-link:hover {
-  background: rgba(220, 20, 60, 0.08);
-  color: #dc143c;
-  transform: scale(1);
-}
-
+.user-panel-link:hover,
 .user-panel-link.active {
-  background: rgba(220, 20, 60, 0.12);
-  color: #dc143c;
-  font-weight: 600;
-  transform: scale(1);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
 }
 
 .user-panel-icon {
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 18px;
-  min-height: 18px;
-  max-width: 18px;
-  max-height: 18px;
-  color: #666;
-  transition: all 0.2s ease;
+  width: 1.05rem !important;
+  height: 1.05rem !important;
+  min-width: 1.05rem;
+  min-height: 1.05rem;
+  max-width: 1.05rem;
+  max-height: 1.05rem;
+  color: #ffb4b4;
+  transition: color 0.15s ease;
   flex-shrink: 0;
   display: block;
   overflow: visible;
@@ -395,8 +375,8 @@
 }
 
 .user-panel-icon svg {
-  width: 18px !important;
-  height: 18px !important;
+  width: 1.05rem !important;
+  height: 1.05rem !important;
   display: block;
 }
 
@@ -405,55 +385,36 @@
   z-index: 1;
 }
 
-.user-panel-link:hover .user-panel-icon {
-  color: #dc143c;
-}
-
+.user-panel-link:hover .user-panel-icon,
 .user-panel-link.active .user-panel-icon {
-  color: #dc143c;
+  color: #fff;
 }
 
 .user-panel-button {
   width: 100%;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
 }
 
 .user-panel-button:focus {
   outline: none;
 }
 
-/* Sign Out button special styling */
 .user-panel-signout {
-  border-radius: 0 0 16px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.user-panel-signout .user-panel-icon {
+  color: #ffd6d6;
 }
 
 .user-panel-signout:hover {
-  background: rgba(220, 53, 69, 1) !important;
-  color: #fff !important;
-  transform: scale(1) !important;
+  background: rgba(0, 0, 0, 0.18);
+  color: #fff;
 }
 
 .user-panel-signout:hover .user-panel-icon,
 .user-panel-signout:hover .user-panel-text {
-  color: #fff !important;
-}
-
-/* Desktop hover functionality */
-@media (hover: hover) and (pointer: fine) {
-  .user-dropdown:hover .user-panel {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-  }
-  
-  .user-dropdown:hover .user-button {
-    background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.03);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  }
+  color: #fff;
 }
 
 /* Responsive Design */
@@ -547,7 +508,6 @@
   .user-button {
     width: 45px;
     height: 45px;
-    padding-left: 0.1em; /* Medium devices: small left padding */
   }
   
   .user-panel {
@@ -585,49 +545,4 @@
   .nav-text {
     font-weight: 500;
   }
-  
-  .right-section {
-    gap: 8px;
-  }
-  
-  .user-button {
-    padding-left: 0.1em; /* Small devices: small left padding */
-  }
-
-  .user-panel-signout {
-    border-radius: 0 0 16px 16px;
-    background: rgba(220, 53, 69, 1) !important;
-    color: #fff !important;
-  }
-
-  .user-panel-signout:text {
-    color: #fff !important;
-  }
-
-  .user-panel-signout .user-panel-icon {
-    color: #fff !important;
-  }
 }
-
-/* Animation for menu items */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.user-panel.open .user-panel-link {
-  animation: slideIn 0.3s ease forwards;
-}
-
-.user-panel.open .user-panel-link:nth-child(1) { animation-delay: 0.05s; }
-.user-panel.open .user-panel-link:nth-child(2) { animation-delay: 0.1s; }
-.user-panel.open .user-panel-link:nth-child(3) { animation-delay: 0.15s; }
-.user-panel.open .user-panel-link:nth-child(4) { animation-delay: 0.2s; }
-.user-panel.open .user-panel-link:nth-child(5) { animation-delay: 0.25s; }
-.user-panel.open .user-panel-link:nth-child(6) { animation-delay: 0.3s; }
