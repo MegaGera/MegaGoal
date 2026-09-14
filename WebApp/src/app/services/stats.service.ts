@@ -141,10 +141,19 @@ export class StatsService {
   }
 
   /*
-    Method to get stats of the leagues viewed from the API
+    Method to get stats of the leagues viewed from the API.
+    Optional `search` filters by competition name (same fold/token rules as teams/players).
   */
-  getLeaguesViewed(): Observable<any[]> {
-    return this.http.get<any[]>(this.url + '/leagues-viewed/', { ...this.options });
+  getLeaguesViewed(search: string = ''): Observable<any[]> {
+    let params = new HttpParams();
+    const trimmedSearch = search.trim();
+    if (trimmedSearch) {
+      params = params.set('search', trimmedSearch);
+    }
+    return this.http.get<any[]>(this.url + '/leagues-viewed/', {
+      ...this.options,
+      params,
+    });
   }
 
   /*

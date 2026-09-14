@@ -3,13 +3,15 @@ import {
   getLeagues,
   getTopLeagues,
   getLeagueColors,
-  getLeagueStandingsSummary
+  getLeagueStandingsSummary,
+  searchLeagues
 } from '../controllers/leagueController.js';
 import { getLeaguesSettings } from '../controllers/adminController.js';
 
 const router = express.Router();
 
 router.get('/', getLeagues);
+router.get('/search', searchLeagues);
 router.get('/settings', getLeaguesSettings);
 router.get('/standings/summary', getLeagueStandingsSummary);
 router.get('/top', getTopLeagues);

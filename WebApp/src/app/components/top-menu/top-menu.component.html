@@ -1,12 +1,13 @@
 <!--
   Top Menu Bar Component. Includes:
   - Button to go to Home Component
+  - Global search (expands in place, hides page links while focused)
   - Scrollable nav links (Leagues, Matches, Players, Teams)
   - User dropdown with Profile, Locations, and Admin options
 -->
 <nav class="top-menu">
-    <div class="top-menu-container">
-        <div class="nav-section">
+    <div class="top-menu-container" [class.top-menu-container--search-open]="isSearchOpen">
+        <div class="nav-section" [class.nav-section--search-open]="isSearchOpen">
             <a class="nav-link nav-link--home" routerLink="/app/home" routerLinkActive="active">
                 <img src="https://server.megamedia.megagera.com/megagera/MG.png" 
                      alt="Home" 
@@ -14,28 +15,134 @@
                      title="Home">
             </a>
 
-            <div
-              class="nav-links-scroll"
-              [class.nav-links-scroll--fade-left]="navFadeLeft"
-              [class.nav-links-scroll--fade-right]="navFadeRight">
-              <div
-                class="nav-links-track"
-                #navLinksTrack
-                (scroll)="onNavLinksScroll()">
-                <a class="nav-link nav-link--page" routerLink="/app/leagues" routerLinkActive="active" ariaCurrentWhenActive="page">
-                    <span class="nav-text">Leagues</span>
-                </a>
-                <a class="nav-link nav-link--page" routerLink="/app/matches" routerLinkActive="active" ariaCurrentWhenActive="page">
-                    <span class="nav-text">Matches</span>
-                </a>
-                <a class="nav-link nav-link--page" routerLink="/app/players" routerLinkActive="active" ariaCurrentWhenActive="page">
-                    <span class="nav-text">Players</span>
-                </a>
-                <a class="nav-link nav-link--page" routerLink="/app/teams" routerLinkActive="active" ariaCurrentWhenActive="page">
-                    <span class="nav-text">Teams</span>
-                </a>
-              </div>
+            <div class="global-search" #globalSearchRoot [class.global-search--open]="isSearchOpen">
+              @if (!isSearchOpen) {
+                <button
+                  type="button"
+                  class="global-search__toggle"
+                  (click)="openSearch($event)"
+                  aria-label="Search teams, players and competitions">
+                  <ng-icon name="jamSearch" class="global-search__toggle-icon" size="1.25rem"></ng-icon>
+                </button>
+              } @else {
+                <div class="global-search__expanded">
+                  <div class="global-search__field">
+                    <span class="global-search__icon-wrap" aria-hidden="true">
+                      <ng-icon name="jamSearch" class="global-search__icon" size="1.15rem"></ng-icon>
+                    </span>
+                    <input
+                      #globalSearchInput
+                      type="text"
+                      class="global-search__input"
+                      placeholder="Search teams, players, competitions…"
+                      [ngModel]="searchQuery"
+                      (ngModelChange)="onSearchQueryChange($event)"
+                      (focus)="onSearchFocus()"
+                      (blur)="onSearchBlur()"
+                      (keydown)="onSearchKeydown($event)"
+                      autocomplete="off"
+                      spellcheck="false"
+                      aria-label="Search teams, players and competitions"
+                      aria-autocomplete="list"
+                      [attr.aria-expanded]="true"
+                      role="combobox">
+                    @if (searchQuery.trim()) {
+                      <button
+                        type="button"
+                        class="global-search__clear"
+                        (mousedown)="clearSearchQuery($event)"
+                        aria-label="Clear search">
+                        <ng-icon name="jamClose" size="0.9rem" aria-hidden="true"></ng-icon>
+                      </button>
+                    }
+                  </div>
+
+                  <div class="global-search__dropdown" role="listbox">
+                    @if (searchLoading) {
+                      <p class="global-search__status">Searching…</p>
+                    } @else if (searchResults.length === 0) {
+                      <p class="global-search__status">
+                        {{ searchQuery.trim() ? 'No results' : 'No watched items yet' }}
+                      </p>
+                    } @else {
+                      @for (item of searchResults; track trackResult(item); let i = $index) {
+                        <button
+                          type="button"
+                          class="global-search__result"
+                          [class.global-search__result--team]="item.type === 'team'"
+                          [class.global-search__result--player]="item.type === 'player'"
+                          [class.global-search__result--league]="item.type === 'league'"
+                          [class.global-search__result--active]="i === searchActiveIndex"
+                          [class.global-search__result--watched]="item.watched"
+                          role="option"
+                          [attr.aria-selected]="i === searchActiveIndex"
+                          (mousedown)="selectResult(item, $event)">
+                          <span class="global-search__result-media">
+                            @if (hasResultImage(item)) {
+                              <img
+                                [src]="resultImageUrl(item)"
+                                [alt]="item.name"
+                                (error)="onResultImageError(item)" />
+                            } @else {
+                              <span class="global-search__result-fallback">{{ item.name | slice:0:1 }}</span>
+                            }
+                          </span>
+                          <span class="global-search__result-body">
+                            <span class="global-search__result-name">{{ item.name }}</span>
+                            <span class="global-search__result-meta">
+                              <span class="global-search__result-type">{{ typeLabel(item) }}</span>
+                              @if (item.subtitle) {
+                                <span class="global-search__result-dot">·</span>
+                                @if (item.flagUrl) {
+                                  <img class="global-search__result-flag" [src]="item.flagUrl" alt="" />
+                                }
+                                <span>{{ item.subtitle }}</span>
+                              }
+                            </span>
+                          </span>
+                          <span class="global-search__result-stats">
+                            @if (item.watched && item.count != null) {
+                              <span class="global-search__stat" title="Watched">👁️ {{ item.count }}</span>
+                            }
+                            @if (item.watched && item.goals != null && item.goals > 0 && item.type !== 'league') {
+                              <span class="global-search__stat" title="Goals">⚽ {{ item.goals }}</span>
+                            }
+                            @if (item.watched && item.assists != null && item.assists > 0 && item.type === 'player') {
+                              <span class="global-search__stat" title="Assists">🎯 {{ item.assists }}</span>
+                            }
+                          </span>
+                        </button>
+                      }
+                    }
+                  </div>
+                </div>
+              }
             </div>
+
+            @if (!isSearchOpen) {
+              <div
+                class="nav-links-scroll"
+                [class.nav-links-scroll--fade-left]="navFadeLeft"
+                [class.nav-links-scroll--fade-right]="navFadeRight">
+                <div
+                  class="nav-links-track"
+                  #navLinksTrack
+                  (scroll)="onNavLinksScroll()">
+                  <a class="nav-link nav-link--page" routerLink="/app/leagues" routerLinkActive="active" ariaCurrentWhenActive="page">
+                      <span class="nav-text">Leagues</span>
+                  </a>
+                  <a class="nav-link nav-link--page" routerLink="/app/matches" routerLinkActive="active" ariaCurrentWhenActive="page">
+                      <span class="nav-text">Matches</span>
+                  </a>
+                  <a class="nav-link nav-link--page" routerLink="/app/players" routerLinkActive="active" ariaCurrentWhenActive="page">
+                      <span class="nav-text">Players</span>
+                  </a>
+                  <a class="nav-link nav-link--page" routerLink="/app/teams" routerLinkActive="active" ariaCurrentWhenActive="page">
+                      <span class="nav-text">Teams</span>
+                  </a>
+                </div>
+              </div>
+            }
         </div>
         
         <div class="right-section">

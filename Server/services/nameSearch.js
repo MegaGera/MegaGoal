@@ -64,6 +64,17 @@ function recordMatches(foldedFields, tokens) {
   );
 }
 
+/**
+ * Token AND match on a display name (exact / prefix / long infix), same rules as search.
+ */
+function matchesNameQuery(name, query) {
+  const prepared = prepareQuery(query);
+  if (!prepared.tokens.length) return true;
+  const folded = foldName(name);
+  if (!folded) return false;
+  return recordMatches([folded], prepared.tokens);
+}
+
 /** Exact full-name hit. Single-token fields (firstname/lastname alone) use a softer value. */
 const EXACT_FIELD = 1000;
 const EXACT_FRAGMENT = 220;
@@ -223,6 +234,7 @@ export {
   clampLimit,
   createIndexCache,
   foldName,
+  matchesNameQuery,
   popularityFromYears,
   prepareQuery,
   rankItems,

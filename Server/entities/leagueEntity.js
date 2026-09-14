@@ -141,6 +141,23 @@ const parseChangeLeagueColorsPayload = (body) => changeLeagueColorsPayloadSchema
 const parseCreateLeagueSettingPayload = (body) => createLeagueSettingPayloadSchema.parse(body);
 const parseDeleteLeagueSettingPayload = (body) => deleteLeagueSettingPayloadSchema.parse(body);
 
+const leagueSearchItemSchema = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  type: z.string().optional(),
+  logo: z.string().optional(),
+  country: z.string().optional(),
+  country_flag: z.string().optional()
+});
+
+const leagueSearchResultSchema = z.object({
+  leagues: z.array(leagueSearchItemSchema),
+  truncated: z.boolean(),
+  limit: z.number().int()
+});
+
+const parseLeagueSearchResult = (payload) => leagueSearchResultSchema.parse(payload);
+
 const buildNewLeagueSetting = ({ league_id, league_name, position }) => parseLeagueSettingsDocument({
   league_id,
   league_name,
@@ -161,6 +178,7 @@ export {
   parseChangeUpdateFrequencyPayload,
   parseCreateLeagueSettingPayload,
   parseDeleteLeagueSettingPayload,
+  parseLeagueSearchResult,
   parseLeagueSettings,
   parseLeagues,
   parseTopLeagues

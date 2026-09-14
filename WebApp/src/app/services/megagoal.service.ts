@@ -18,6 +18,8 @@ import { UserFeedback } from '../models/user_feedback';
 import { Player } from '../models/player';
 import { PlayerSearchResult } from '../models/playerSearch';
 import { TeamSearchResult } from '../models/teamSearch';
+import { LeagueSearchResult } from '../models/leagueSearch';
+import { GlobalSearchResult } from '../models/globalSearch';
 import { UserMe } from '../models/userMe';
 import { LeagueStandingsSummaryResponse } from '../models/leagueStandingsSummary';
 
@@ -551,6 +553,45 @@ export class MegaGoalService {
     return this.http.get<PlayerSearchResult>(this.url + '/players/search', {
       ...this.options,
       params
+    });
+  }
+
+  /**
+   * Ranked competition name search (accents, country, relevance). Max 20 results.
+   */
+  searchLeagues(
+    query: string,
+    options?: { limit?: number }
+  ): Observable<LeagueSearchResult> {
+    let params = new HttpParams().set('q', query.trim());
+    if (options?.limit != null) {
+      params = params.set('limit', options.limit.toString());
+    }
+    return this.http.get<LeagueSearchResult>(this.url + '/league/search', {
+      ...this.options,
+      params
+    });
+  }
+
+  /**
+   * Top-menu global search: watched teams/players/leagues + catalog fill. One call.
+   * Empty query returns top watched interleaved by count.
+   */
+  searchGlobal(
+    query: string = '',
+    options?: { limit?: number }
+  ): Observable<GlobalSearchResult> {
+    let params = new HttpParams();
+    const trimmed = query.trim();
+    if (trimmed) {
+      params = params.set('q', trimmed);
+    }
+    if (options?.limit != null) {
+      params = params.set('limit', options.limit.toString());
+    }
+    return this.http.get<GlobalSearchResult>(this.url + '/search', {
+      ...this.options,
+      params,
     });
   }
 

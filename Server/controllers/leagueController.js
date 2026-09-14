@@ -1,11 +1,33 @@
 import { getDB } from '../config/db.js';
-import { getTopLeaguesQuery } from '../config/topLeagues.js';
 import {
   buildLeagueColorsMap,
+  parseLeagueSearchResult,
   parseLeagueSettings,
   parseLeagues,
   parseTopLeagues
 } from '../entities/leagueEntity.js';
+import { searchLeaguesByName } from '../services/leagueSearchService.js';
+
+/**
+ * GET /league/search?q=
+ * Ranked competition name search (accents, country, relevance). Max 20.
+ */
+const searchLeagues = async (req, res) => {
+  try {
+    const q = req.query.q ?? req.query.query ?? req.query.search ?? '';
+    const result = await searchLeaguesByName({
+      query: q,
+      limit: req.query.limit,
+    });
+    const validated = parseLeagueSearchResult(result);
+    const query = String(q).trim();
+    console.log(`Leagues search "${query}": ${validated.leagues.length}`);
+    res.json(validated);
+  } catch (error) {
+    console.error('Error searching leagues:', error);
+    res.status(500).json({ error: 'Failed to search leagues' });
+  }
+};
 
 // Get leagues
 const getLeagues = async (req, res) => {
@@ -140,4 +162,10 @@ const getLeagueColors = async (req, res) => {
   }
 }
 
-export { getLeagues, getTopLeagues, getLeagueColors, getLeagueStandingsSummary };
+export {
+  getLeagues,
+  getTopLeagues,
+  getLeagueColors,
+  getLeagueStandingsSummary,
+  searchLeagues,
+};

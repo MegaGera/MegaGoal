@@ -23,9 +23,11 @@ import youtubeRoutes from './routes/youtubeRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import onzeRoutes from './routes/onzeRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
 import { startMcpHttpIfEnabled } from './mcp/createMcpServer.js';
 import { warmupPlayerSearch } from './services/playerSearchService.js';
 import { warmupTeamSearch } from './services/teamSearchService.js';
+import { warmupLeagueSearch } from './services/leagueSearchService.js';
 
 const app = express();
 
@@ -147,6 +149,7 @@ app.use('/youtube', youtubeRoutes);
 app.use('/analytics', analyticsRoutes);
 app.use('/user', userRoutes);
 app.use('/onze', onzeRoutes);
+app.use('/search', searchRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3150;
@@ -168,7 +171,11 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   connectDB()
     .then(() =>
-      Promise.all([warmupPlayerSearch(), warmupTeamSearch()])
+      Promise.all([
+        warmupPlayerSearch(),
+        warmupTeamSearch(),
+        warmupLeagueSearch(),
+      ])
     )
     .then(() => console.log('Name search indexes ready'))
     .catch((err) => {
