@@ -64,4 +64,16 @@ export interface TeamsViewedStats {
     team_name: string;
     count: number;
     total_goals?: number;
+    /** Present on paginated list pages only. */
+    country?: string | null;
+    country_flag?: string | null;
+}
+
+/** Paginated response when GET /teams-viewed/ is called with `page`. */
+export interface TeamsViewedPage {
+    results: TeamsViewedStats[];
+    page: number;
+    limit: number;
+    total: number;
+    total_pages: number;
 }

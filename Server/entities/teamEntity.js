@@ -109,6 +109,23 @@ const parseTeamDocuments = (documents) => z.array(teamDocumentSchema).parse(docu
 const parseTeamDocument = (document) => teamDocumentSchema.parse(document);
 const parseShortTeams = (documents) => z.array(shortTeamSchema).parse(documents);
 
+const teamSearchItemSchema = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  country: z.string().optional(),
+  country_flag: z.string().optional(),
+  logo: z.string().optional(),
+  national: z.boolean().optional()
+});
+
+const teamSearchResultSchema = z.object({
+  teams: z.array(teamSearchItemSchema),
+  truncated: z.boolean(),
+  limit: z.number().int()
+});
+
+const parseTeamSearchResult = (payload) => teamSearchResultSchema.parse(payload);
+
 export {
   buildTeamsQuery,
   domesticLeagueBundleSchema,
@@ -117,5 +134,6 @@ export {
   parseTeamDocument,
   parseTeamDocuments,
   parseTeamId,
+  parseTeamSearchResult,
   setPreviousImagePayloadSchema
 };

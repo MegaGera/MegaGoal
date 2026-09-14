@@ -6,7 +6,8 @@ import { UserStats } from '../models/userStats';
 import { FavouriteTeamStats } from '../models/favouriteTeamStats';
 import { GeneralStats } from '../models/generalStats';
 import { PlayerStats, PlayerCareerStats, PlayerTeamSeasonMatchesResponse } from '../models/playerStats';
-import { PlayerViewedStats } from '../models/playerViewedStats';
+import { PlayersViewedPage } from '../models/playerViewedStats';
+import { TeamsViewedPage, TeamsViewedStats } from '../models/league';
 
 @Injectable({
   providedIn: 'root'
@@ -50,7 +51,7 @@ export class StatsService {
     location: string = '',
     teams?: number[],
     teamsAgainst?: number[]
-  ): Observable<any[]> {
+  ): Observable<TeamsViewedStats[]> {
     let params = new HttpParams()
     .set('team_selection', teamSelection)
     .set('leagues', leagues.toString())
@@ -61,11 +62,50 @@ export class StatsService {
     }
     params = this.withTeamsParams(params, teams, teamsAgainst);
     
-    return this.http.get<any[]>(this.url + '/teams-viewed/', { ...this.options, params: params });
+    return this.http.get<TeamsViewedStats[]>(this.url + '/teams-viewed/', { ...this.options, params: params });
   }
 
   /*
-    Players ranked by watched appearances (startXI or sub), same filters as teams-viewed
+    Teams ranked by watched appearances, same filters as getTeamsViewed.
+    Paginated: returns one page of results plus total count (passes `page`).
+  */
+  getTeamsViewedPage(
+    teamSelection: number,
+    leagues: number[],
+    season: number,
+    location: string = '',
+    teams?: number[],
+    teamsAgainst?: number[],
+    page: number = 1,
+    limit: number = 10,
+    search: string = ''
+  ): Observable<TeamsViewedPage> {
+    let params = new HttpParams()
+      .set('team_selection', teamSelection)
+      .set('leagues', leagues.toString())
+      .set('season', season)
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+
+    if (location) {
+      params = params.set('location', location);
+    }
+    const trimmedSearch = search.trim();
+    if (trimmedSearch) {
+      params = params.set('search', trimmedSearch);
+    }
+    params = this.withTeamsParams(params, teams, teamsAgainst);
+
+    return this.http.get<TeamsViewedPage>(this.url + '/teams-viewed/', {
+      ...this.options,
+      params,
+    });
+  }
+
+  /*
+    Players ranked by watched appearances (startXI or sub), same filters as teams-viewed.
+    Paginated: returns one page of results plus total count.
+    Optional `search` filters by player name before pagination.
   */
   getPlayersViewed(
     teamSelection: number,
@@ -73,19 +113,28 @@ export class StatsService {
     season: number,
     location: string = '',
     teams?: number[],
-    teamsAgainst?: number[]
-  ): Observable<PlayerViewedStats[]> {
+    teamsAgainst?: number[],
+    page: number = 1,
+    limit: number = 10,
+    search: string = ''
+  ): Observable<PlayersViewedPage> {
     let params = new HttpParams()
       .set('team_selection', teamSelection)
       .set('leagues', leagues.toString())
-      .set('season', season);
+      .set('season', season)
+      .set('page', page.toString())
+      .set('limit', limit.toString());
 
     if (location) {
       params = params.set('location', location);
     }
+    const trimmedSearch = search.trim();
+    if (trimmedSearch) {
+      params = params.set('search', trimmedSearch);
+    }
     params = this.withTeamsParams(params, teams, teamsAgainst);
 
-    return this.http.get<PlayerViewedStats[]>(this.url + '/players-viewed/', {
+    return this.http.get<PlayersViewedPage>(this.url + '/players-viewed/', {
       ...this.options,
       params,
     });

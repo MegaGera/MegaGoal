@@ -29,32 +29,32 @@
   }
 }
 
-.players-header {
+.teams-header {
   margin: 0.5rem 0 1rem;
 }
 
-.players-header.matches-header {
+.teams-header.matches-header {
   margin-left: auto;
   margin-right: auto;
 }
 
-.players-title {
+.teams-title {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 700;
 }
 
-.players-header.matches-header .players-title {
+.teams-header.matches-header .teams-title {
   color: white;
 }
 
-.player-search {
+.team-list-search {
   width: 96%;
   max-width: 920px;
   margin: 0.35rem auto 1.1rem;
 }
 
-.player-search__field {
+.team-list-search__field {
   position: relative;
   display: flex;
   align-items: center;
@@ -76,7 +76,7 @@
   overflow: hidden;
 }
 
-.player-search__field::before {
+.team-list-search__field::before {
   content: '';
   position: absolute;
   left: 0;
@@ -91,13 +91,13 @@
   transition: transform 200ms ease, opacity 200ms ease;
 }
 
-.player-search__field:hover {
+.team-list-search__field:hover {
   border-color: rgba(220, 20, 60, 0.4);
   box-shadow: 0 8px 22px rgba(220, 20, 60, 0.1);
 }
 
-.player-search__field:focus-within,
-.player-search--active .player-search__field {
+.team-list-search__field:focus-within,
+.team-list-search--active .team-list-search__field {
   border-color: rgba(220, 20, 60, 0.55);
   background:
     linear-gradient(90deg, rgba(220, 20, 60, 0.08) 0%, transparent 50%),
@@ -107,13 +107,13 @@
     0 10px 26px rgba(220, 20, 60, 0.12);
 }
 
-.player-search__field:focus-within::before,
-.player-search--active .player-search__field::before {
+.team-list-search__field:focus-within::before,
+.team-list-search--active .team-list-search__field::before {
   transform: translateY(-50%) scaleY(1);
   opacity: 1;
 }
 
-.player-search__icon-wrap {
+.team-list-search__icon-wrap {
   flex-shrink: 0;
   width: 2.15rem;
   height: 2.15rem;
@@ -128,13 +128,13 @@
   transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
-.player-search__field:focus-within .player-search__icon-wrap,
-.player-search--active .player-search__icon-wrap {
+.team-list-search__field:focus-within .team-list-search__icon-wrap,
+.team-list-search--active .team-list-search__icon-wrap {
   background: linear-gradient(145deg, #ffe4e4, #ffd0d0);
   border-color: rgba(220, 20, 60, 0.22);
 }
 
-.player-search__icon {
+.team-list-search__icon {
   color: inherit;
   --ng-icon__size: 1.15rem;
   display: inline-flex;
@@ -143,11 +143,11 @@
   line-height: 0;
 }
 
-.player-search__icon svg {
+.team-list-search__icon svg {
   display: block;
 }
 
-.player-search__input {
+.team-list-search__input {
   flex: 1;
   min-width: 0;
   border: none;
@@ -162,13 +162,13 @@
   margin: 0;
 }
 
-.player-search__input::placeholder {
+.team-list-search__input::placeholder {
   color: #94a3b8;
   font-weight: 500;
   letter-spacing: 0;
 }
 
-.player-search__clear {
+.team-list-search__clear {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -189,18 +189,18 @@
     box-shadow 160ms ease;
 }
 
-.player-search__clear:hover {
+.team-list-search__clear:hover {
   background: linear-gradient(145deg, #ffe4e4, #ffd6d6);
   border-color: rgba(220, 20, 60, 0.28);
   color: #dc143c;
   box-shadow: 0 4px 10px rgba(220, 20, 60, 0.12);
 }
 
-.player-search__clear:active {
+.team-list-search__clear:active {
   transform: scale(0.94);
 }
 
-.player-search__clear ng-icon {
+.team-list-search__clear ng-icon {
   --ng-icon__size: 0.9rem;
   display: inline-flex;
   align-items: center;
@@ -208,11 +208,11 @@
   line-height: 0;
 }
 
-.player-search__clear ng-icon svg {
+.team-list-search__clear ng-icon svg {
   display: block;
 }
 
-.playerCardAdapter {
+.teamCardAdapter {
   width: 96%;
   max-width: 920px;
   margin: 0.6rem auto;
@@ -226,7 +226,7 @@
 
 /* ---- Loading skeletons ---- */
 
-@keyframes players-skeleton-shimmer {
+@keyframes teams-skeleton-shimmer {
   0%,
   100% {
     opacity: 1;
@@ -236,17 +236,17 @@
   }
 }
 
-.players-list-skeleton {
+.teams-list-skeleton {
   width: 100%;
 }
 
 .skeleton-block {
   background: #e8ecf1;
   border-radius: 8px;
-  animation: players-skeleton-shimmer 1.5s ease-in-out infinite;
+  animation: teams-skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
-.skeleton-players-count {
+.skeleton-teams-count {
   width: 7.5rem;
   height: 1.05rem;
   border-radius: 6px;
@@ -254,7 +254,7 @@
   margin: 0.15rem auto;
 }
 
-.player-card-skeleton {
+.team-card-skeleton {
   display: flex;
   align-items: center;
   gap: 0.85rem;
@@ -270,7 +270,7 @@
   overflow: hidden;
 }
 
-.skeleton-player-rank {
+.skeleton-team-rank {
   position: absolute;
   left: 0.7rem;
   top: 50%;
@@ -280,14 +280,14 @@
   border-radius: 4px;
 }
 
-.skeleton-player-avatar {
+.skeleton-team-logo {
   width: 58px;
   height: 58px;
   border-radius: 14px;
   flex-shrink: 0;
 }
 
-.skeleton-player-identity {
+.skeleton-team-identity {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -295,35 +295,22 @@
   gap: 0.4rem;
 }
 
-.skeleton-player-name {
+.skeleton-team-name {
   width: min(55%, 220px);
   height: 1rem;
 }
 
-.skeleton-player-nation {
+.skeleton-team-nation {
   width: min(38%, 140px);
   height: 0.7rem;
 }
 
-.skeleton-player-teams {
+.skeleton-team-stats {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  flex-shrink: 0;
   margin-left: auto;
-  flex-shrink: 0;
-}
-
-.skeleton-team-chip {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-}
-
-.skeleton-player-stats {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex-shrink: 0;
 }
 
 .skeleton-stat-pill {
@@ -332,7 +319,7 @@
   border-radius: 999px;
 }
 
-.no-players-container {
+.no-teams-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -340,7 +327,7 @@
   padding: 20px;
 }
 
-.no-players-card {
+.no-teams-card {
   background: white;
   border-radius: 16px;
   padding: 40px;
@@ -351,7 +338,7 @@
   width: 100%;
 }
 
-.no-players-icon {
+.no-teams-icon {
   margin-bottom: 24px;
 }
 
@@ -360,21 +347,21 @@
   opacity: 0.8;
 }
 
-.no-players-title {
+.no-teams-title {
   font-size: 24px;
   font-weight: 700;
   color: #1e293b;
   margin: 0 0 16px 0;
 }
 
-.no-players-description {
+.no-teams-description {
   font-size: 16px;
   color: #64748b;
   line-height: 1.6;
   margin: 0 0 32px 0;
 }
 
-.no-players-actions {
+.no-teams-actions {
   display: flex;
   justify-content: center;
 }
@@ -409,78 +396,67 @@
 }
 
 @media only screen and (max-width: 767px) {
-  .player-search {
+  .team-list-search {
     width: 100%;
     margin: 0.25rem auto 0.9rem;
   }
 
-  .player-search__field {
+  .team-list-search__field {
     border-radius: 14px;
     padding: 0.7rem 0.75rem 0.7rem 0.7rem;
     gap: 0.6rem;
   }
 
-  .player-search__icon-wrap {
+  .team-list-search__icon-wrap {
     width: 1.95rem;
     height: 1.95rem;
     border-radius: 10px;
   }
 
-  .player-search__input {
+  .team-list-search__input {
     font-size: 0.9rem;
   }
 
-  .playerCardAdapter {
+  .teamCardAdapter {
     width: 100%;
     margin: 0.65rem auto;
   }
 
-  .player-card-skeleton {
+  .team-card-skeleton {
     gap: 0.55rem 0.5rem;
     padding: 0.75rem 0.65rem 0.7rem 2.15rem;
     border-radius: 14px;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    align-items: center;
+    flex-wrap: nowrap;
   }
 
-  .skeleton-player-rank {
+  .skeleton-team-rank {
     left: 0.35rem;
     width: 1.1rem;
     height: 0.85rem;
   }
 
-  .skeleton-player-avatar {
+  .skeleton-team-logo {
     width: 48px;
     height: 48px;
     border-radius: 12px;
   }
 
-  .skeleton-player-identity {
+  .skeleton-team-identity {
     flex: 1 1 auto;
   }
 
-  .skeleton-player-name {
+  .skeleton-team-name {
     width: 70%;
   }
 
-  .skeleton-player-nation {
+  .skeleton-team-nation {
     width: 45%;
   }
 
-  .skeleton-player-teams {
+  .skeleton-team-stats {
+    flex: 0 0 auto;
     margin-left: auto;
-    align-self: flex-start;
-  }
-
-  .skeleton-team-chip {
-    width: 38px;
-    height: 38px;
-  }
-
-  .skeleton-player-stats {
-    flex: 1 0 100%;
-    padding-left: calc(48px + 0.5rem);
-    margin-top: 0.15rem;
   }
 
   .skeleton-stat-pill {
@@ -488,16 +464,16 @@
     height: 1.7rem;
   }
 
-  .no-players-card {
+  .no-teams-card {
     padding: 24px;
     margin: 20px;
   }
 
-  .no-players-title {
+  .no-teams-title {
     font-size: 20px;
   }
 
-  .no-players-description {
+  .no-teams-description {
     font-size: 14px;
   }
 }

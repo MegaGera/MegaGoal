@@ -36,6 +36,8 @@ export class BasicPlayerStatCardComponent {
   @Input() nationalityFlag: string | null = null;
   /** Top watched clubs for this player (player's side only). */
   @Input() teams: PlayerViewedTeam[] = [];
+  /** Stronger border to mark watched players in search results. */
+  @Input() seen = false;
 
   private _playerId!: number;
   imageFailed = false;

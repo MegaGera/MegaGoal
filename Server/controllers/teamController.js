@@ -6,6 +6,7 @@ import {
   parseTeamDocument,
   parseTeamDocuments,
   parseTeamId,
+  parseTeamSearchResult,
   shortTeamAggregationPipeline,
   setPreviousImagePayloadSchema
 } from '../entities/teamEntity.js';
@@ -14,6 +15,31 @@ import {
   enrichTeamsWithDomesticLeague,
   loadDomesticLeagueContext
 } from '../services/teamDomesticLeagueService.js';
+import { searchTeamsByName } from '../services/teamSearchService.js';
+
+/**
+ * GET /team/search?q=
+ * Optional filters: league_ids, season, team_selection.
+ */
+const searchTeams = async (req, res) => {
+  try {
+    const q = req.query.q ?? req.query.query ?? req.query.search ?? '';
+    const result = await searchTeamsByName({
+      query: q,
+      limit: req.query.limit,
+      leagueIds: req.query.league_ids ?? req.query.leagues,
+      season: req.query.season,
+      teamSelection: req.query.team_selection,
+    });
+    const validated = parseTeamSearchResult(result);
+    const query = String(q).trim();
+    console.log(`Teams search "${query}": ${validated.teams.length}`);
+    res.json(validated);
+  } catch (error) {
+    console.error('Error searching teams:', error);
+    res.status(500).json({ error: 'Failed to search teams' });
+  }
+};
 
 // Get teams
 const getTeams = async (req, res) => {
@@ -111,4 +137,4 @@ const getTeamsByTopLeagues = async (req, res) => {
   }
 }
 
-export { getTeams, getTeamByTeamId, setPreviousImage, deletePreviousImage, getTeamsByTopLeagues };
+export { getTeams, getTeamByTeamId, setPreviousImage, deletePreviousImage, getTeamsByTopLeagues, searchTeams };

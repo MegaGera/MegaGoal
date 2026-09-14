@@ -63,38 +63,55 @@
 }
 
 .filter-header.filter-header--compact-expanded {
-  justify-content: flex-end;
-  gap: 0;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.filter-compact-toggle-btn {
+.filter-compact-expanded-title {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  line-height: 1;
+  min-width: 0;
 }
 
-.filter-compact-toggle-btn:hover .filter-title,
-.filter-compact-toggle-btn:focus-visible .filter-title {
-  color: #dc143c;
+.filter-compact-expanded-title .filter-icon {
+  --ng-icon__size: 1.4rem;
 }
 
-.filter-compact-toggle-btn:focus-visible {
-  outline: none;
-}
-
-.filter-compact-toggle-btn .filter-title {
+.filter-title--compact-expanded {
   margin: 0;
   font-size: 20px;
 }
 
-.filter-compact-toggle-btn .filter-icon {
-  --ng-icon__size: 1.4rem;
+.filter-compact-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 0;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.filter-compact-close-btn:hover,
+.filter-compact-close-btn:focus-visible {
+  background: #f1f5f9;
+  color: #475569;
+  outline: none;
+}
+
+.filter-compact-close-btn .filter-close-icon {
+  --ng-icon__size: 1.25rem;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
 }
 
 .filter-icon-only-btn {
@@ -693,12 +710,12 @@
     padding-right: 0;
   }
 
-  .filter-compact-toggle-btn .filter-title {
-    font-size: 20px;
-  }
-
   .filter-title {
     font-size: 16px;
+  }
+
+  .filter-title.filter-title--compact-expanded {
+    font-size: 20px;
   }
 
   .collapse-toggle-btn {

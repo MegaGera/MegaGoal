@@ -14,16 +14,15 @@ import { Match } from '../../models/match';
 import { Location } from '../../models/location';
 import { SeasonInfo } from '../../models/season';
 import { LeagueStats, TeamsViewedStats } from '../../models/league';
-import { PlayerViewedStats } from '../../models/playerViewedStats';
-import { PlayerSearchItem } from '../../models/playerSearch';
+import { TeamSearchItem } from '../../models/teamSearch';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { MobileFiltersInlineRowComponent } from '../mobile-filters-inline-row/mobile-filters-inline-row.component';
-import { BasicPlayerStatCardComponent } from '../stats/basic-player-stat-card/basic-player-stat-card.component';
+import { BasicTeamStatCardComponent } from '../stats/basic-team-stat-card/basic-team-stat-card.component';
 import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
 
 @Component({
-  selector: 'app-players',
+  selector: 'app-teams',
   standalone: true,
   imports: [
     FormsModule,
@@ -33,27 +32,27 @@ import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
     PaginationComponent,
     FiltersHomeComponent,
     MobileFiltersInlineRowComponent,
-    BasicPlayerStatCardComponent,
+    BasicTeamStatCardComponent,
   ],
-  templateUrl: './players.component.html',
-  styleUrl: './players.component.css',
+  templateUrl: './teams.component.html',
+  styleUrl: './teams.component.css',
   providers: [
     ImagesService,
     provideNgIconsConfig({ size: '1.2rem' }),
     provideIcons({ jamSettingsAlt, ionFootball, jamSearch, jamClose }),
   ],
 })
-export class PlayersComponent implements OnInit, OnDestroy {
+export class TeamsComponent implements OnInit, OnDestroy {
   matchesOriginal: Match[] = [];
   matchesContextLoaded = false;
 
-  players: PlayerViewedStats[] = [];
-  playersLoaded = false;
-  playersTotal = 0;
-  playersPage = 1;
-  readonly playersPerPage = 10;
-  readonly skeletonPlayerSlots = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  /** Filters stay hidden until the first players response; kept visible on later page loads. */
+  teams: TeamsViewedStats[] = [];
+  teamsListLoaded = false;
+  teamsTotal = 0;
+  teamsPage = 1;
+  readonly teamsPerPage = 10;
+  readonly skeletonTeamSlots = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  /** Filters stay hidden until the first teams response; kept visible on later page loads. */
   filtersRevealed = false;
 
   leaguesViewed: LeagueStats[] = [];
@@ -81,10 +80,10 @@ export class PlayersComponent implements OnInit, OnDestroy {
   isMobileView = false;
   mobileFiltersExpanded = false;
 
-  playerSearchQuery = '';
-  private playerSearchRequestId = 0;
-  private playerSearchTimer: ReturnType<typeof setTimeout> | null = null;
-  private searchPlayersAll: PlayerViewedStats[] = [];
+  teamSearchQuery = '';
+  private teamSearchRequestId = 0;
+  private teamSearchTimer: ReturnType<typeof setTimeout> | null = null;
+  private searchTeamsAll: TeamsViewedStats[] = [];
   private watchedSearchIds = new Set<number>();
 
   private lastStandardFiltersKey = '';
@@ -95,10 +94,6 @@ export class PlayersComponent implements OnInit, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private statsService: StatsService,
   ) {}
-
-  get isPlayerSearchActive(): boolean {
-    return this.playerSearchQuery.trim().length >= 2;
-  }
 
   @HostListener('window:resize')
   onResize(): void {
@@ -113,86 +108,90 @@ export class PlayersComponent implements OnInit, OnDestroy {
     this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
   }
 
+  get isTeamSearchActive(): boolean {
+    return this.teamSearchQuery.trim().length >= 2;
+  }
+
   ngOnInit(): void {
     this.updateScreenSize();
     this.filterSeasonSelected = this.seasons[0];
     this.getAllMatchesContext();
     this.getLocations();
     this.getLeaguesStats();
-    this.megagoal.logPageVisit('players').subscribe({
+    this.megagoal.logPageVisit('teams').subscribe({
       next: () => {},
       error: (error) => console.error('Error logging page visit:', error),
     });
   }
 
   ngOnDestroy(): void {
-    if (this.playerSearchTimer != null) {
-      clearTimeout(this.playerSearchTimer);
-      this.playerSearchTimer = null;
+    if (this.teamSearchTimer != null) {
+      clearTimeout(this.teamSearchTimer);
+      this.teamSearchTimer = null;
     }
   }
 
-  onPlayerSearchQueryChange(value: string): void {
-    this.playerSearchQuery = value;
-    this.schedulePlayerSearch();
+  onTeamSearchQueryChange(value: string): void {
+    this.teamSearchQuery = value;
+    this.scheduleTeamSearch();
   }
 
-  clearPlayerSearch(): void {
-    this.playerSearchQuery = '';
-    this.playerSearchRequestId += 1;
-    if (this.playerSearchTimer != null) {
-      clearTimeout(this.playerSearchTimer);
-      this.playerSearchTimer = null;
+  clearTeamSearch(): void {
+    this.teamSearchQuery = '';
+    this.teamSearchRequestId += 1;
+    if (this.teamSearchTimer != null) {
+      clearTimeout(this.teamSearchTimer);
+      this.teamSearchTimer = null;
     }
-    this.searchPlayersAll = [];
+    this.searchTeamsAll = [];
     this.watchedSearchIds = new Set();
-    this.playersPage = 1;
-    this.loadPlayersViewed();
+    this.teamsPage = 1;
+    this.loadTeamsViewed();
   }
 
-  showWatchedStats(player: PlayerViewedStats): boolean {
-    if (!this.isPlayerSearchActive) {
+  showWatchedStats(team: TeamsViewedStats): boolean {
+    if (!this.isTeamSearchActive) {
       return true;
     }
-    return this.watchedSearchIds.has(player.player_id);
+    return this.watchedSearchIds.has(team.team_id);
   }
 
-  private schedulePlayerSearch(): void {
-    if (this.playerSearchTimer != null) {
-      clearTimeout(this.playerSearchTimer);
+  private scheduleTeamSearch(): void {
+    if (this.teamSearchTimer != null) {
+      clearTimeout(this.teamSearchTimer);
     }
 
-    const trimmed = this.playerSearchQuery.trim();
+    const trimmed = this.teamSearchQuery.trim();
     if (trimmed.length < 2) {
-      this.playerSearchRequestId += 1;
-      this.searchPlayersAll = [];
+      this.teamSearchRequestId += 1;
+      this.searchTeamsAll = [];
       this.watchedSearchIds = new Set();
-      this.playersPage = 1;
-      this.loadPlayersViewed();
+      this.teamsPage = 1;
+      this.loadTeamsViewed();
       return;
     }
 
-    const currentRequest = ++this.playerSearchRequestId;
-    this.playersLoaded = false;
-    this.players = [];
-    this.playersTotal = 0;
-    this.playersPage = 1;
+    const currentRequest = ++this.teamSearchRequestId;
+    this.teamsListLoaded = false;
+    this.teams = [];
+    this.teamsTotal = 0;
+    this.teamsPage = 1;
 
-    this.playerSearchTimer = setTimeout(() => {
-      this.playerSearchTimer = null;
-      this.runMergedPlayerSearch(trimmed, currentRequest);
+    this.teamSearchTimer = setTimeout(() => {
+      this.teamSearchTimer = null;
+      this.runMergedTeamSearch(trimmed, currentRequest);
     }, 280);
   }
 
-  private runMergedPlayerSearch(
-    trimmed: string = this.playerSearchQuery.trim(),
-    requestId: number = this.playerSearchRequestId,
+  private runMergedTeamSearch(
+    trimmed: string = this.teamSearchQuery.trim(),
+    requestId: number = this.teamSearchRequestId,
   ): void {
     if (trimmed.length < 2) {
       return;
     }
 
-    this.playersLoaded = false;
+    this.teamsListLoaded = false;
     const teams =
       this.filterTeamSelected.length > 0 ? this.filterTeamSelected : undefined;
     const against =
@@ -202,7 +201,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
 
     forkJoin({
       watched: this.statsService
-        .getPlayersViewed(
+        .getTeamsViewedPage(
           this.filterPanelChipSelected,
           this.filterLeagueSelected,
           this.filterSeasonSelected?.id ?? 0,
@@ -219,8 +218,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
           ),
         ),
       catalog: this.megagoal
-        .searchPlayers(trimmed, {
-          teams,
+        .searchTeams(trimmed, {
           leagues:
             this.filterLeagueSelected.length > 0
               ? this.filterLeagueSelected
@@ -229,35 +227,35 @@ export class PlayersComponent implements OnInit, OnDestroy {
           teamSelection: this.filterPanelChipSelected,
         })
         .pipe(
-          catchError(() => of({ players: [], truncated: false, limit: 20 })),
+          catchError(() => of({ teams: [], truncated: false, limit: 20 })),
         ),
     }).subscribe({
       next: ({ watched, catalog }) => {
-        if (requestId !== this.playerSearchRequestId) return;
+        if (requestId !== this.teamSearchRequestId) return;
 
         const watchedResults = watched?.results ?? [];
         this.watchedSearchIds = new Set(
-          watchedResults.map((player) => player.player_id),
+          watchedResults.map((team) => team.team_id),
         );
 
-        const unseenCatalog = (catalog.players ?? [])
+        const unseenCatalog = (catalog.teams ?? [])
           .filter((item) => !this.watchedSearchIds.has(item.id))
-          .map((item) => this.mapSearchItemToListPlayer(item));
+          .map((item) => this.mapSearchItemToListTeam(item));
 
-        this.searchPlayersAll = [...watchedResults, ...unseenCatalog];
-        this.playersTotal = this.searchPlayersAll.length;
+        this.searchTeamsAll = [...watchedResults, ...unseenCatalog];
+        this.teamsTotal = this.searchTeamsAll.length;
         this.applySearchPage();
-        this.playersLoaded = true;
+        this.teamsListLoaded = true;
         this.filtersRevealed = true;
         this.changeDetectorRef.detectChanges();
       },
       error: () => {
-        if (requestId !== this.playerSearchRequestId) return;
-        this.searchPlayersAll = [];
+        if (requestId !== this.teamSearchRequestId) return;
+        this.searchTeamsAll = [];
         this.watchedSearchIds = new Set();
-        this.players = [];
-        this.playersTotal = 0;
-        this.playersLoaded = true;
+        this.teams = [];
+        this.teamsTotal = 0;
+        this.teamsListLoaded = true;
         this.filtersRevealed = true;
         this.changeDetectorRef.detectChanges();
       },
@@ -267,31 +265,23 @@ export class PlayersComponent implements OnInit, OnDestroy {
   private applySearchPage(): void {
     const totalPages = Math.max(
       1,
-      Math.ceil(this.searchPlayersAll.length / this.playersPerPage) || 1,
+      Math.ceil(this.searchTeamsAll.length / this.teamsPerPage) || 1,
     );
-    if (this.playersPage > totalPages) {
-      this.playersPage = totalPages;
+    if (this.teamsPage > totalPages) {
+      this.teamsPage = totalPages;
     }
-    const start = (this.playersPage - 1) * this.playersPerPage;
-    this.players = this.searchPlayersAll.slice(start, start + this.playersPerPage);
+    const start = (this.teamsPage - 1) * this.teamsPerPage;
+    this.teams = this.searchTeamsAll.slice(start, start + this.teamsPerPage);
   }
 
-  private mapSearchItemToListPlayer(item: PlayerSearchItem): PlayerViewedStats {
+  private mapSearchItemToListTeam(item: TeamSearchItem): TeamsViewedStats {
     return {
-      player_id: item.id,
-      player_name: item.name,
-      matches: 0,
-      startXI_matches: 0,
-      goals: 0,
-      assists: 0,
-      teams:
-        item.last_team && item.last_team_id != null
-          ? [{ team_id: item.last_team_id, team_name: item.last_team, matches: 0 }]
-          : item.last_team
-            ? [{ team_id: -1, team_name: item.last_team, matches: 0 }]
-            : [],
-      nationality: item.nationality ?? null,
-      nationality_flag: item.nationality_flag ?? null,
+      team_id: item.id,
+      team_name: item.name,
+      count: 0,
+      total_goals: 0,
+      country: item.country ?? null,
+      country_flag: item.country_flag ?? null,
     };
   }
 
@@ -536,7 +526,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
 
     const afterPicker = (): void => {
       this.updateFilteredArrays();
-      this.loadScopedTeamsAndPlayers();
+      this.loadScopedTeamsAndList();
     };
 
     if (needPicker) {
@@ -566,12 +556,12 @@ export class PlayersComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadScopedTeamsAndPlayers(): void {
+  private loadScopedTeamsAndList(): void {
     if (this.filterTeamSelected.length === 0) {
       this.teamsAgainstViewed = [];
       this.teamsAgainstLoaded = true;
       this.filterTeamAgainstSelected = [];
-      this.loadPlayersViewed();
+      this.loadTeamsViewed();
       this.changeDetectorRef.detectChanges();
       return;
     }
@@ -592,7 +582,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
           this.teamsAgainstLoaded = true;
           this.cleanupInvalidSelections();
           this.updateFilteredArrays();
-          this.loadPlayersViewed();
+          this.loadTeamsViewed();
           this.changeDetectorRef.detectChanges();
         },
         error: () => {
@@ -601,20 +591,20 @@ export class PlayersComponent implements OnInit, OnDestroy {
           this.filterTeamAgainstSelected = [];
           this.cleanupInvalidSelections();
           this.updateFilteredArrays();
-          this.loadPlayersViewed();
+          this.loadTeamsViewed();
           this.changeDetectorRef.detectChanges();
         },
       });
   }
 
-  private loadPlayersViewed(): void {
-    if (this.isPlayerSearchActive) {
-      const requestId = ++this.playerSearchRequestId;
-      this.runMergedPlayerSearch(this.playerSearchQuery.trim(), requestId);
+  private loadTeamsViewed(): void {
+    if (this.isTeamSearchActive) {
+      const requestId = ++this.teamSearchRequestId;
+      this.runMergedTeamSearch(this.teamSearchQuery.trim(), requestId);
       return;
     }
 
-    this.playersLoaded = false;
+    this.teamsListLoaded = false;
     const teams =
       this.filterTeamSelected.length > 0 ? this.filterTeamSelected : undefined;
     const against =
@@ -623,77 +613,71 @@ export class PlayersComponent implements OnInit, OnDestroy {
         : undefined;
 
     this.statsService
-      .getPlayersViewed(
+      .getTeamsViewedPage(
         this.filterPanelChipSelected,
         this.filterLeagueSelected,
         this.filterSeasonSelected?.id ?? 0,
         this.filterLocationSelected,
         teams,
         against,
-        this.playersPage,
-        this.playersPerPage,
+        this.teamsPage,
+        this.teamsPerPage,
       )
       .subscribe({
         next: (result) => {
-          if (this.isPlayerSearchActive) {
-            return;
-          }
-          this.players = result?.results ?? [];
-          this.playersTotal = result?.total ?? 0;
-          this.playersPage = result?.page ?? this.playersPage;
-          this.playersLoaded = true;
+          this.teams = result?.results ?? [];
+          this.teamsTotal = result?.total ?? 0;
+          this.teamsPage = result?.page ?? this.teamsPage;
+          this.teamsListLoaded = true;
           this.filtersRevealed = true;
           this.changeDetectorRef.detectChanges();
         },
         error: () => {
-          if (this.isPlayerSearchActive) {
-            return;
-          }
-          this.players = [];
-          this.playersTotal = 0;
-          this.playersLoaded = true;
+          this.teams = [];
+          this.teamsTotal = 0;
+          this.teamsListLoaded = true;
           this.filtersRevealed = true;
           this.changeDetectorRef.detectChanges();
         },
       });
   }
 
-  onPlayersPageChange(page: number): void {
-    if (page === this.playersPage) {
+  onTeamsPageChange(page: number): void {
+    if (page === this.teamsPage) {
       return;
     }
-    this.playersPage = page;
-    if (this.isPlayerSearchActive) {
+    this.teamsPage = page;
+    if (this.isTeamSearchActive) {
       this.applySearchPage();
       this.changeDetectorRef.detectChanges();
       return;
     }
-    this.loadPlayersViewed();
+    this.loadTeamsViewed();
   }
 
-  filterPlayers(): void {
-    this.playersPage = 1;
+  filterTeams(): void {
+    this.teamsPage = 1;
     this.refreshStatsPipeline();
   }
 
   changeFilterPanelChipSelected(chip: number): void {
     this.filterPanelChipSelected = chip;
-    this.filterPlayers();
+    this.filterTeams();
   }
 
   changeFilterLeagueSelected(leagues: number[]): void {
     this.filterLeagueSelected = leagues;
-    this.filterPlayers();
+    this.filterTeams();
   }
 
   changeFilterSeasonSelected(season: SeasonInfo): void {
     this.filterSeasonSelected = season;
-    this.filterPlayers();
+    this.filterTeams();
   }
 
   changeFilterLocationSelected(location: string): void {
     this.filterLocationSelected = location;
-    this.filterPlayers();
+    this.filterTeams();
   }
 
   changeFilterTeamSelected(teams: number[]): void {
@@ -701,12 +685,12 @@ export class PlayersComponent implements OnInit, OnDestroy {
     if (teams.length === 0) {
       this.filterTeamAgainstSelected = [];
     }
-    this.filterPlayers();
+    this.filterTeams();
   }
 
   changeFilterTeamAgainstSelected(ids: number[]): void {
     this.filterTeamAgainstSelected = ids;
-    this.filterPlayers();
+    this.filterTeams();
   }
 
   resetFilters(): void {
@@ -716,24 +700,22 @@ export class PlayersComponent implements OnInit, OnDestroy {
     this.filterTeamAgainstSelected = [];
     this.filterLocationSelected = '';
     this.filterSeasonSelected = this.seasons[0];
-    this.filterPlayers();
+    this.filterTeams();
   }
 
-  trackByPlayerId(_index: number, player: PlayerViewedStats): number {
-    return player.player_id;
+  trackByTeamId(_index: number, team: TeamsViewedStats): number {
+    return team.team_id;
   }
 
-  playerRank(player: PlayerViewedStats): number {
-    if (this.isPlayerSearchActive) {
-      const index = this.searchPlayersAll.findIndex(
-        (p) => p.player_id === player.player_id,
-      );
+  teamRank(team: TeamsViewedStats): number {
+    if (this.isTeamSearchActive) {
+      const index = this.searchTeamsAll.findIndex((t) => t.team_id === team.team_id);
       return index >= 0 ? index + 1 : 0;
     }
-    const index = this.players.findIndex((p) => p.player_id === player.player_id);
+    const index = this.teams.findIndex((t) => t.team_id === team.team_id);
     if (index < 0) {
       return 0;
     }
-    return (this.playersPage - 1) * this.playersPerPage + index + 1;
+    return (this.teamsPage - 1) * this.teamsPerPage + index + 1;
   }
 }

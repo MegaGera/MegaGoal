@@ -1,6 +1,6 @@
 <div class="container">
 
-  @if (isMobileView && matchesContextLoaded && matchesOriginal.length > 0 && mobileFiltersExpanded) {
+  @if (isMobileView && filtersRevealed && matchesContextLoaded && matchesOriginal.length > 0 && mobileFiltersExpanded) {
     <div class="row">
       <div class="col-12">
         <div class="mobile-filters-wrapper" [class.mobile-filters-wrapper--expanded]="mobileFiltersExpanded">
@@ -13,11 +13,37 @@
   <div class="tab-content row m-auto" id="nav-tabContent">
     <div class="tab-pane col-md-9 col-12 show d-md-block" id="nav-players" role="tabpanel">
 
-      @if (playersLoaded && players.length > 0) {
-        @if (isMobileView) {
+      <div class="player-search" [class.player-search--active]="isPlayerSearchActive">
+        <div class="player-search__field">
+          <span class="player-search__icon-wrap" aria-hidden="true">
+            <ng-icon name="jamSearch" class="player-search__icon" size="1.15rem"></ng-icon>
+          </span>
+          <input
+            type="text"
+            class="player-search__input"
+            placeholder="Search players by name…"
+            [ngModel]="playerSearchQuery"
+            (ngModelChange)="onPlayerSearchQueryChange($event)"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Search players by name">
+          @if (playerSearchQuery.trim()) {
+            <button
+              type="button"
+              class="player-search__clear"
+              (click)="clearPlayerSearch()"
+              aria-label="Clear search">
+              <ng-icon name="jamClose" size="0.9rem" aria-hidden="true"></ng-icon>
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (playersLoaded && playersTotal > 0) {
+        @if (isMobileView && filtersRevealed) {
           <app-mobile-filters-inline-row>
             <div class="matches-header players-header">
-              <h3 class="matches-title players-title">{{ players.length }} players</h3>
+              <h3 class="matches-title players-title">{{ playersTotal }} players</h3>
             </div>
             <div mobileFilterToggle>
               <ng-container *ngTemplateOutlet="playersMobileFilters; context: { inline: true, collapsed: true }" />
@@ -25,11 +51,11 @@
           </app-mobile-filters-inline-row>
         } @else {
           <div class="matches-header players-header">
-            <h3 class="matches-title players-title">{{ players.length }} players</h3>
+            <h3 class="matches-title players-title">{{ playersTotal }} players</h3>
           </div>
         }
 
-        @for (player of playersFiltered; track trackByPlayerId($index, player)) {
+        @for (player of players; track trackByPlayerId($index, player)) {
           <div class="playerCardAdapter">
             <app-basic-player-stat-card
               variant="row"
@@ -37,12 +63,13 @@
               [playerId]="player.player_id"
               [avatarUrl]="images.getRouteImagePlayer(player.player_id)"
               [playerName]="player.player_name"
-              [matchesWatched]="player.matches"
-              [goals]="player.goals"
-              [assists]="player.assists"
+              [matchesWatched]="showWatchedStats(player) ? player.matches : null"
+              [goals]="showWatchedStats(player) ? player.goals : null"
+              [assists]="showWatchedStats(player) ? player.assists : null"
               [nationality]="player.nationality"
               [nationalityFlag]="player.nationality_flag"
-              [teams]="player.teams">
+              [teams]="player.teams"
+              [seen]="isPlayerSearchActive && showWatchedStats(player)">
             </app-basic-player-stat-card>
           </div>
         }
@@ -50,10 +77,12 @@
         <div class="paginationDiv">
           <app-pagination
             [elements]="players"
-            [elementsPerPage]="10"
-            [(elementsFiltered)]="playersFiltered" />
+            [elementsPerPage]="playersPerPage"
+            [totalCount]="playersTotal"
+            [initialPage]="playersPage"
+            (pageChange)="onPlayersPageChange($event)" />
         </div>
-      } @else if (playersLoaded && players.length === 0) {
+      } @else if (playersLoaded && playersTotal === 0) {
         <div class="no-players-container">
           <div class="no-players-card">
             <div class="no-players-icon">
@@ -61,19 +90,66 @@
             </div>
             <h2 class="no-players-title">No players found</h2>
             <p class="no-players-description">
-              Try adjusting your filters or watch more matches!
+              @if (isPlayerSearchActive) {
+                Try a different name, or clear the search to browse watched players.
+              } @else {
+                Try adjusting your filters or watch more matches!
+              }
             </p>
             <div class="no-players-actions">
-              <button class="reset-filters-btn" (click)="resetFilters()">
-                <ng-icon name="jamSettingsAlt"></ng-icon>
-                Reset Filters
-              </button>
+              @if (isPlayerSearchActive) {
+                <button class="reset-filters-btn" (click)="clearPlayerSearch()">
+                  <ng-icon name="jamClose"></ng-icon>
+                  Clear Search
+                </button>
+              } @else {
+                <button class="reset-filters-btn" (click)="resetFilters()">
+                  <ng-icon name="jamSettingsAlt"></ng-icon>
+                  Reset Filters
+                </button>
+              }
             </div>
           </div>
         </div>
       } @else if (!playersLoaded) {
-        <div class="spinner">
-          <mat-spinner />
+        <div class="players-list-skeleton" aria-busy="true" aria-label="Loading players">
+          @if (isMobileView && filtersRevealed) {
+            <app-mobile-filters-inline-row>
+              <div class="matches-header players-header">
+                <div class="skeleton-block skeleton-players-count" aria-hidden="true"></div>
+              </div>
+              <div mobileFilterToggle>
+                <ng-container *ngTemplateOutlet="playersMobileFilters; context: { inline: true, collapsed: true }" />
+              </div>
+            </app-mobile-filters-inline-row>
+          } @else {
+            <div class="matches-header players-header">
+              <div class="skeleton-block skeleton-players-count" aria-hidden="true"></div>
+            </div>
+          }
+
+          @for (item of skeletonPlayerSlots; track item) {
+            <div class="playerCardAdapter" aria-hidden="true">
+              <div class="player-card-skeleton">
+                <div class="skeleton-block skeleton-player-rank"></div>
+                <div class="skeleton-block skeleton-player-avatar"></div>
+                <div class="skeleton-player-identity">
+                  <div class="skeleton-block skeleton-player-name"></div>
+                  <div class="skeleton-block skeleton-player-nation"></div>
+                </div>
+                <div class="skeleton-player-teams">
+                  <div class="skeleton-block skeleton-team-chip"></div>
+                  <div class="skeleton-block skeleton-team-chip"></div>
+                  <div class="skeleton-block skeleton-team-chip"></div>
+                </div>
+                <div class="skeleton-player-stats">
+                  <div class="skeleton-block skeleton-stat-pill"></div>
+                  <div class="skeleton-block skeleton-stat-pill"></div>
+                  <div class="skeleton-block skeleton-stat-pill"></div>
+                </div>
+              </div>
+            </div>
+          }
         </div>
       }
 
@@ -81,7 +157,7 @@
 
     @if (!isMobileView) {
       <div class="tab-pane col-md-3 col-12 d-md-block" id="nav-filters" role="tabpanel">
-        @if (matchesContextLoaded && matchesOriginal.length > 0) {
+        @if (filtersRevealed && matchesContextLoaded && matchesOriginal.length > 0) {
           <app-filters-home
             [filterPanelChipSelected]="filterPanelChipSelected"
             [filterLeagueSelected]="filterLeagueSelected"

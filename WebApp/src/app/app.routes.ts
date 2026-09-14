@@ -12,6 +12,7 @@ import { LandingPageComponent } from './components/landing-page/landing-page.com
 import { MatchInfoComponent } from './components/match-info/match-info.component';
 import { PlayerInfoComponent } from './components/player-info/player-info.component';
 import { PlayersComponent } from './components/players/players.component';
+import { TeamsComponent } from './components/teams/teams.component';
 
 import { adminGuard } from './guards/admin.guard';
 
@@ -22,6 +23,7 @@ export const routes: Routes = [
         { path: 'leagues', component: LeagueSelectorComponent },
         { path: 'leagues/:id', component: LeagueDetailComponent },
         { path: 'team', component: TeamComponent },
+        { path: 'teams', component: TeamsComponent },
         { path: 'matches', component: MatchesComponent },
         { path: 'match', component: MatchInfoComponent },
         { path: 'players', component: PlayersComponent },

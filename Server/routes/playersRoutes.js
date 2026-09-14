@@ -1,10 +1,18 @@
 import express from 'express';
-import { getPlayers, getPlayersApiInfo, getPlayerById } from '../controllers/playersController.js';
+import {
+  getPlayers,
+  getPlayersApiInfo,
+  getPlayerById,
+  searchPlayers
+} from '../controllers/playersController.js';
 
 const router = express.Router();
 
 // Get all players
 router.get('/', getPlayers);
+
+// Ranked name search (must be before /:id)
+router.get('/search', searchPlayers);
 
 // Get players API info
 router.get('/players-api-info', getPlayersApiInfo);

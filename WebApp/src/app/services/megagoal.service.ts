@@ -16,6 +16,8 @@ import { LeaguesSettings } from '../models/leaguesSettings';
 import { MatchRequest } from '../models/matchRequest';
 import { UserFeedback } from '../models/user_feedback';
 import { Player } from '../models/player';
+import { PlayerSearchResult } from '../models/playerSearch';
+import { TeamSearchResult } from '../models/teamSearch';
 import { UserMe } from '../models/userMe';
 import { LeagueStandingsSummaryResponse } from '../models/leagueStandingsSummary';
 
@@ -483,6 +485,73 @@ export class MegaGoalService {
   */
   getLandingMatches(): Observable<RealMatch[]> {
     return this.http.get<RealMatch[]>(this.url + '/admin/landing_matches', this.options);
+  }
+
+  /**
+   * Ranked team name search. Optional filters: leagues, season, teamSelection.
+   */
+  searchTeams(
+    query: string,
+    options?: {
+      limit?: number;
+      leagues?: number[];
+      season?: number;
+      teamSelection?: number;
+    }
+  ): Observable<TeamSearchResult> {
+    let params = new HttpParams().set('q', query.trim());
+    if (options?.limit != null) {
+      params = params.set('limit', options.limit.toString());
+    }
+    if (options?.leagues?.length) {
+      params = params.set('league_ids', options.leagues.join(','));
+    }
+    if (options?.season != null && options.season !== 0) {
+      params = params.set('season', options.season.toString());
+    }
+    if (options?.teamSelection != null && options.teamSelection !== 0) {
+      params = params.set('team_selection', options.teamSelection.toString());
+    }
+    return this.http.get<TeamSearchResult>(this.url + '/team/search', {
+      ...this.options,
+      params
+    });
+  }
+
+  /**
+   * Ranked player name search (accents, first/last name, relevance). Max 20 results.
+   * Optional career filters: teams, leagues, season, teamSelection (0|1 clubs|2 nations).
+   */
+  searchPlayers(
+    query: string,
+    options?: {
+      limit?: number;
+      teams?: number[];
+      leagues?: number[];
+      season?: number;
+      teamSelection?: number;
+    }
+  ): Observable<PlayerSearchResult> {
+    let params = new HttpParams().set('q', query.trim());
+    if (options?.limit != null) {
+      params = params.set('limit', options.limit.toString());
+    }
+    if (options?.teams?.length) {
+      params = params.set('team_ids', options.teams.join(','));
+    }
+    if (options?.leagues?.length) {
+      params = params.set('league_ids', options.leagues.join(','));
+    }
+    if (options?.season != null && options.season !== 0) {
+      params = params.set('season', options.season.toString());
+    }
+    if (options?.teamSelection != null && options.teamSelection !== 0) {
+      params = params.set('team_selection', options.teamSelection.toString());
+    }
+    return this.http.get<PlayerSearchResult>(this.url + '/players/search', {
+      ...this.options,
+      params
+    });
   }
 
   /**

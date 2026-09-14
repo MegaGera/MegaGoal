@@ -1,0 +1,207 @@
+<div class="container">
+
+  @if (isMobileView && filtersRevealed && matchesContextLoaded && matchesOriginal.length > 0 && mobileFiltersExpanded) {
+    <div class="row">
+      <div class="col-12">
+        <div class="mobile-filters-wrapper" [class.mobile-filters-wrapper--expanded]="mobileFiltersExpanded">
+          <ng-container *ngTemplateOutlet="teamsMobileFilters; context: { inline: false, collapsed: !mobileFiltersExpanded }" />
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="tab-content row m-auto" id="nav-tabContent">
+    <div class="tab-pane col-md-9 col-12 show d-md-block" id="nav-teams" role="tabpanel">
+
+      <div class="team-list-search" [class.team-list-search--active]="isTeamSearchActive">
+        <div class="team-list-search__field">
+          <span class="team-list-search__icon-wrap" aria-hidden="true">
+            <ng-icon name="jamSearch" class="team-list-search__icon" size="1.15rem"></ng-icon>
+          </span>
+          <input
+            type="text"
+            class="team-list-search__input"
+            placeholder="Search teams by name…"
+            [ngModel]="teamSearchQuery"
+            (ngModelChange)="onTeamSearchQueryChange($event)"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Search teams by name">
+          @if (teamSearchQuery.trim()) {
+            <button
+              type="button"
+              class="team-list-search__clear"
+              (click)="clearTeamSearch()"
+              aria-label="Clear search">
+              <ng-icon name="jamClose" size="0.9rem" aria-hidden="true"></ng-icon>
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (teamsListLoaded && teamsTotal > 0) {
+        @if (isMobileView && filtersRevealed) {
+          <app-mobile-filters-inline-row>
+            <div class="matches-header teams-header">
+              <h3 class="matches-title teams-title">{{ teamsTotal }} teams</h3>
+            </div>
+            <div mobileFilterToggle>
+              <ng-container *ngTemplateOutlet="teamsMobileFilters; context: { inline: true, collapsed: true }" />
+            </div>
+          </app-mobile-filters-inline-row>
+        } @else {
+          <div class="matches-header teams-header">
+            <h3 class="matches-title teams-title">{{ teamsTotal }} teams</h3>
+          </div>
+        }
+
+        @for (team of teams; track trackByTeamId($index, team)) {
+          <div class="teamCardAdapter">
+            <app-basic-team-stat-card
+              [rank]="teamRank(team)"
+              [teamId]="team.team_id"
+              [logoUrl]="images.getRouteImageTeam(team.team_id)"
+              [teamName]="team.team_name"
+              [matchesWatched]="showWatchedStats(team) ? team.count : null"
+              [goals]="showWatchedStats(team) ? (team.total_goals ?? 0) : null"
+              [country]="team.country ?? null"
+              [countryFlag]="team.country_flag ?? null"
+              [seen]="isTeamSearchActive && showWatchedStats(team)">
+            </app-basic-team-stat-card>
+          </div>
+        }
+
+        <div class="paginationDiv">
+          <app-pagination
+            [elements]="teams"
+            [elementsPerPage]="teamsPerPage"
+            [totalCount]="teamsTotal"
+            [initialPage]="teamsPage"
+            (pageChange)="onTeamsPageChange($event)" />
+        </div>
+      } @else if (teamsListLoaded && teamsTotal === 0) {
+        <div class="no-teams-container">
+          <div class="no-teams-card">
+            <div class="no-teams-icon">
+              <ng-icon name="ionFootball" size="4rem" class="football-icon"></ng-icon>
+            </div>
+            <h2 class="no-teams-title">No teams found</h2>
+            <p class="no-teams-description">
+              @if (isTeamSearchActive) {
+                Try a different name, or clear the search to browse watched teams.
+              } @else {
+                Try adjusting your filters or watch more matches!
+              }
+            </p>
+            <div class="no-teams-actions">
+              @if (isTeamSearchActive) {
+                <button class="reset-filters-btn" (click)="clearTeamSearch()">
+                  <ng-icon name="jamClose"></ng-icon>
+                  Clear Search
+                </button>
+              } @else {
+                <button class="reset-filters-btn" (click)="resetFilters()">
+                  <ng-icon name="jamSettingsAlt"></ng-icon>
+                  Reset Filters
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      } @else if (!teamsListLoaded) {
+        <div class="teams-list-skeleton" aria-busy="true" aria-label="Loading teams">
+          @if (isMobileView && filtersRevealed) {
+            <app-mobile-filters-inline-row>
+              <div class="matches-header teams-header">
+                <div class="skeleton-block skeleton-teams-count" aria-hidden="true"></div>
+              </div>
+              <div mobileFilterToggle>
+                <ng-container *ngTemplateOutlet="teamsMobileFilters; context: { inline: true, collapsed: true }" />
+              </div>
+            </app-mobile-filters-inline-row>
+          } @else {
+            <div class="matches-header teams-header">
+              <div class="skeleton-block skeleton-teams-count" aria-hidden="true"></div>
+            </div>
+          }
+
+          @for (item of skeletonTeamSlots; track item) {
+            <div class="teamCardAdapter" aria-hidden="true">
+              <div class="team-card-skeleton">
+                <div class="skeleton-block skeleton-team-rank"></div>
+                <div class="skeleton-block skeleton-team-logo"></div>
+                <div class="skeleton-team-identity">
+                  <div class="skeleton-block skeleton-team-name"></div>
+                  <div class="skeleton-block skeleton-team-nation"></div>
+                </div>
+                <div class="skeleton-team-stats">
+                  <div class="skeleton-block skeleton-stat-pill"></div>
+                  <div class="skeleton-block skeleton-stat-pill"></div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+    </div>
+
+    @if (!isMobileView) {
+      <div class="tab-pane col-md-3 col-12 d-md-block" id="nav-filters" role="tabpanel">
+        @if (filtersRevealed && matchesContextLoaded && matchesOriginal.length > 0) {
+          <app-filters-home
+            [filterPanelChipSelected]="filterPanelChipSelected"
+            [filterLeagueSelected]="filterLeagueSelected"
+            [filterSeasonSelected]="filterSeasonSelected"
+            [filterLocationSelected]="filterLocationSelected"
+            [seasons]="seasonsFiltered"
+            [locations]="locationsFiltered"
+            [leaguesViewed]="leaguesFiltered"
+            [leaguesLoaded]="leaguesLoaded"
+            [teamsViewed]="teamsFiltered"
+            [teamsLoaded]="statsLoaded"
+            [enableTeamsSearch]="false"
+            [showTeams]="false"
+            [showTeamAgainst]="false"
+            [showOrder]="false"
+            (filterPanelChipSelectedChange)="changeFilterPanelChipSelected($event)"
+            (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"
+            (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
+            (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
+            (resetFiltersChange)="resetFilters()">
+          </app-filters-home>
+        }
+      </div>
+    }
+  </div>
+
+  <ng-template #teamsMobileFilters let-inline="inline" let-collapsed="collapsed">
+    <app-filters-home
+      class="mobile-filters-panel"
+      [class.mobile-filters-inline]="inline"
+      [filterPanelChipSelected]="filterPanelChipSelected"
+      [filterLeagueSelected]="filterLeagueSelected"
+      [filterSeasonSelected]="filterSeasonSelected"
+      [filterLocationSelected]="filterLocationSelected"
+      [seasons]="seasonsFiltered"
+      [locations]="locationsFiltered"
+      [leaguesViewed]="leaguesFiltered"
+      [leaguesLoaded]="leaguesLoaded"
+      [teamsViewed]="teamsFiltered"
+      [teamsLoaded]="statsLoaded"
+      [enableTeamsSearch]="false"
+      [showTeams]="false"
+      [showTeamAgainst]="false"
+      [showOrder]="false"
+      [collapsed]="collapsed"
+      [iconOnlyCollapsed]="true"
+      (collapseToggle)="toggleMobileFilters()"
+      (filterPanelChipSelectedChange)="changeFilterPanelChipSelected($event)"
+      (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"
+      (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
+      (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
+      (resetFiltersChange)="resetFilters()">
+    </app-filters-home>
+  </ng-template>
+
+</div>

@@ -24,6 +24,8 @@ import analyticsRoutes from './routes/analyticsRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import onzeRoutes from './routes/onzeRoutes.js';
 import { startMcpHttpIfEnabled } from './mcp/createMcpServer.js';
+import { warmupPlayerSearch } from './services/playerSearchService.js';
+import { warmupTeamSearch } from './services/teamSearchService.js';
 
 const app = express();
 
@@ -164,6 +166,14 @@ const PORT = process.env.PORT || 3150;
 // }
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  connectDB()
+    .then(() =>
+      Promise.all([warmupPlayerSearch(), warmupTeamSearch()])
+    )
+    .then(() => console.log('Name search indexes ready'))
+    .catch((err) => {
+      console.error('Name search warmup failed:', err);
+    });
   startMcpHttpIfEnabled().catch((err) => {
     console.error('MCP server failed to start:', err);
   });

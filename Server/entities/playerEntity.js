@@ -62,14 +62,33 @@ const playerListResponseSchema = z.object({
   })
 });
 
+const playerSearchItemSchema = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  photo: z.string().optional(),
+  position: z.string().optional(),
+  nationality: z.string().optional(),
+  nationality_flag: z.string().optional(),
+  last_team: z.string().optional(),
+  last_team_id: z.number().int().optional()
+});
+
+const playerSearchResultSchema = z.object({
+  players: z.array(playerSearchItemSchema),
+  truncated: z.boolean(),
+  limit: z.number().int()
+});
+
 const parsePlayerId = (id) => z.coerce.number().int().parse(id);
 const parsePlayer = (document) => playerSchema.parse(document);
 const parsePlayers = (documents) => z.array(playerSchema).parse(documents);
 const parsePlayerListResponse = (response) => playerListResponseSchema.parse(response);
+const parsePlayerSearchResult = (payload) => playerSearchResultSchema.parse(payload);
 
 export {
   parsePlayer,
   parsePlayerId,
   parsePlayerListResponse,
+  parsePlayerSearchResult,
   parsePlayers
 };

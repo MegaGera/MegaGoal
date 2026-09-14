@@ -142,6 +142,16 @@
     #fff;
 }
 
+.player-card--row.player-card--seen {
+  border-width: 3px;
+  border-color: rgba(220, 20, 60, 0.55);
+  box-shadow: 0 6px 18px rgba(220, 20, 60, 0.1);
+}
+
+.player-card--row.player-card--seen:hover {
+  border-color: rgba(220, 20, 60, 0.75);
+}
+
 .player-card--row:hover::before {
   transform: translateY(-50%) scaleY(1);
 }

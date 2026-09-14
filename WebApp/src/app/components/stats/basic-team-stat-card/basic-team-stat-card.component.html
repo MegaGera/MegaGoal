@@ -1,0 +1,63 @@
+<a
+  class="team-card"
+  [class.team-card--top]="rank != null && rank <= 3"
+  [class.team-card--seen]="seen"
+  [routerLink]="['/app/team']"
+  [queryParams]="{ id: teamId }">
+
+  @if (rank != null) {
+    <div class="team-card__rank" [attr.data-rank]="rank">
+      <span class="team-card__rank-num">{{ rank }}</span>
+    </div>
+  }
+
+  <div class="team-card__logo">
+    <img
+      *ngIf="logoUrl && !imageFailed; else placeholder"
+      [src]="logoUrl"
+      [alt]="teamName"
+      (error)="onImageError()" />
+    <ng-template #placeholder>
+      <div class="team-card__placeholder">
+        {{ teamName | slice:0:1 }}
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="team-card__details">
+    <div class="team-card__identity">
+      <span class="team-card__name">{{ teamName }}</span>
+      <div class="team-card__meta">
+        @if (country) {
+          <span class="team-card__nation">
+            @if (countryFlag) {
+              <img class="team-card__flag" [src]="countryFlag" [alt]="country" />
+            }
+            <span class="team-card__nation-name">{{ country }}</span>
+          </span>
+        } @else {
+          <span class="team-card__subtitle">Team profile</span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="team-card__trailing">
+    @if (matchesWatched != null || goals != null) {
+      <div class="team-card__stat-badges">
+        @if (matchesWatched != null) {
+          <app-player-stat-badge icon="👁️" [value]="matchesWatched"></app-player-stat-badge>
+        }
+        @if (goals != null) {
+          <app-player-stat-badge icon="⚽" [value]="goals"></app-player-stat-badge>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="team-card__chevron" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 18l6-6-6-6" />
+    </svg>
+  </div>
+</a>

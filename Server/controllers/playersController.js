@@ -2,13 +2,41 @@ import { getDB } from '../config/db.js';
 import {
   parsePlayer,
   parsePlayerId,
-  parsePlayerListResponse
+  parsePlayerListResponse,
+  parsePlayerSearchResult
 } from '../entities/playerEntity.js';
 import {
   defaultPlayersApiInfoSetting,
   parsePlayersApiInfoSetting
 } from '../entities/settingsEntity.js';
 import { resolveNationalityCountry } from '../services/nationalityCountryService.js';
+import { searchPlayersByName } from '../services/playerSearchService.js';
+
+/**
+ * GET /players/search?q=
+ * Optional filters for catalog results: team_ids, league_ids, season, team_selection.
+ * Ranked player name search (accents, first/last name, relevance). Max 20 results.
+ */
+export const searchPlayers = async (req, res) => {
+  try {
+    const q = req.query.q ?? req.query.query ?? req.query.search ?? '';
+    const result = await searchPlayersByName({
+      query: q,
+      limit: req.query.limit,
+      teamIds: req.query.team_ids ?? req.query.teams,
+      leagueIds: req.query.league_ids ?? req.query.leagues,
+      season: req.query.season,
+      teamSelection: req.query.team_selection,
+    });
+    const validated = parsePlayerSearchResult(result);
+    const query = String(q).trim();
+    console.log(`Players search "${query}": ${validated.players.length}`);
+    res.json(validated);
+  } catch (error) {
+    console.error('Error searching players:', error);
+    res.status(500).json({ error: 'Failed to search players' });
+  }
+};
 
 // Get players from database with search and pagination
 export const getPlayers = async (req, res) => {

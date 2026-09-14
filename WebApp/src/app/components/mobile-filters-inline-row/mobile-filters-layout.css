@@ -3,7 +3,8 @@
 }
 
 .mobile-filters-wrapper--expanded {
-  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Matches count pill (shared by home + team mobile filter rows) */

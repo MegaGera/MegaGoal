@@ -15,14 +15,17 @@
         <ng-icon name="jamSettingsAlt" class="filter-icon" size="1.4rem"></ng-icon>
       </button>
     } @else if (iconOnlyCollapsed && !collapsed) {
+      <div class="filter-compact-expanded-title">
+        <ng-icon name="jamSettingsAlt" class="filter-icon" size="1.4rem"></ng-icon>
+        <h4 class="filter-title filter-title--compact-expanded">Filters</h4>
+      </div>
       <button
         type="button"
-        class="filter-compact-toggle-btn"
+        class="filter-compact-close-btn"
         (click)="onCollapseToggle()"
         [attr.aria-expanded]="true"
         aria-label="Hide filters">
-        <h4 class="filter-title">Filters</h4>
-        <ng-icon name="jamSettingsAlt" class="filter-icon" size="1.4rem"></ng-icon>
+        <ng-icon name="jamClose" class="filter-close-icon" size="1.25rem"></ng-icon>
       </button>
     } @else {
       <ng-icon name="jamSettingsAlt" class="filter-icon" size="1.5rem"></ng-icon>

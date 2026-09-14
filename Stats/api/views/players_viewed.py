@@ -2,11 +2,17 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+import math
 import os
+import re
+import unicodedata
 
 from ..teams_query_filters import parse_teams_query_params, add_teams_mongo_filters
 
 TOP_TEAMS_LIMIT = 3
+DEFAULT_PAGE = 1
+DEFAULT_LIMIT = 10
+MAX_LIMIT = 100
 
 
 class PlayersViewedAPIView(APIView):
@@ -14,6 +20,8 @@ class PlayersViewedAPIView(APIView):
     Rank players by appearances in the user's watched matches (startXI or sub in).
     Same filter contract as teams-viewed / general-stats.
     Includes top watched clubs for each player and nationality from `players`.
+    Paginated via `page` / `limit` query params.
+    Optional `search` / `q` filters by player name before pagination.
     """
 
     def get(self, request, *args, **kwargs):
@@ -27,6 +35,12 @@ class PlayersViewedAPIView(APIView):
         leagues = request.query_params.get('leagues', None)
         season = request.query_params.get('season', None)
         location = request.query_params.get('location', None)
+        search = (
+            request.query_params.get('search')
+            or request.query_params.get('q')
+            or ''
+        ).strip()
+        page, limit = self._parse_pagination(request)
 
         if username is None:
             return Response(
@@ -78,7 +92,10 @@ class PlayersViewedAPIView(APIView):
         )
 
         if not matches:
-            return Response([], status=status.HTTP_200_OK)
+            return Response(
+                self._empty_page(page, limit),
+                status=status.HTTP_200_OK,
+            )
 
         fixture_ids = [
             m.get('fixture', {}).get('id')
@@ -86,11 +103,106 @@ class PlayersViewedAPIView(APIView):
             if m.get('fixture', {}).get('id') is not None
         ]
         if not fixture_ids:
-            return Response([], status=status.HTTP_200_OK)
+            return Response(
+                self._empty_page(page, limit),
+                status=status.HTTP_200_OK,
+            )
 
-        players = self._rank_players_by_appearances(fixture_ids)
-        self._enrich_nationalities(players)
-        return Response(players, status=status.HTTP_200_OK)
+        # When a club filter is set, only rank players who appeared for those clubs
+        # (not opponents from the same matches).
+        players = self._rank_players_by_appearances(
+            fixture_ids,
+            for_team_ids=teams_arr or None,
+        )
+        if search:
+            players = self._filter_players_by_search(players, search)
+        return Response(
+            self._paginate_players(players, page, limit),
+            status=status.HTTP_200_OK,
+        )
+
+    def _parse_pagination(self, request):
+        try:
+            page = int(request.query_params.get('page', DEFAULT_PAGE))
+        except (TypeError, ValueError):
+            page = DEFAULT_PAGE
+        try:
+            limit = int(request.query_params.get('limit', DEFAULT_LIMIT))
+        except (TypeError, ValueError):
+            limit = DEFAULT_LIMIT
+        page = max(1, page)
+        limit = min(MAX_LIMIT, max(1, limit))
+        return page, limit
+
+    def _empty_page(self, page, limit):
+        return {
+            'results': [],
+            'page': page,
+            'limit': limit,
+            'total': 0,
+            'total_pages': 0,
+        }
+
+    def _paginate_players(self, players, page, limit):
+        total = len(players)
+        total_pages = math.ceil(total / limit) if total else 0
+        if total_pages and page > total_pages:
+            page = total_pages
+        start = (page - 1) * limit
+        page_players = players[start : start + limit]
+        self._enrich_nationalities(page_players)
+        return {
+            'results': page_players,
+            'page': page,
+            'limit': limit,
+            'total': total,
+            'total_pages': total_pages,
+        }
+
+    @staticmethod
+    def _fold_name(value):
+        """Lowercase, strip diacritics/punctuation, collapse whitespace."""
+        text = unicodedata.normalize('NFD', str(value or ''))
+        text = ''.join(ch for ch in text if unicodedata.category(ch) != 'Mn')
+        text = text.lower()
+        text = (
+            text.replace('ß', 'ss')
+            .replace('æ', 'ae')
+            .replace('œ', 'oe')
+            .replace('ø', 'o')
+            .replace('ł', 'l')
+            .replace('đ', 'd')
+        )
+        text = re.sub(r"[''`´.]", '', text)
+        text = re.sub(r'[^a-z0-9]+', ' ', text)
+        return text.strip()
+
+    def _filter_players_by_search(self, players, search):
+        """Token AND match on folded player_name (exact / prefix / long infix)."""
+        tokens = [t for t in self._fold_name(search).split(' ') if t]
+        if not tokens:
+            return players
+
+        matched = []
+        for player in players:
+            words = [
+                w
+                for w in self._fold_name(player.get('player_name')).split(' ')
+                if w
+            ]
+            if not words:
+                continue
+            if all(
+                any(
+                    word == token
+                    or word.startswith(token)
+                    or (len(token) >= 5 and token in word)
+                    for word in words
+                )
+                for token in tokens
+            ):
+                matched.append(player)
+        return matched
 
     def _ensure_player_entry(self, player_matches, player_id, player_name):
         if player_id not in player_matches:
@@ -118,8 +230,12 @@ class PlayersViewedAPIView(APIView):
             teams[team_id]['team_name'] = team_name
         teams[team_id]['matches'] += 1
 
-    def _rank_players_by_appearances(self, fixture_ids):
-        """Appearances, G/A, and player's watched clubs (not opponents)."""
+    def _rank_players_by_appearances(self, fixture_ids, for_team_ids=None):
+        """
+        Appearances, G/A, and player's watched clubs (not opponents).
+        If for_team_ids is set, only count players who appeared for those clubs.
+        """
+        allowed_teams = set(for_team_ids) if for_team_ids else None
         collection_real_matches = settings.MONGO_DB['real_matches']
         pipeline = [
             {'$match': {'fixture.id': {'$in': fixture_ids}}},
@@ -167,6 +283,8 @@ class PlayersViewedAPIView(APIView):
                 team = lineup.get('team') or {}
                 team_id = team.get('id')
                 team_name = team.get('name')
+                if allowed_teams is not None and team_id not in allowed_teams:
+                    continue
                 for player_info in lineup.get('startXI') or []:
                     player = player_info.get('player') or {}
                     player_id = player.get('id')
@@ -184,10 +302,13 @@ class PlayersViewedAPIView(APIView):
                 player_name = assist.get('name')
                 if not (player_id and player_name):
                     continue
-                self._ensure_player_entry(player_matches, player_id, player_name)
+                team = event.get('team') or {}
+                team_id = team.get('id')
+                if allowed_teams is not None and team_id not in allowed_teams:
+                    continue
                 if player_id not in appearance:
-                    team = event.get('team') or {}
-                    appearance[player_id] = (team.get('id'), team.get('name'), False)
+                    self._ensure_player_entry(player_matches, player_id, player_name)
+                    appearance[player_id] = (team_id, team.get('name'), False)
 
             for player_id, (team_id, team_name, started) in appearance.items():
                 entry = player_matches[player_id]

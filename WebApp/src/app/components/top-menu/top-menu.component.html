@@ -1,7 +1,7 @@
 <!--
   Top Menu Bar Component. Includes:
   - Button to go to Home Component
-  - Scrollable nav links (Leagues, Matches, Players)
+  - Scrollable nav links (Leagues, Matches, Players, Teams)
   - User dropdown with Profile, Locations, and Admin options
 -->
 <nav class="top-menu">
@@ -30,6 +30,9 @@
                 </a>
                 <a class="nav-link nav-link--page" routerLink="/app/players" routerLinkActive="active" ariaCurrentWhenActive="page">
                     <span class="nav-text">Players</span>
+                </a>
+                <a class="nav-link nav-link--page" routerLink="/app/teams" routerLinkActive="active" ariaCurrentWhenActive="page">
+                    <span class="nav-text">Teams</span>
                 </a>
               </div>
             </div>

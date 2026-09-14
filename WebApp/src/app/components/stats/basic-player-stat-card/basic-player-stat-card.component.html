@@ -2,6 +2,7 @@
   class="player-card"
   [class.player-card--row]="variant === 'row'"
   [class.player-card--top]="variant === 'row' && rank != null && rank <= 3"
+  [class.player-card--seen]="seen"
   [routerLink]="['/app/player']"
   [queryParams]="{ id: playerId }">
 

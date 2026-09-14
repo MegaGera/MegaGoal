@@ -15,3 +15,11 @@ export interface PlayerViewedStats {
   nationality: string | null;
   nationality_flag: string | null;
 }
+
+export interface PlayersViewedPage {
+  results: PlayerViewedStats[];
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+}
