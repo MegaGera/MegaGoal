@@ -140,6 +140,28 @@ export const createIndexes = async () => {
     const usersCollection = db.collection('users');
     await usersCollection.createIndex({ username: 1 }, { background: true, unique: true });
     console.log('✓ users indexes created');
+
+    // ==================== onze_plays Collection ====================
+    const onzePlaysCollection = db.collection('onze_plays');
+    await onzePlaysCollection.createIndex({ client_id: 1 }, { background: true, unique: true });
+    await onzePlaysCollection.createIndex({ 'user.username': 1, created_at: -1 }, { background: true });
+    await onzePlaysCollection.createIndex(
+      { 'user.username': 1, 'fixture.id': 1, created_at: -1 },
+      { background: true }
+    );
+    await onzePlaysCollection.createIndex(
+      { 'user.username': 1, game: 1, created_at: -1 },
+      { background: true }
+    );
+    await onzePlaysCollection.createIndex(
+      { 'user.username': 1, game: 1, 'fixture.id': 1, 'result.total_points': -1 },
+      { background: true }
+    );
+    await onzePlaysCollection.createIndex(
+      { 'user.username': 1, 'result.total_points': -1, created_at: -1 },
+      { background: true }
+    );
+    console.log('✓ onze_plays indexes created');
     
     console.log('✓ All database indexes created successfully');
     
@@ -168,6 +190,7 @@ export const ensureIndexes = async () => {
     const matchesCollection = db.collection('matches');
     const usersCollection = db.collection('users');
     const countriesCollection = db.collection('countries');
+    const onzePlaysCollection = db.collection('onze_plays');
     
     // Get existing indexes
     const existingRealMatchesIndexes = await realMatchesCollection.indexes();
@@ -175,6 +198,7 @@ export const ensureIndexes = async () => {
     const existingMatchesIndexes = await matchesCollection.indexes();
     const existingUsersIndexes = await usersCollection.indexes();
     const existingCountriesIndexes = await countriesCollection.indexes();
+    const existingOnzePlaysIndexes = await onzePlaysCollection.indexes();
     
     const getIndexKey = (index) => {
       const key = index.key || {};
@@ -300,6 +324,26 @@ export const ensureIndexes = async () => {
           unique: idxSpec.unique || false
         });
         console.log(`  Created index: users.${keyString}`);
+      }
+    }
+
+    const onzePlaysIndexes = [
+      { key: { client_id: 1 }, unique: true },
+      { key: { 'user.username': 1, created_at: -1 } },
+      { key: { 'user.username': 1, 'fixture.id': 1, created_at: -1 } },
+      { key: { 'user.username': 1, game: 1, created_at: -1 } },
+      { key: { 'user.username': 1, game: 1, 'fixture.id': 1, 'result.total_points': -1 } },
+      { key: { 'user.username': 1, 'result.total_points': -1, created_at: -1 } },
+    ];
+
+    for (const idxSpec of onzePlaysIndexes) {
+      const keyString = JSON.stringify(idxSpec.key);
+      if (!indexExists(existingOnzePlaysIndexes, keyString)) {
+        await onzePlaysCollection.createIndex(idxSpec.key, {
+          background: true,
+          unique: idxSpec.unique || false
+        });
+        console.log(`  Created index: onze_plays.${keyString}`);
       }
     }
     
