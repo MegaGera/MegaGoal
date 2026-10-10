@@ -59,6 +59,7 @@ export class AdminLeaguesComponent {
   isUpdateLineupsMissingLoading: boolean = false;
   isUpdateEventsMissingLoading: boolean = false;
   isUpdateStandingsLoading: boolean = false;
+  isUpdateSquadsLoading: boolean = false;
   isMultiUpdateLoading: boolean = false;
   
   multiUpdateOptions = {
@@ -473,6 +474,20 @@ export class AdminLeaguesComponent {
         this.getLeaguesSettings();
       },
       error: () => { this.isUpdatePlayersLoading = false; }
+    });
+  }
+
+  /** Uses league current season from league_settings (not the data-update season selector). */
+  triggerSquadsUpdate(): void {
+    if (!this.selectedLeague) return;
+    this.isUpdateSquadsLoading = true;
+    this.updater.updateLeagueSquads(this.selectedLeague.league_id).subscribe({
+      next: () => {
+        this.isUpdateSquadsLoading = false;
+      },
+      error: () => {
+        this.isUpdateSquadsLoading = false;
+      }
     });
   }
 

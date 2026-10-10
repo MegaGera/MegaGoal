@@ -1,15 +1,19 @@
 <a
   class="player-card"
   [class.player-card--row]="variant === 'row'"
-  [class.player-card--top]="variant === 'row' && rank != null && rank <= 3"
+  [class.player-card--top]="variant === 'row' && showTopRankAccent"
+  [class.player-card--stats-inline]="variant === 'row' && statsInlineOnMobile"
   [class.player-card--seen]="seen"
   [routerLink]="['/app/player']"
   [queryParams]="{ id: playerId }">
 
   @if (variant === 'row') {
-    @if (rank != null) {
-      <div class="player-card__rank" [attr.data-rank]="rank">
-        <span class="player-card__rank-num">{{ rank }}</span>
+    @if (showRank) {
+      <div
+        class="player-card__rank"
+        [class.player-card__rank--wide]="rankDisplay != null"
+        [attr.data-rank]="accentTopRanks ? rank : null">
+        <span class="player-card__rank-num">{{ rankLabel }}</span>
       </div>
     }
 
@@ -63,16 +67,16 @@
     }
 
     <div class="player-card__trailing">
-      @if (matchesWatched != null || goals != null || assists != null) {
+      @if (showStatBadges) {
         <div class="player-card__stat-badges">
-          @if (matchesWatched != null) {
-            <app-player-stat-badge icon="👁️" [value]="matchesWatched"></app-player-stat-badge>
+          @if (showMatchesBadge) {
+            <app-player-stat-badge icon="👁️" [value]="matchesWatched!"></app-player-stat-badge>
           }
-          @if (goals != null) {
-            <app-player-stat-badge icon="⚽" [value]="goals"></app-player-stat-badge>
+          @if (showGoalsBadge) {
+            <app-player-stat-badge icon="⚽" [value]="goals!"></app-player-stat-badge>
           }
-          @if (assists != null) {
-            <app-player-stat-badge icon="🎯" [value]="assists"></app-player-stat-badge>
+          @if (showAssistsBadge) {
+            <app-player-stat-badge icon="🎯" [value]="assists!"></app-player-stat-badge>
           }
         </div>
       } @else if (badges.length) {

@@ -7,6 +7,20 @@ const seasonTeamSchema = z.object({
   season: z.string()
 });
 
+const squadPlayerSchema = z.object({
+  id: z.number().int(),
+  name: z.string().nullable().optional(),
+  age: z.number().int().nullable().optional(),
+  number: z.number().int().nullable().optional(),
+  position: z.string().nullable().optional(),
+  photo: z.string().nullable().optional()
+});
+
+const squadSchema = z.object({
+  players: z.array(squadPlayerSchema),
+  last_update: z.date().nullable().optional()
+});
+
 const teamInfoSchema = z.object({
   id: z.number().int(),
   name: z.string(),
@@ -31,7 +45,8 @@ const venueInfoSchema = z.object({
 const teamSchema = z.object({
   team: teamInfoSchema,
   venue: venueInfoSchema,
-  seasons: z.array(seasonTeamSchema)
+  seasons: z.array(seasonTeamSchema),
+  squad: squadSchema.optional()
 });
 
 const domesticLeagueBundleSchema = z.object({

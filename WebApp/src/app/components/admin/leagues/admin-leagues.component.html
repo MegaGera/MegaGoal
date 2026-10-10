@@ -307,17 +307,34 @@
           <!-- Update Sections (Collapsible) -->
           @if (showUpdateSections) {
             <!-- Update Season Section -->
-          <div class="modal-section">
-            <label for="season-selector">Current Season</label>
-            <select id="season-selector" [(ngModel)]="selectedSeason">
-              <option *ngFor="let s of shortSeasonsList" [value]="s">{{s}}</option>
-            </select>
-            <button 
-              (click)="triggerUpdateSeason()"
-              [disabled]="selectedSeason === selectedLeague?.season || isUpdateSeasonLoading"
-              class="modal-action-btn">
-              {{ isUpdateSeasonLoading ? 'Updating...' : 'Update' }}
-            </button>
+          <div class="modal-section current-season-update-section">
+            <div class="current-season-update-container">
+              <h3 class="current-season-update-title">Current Season</h3>
+              <div class="current-season-update-actions">
+                <select id="season-selector" [(ngModel)]="selectedSeason">
+                  <option *ngFor="let s of shortSeasonsList" [value]="s">{{s}}</option>
+                </select>
+                <button
+                  (click)="triggerUpdateSeason()"
+                  [disabled]="selectedSeason === selectedLeague?.season || isUpdateSeasonLoading"
+                  class="modal-action-btn current-season-btn">
+                  {{ isUpdateSeasonLoading ? 'Updating...' : 'Update' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current-season squads (always uses league.season from settings) -->
+          <div class="modal-section squads-update-section">
+            <div class="squads-update-container">
+              <h3 class="squads-update-title">Current Squads</h3>
+              <button
+                (click)="triggerSquadsUpdate()"
+                [disabled]="isUpdateSquadsLoading || selectedLeague?.season == null"
+                class="modal-action-btn squads-btn">
+                {{ isUpdateSquadsLoading ? 'Updating...' : 'Update Squads' }}
+              </button>
+            </div>
           </div>
 
           <!-- Data Updates Section -->

@@ -183,6 +183,18 @@ export class UpdaterService {
   }
 
   /**
+   * Update current squads for all Mongo teams of the league's current season.
+   * Season is resolved server-side from league_settings.
+   */
+  updateLeagueSquads(league_id: number): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_league_squads/',
+      { league_id },
+      this.options
+    );
+  }
+
+  /**
    * Update lineups for a league and season
    */
   updateLeagueLineups(league_id: number, season: number): Observable<any> {

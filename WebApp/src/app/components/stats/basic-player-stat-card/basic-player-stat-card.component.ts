@@ -26,8 +26,14 @@ export class BasicPlayerStatCardComponent {
   @Input() badges: Array<{ icon: string; value: number | string }> = [];
   /** `tile` = compact grid card; `row` = full-width list row (players page). */
   @Input() variant: 'tile' | 'row' = 'tile';
-  /** Optional ranking position for list rows (1-based). */
+  /** Optional ranking position for list rows (1-based), or shirt number. */
   @Input() rank: number | null = null;
+  /** Override rank label (e.g. `#10`). Falls back to `rank`. */
+  @Input() rankDisplay: string | null = null;
+  /** When false, shirt/low numbers are not styled as top-3 ranks. */
+  @Input() accentTopRanks = true;
+  /** Keep watched/goals/assists on the same row on mobile (no wrap below). */
+  @Input() statsInlineOnMobile = false;
   /** Watched appearances — used for row metrics when set. */
   @Input() matchesWatched: number | null = null;
   @Input() goals: number | null = null;
@@ -47,6 +53,37 @@ export class BasicPlayerStatCardComponent {
 
   get topTeams(): PlayerViewedTeam[] {
     return (this.teams ?? []).slice(0, 3);
+  }
+
+  get showRank(): boolean {
+    return this.rankDisplay != null || this.rank != null;
+  }
+
+  get rankLabel(): string {
+    if (this.rankDisplay != null) {
+      return this.rankDisplay;
+    }
+    return this.rank != null ? String(this.rank) : '';
+  }
+
+  get showTopRankAccent(): boolean {
+    return this.accentTopRanks && this.rank != null && this.rank <= 3;
+  }
+
+  get showMatchesBadge(): boolean {
+    return this.matchesWatched != null && this.matchesWatched > 0;
+  }
+
+  get showGoalsBadge(): boolean {
+    return this.goals != null && this.goals > 0;
+  }
+
+  get showAssistsBadge(): boolean {
+    return this.assists != null && this.assists > 0;
+  }
+
+  get showStatBadges(): boolean {
+    return this.showMatchesBadge || this.showGoalsBadge || this.showAssistsBadge;
   }
 
   onImageError(): void {

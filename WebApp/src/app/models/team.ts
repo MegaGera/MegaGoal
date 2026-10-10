@@ -32,11 +32,27 @@ export interface DomesticLeague {
     }
 }
 
+/** Current squad snapshot from API-Football /players/squads (stored on team docs). */
+export interface SquadPlayer {
+    id: number,
+    name?: string | null,
+    age?: number | null,
+    number?: number | null,
+    position?: string | null,
+    photo?: string | null
+}
+
+export interface TeamSquad {
+    players: SquadPlayer[],
+    last_update?: Date | string | null
+}
+
 export interface Team {
     team: team,
     venue: venue,
     seasons: SeasonTeam[],
-    domestic_league?: DomesticLeague | null
+    domestic_league?: DomesticLeague | null,
+    squad?: TeamSquad
 }
 
 interface team {

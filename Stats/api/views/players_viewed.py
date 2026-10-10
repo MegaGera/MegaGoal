@@ -22,6 +22,8 @@ class PlayersViewedAPIView(APIView):
     Includes top watched clubs for each player and nationality from `players`.
     Paginated via `page` / `limit` query params.
     Optional `search` / `q` filters by player name before pagination.
+    Optional `player_ids` (comma-separated ints) keeps only those players after ranking
+    (general watched stats across all clubs; does not restrict match query by team).
     """
 
     def get(self, request, *args, **kwargs):
@@ -40,6 +42,7 @@ class PlayersViewedAPIView(APIView):
             or request.query_params.get('q')
             or ''
         ).strip()
+        player_ids_filter = self._parse_player_ids(request)
         page, limit = self._parse_pagination(request)
 
         if username is None:
@@ -116,10 +119,38 @@ class PlayersViewedAPIView(APIView):
         )
         if search:
             players = self._filter_players_by_search(players, search)
+        if player_ids_filter is not None:
+            players = self._filter_players_by_ids(players, player_ids_filter)
         return Response(
             self._paginate_players(players, page, limit),
             status=status.HTTP_200_OK,
         )
+
+    def _parse_player_ids(self, request):
+        """Parse optional comma-separated player_ids. None = no filter; [] = empty filter."""
+        raw = request.query_params.get('player_ids')
+        if raw is None or str(raw).strip() == '':
+            return None
+        ids = []
+        seen = set()
+        for part in str(raw).split(','):
+            part = part.strip()
+            if not part:
+                continue
+            try:
+                player_id = int(part)
+            except (TypeError, ValueError):
+                continue
+            if player_id in seen:
+                continue
+            seen.add(player_id)
+            ids.append(player_id)
+        return ids
+
+    @staticmethod
+    def _filter_players_by_ids(players, player_ids):
+        wanted = set(player_ids)
+        return [p for p in players if p.get('player_id') in wanted]
 
     def _parse_pagination(self, request):
         try:

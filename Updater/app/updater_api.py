@@ -6,6 +6,7 @@ import httpx
 import logging
 from .utils import MatchUpdater
 from .players import PlayersUpdater
+from .squads import SquadsUpdater
 from .lineups import LineupsUpdater
 from .events import EventsUpdater
 from .statistics import StatisticsUpdater
@@ -104,6 +105,9 @@ class UpdatePlayerTeamsRequest(BaseModel):
 class UpdateLeaguePlayersRequest(BaseModel):
     league_id: int
     season: int
+
+class UpdateLeagueSquadsRequest(BaseModel):
+    league_id: int
 
 class UpdateLeagueLineupsRequest(BaseModel):
     league_id: int
@@ -339,6 +343,16 @@ async def update_league_players(req: UpdateLeaguePlayersRequest, request: Reques
             "message": f"Updated {player_count} players for league {req.league_id}, season {req.season}",
             "players_count": player_count
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_league_squads/")
+async def update_league_squads(req: UpdateLeagueSquadsRequest, request: Request):
+    """Update current squads for all Mongo teams of the league's current season."""
+    await validate_admin(request)
+    updater = SquadsUpdater()
+    try:
+        return updater.update_squads_by_league(req.league_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

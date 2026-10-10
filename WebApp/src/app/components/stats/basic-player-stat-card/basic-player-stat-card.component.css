@@ -187,6 +187,14 @@
   justify-content: center;
 }
 
+.player-card__rank--wide {
+  width: 2.45rem;
+}
+
+.player-card--row:has(.player-card__rank--wide) {
+  padding-left: 3.25rem;
+}
+
 .player-card__rank-num {
   font-size: 0.95rem;
   font-weight: 800;
@@ -421,6 +429,32 @@
     padding-left: calc(48px + 0.5rem);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .player-card--row.player-card--stats-inline {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .player-card--row.player-card--stats-inline .player-card__trailing {
+    flex: 0 1 auto;
+    max-width: 48%;
+    margin-left: auto;
+    padding-left: 0;
+    justify-content: flex-end;
+  }
+
+  .player-card--row.player-card--stats-inline .player-card__details {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .player-card--row:has(.player-card__rank--wide) {
+    padding-left: 2.55rem;
+  }
+
+  .player-card__rank--wide {
+    width: 2rem;
   }
 
   .player-card__stat-badges {

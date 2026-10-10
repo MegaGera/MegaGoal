@@ -11,8 +11,9 @@ import { MatSelectModule } from '@angular/material/select'
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
-import { Team } from '../../models/team';
+import { SquadPlayer, Team } from '../../models/team';
 import { RealMatch } from '../../models/realMatch';
+import { PlayerViewedStats } from '../../models/playerViewedStats';
 
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
 import { MatchParserService } from '../../services/match-parser.service';
@@ -125,7 +126,14 @@ export class TeamComponent implements OnInit, OnDestroy {
   insightsLoaded: boolean = false;
   yourMatchesLoaded: boolean = false;
   allMatchesLoaded: boolean = false;
-  viewMode: 'insights' | 'yourMatches' | 'allMatches' = 'insights';
+  viewMode: 'insights' | 'yourMatches' | 'allMatches' | 'squad' = 'insights';
+
+  /** Watched general stats keyed by player id (squad tab). */
+  squadStatsByPlayerId = new Map<number, PlayerViewedStats>();
+  squadStatsLoaded = false;
+  private squadStatsRequestId = 0;
+  /** Squad list order (default: most watched first). */
+  squadSort: 'watched' | 'number' | 'position' | 'goals' | 'assists' = 'watched';
 
   readonly skeletonMatchSlots = [1, 2, 3, 4, 5, 6];
   readonly skeletonInsightCardSlots = [1, 2, 3, 4];
@@ -180,6 +188,102 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   get isTeamMatchesView(): boolean {
     return this.viewMode === 'yourMatches' || this.viewMode === 'allMatches';
+  }
+
+  get hasSquad(): boolean {
+    return (this.team?.squad?.players?.length ?? 0) > 0;
+  }
+
+  /** Squad players ordered by {@link squadSort}. */
+  get sortedSquadPlayers(): SquadPlayer[] {
+    const players = this.team?.squad?.players ?? [];
+    return [...players].sort((a, b) => this.compareSquadPlayers(a, b));
+  }
+
+  onSquadSortChange(sort: 'watched' | 'number' | 'position' | 'goals' | 'assists'): void {
+    this.squadSort = sort;
+  }
+
+  squadShirtLabel(player: SquadPlayer): string | null {
+    if (player.number == null || Number.isNaN(Number(player.number))) {
+      return null;
+    }
+    return `#${player.number}`;
+  }
+
+  private compareSquadPlayers(a: SquadPlayer, b: SquadPlayer): number {
+    switch (this.squadSort) {
+      case 'number':
+        return this.compareSquadNumber(a, b) || this.compareSquadName(a, b);
+      case 'position':
+        return (
+          this.squadPositionSortKey(a.position) - this.squadPositionSortKey(b.position) ||
+          this.compareSquadNumber(a, b) ||
+          this.compareSquadName(a, b)
+        );
+      case 'goals':
+        return (
+          this.squadStatValue(b.id, 'goals') - this.squadStatValue(a.id, 'goals') ||
+          this.compareSquadNumber(a, b) ||
+          this.compareSquadName(a, b)
+        );
+      case 'assists':
+        return (
+          this.squadStatValue(b.id, 'assists') - this.squadStatValue(a.id, 'assists') ||
+          this.compareSquadNumber(a, b) ||
+          this.compareSquadName(a, b)
+        );
+      case 'watched':
+      default:
+        return (
+          this.squadStatValue(b.id, 'matches') - this.squadStatValue(a.id, 'matches') ||
+          this.compareSquadNumber(a, b) ||
+          this.compareSquadName(a, b)
+        );
+    }
+  }
+
+  private squadStatValue(
+    playerId: number,
+    field: 'matches' | 'goals' | 'assists'
+  ): number {
+    return this.squadStatsByPlayerId.get(playerId)?.[field] ?? 0;
+  }
+
+  private compareSquadNumber(a: SquadPlayer, b: SquadPlayer): number {
+    const aNum = a.number;
+    const bNum = b.number;
+    const aMissing = aNum == null || Number.isNaN(Number(aNum));
+    const bMissing = bNum == null || Number.isNaN(Number(bNum));
+    if (aMissing && bMissing) return 0;
+    if (aMissing) return 1;
+    if (bMissing) return -1;
+    return Number(aNum) - Number(bNum);
+  }
+
+  private compareSquadName(a: SquadPlayer, b: SquadPlayer): number {
+    return (a.name ?? '').localeCompare(b.name ?? '');
+  }
+
+  /** Goalkeepers → defenders → midfielders → forwards/attackers → other. */
+  private squadPositionSortKey(position: string | null | undefined): number {
+    const p = (position ?? '').trim().toLowerCase();
+    if (!p) return 4;
+    if (p.includes('goalkeeper') || p === 'gk' || p === 'g') return 0;
+    if (p.includes('defender') || p === 'df' || p === 'def' || p === 'd') return 1;
+    if (p.includes('midfielder') || p === 'mf' || p === 'mid' || p === 'm') return 2;
+    if (
+      p.includes('attacker') ||
+      p.includes('forward') ||
+      p.includes('striker') ||
+      p === 'fw' ||
+      p === 'att' ||
+      p === 'f' ||
+      p === 'a'
+    ) {
+      return 3;
+    }
+    return 4;
   }
 
   get statsAppliedMatchesCount(): number {
@@ -248,7 +352,12 @@ export class TeamComponent implements OnInit, OnDestroy {
           this.resetFiltersToDefaults();
           // Only restore view mode if present
           const viewMode = params.get('view');
-          if (viewMode === 'yourMatches' || viewMode === 'allMatches' || viewMode === 'insights') {
+          if (
+            viewMode === 'yourMatches' ||
+            viewMode === 'allMatches' ||
+            viewMode === 'insights' ||
+            viewMode === 'squad'
+          ) {
             this.viewMode = viewMode;
           } else {
             this.viewMode = 'insights';
@@ -257,7 +366,15 @@ export class TeamComponent implements OnInit, OnDestroy {
         this.init(hasViewParam);
       } else {
         // Same team - restore state from query params (e.g., when navigating back or changing filters)
+        const previousView = this.viewMode;
         this.restoreStateFromQueryParams(params);
+        if (this.viewMode === 'squad' && (previousView !== 'squad' || !this.squadStatsLoaded)) {
+          if (this.hasSquad) {
+            this.loadSquadStats();
+          } else {
+            this.viewMode = 'insights';
+          }
+        }
       }
     });
 
@@ -285,11 +402,17 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.megagoal.getTeamById(this.queryTeamId).subscribe(result => {
       if (result != undefined) {
         this.team = result;
+        if (this.viewMode === 'squad' && !this.hasSquad) {
+          this.viewMode = 'insights';
+        }
         this.initializeSeasons();
         this.getRealMatches();
         this.getLocations();
         this.syncDefaultViewToUrlAfterWatchedLoad = !hasViewParam;
         this.loadAllWatchedMatches();
+        if (this.viewMode === 'squad') {
+          this.loadSquadStats();
+        }
         
         // Log page visit with team information
         this.megagoal.logPageVisit('team', {
@@ -573,9 +696,17 @@ export class TeamComponent implements OnInit, OnDestroy {
     }
   }
 
-  setView(mode: 'insights' | 'yourMatches' | 'allMatches'): void {
+  setView(mode: 'insights' | 'yourMatches' | 'allMatches' | 'squad'): void {
+    if (mode === 'squad' && !this.hasSquad) {
+      return;
+    }
     this.viewMode = mode;
     this.updateQueryParams();
+
+    if (mode === 'squad') {
+      this.loadSquadStats();
+      return;
+    }
 
     if (mode !== 'allMatches') {
       const seasonChanged = this.ensureFilterSeasonValidForStats();
@@ -597,6 +728,57 @@ export class TeamComponent implements OnInit, OnDestroy {
     ) {
       this.fetchFavouriteTeamStats();
     }
+  }
+
+  loadSquadStats(): void {
+    if (!this.hasSquad) {
+      this.squadStatsByPlayerId = new Map();
+      this.squadStatsLoaded = true;
+      return;
+    }
+
+    const playerIds = (this.team?.squad?.players ?? [])
+      .map((p) => p.id)
+      .filter((id): id is number => id != null);
+    if (playerIds.length === 0) {
+      this.squadStatsByPlayerId = new Map();
+      this.squadStatsLoaded = true;
+      return;
+    }
+
+    const requestId = ++this.squadStatsRequestId;
+    this.squadStatsLoaded = false;
+    // General watched stats: all competitions/seasons, no team filter; restrict by squad ids.
+    this.statsService
+      .getPlayersViewed(0, [], 0, '', undefined, undefined, 1, 100, '', playerIds)
+      .subscribe({
+        next: (page) => {
+          if (requestId !== this.squadStatsRequestId) {
+            return;
+          }
+          const map = new Map<number, PlayerViewedStats>();
+          for (const row of page?.results ?? []) {
+            map.set(row.player_id, row);
+          }
+          this.squadStatsByPlayerId = map;
+          this.squadStatsLoaded = true;
+        },
+        error: () => {
+          if (requestId !== this.squadStatsRequestId) {
+            return;
+          }
+          this.squadStatsByPlayerId = new Map();
+          this.squadStatsLoaded = true;
+        },
+      });
+  }
+
+  squadPlayerStats(playerId: number): PlayerViewedStats | undefined {
+    return this.squadStatsByPlayerId.get(playerId);
+  }
+
+  trackBySquadPlayerId(_index: number, player: SquadPlayer): number {
+    return player.id;
   }
 
   setMatchView(mode: 'lastPlayed' | 'nextMatches'): void {
@@ -1372,7 +1554,11 @@ export class TeamComponent implements OnInit, OnDestroy {
   }
 
   get showFavouriteTeamColumn(): boolean {
-    return this.viewMode !== 'allMatches';
+    return this.viewMode !== 'allMatches' && this.viewMode !== 'squad';
+  }
+
+  get showTeamFiltersColumn(): boolean {
+    return this.viewMode !== 'squad';
   }
 
   get showFavouriteTeamCard(): boolean {
@@ -1470,7 +1656,12 @@ export class TeamComponent implements OnInit, OnDestroy {
   private restoreStateFromQueryParams(params: any): void {
     // Restore view mode (default to 'insights' if not specified)
     const viewMode = params.get('view');
-    if (viewMode === 'yourMatches' || viewMode === 'allMatches' || viewMode === 'insights') {
+    if (
+      viewMode === 'yourMatches' ||
+      viewMode === 'allMatches' ||
+      viewMode === 'insights' ||
+      viewMode === 'squad'
+    ) {
       this.viewMode = viewMode;
     } else {
       // Default to insights if no view parameter

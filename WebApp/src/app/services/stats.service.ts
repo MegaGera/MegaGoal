@@ -106,6 +106,7 @@ export class StatsService {
     Players ranked by watched appearances (startXI or sub), same filters as teams-viewed.
     Paginated: returns one page of results plus total count.
     Optional `search` filters by player name before pagination.
+    Optional `playerIds` keeps only those players (general watched stats; not a team filter).
   */
   getPlayersViewed(
     teamSelection: number,
@@ -116,7 +117,8 @@ export class StatsService {
     teamsAgainst?: number[],
     page: number = 1,
     limit: number = 10,
-    search: string = ''
+    search: string = '',
+    playerIds?: number[]
   ): Observable<PlayersViewedPage> {
     let params = new HttpParams()
       .set('team_selection', teamSelection)
@@ -131,6 +133,9 @@ export class StatsService {
     const trimmedSearch = search.trim();
     if (trimmedSearch) {
       params = params.set('search', trimmedSearch);
+    }
+    if (playerIds && playerIds.length > 0) {
+      params = params.set('player_ids', playerIds.join(','));
     }
     params = this.withTeamsParams(params, teams, teamsAgainst);
 
