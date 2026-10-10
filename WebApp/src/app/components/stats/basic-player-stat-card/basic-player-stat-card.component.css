@@ -119,7 +119,8 @@
     var(--player-surface);
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
   transform: none;
-  overflow: hidden;
+  /* visible so badge shadows are not clipped at the card edge */
+  overflow: visible;
 }
 
 .player-card--row::before {
@@ -338,10 +339,18 @@
 
 .player-card__stat-badges {
   display: flex;
+  flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
   gap: 0.4rem;
   flex-shrink: 0;
+}
+
+.player-card__stat-badges-pair {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .player-card__badges--row {
@@ -421,14 +430,13 @@
   .player-card__trailing {
     flex: 1 0 100%;
     flex-direction: row;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: flex-start;
     gap: 0.45rem;
     margin-left: 0;
-    padding-left: calc(48px + 0.5rem);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    padding: 6px 4px 8px calc(48px + 0.5rem);
+    overflow: visible;
   }
 
   .player-card--row.player-card--stats-inline {
@@ -440,8 +448,14 @@
     flex: 0 1 auto;
     max-width: 48%;
     margin-left: auto;
-    padding-left: 0;
+    padding: 4px 2px;
     justify-content: flex-end;
+    overflow: visible;
+  }
+
+  .player-card--row.player-card--stats-inline .player-card__stat-badges,
+  .player-card--row.player-card--stats-inline .player-card__stat-badges-pair {
+    overflow: visible;
   }
 
   .player-card--row.player-card--stats-inline .player-card__details {
@@ -458,6 +472,13 @@
   }
 
   .player-card__stat-badges {
+    gap: 0.3rem;
+  }
+
+  /* Stack watched above goals/assists only on mobile when all three show */
+  .player-card__stat-badges--stacked {
+    flex-direction: column;
+    align-items: flex-end;
     gap: 0.3rem;
   }
 

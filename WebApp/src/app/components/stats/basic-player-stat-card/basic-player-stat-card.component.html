@@ -68,15 +68,21 @@
 
     <div class="player-card__trailing">
       @if (showStatBadges) {
-        <div class="player-card__stat-badges">
+        <div
+          class="player-card__stat-badges"
+          [class.player-card__stat-badges--stacked]="stackStatBadges">
           @if (showMatchesBadge) {
             <app-player-stat-badge icon="👁️" [value]="matchesWatched!"></app-player-stat-badge>
           }
-          @if (showGoalsBadge) {
-            <app-player-stat-badge icon="⚽" [value]="goals!"></app-player-stat-badge>
-          }
-          @if (showAssistsBadge) {
-            <app-player-stat-badge icon="🎯" [value]="assists!"></app-player-stat-badge>
+          @if (showGoalsOrAssistsBadge) {
+            <div class="player-card__stat-badges-pair">
+              @if (showGoalsBadge) {
+                <app-player-stat-badge icon="⚽" [value]="goals!"></app-player-stat-badge>
+              }
+              @if (showAssistsBadge) {
+                <app-player-stat-badge icon="🎯" [value]="assists!"></app-player-stat-badge>
+              }
+            </div>
           }
         </div>
       } @else if (badges.length) {

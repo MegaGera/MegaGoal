@@ -86,6 +86,15 @@ export class BasicPlayerStatCardComponent {
     return this.showMatchesBadge || this.showGoalsBadge || this.showAssistsBadge;
   }
 
+  /** All three metrics present → watched on its own row above goals/assists. */
+  get stackStatBadges(): boolean {
+    return this.showMatchesBadge && this.showGoalsBadge && this.showAssistsBadge;
+  }
+
+  get showGoalsOrAssistsBadge(): boolean {
+    return this.showGoalsBadge || this.showAssistsBadge;
+  }
+
   onImageError(): void {
     this.imageFailed = true;
   }
