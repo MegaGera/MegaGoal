@@ -38,7 +38,6 @@
 
 .team-image {
   object-fit: contain;
-  border-radius: 50%;
 }
 
 /* League Image */
@@ -48,7 +47,6 @@
 
 .league-image {
   object-fit: contain;
-  border-radius: 4px;
 }
 
 .stat-number {

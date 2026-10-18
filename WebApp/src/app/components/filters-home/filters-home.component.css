@@ -199,16 +199,18 @@
 }
 
 .toggle-button {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   background: none;
   border: none;
   color: #64748b;
   font-size: 12px;
   font-weight: 500;
+  line-height: 1;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px 8px;
   border-radius: 4px;
   transition: all 0.2s ease;
 }
@@ -220,6 +222,15 @@
 
 .toggle-button ng-icon {
   --ng-icon__size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.toggle-button ng-icon svg {
+  display: block;
 }
 
 /* Filter Chips */
@@ -660,13 +671,52 @@
   background: transparent;
 }
 
+.filter-selects {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.filter-selects-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.filter-select--season {
+  flex: 0 0 calc(40% - 4px);
+  width: calc(40% - 4px);
+  min-width: 0;
+}
+
+.filter-select--location {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.filter-select--order {
+  width: 50%;
+  min-width: 0;
+}
+
+.filter-select .section-title {
+  padding-left: calc(1.5px + 6px);
+}
+
+.filter-select .season-select {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* Season Section */
 .season-select {
-  padding: 8px 18px;
+  padding: 8px 18px 8px 6px;
   border-radius: 8px;
   border: 1.5px solid #e5e7eb;
   background: #f8fafc;
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 500;
   color: #1e293b;
   transition: border 0.2s, box-shadow 0.2s;
@@ -685,6 +735,20 @@
 
 .season-select:hover {
   border-color: #dc143c;
+}
+
+@media (min-width: 769px) {
+  .season-select {
+    appearance: none;
+    padding: 8px 22px 8px 6px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.25L6 7.75L9.5 4.25' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 10px 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 /* Responsive Design */
@@ -737,6 +801,10 @@
   }
 
   .filter-section {
+    margin-bottom: 20px;
+  }
+
+  .filter-selects {
     margin-bottom: 20px;
   }
 
@@ -798,12 +866,19 @@
 }
 
 /* Reset Filters Button */
+.filter-section--reset {
+  display: flex;
+  justify-content: center;
+}
+
 .reset-filters-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
   background: linear-gradient(135deg, #dc143c, #ff6b6b);
   color: white;
   border: none;

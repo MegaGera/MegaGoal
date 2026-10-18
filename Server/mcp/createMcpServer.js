@@ -73,7 +73,7 @@ export function createMcpServer() {
     name: 'MegaGoal Server MCP',
     version: '0.0.1',
     instructions:
-      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (and location UUID / fixture); search_watched_matches_by_names / count_watched_matches_by_names with optional ids (fixture ids array) or team_name, optional team_2_name (head-to-head when both set), league_name, country_name, optional location_name (substring on user `locations.name`, resolves to matches.location UUID), seasons, optional date_from/date_to (date takes precedence over seasons when provided), optional events array of { player_name?, event } (omit player_name for fixture-wide event presence). If ids is provided, other filters are ignored. Writes: mutate_watched_matches_by_names: mark inserts from real_matches (POST /match shape); optional location_name sets matches.location when a user location matches, otherwise the row is still created without location; unmark uses fixture filters only (location_name ignored, no bulk delete by location). To change a watched match location: unmark then mark again with the new location_name. Real matches (`real_matches`, no location_name): get_real_matches / count_real_matches_by_names with optional ids or the same team/league/country/date/events filters; if ids is provided, other filters are ignored; get_real_matches_full up to 20 full documents. getLiveMatches for today UTC day with live flags. player_played_watched_matches / player_played_watched_stats for single-player watched data. player_played_real_matches / player_played_real_stats for single-player real-match data. analyze_watched_player_events for reusable multi-player + multi-event analytics on watched fixtures. analyze_real_player_events for the same analytics patterns on global real_matches.',
+      'Tools for MegaGoal football data. Use list_leagues for competitions (id, name, country); search_teams / list_teams_by_league_or_country for clubs. Watched matches (user-marked in `matches`): get_watched_matches / count_watched_matches by numeric ids (team_id, season, league_id, location UUID, fixture_id) and optional date_from/date_to; search_watched_matches_by_names / count_watched_matches_by_names with optional ids (fixture ids array) or team_name, optional team_2_name (head-to-head when both set), league_name, country_name, optional location_name (substring on user `locations.name`, resolves to matches.location UUID), seasons, optional date_from/date_to (date takes precedence over seasons when provided), optional events array of { player_name?, event } (omit player_name for fixture-wide event presence). If ids is provided, other filters are ignored. Writes: mutate_watched_matches_by_names: mark inserts from real_matches (POST /match shape); optional location_name sets matches.location when a user location matches, otherwise the row is still created without location; unmark uses fixture filters only (location_name ignored, no bulk delete by location). To change a watched match location: unmark then mark again with the new location_name. Real matches (`real_matches`, no location_name): get_real_matches / count_real_matches_by_names with optional ids or the same team/league/country/date/events filters; if ids is provided, other filters are ignored; get_real_matches_full up to 20 full documents. getLiveMatches for today UTC day with live flags. player_played_watched_matches / player_played_watched_stats for single-player watched data. player_played_real_matches / player_played_real_stats for single-player real-match data. analyze_watched_player_events for reusable multi-player + multi-event analytics on watched fixtures. analyze_real_player_events for the same analytics patterns on global real_matches.',
     authenticate: async (request) => resolveAuth(request),
   });
 
@@ -81,13 +81,15 @@ export function createMcpServer() {
     name: 'get_watched_matches',
     title: 'Get watched matches',
     description:
-      'Returns watched matches for the authenticated MegaGoal user from the matches collection. Optional filters mirror GET /match: team_id, season, league_id, location, fixture_id. User identity comes from MCP auth (see X-MegaGoal-Username when using MCP_API_KEY). For filters by club or competition name (not ids), use search_watched_matches_by_names. Documents omit statistics and player_stats (large aggregates); other fields such as lineups and events are included when stored on the row.',
+      'Returns watched matches for the authenticated MegaGoal user from the matches collection. Optional filters mirror GET /match: team_id, season, league_id, location, fixture_id, date_from, date_to (ISO date or date-time; filters fixture.timestamp). User identity comes from MCP auth (see X-MegaGoal-Username when using MCP_API_KEY). For filters by club or competition name (not ids), use search_watched_matches_by_names. Documents omit statistics and player_stats (large aggregates); other fields such as lineups and events are included when stored on the row. GET /match light=true (fixture_id and location only) is REST-only; this tool always returns match documents.',
     parameters: z.object({
       team_id: z.coerce.number().int().optional(),
       season: z.coerce.number().int().optional(),
       league_id: z.coerce.number().int().optional(),
       location: z.string().optional(),
       fixture_id: z.coerce.number().int().optional(),
+      date_from: z.string().optional(),
+      date_to: z.string().optional(),
     }),
     annotations: {
       readOnlyHint: true,
@@ -111,6 +113,8 @@ export function createMcpServer() {
         league_id: args.league_id,
         location: args.location,
         fixture_id: args.fixture_id,
+        date_from: args.date_from,
+        date_to: args.date_to,
       });
 
       return JSON.stringify(
@@ -128,13 +132,15 @@ export function createMcpServer() {
     name: 'count_watched_matches',
     title: 'Count watched matches',
     description:
-      'Returns how many watched matches match the filters for the authenticated user. Same optional filters as get_watched_matches (team_id, season, league_id, location, fixture_id). Use this instead of get_watched_matches when you only need the total count. For counts by team/league/country names, use count_watched_matches_by_names.',
+      'Returns how many watched matches match the filters for the authenticated user. Same optional filters as get_watched_matches (team_id, season, league_id, location, fixture_id, date_from, date_to). Use this instead of get_watched_matches when you only need the total count. For counts by team/league/country names, use count_watched_matches_by_names.',
     parameters: z.object({
       team_id: z.coerce.number().int().optional(),
       season: z.coerce.number().int().optional(),
       league_id: z.coerce.number().int().optional(),
       location: z.string().optional(),
       fixture_id: z.coerce.number().int().optional(),
+      date_from: z.string().optional(),
+      date_to: z.string().optional(),
     }),
     annotations: {
       readOnlyHint: true,
@@ -157,6 +163,8 @@ export function createMcpServer() {
         league_id: args.league_id,
         location: args.location,
         fixture_id: args.fixture_id,
+        date_from: args.date_from,
+        date_to: args.date_to,
       });
 
       return JSON.stringify({ count }, null, 2);

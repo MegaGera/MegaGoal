@@ -5,7 +5,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { League, TeamsViewedStats } from '../models/league';
-import { Match, MatchEngagementAggregate, MatchReaction, MatchUserPicks } from '../models/match';
+import { Match, MatchEngagementAggregate, MatchReaction, MatchUserPicks, WatchedMatchRef } from '../models/match';
 import { Team, shortTeam } from '../models/team';
 import { Location } from '../models/location';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -296,6 +296,18 @@ export class MegaGoalService {
   */
   getMatches(): Observable<Match[]> {
     return this.http.get<Match[]>(this.url + '/match', { ...this.options });
+  }
+
+  /**
+   * Watched fixtures in a UTC date range, ids and location only (`GET /match?light=true`).
+   * Date-only values use the UTC day bounds on the server.
+   */
+  getWatchedMatchRefs(dateFrom: string, dateTo: string): Observable<WatchedMatchRef[]> {
+    const params = new HttpParams()
+      .set('date_from', dateFrom)
+      .set('date_to', dateTo)
+      .set('light', 'true');
+    return this.http.get<WatchedMatchRef[]>(this.url + '/match', { ...this.options, params });
   }
   
   /*

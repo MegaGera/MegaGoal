@@ -273,58 +273,59 @@
       </div>
     }
 
-    <!-- Season select form -->
-    <div class="filter-section">
-      <h5 class="section-title">Season</h5>
-      <select 
-        class="season-select" 
-        [(ngModel)]="filterSeasonSelected" 
-        (change)="changeFilterSeasonSelected(filterSeasonSelected)">
-        @for (season of seasons; track $index) {
-          <option [ngValue]="season">{{season.text}}</option>
+    <div class="filter-selects">
+      <div class="filter-selects-row">
+        <div class="filter-select filter-select--season">
+          <h5 class="section-title">Season</h5>
+          <select
+            class="season-select"
+            [(ngModel)]="filterSeasonSelected"
+            (change)="changeFilterSeasonSelected(filterSeasonSelected)">
+            @for (season of seasons; track $index) {
+              <option [ngValue]="season">{{season.text}}</option>
+            }
+          </select>
+        </div>
+
+        @if (showLocations) {
+          <div class="filter-select filter-select--location">
+            <h5 class="section-title">Location</h5>
+            <select
+              class="season-select"
+              [(ngModel)]="filterLocationSelected"
+              (change)="changeFilterLocationSelected(filterLocationSelected)">
+              <option value="">All locations</option>
+              @for (location of locations; track location.id) {
+                <option [value]="location.id">
+                  @if (location.stadium) {
+                    🏟️
+                  }
+                  {{location.name}}
+                </option>
+              }
+            </select>
+          </div>
         }
-      </select>
+      </div>
+
+      @if (showOrder) {
+        <div class="filter-select filter-select--order">
+          <h5 class="section-title">Order</h5>
+          <select
+            class="season-select"
+            [(ngModel)]="filterOrder"
+            (change)="changeFilterOrder(filterOrder)">
+            <option value="date_desc">Newest First</option>
+            <option value="date_asc">Oldest First</option>
+            <option value="goals_desc">Most Goals</option>
+            <option value="goals_asc">Least Goals</option>
+          </select>
+        </div>
+      }
     </div>
 
-    <!-- Location select form -->
-    @if (showLocations) {
-      <div class="filter-section">
-        <h5 class="section-title">Location</h5>
-        <select 
-          class="season-select" 
-          [(ngModel)]="filterLocationSelected" 
-          (change)="changeFilterLocationSelected(filterLocationSelected)">
-          <option value="">All locations</option>
-          @for (location of locations; track location.id) {
-            <option [value]="location.id">
-              @if (location.stadium) {
-                🏟️
-              }
-              {{location.name}}
-            </option>
-          }
-        </select>
-      </div>
-    }
-
-    <!-- Order select form -->
-    @if (showOrder) {
-      <div class="filter-section">
-        <h5 class="section-title">Order</h5>
-        <select 
-          class="season-select" 
-          [(ngModel)]="filterOrder" 
-          (change)="changeFilterOrder(filterOrder)">
-          <option value="date_desc">Newest First</option>
-          <option value="date_asc">Oldest First</option>
-          <option value="goals_desc">Most Goals</option>
-          <option value="goals_asc">Least Goals</option>
-        </select>
-      </div>
-    }
-
     <!-- Reset Filters Button -->
-    <div class="filter-section">
+    <div class="filter-section filter-section--reset">
       <button class="reset-filters-btn" (click)="resetFilters()">
         <ng-icon name="jamSettingsAlt" size="1rem"></ng-icon>
         Reset Filters

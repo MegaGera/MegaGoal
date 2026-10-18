@@ -237,15 +237,17 @@ These tools query watched matches directly with numeric filters. They are useful
 ### `get_watched_matches`
 
 - Purpose: returns watched match rows for the authenticated user.
-- Filters (all optional): `team_id`, `season`, `league_id`, `location`, `fixture_id`.
+- Filters (all optional): `team_id`, `season`, `league_id`, `location`, `fixture_id`, `date_from`, `date_to`.
+- `date_from` / `date_to`: ISO date (`YYYY-MM-DD`, UTC day bounds) or ISO date-time. Filters `fixture.timestamp`. `date_from` must be <= `date_to`.
 - Returns: `{ count, matches[] }`.
 - Each row omits `statistics` and `player_stats`; other stored fields (e.g. lineups, events) are included when present.
+- REST `GET /match?light=true` returns only `{ fixture_id, location }` per row. This tool always returns match documents.
 - Use when: you need watched-match payloads and already have ids.
 
 ### `count_watched_matches`
 
 - Purpose: returns only how many watched matches match the same id-based filters.
-- Filters (all optional): `team_id`, `season`, `league_id`, `location`, `fixture_id`.
+- Filters (all optional): `team_id`, `season`, `league_id`, `location`, `fixture_id`, `date_from`, `date_to` (same timestamp rules as `get_watched_matches`).
 - Returns: `{ count }`.
 - Use when: you only need totals (faster/lighter than fetching match rows).
 

@@ -99,3 +99,9 @@ export interface Match {
     /** Global users who marked this fixture as watched; present only when requested (e.g. home list). */
     watched_count?: number
 }
+
+/** `GET /match?light=true`: fixture id and saved location only. */
+export interface WatchedMatchRef {
+    fixture_id: number,
+    location: string | null
+}

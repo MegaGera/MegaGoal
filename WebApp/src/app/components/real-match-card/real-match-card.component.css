@@ -481,6 +481,27 @@
 	background: rgba(118, 75, 162, 1);
 }
 
+@media only screen and (max-width: 768px) {
+	.match-info-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		line-height: 0;
+		padding: 5px;
+	}
+
+	.match-info-button ng-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		line-height: 0;
+	}
+
+	.match-info-button ng-icon svg {
+		display: block;
+	}
+}
+
 /* Middle column must shrink so long location labels do not widen the card */
 .matchCard .row.h-100 > .col-4:nth-child(2) {
 	min-width: 0;

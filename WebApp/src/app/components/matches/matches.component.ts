@@ -21,7 +21,7 @@ import { Location } from '../../models/location';
 import { League, LeagueStats } from '../../models/league';
 import { UserMe } from '../../models/userMe';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
-import { FINISHED_STATUSES } from '../../config/matchStatus';
+import { FINISHED_STATUSES, isNotStartedStatus } from '../../config/matchStatus';
 
 @Component({
   selector: 'app-matches',
@@ -51,10 +51,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
   matches: RealMatch[] = [];
   groupedMatches: { [key: string]: RealMatch[] } = {};
   leagueOrder: string[] = [];
+  leagueRows: string[][] = [];
   favouriteGroupedMatches: { [key: string]: RealMatch[] } = {};
   favouriteLeagueOrder: string[] = [];
+  favouriteLeagueRows: string[][] = [];
   locations: Location[] = [];
-  watchedMatches: Match[] = [];
+  /** Fixture id → saved location for the selected day (`GET /match?light=true`). */
+  private watchedByFixture = new Map<number, string | null>();
+  private matchesLoadId = 0;
+  private loadedMatchesDate = '';
   
   // Pagination for matches
   matchesPerPage = 9;
@@ -68,6 +73,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
   // Top leagues for ordering
   topLeagues: League[] = [];
   leagueViewCounts: Map<number, number> = new Map();
+  /** Watched appearances per club (`GET /teams-viewed/`, all competitions). */
+  private teamViewCounts: Map<number, number> = new Map();
   
   // Store original data for live matches toggle
   originalGroupedMatches: { [key: string]: RealMatch[] } = {};
@@ -102,7 +109,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
     }
 
     this.loadLocations();
-    this.loadWatchedMatches();
+    this.loadTeamViewCounts();
     this.checkUrlParameters();
     // Load top leagues first, then get matches (to ensure ordering works)
     this.loadTopLeagues(() => {
@@ -246,10 +253,19 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
   getMatchesForDate(): void {
     this.isLoading = true;
-    
-    this.megaGoalService.getRealMatchesByDate(this.selectedDate, true).subscribe({
+    const date = this.selectedDate;
+    const loadId = ++this.matchesLoadId;
+    this.loadedMatchesDate = '';
+    this.watchedByFixture = new Map();
+    this.loadWatchedMatchRefs(date, loadId);
+
+    this.megaGoalService.getRealMatchesByDate(date, true).subscribe({
       next: (matches: RealMatch[]) => {
+        if (loadId !== this.matchesLoadId) {
+          return;
+        }
         this.matches = matches;
+        this.loadedMatchesDate = date;
         this.groupMatchesByLeague();
         
         // Apply live matches filter if URL parameter indicates it should be active
@@ -271,6 +287,9 @@ export class MatchesComponent implements OnInit, OnDestroy {
         });
       },
       error: (error: any) => {
+        if (loadId !== this.matchesLoadId) {
+          return;
+        }
         console.error('Error fetching matches:', error);
         this.isLoading = false;
       }
@@ -332,9 +351,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
       return viewsB - viewsA;
     });
 
-    // Sort matches within each league by time
     leagueOrder.forEach(leagueKey => {
-      groupedMatches[leagueKey].sort((a, b) => a.fixture.timestamp - b.fixture.timestamp);
+      groupedMatches[leagueKey].sort((a, b) => this.compareMatchesInLeague(a, b));
     });
     
     // Store original data for live matches toggle
@@ -371,11 +389,15 @@ export class MatchesComponent implements OnInit, OnDestroy {
   }
 
   isMatchWatched(fixtureId: number): boolean {
-    return this.watchedMatches.some(match => match.fixture.id === fixtureId);
+    return this.watchedByFixture.has(fixtureId);
   }
 
   findWatchedMatch(fixtureId: number): Match | undefined {
-    return this.watchedMatches.find(match => match.fixture.id === fixtureId);
+    if (!this.watchedByFixture.has(fixtureId)) {
+      return undefined;
+    }
+    const location = this.watchedByFixture.get(fixtureId);
+    return { _id: '', location: location ?? '' } as Match;
   }
 
   loadLocations(): void {
@@ -436,12 +458,102 @@ export class MatchesComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadWatchedMatches(): void {
-    this.megaGoalService.getMatches().subscribe({
-      next: (matches) => {
-        this.watchedMatches = matches;
+  loadTeamViewCounts(): void {
+    this.statsService.getTeamsViewed(0, [], 0).subscribe({
+      next: (rows) => {
+        this.teamViewCounts = new Map(rows.map((row) => [row.team_id, row.count]));
+        if (this.loadedMatchesDate && this.matches.length > 0) {
+          this.groupMatchesByLeague();
+          if (this.showLiveMatches) {
+            this.applyLiveMatchesFilter();
+          }
+        }
       },
       error: (error) => {
+        console.error('Error loading team view counts:', error);
+      }
+    });
+  }
+
+  /**
+   * Inside a league: clubs the user has watched (or this fixture) first, by combined
+   * watch count, with live above the same clubs once they are level. Live matches of
+   * unknown clubs come next. Finished matches of unknown clubs stay last.
+   */
+  private compareMatchesInLeague(a: RealMatch, b: RealMatch): number {
+    const bandA = this.matchInterestBand(a);
+    const bandB = this.matchInterestBand(b);
+    if (bandA !== bandB) {
+      return bandB - bandA;
+    }
+    if (bandA === 2) {
+      const interestA = this.matchTeamInterest(a);
+      const interestB = this.matchTeamInterest(b);
+      if (interestA !== interestB) {
+        return interestB - interestA;
+      }
+    }
+    const phaseA = this.matchPhaseRank(a);
+    const phaseB = this.matchPhaseRank(b);
+    if (phaseA !== phaseB) {
+      return phaseA - phaseB;
+    }
+    return a.fixture.timestamp - b.fixture.timestamp;
+  }
+
+  /** 2 known clubs or a fixture the user marked, 1 live unknown, 0 other unknown. */
+  private matchInterestBand(match: RealMatch): number {
+    if (this.watchedByFixture.has(match.fixture.id) || this.matchTeamInterest(match) > 0) {
+      return 2;
+    }
+    if (this.matchPhaseRank(match) === 0) {
+      return 1;
+    }
+    return 0;
+  }
+
+  private matchTeamInterest(match: RealMatch): number {
+    return this.teamWatchCount(match.teams?.home?.id) + this.teamWatchCount(match.teams?.away?.id);
+  }
+
+  private teamWatchCount(teamId: number | undefined): number {
+    if (teamId == null) {
+      return 0;
+    }
+    return this.teamViewCounts.get(teamId) ?? 0;
+  }
+
+  /** 0 live, 1 not started, 2 finished. Live matches the page's live filter. */
+  private matchPhaseRank(match: RealMatch): number {
+    const status = match.fixture?.status?.short;
+    if ((FINISHED_STATUSES as readonly string[]).includes(status)) {
+      return 2;
+    }
+    const now = Math.floor(Date.now() / 1000);
+    if (!isNotStartedStatus(status) && match.fixture.timestamp <= now) {
+      return 0;
+    }
+    return 1;
+  }
+
+  loadWatchedMatchRefs(date: string, loadId: number): void {
+    this.megaGoalService.getWatchedMatchRefs(date, date).subscribe({
+      next: (refs) => {
+        if (loadId !== this.matchesLoadId) {
+          return;
+        }
+        this.watchedByFixture = new Map(refs.map((ref) => [ref.fixture_id, ref.location]));
+        if (this.loadedMatchesDate === date && this.matches.length > 0) {
+          this.groupMatchesByLeague();
+          if (this.showLiveMatches) {
+            this.applyLiveMatchesFilter();
+          }
+        }
+      },
+      error: (error) => {
+        if (loadId !== this.matchesLoadId) {
+          return;
+        }
         console.error('Error loading watched matches:', error);
       }
     });
@@ -615,7 +727,60 @@ export class MatchesComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.favouriteLeagueRows = this.packLeagueRows(this.favouriteLeagueOrder, this.favouriteGroupedMatches);
+    this.leagueRows = this.packLeagueRows(this.leagueOrder, this.groupedMatches);
     this.initializeDisplayedMatches();
+  }
+
+  /**
+   * Desktop rows of 3 match-slots. A league uses 1 slot per match, up to 3.
+   * Leagues stay in order; a league that does not fit starts the next row.
+   */
+  private packLeagueRows(order: string[], grouped: { [key: string]: RealMatch[] }): string[][] {
+    const rows: string[][] = [];
+    let row: string[] = [];
+    let slots = 0;
+
+    order.forEach((leagueKey) => {
+      const count = grouped[leagueKey]?.length ?? 0;
+      if (count === 0) {
+        return;
+      }
+      const span = this.leagueSlotSpan(count);
+      if (slots > 0 && slots + span > 3) {
+        rows.push(row);
+        row = [];
+        slots = 0;
+      }
+      row.push(leagueKey);
+      slots += span;
+      if (slots >= 3) {
+        rows.push(row);
+        row = [];
+        slots = 0;
+      }
+    });
+
+    if (row.length > 0) {
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  leagueSlotSpan(count: number): number {
+    if (count >= 3) {
+      return 3;
+    }
+    return Math.max(count, 1);
+  }
+
+  leagueSpanClass(leagueKey: string, favourite: boolean): string {
+    const grouped = favourite ? this.favouriteGroupedMatches : this.groupedMatches;
+    return `league-section--span-${this.leagueSlotSpan(grouped[leagueKey]?.length ?? 0)}`;
+  }
+
+  trackLeagueRow(row: string[]): string {
+    return row.join('|');
   }
 
   private isFavouriteTeamMatch(match: RealMatch): boolean {

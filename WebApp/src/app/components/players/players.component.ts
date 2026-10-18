@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { jamClose, jamSearch, jamSettingsAlt } from '@ng-icons/jam-icons';
@@ -21,6 +22,7 @@ import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { MobileFiltersInlineRowComponent } from '../mobile-filters-inline-row/mobile-filters-inline-row.component';
 import { BasicPlayerStatCardComponent } from '../stats/basic-player-stat-card/basic-player-stat-card.component';
 import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
+import { ListFiltersQuery, ListFiltersUrlSync, sameListFilters } from '../../utils/list-filters-query';
 
 @Component({
   selector: 'app-players',
@@ -62,6 +64,8 @@ export class PlayersComponent implements OnInit, OnDestroy {
   stats: { teamsViewed: TeamsViewedStats[] } = { teamsViewed: [] };
   statsLoaded = false;
   leaguesLoaded = false;
+  private locationsReady = false;
+  private teamsAgainstReady = false;
 
   filterPanelChipSelected = 0;
   filterLeagueSelected: number[] = [];
@@ -88,13 +92,30 @@ export class PlayersComponent implements OnInit, OnDestroy {
   private watchedSearchIds = new Set<number>();
 
   private lastStandardFiltersKey = '';
+  private queryParamsSubscription?: Subscription;
+  private filtersUrl: ListFiltersUrlSync;
 
   constructor(
     private megagoal: MegaGoalService,
     public images: ImagesService,
     private changeDetectorRef: ChangeDetectorRef,
     private statsService: StatsService,
-  ) {}
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {
+    this.filtersUrl = new ListFiltersUrlSync(this.router, this.route, false);
+    this.queryParamsSubscription = this.route.queryParamMap.subscribe((params) => {
+      if (this.filtersUrl.isOwnNavigationPending()) return;
+      const incoming = this.filtersUrl.read(params);
+      if (sameListFilters(incoming, this.currentFiltersQuery())) return;
+      this.applyFiltersQuery(incoming);
+      if (this.matchesContextLoaded) {
+        this.teamsAgainstReady = false;
+        this.updateFilteredArrays();
+        this.filterPlayers();
+      }
+    });
+  }
 
   get isPlayerSearchActive(): boolean {
     return this.playerSearchQuery.trim().length >= 2;
@@ -115,7 +136,6 @@ export class PlayersComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateScreenSize();
-    this.filterSeasonSelected = this.seasons[0];
     this.getAllMatchesContext();
     this.getLocations();
     this.getLeaguesStats();
@@ -126,10 +146,38 @@ export class PlayersComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.queryParamsSubscription?.unsubscribe();
     if (this.playerSearchTimer != null) {
       clearTimeout(this.playerSearchTimer);
       this.playerSearchTimer = null;
     }
+  }
+
+  private currentFiltersQuery(): ListFiltersQuery {
+    return {
+      chip: this.filterPanelChipSelected,
+      leagues: this.filterLeagueSelected,
+      teams: this.filterTeamSelected,
+      vs: this.filterTeamAgainstSelected,
+      seasonId: this.filterSeasonSelected?.id ?? 0,
+      location: this.filterLocationSelected,
+      order: 'date_desc',
+    };
+  }
+
+  private applyFiltersQuery(filters: ListFiltersQuery): void {
+    this.filterPanelChipSelected = filters.chip;
+    this.filterLeagueSelected = filters.leagues;
+    this.filterTeamSelected = filters.teams;
+    this.filterTeamAgainstSelected = filters.vs;
+    this.filterLocationSelected = filters.location;
+    const season = this.seasons.find((item) => item.id === filters.seasonId);
+    this.filterSeasonSelected = season ?? { id: filters.seasonId, text: '' };
+    this.teamsAgainstReady = false;
+  }
+
+  private syncFiltersToUrl(): void {
+    this.filtersUrl.write(this.currentFiltersQuery());
   }
 
   onPlayerSearchQueryChange(value: string): void {
@@ -298,9 +346,9 @@ export class PlayersComponent implements OnInit, OnDestroy {
   getAllMatchesContext(): void {
     this.megagoal.getAllMatches(false).subscribe((result) => {
       this.matchesOriginal = result as Match[];
+      this.matchesContextLoaded = true;
       this.populateSeasonsFromMatches();
       this.updateFilteredArrays();
-      this.matchesContextLoaded = true;
       this.refreshStatsPipeline();
       this.changeDetectorRef.detectChanges();
     });
@@ -314,7 +362,9 @@ export class PlayersComponent implements OnInit, OnDestroy {
       text: `${season}-${season + 1}`,
     }));
     this.seasons = [{ id: 0, text: 'All time' }, ...seasonObjects];
-    this.filterSeasonSelected = this.seasons[0];
+    const preferredSeasonId = this.filterSeasonSelected?.id ?? 0;
+    this.filterSeasonSelected =
+      this.seasons.find((season) => season.id === preferredSeasonId) ?? this.seasons[0];
     this.seasonsFiltered = [...this.seasons];
   }
 
@@ -473,19 +523,25 @@ export class PlayersComponent implements OnInit, OnDestroy {
   }
 
   private cleanupInvalidSelections(): void {
-    const availableLeagueIds = this.leaguesFiltered.map((league) => league.league_id);
-    this.filterLeagueSelected = this.filterLeagueSelected.filter((leagueId) =>
-      availableLeagueIds.includes(leagueId),
-    );
-
-    const availableLocationIds = this.locationsFiltered.map((location) => location.id);
-    if (this.filterLocationSelected && !availableLocationIds.includes(this.filterLocationSelected)) {
-      this.filterLocationSelected = '';
+    if (this.leaguesLoaded && this.matchesContextLoaded) {
+      const availableLeagueIds = this.leaguesFiltered.map((league) => league.league_id);
+      this.filterLeagueSelected = this.filterLeagueSelected.filter((leagueId) =>
+        availableLeagueIds.includes(leagueId),
+      );
     }
 
-    const availableSeasonIds = this.seasonsFiltered.map((season) => season.id);
-    if (this.filterSeasonSelected && !availableSeasonIds.includes(this.filterSeasonSelected.id)) {
-      this.filterSeasonSelected = this.seasonsFiltered[0] || this.seasons[0];
+    if (this.locationsReady && this.matchesContextLoaded) {
+      const availableLocationIds = this.locationsFiltered.map((location) => location.id);
+      if (this.filterLocationSelected && !availableLocationIds.includes(this.filterLocationSelected)) {
+        this.filterLocationSelected = '';
+      }
+    }
+
+    if (this.matchesContextLoaded) {
+      const availableSeasonIds = this.seasonsFiltered.map((season) => season.id);
+      if (this.filterSeasonSelected && !availableSeasonIds.includes(this.filterSeasonSelected.id)) {
+        this.filterSeasonSelected = this.seasonsFiltered[0] || this.seasons[0];
+      }
     }
 
     if (this.statsLoaded) {
@@ -495,7 +551,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
       );
     }
 
-    if (this.teamsAgainstLoaded && this.filterTeamSelected.length > 0) {
+    if (this.teamsAgainstReady && this.filterTeamSelected.length > 0) {
       const againstIds = new Set(this.teamsAgainstViewed.map((t) => t.team_id));
       this.filterTeamAgainstSelected = this.filterTeamAgainstSelected.filter((id: number) =>
         againstIds.has(id),
@@ -504,12 +560,21 @@ export class PlayersComponent implements OnInit, OnDestroy {
     if (this.filterTeamSelected.length === 0) {
       this.filterTeamAgainstSelected = [];
     }
+    this.syncFiltersToUrl();
   }
 
   getLocations(): void {
-    this.megagoal.getLocationsCounts().subscribe((result) => {
-      this.locations = result as Location[];
-      this.updateFilteredArrays();
+    this.megagoal.getLocationsCounts().subscribe({
+      next: (result) => {
+        this.locations = result as Location[];
+        this.locationsReady = true;
+        this.updateFilteredArrays();
+      },
+      error: () => {
+        this.locations = [];
+        this.locationsReady = true;
+        this.updateFilteredArrays();
+      },
     });
   }
 
@@ -518,13 +583,14 @@ export class PlayersComponent implements OnInit, OnDestroy {
     this.statsService.getLeaguesViewed().subscribe({
       next: (result) => {
         this.leaguesViewed = result;
-        this.updateFilteredArrays();
         this.leaguesLoaded = true;
+        this.updateFilteredArrays();
         this.changeDetectorRef.detectChanges();
       },
       error: () => {
         this.leaguesViewed = [];
         this.leaguesLoaded = true;
+        this.updateFilteredArrays();
         this.changeDetectorRef.detectChanges();
       },
     });
@@ -590,6 +656,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
           const primary = new Set(this.filterTeamSelected);
           this.teamsAgainstViewed = rows.filter((r) => !primary.has(r.team_id));
           this.teamsAgainstLoaded = true;
+          this.teamsAgainstReady = true;
           this.cleanupInvalidSelections();
           this.updateFilteredArrays();
           this.loadPlayersViewed();
@@ -598,6 +665,7 @@ export class PlayersComponent implements OnInit, OnDestroy {
         error: () => {
           this.teamsAgainstViewed = [];
           this.teamsAgainstLoaded = true;
+          this.teamsAgainstReady = true;
           this.filterTeamAgainstSelected = [];
           this.cleanupInvalidSelections();
           this.updateFilteredArrays();
@@ -678,35 +746,46 @@ export class PlayersComponent implements OnInit, OnDestroy {
 
   changeFilterPanelChipSelected(chip: number): void {
     this.filterPanelChipSelected = chip;
+    this.teamsAgainstReady = false;
     this.filterPlayers();
+    this.syncFiltersToUrl();
   }
 
   changeFilterLeagueSelected(leagues: number[]): void {
     this.filterLeagueSelected = leagues;
+    this.teamsAgainstReady = false;
     this.filterPlayers();
+    this.syncFiltersToUrl();
   }
 
   changeFilterSeasonSelected(season: SeasonInfo): void {
     this.filterSeasonSelected = season;
+    this.teamsAgainstReady = false;
     this.filterPlayers();
+    this.syncFiltersToUrl();
   }
 
   changeFilterLocationSelected(location: string): void {
     this.filterLocationSelected = location;
+    this.teamsAgainstReady = false;
     this.filterPlayers();
+    this.syncFiltersToUrl();
   }
 
   changeFilterTeamSelected(teams: number[]): void {
     this.filterTeamSelected = teams;
+    this.teamsAgainstReady = false;
     if (teams.length === 0) {
       this.filterTeamAgainstSelected = [];
     }
     this.filterPlayers();
+    this.syncFiltersToUrl();
   }
 
   changeFilterTeamAgainstSelected(ids: number[]): void {
     this.filterTeamAgainstSelected = ids;
     this.filterPlayers();
+    this.syncFiltersToUrl();
   }
 
   resetFilters(): void {
@@ -714,9 +793,11 @@ export class PlayersComponent implements OnInit, OnDestroy {
     this.filterLeagueSelected = [];
     this.filterTeamSelected = [];
     this.filterTeamAgainstSelected = [];
+    this.teamsAgainstReady = false;
     this.filterLocationSelected = '';
     this.filterSeasonSelected = this.seasons[0];
     this.filterPlayers();
+    this.syncFiltersToUrl();
   }
 
   trackByPlayerId(_index: number, player: PlayerViewedStats): number {

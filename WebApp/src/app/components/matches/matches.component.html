@@ -130,9 +130,10 @@
             <ng-icon name="jamStarF" class="favourites-section-star" size="22" aria-hidden="true"></ng-icon>
             <h2 class="favourites-section-title">Favourites</h2>
           </div>
-          @for (leagueKey of favouriteLeagueOrder; track leagueKey) {
-            @if (favouriteGroupedMatches[leagueKey].length > 0) {
-              <div class="league-section league-section--favourites">
+          @for (row of favouriteLeagueRows; track trackLeagueRow(row)) {
+            <div class="league-row">
+            @for (leagueKey of row; track leagueKey) {
+              <div class="league-section league-section--favourites" [ngClass]="leagueSpanClass(leagueKey, true)">
                 <div
                   class="league-header league-header--themed"
                   [style.--league-glow-18]="leagueAccentRgba(favouriteGroupedMatches[leagueKey][0].league, 0.18)"
@@ -213,13 +214,15 @@
                 }
               </div>
             }
+            </div>
           }
           </div>
         }
 
-        @for (leagueKey of leagueOrder; track leagueKey) {
-          @if (groupedMatches[leagueKey].length > 0) {
-            <div class="league-section">
+        @for (row of leagueRows; track trackLeagueRow(row)) {
+          <div class="league-row">
+          @for (leagueKey of row; track leagueKey) {
+            <div class="league-section" [ngClass]="leagueSpanClass(leagueKey, false)">
               <div
                 class="league-header league-header--themed"
                 [style.border]="'1px solid ' + leagueMarkBorderColor(groupedMatches[leagueKey][0].league)"
@@ -302,6 +305,7 @@
               }
             </div>
           }
+          </div>
         }
       </div>
     } @else if (favouriteLeagueOrder.length > 0) {
@@ -311,9 +315,10 @@
           <ng-icon name="jamStarF" class="favourites-section-star" size="22" aria-hidden="true"></ng-icon>
           <h2 class="favourites-section-title">Favourite Matches</h2>
         </div>
-        @for (leagueKey of favouriteLeagueOrder; track leagueKey) {
-          @if (favouriteGroupedMatches[leagueKey].length > 0) {
-            <div class="league-section league-section--favourites">
+        @for (row of favouriteLeagueRows; track trackLeagueRow(row)) {
+          <div class="league-row">
+          @for (leagueKey of row; track leagueKey) {
+            <div class="league-section league-section--favourites" [ngClass]="leagueSpanClass(leagueKey, true)">
               <div
                 class="league-header league-header--themed"
                 [style.--league-glow-18]="leagueAccentRgba(favouriteGroupedMatches[leagueKey][0].league, 0.18)"
@@ -394,6 +399,7 @@
               }
             </div>
           }
+          </div>
         }
         </div>
       </div>

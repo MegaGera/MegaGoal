@@ -13,6 +13,7 @@ import {
   parseFixtureId,
   parseMatch,
   parseMatches,
+  parseWatchedMatchesLight,
   parseSetLocationPayload,
   parseSetReactionsPayload,
   parseSetUserPicksPayload,
@@ -34,31 +35,84 @@ import {
 } from '../services/watchedMatchCounts.js';
 import { getMatchEngagementByFixtureId } from '../services/matchEngagementAggregate.js';
 
+function isLightMatchQuery(light) {
+  return light === 'true' || light === '1';
+}
+
+function isDateRangeError(error) {
+  const message = error?.message ?? '';
+  return (
+    message.startsWith('Invalid date_from') ||
+    message.startsWith('Invalid date_to') ||
+    message.startsWith('Invalid date range')
+  );
+}
+
+async function loadWatchedMatches({
+  username,
+  team_id,
+  season,
+  league_id,
+  location,
+  fixture_id,
+  include_watched_counts,
+  date_from,
+  date_to,
+  light,
+}) {
+  const lightMode = isLightMatchQuery(light);
+  let result = await getWatchedMatchesForUser({
+    username,
+    team_id,
+    season,
+    league_id,
+    location,
+    fixture_id,
+    date_from,
+    date_to,
+    light: lightMode,
+  });
+  if (lightMode) {
+    return parseWatchedMatchesLight(result);
+  }
+  if (include_watched_counts === 'true' || include_watched_counts === '1') {
+    const ids = result.map((r) => r.fixture?.id).filter((id) => id != null);
+    const counts = await getWatchedCountsByFixtureIds(ids);
+    result = mergeWatchedCountIntoDocuments(result, counts);
+  }
+  return parseMatches(result);
+}
+
+function sendWatchedMatchesError(res, error) {
+  if (isDateRangeError(error)) {
+    return res.status(400).json({ message: error.message });
+  }
+  return res.status(500).json({ message: error.message });
+}
+
 // Get matches
 const getMatches = async (req, res) => {
   try {
-    let { team_id, season, league_id, location, fixture_id, include_watched_counts } = req.query;
+    let { team_id, season, league_id, location, fixture_id, include_watched_counts, date_from, date_to, light } = req.query;
     let username = req.validateData.username;
 
-    let result = await getWatchedMatchesForUser({
+    const validatedResult = await loadWatchedMatches({
       username,
       team_id,
       season,
       league_id,
       location,
       fixture_id,
+      include_watched_counts,
+      date_from,
+      date_to,
+      light,
     });
-    if (include_watched_counts === 'true' || include_watched_counts === '1') {
-      const ids = result.map((r) => r.fixture?.id).filter((id) => id != null);
-      const counts = await getWatchedCountsByFixtureIds(ids);
-      result = mergeWatchedCountIntoDocuments(result, counts);
-    }
-    const validatedResult = parseMatches(result);
 
     console.log("Matches Getted");
     res.send(validatedResult);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendWatchedMatchesError(res, error);
   }
 }
 
@@ -66,32 +120,30 @@ const getMatches = async (req, res) => {
 const getMatchesByTeamId = async (req, res) => {
   try {
     const parsedTeamId = parseTeamId(req.params.teamId);
-    const { season, league_id, location, fixture_id, include_watched_counts } = req.query;
+    const { season, league_id, location, fixture_id, include_watched_counts, date_from, date_to, light } = req.query;
     const username = req.validateData.username;
 
     if (!parsedTeamId) {
       return res.status(400).json({ message: "Team ID is required" });
     }
 
-    let result = await getWatchedMatchesForUser({
+    const validatedResult = await loadWatchedMatches({
       username,
       team_id: parsedTeamId,
       season,
       league_id,
       location,
       fixture_id,
+      include_watched_counts,
+      date_from,
+      date_to,
+      light,
     });
-    if (include_watched_counts === 'true' || include_watched_counts === '1') {
-      const ids = result.map((r) => r.fixture?.id).filter((id) => id != null);
-      const counts = await getWatchedCountsByFixtureIds(ids);
-      result = mergeWatchedCountIntoDocuments(result, counts);
-    }
-    const validatedResult = parseMatches(result);
 
     console.log(`Matches retrieved for team ${parsedTeamId}`);
     res.send(validatedResult);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendWatchedMatchesError(res, error);
   }
 }
 

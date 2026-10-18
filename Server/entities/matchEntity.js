@@ -141,7 +141,13 @@ const setUserPicksPayloadSchema = z.object({
     )
 });
 
+const watchedMatchLightSchema = z.object({
+  fixture_id: z.number().int(),
+  location: z.string().nullable()
+});
+
 const parseMatches = (documents) => z.array(matchSchema).parse(documents);
+const parseWatchedMatchesLight = (documents) => z.array(watchedMatchLightSchema).parse(documents);
 const parseMatch = (document) => matchSchema.parse(document);
 const parseFixtureId = (fixtureId) => z.coerce.number().int().parse(fixtureId);
 const parseTeamId = (teamId) => z.coerce.number().int().parse(teamId);
@@ -236,6 +242,7 @@ export {
   parseMatchEngagementAggregate,
   parseMatchReactions,
   parseMatches,
+  parseWatchedMatchesLight,
   parseSetLocationPayload,
   parseSetReactionsPayload,
   parseSetUserPicksPayload,

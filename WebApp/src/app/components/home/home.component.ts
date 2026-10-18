@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, NgClass, NgOptimizedImage } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -25,6 +26,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
 import { TeamStatsListComponent } from '../stats/team-stats-list/team-stats-list.component';
 import { HeroSectionComponent } from '../hero-section/hero-section.component';
 import { StatsService } from '../../services/stats.service';
+import { ListFiltersQuery, ListFiltersUrlSync, sameListFilters } from '../../utils/list-filters-query';
 import { FavouriteTeamCardComponent } from '../stats/favourite-team-card/favourite-team-card.component';
 import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { GeneralStatsComponent } from '../stats/general-stats/general-stats.component';
@@ -50,6 +52,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly panelOpenState = signal(false);
 
   private userMeSubscription?: Subscription;
+  private queryParamsSubscription?: Subscription;
+  private filtersUrl: ListFiltersUrlSync;
 
   /* 
     Array of matches
@@ -67,6 +71,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   favouriteTeamStats: FavouriteTeamStats | null = null;
   favouriteTeamLoaded: boolean = false;
   leaguesLoaded: boolean = false;
+  private matchesReady: boolean = false;
+  private locationsReady: boolean = false;
+  /** Opponent list has been fetched for the current primary team selection. */
+  private teamsAgainstReady: boolean = false;
   
   /* User Stats for Hero Section */
   userStats: UserStats | null = null;
@@ -114,8 +122,23 @@ export class HomeComponent implements OnInit, OnDestroy {
     public images: ImagesService, 
     private changeDetectorRef: ChangeDetectorRef,
     private statsService: StatsService,
-    private leagueColorsService: LeagueColorsService
-  ) { }
+    private leagueColorsService: LeagueColorsService,
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {
+    this.filtersUrl = new ListFiltersUrlSync(this.router, this.route, true);
+    this.queryParamsSubscription = this.route.queryParamMap.subscribe((params) => {
+      if (this.filtersUrl.isOwnNavigationPending()) return;
+      const incoming = this.filtersUrl.read(params);
+      if (sameListFilters(incoming, this.currentFiltersQuery())) return;
+      this.applyFiltersQuery(incoming);
+      if (this.matchesReady) {
+        this.teamsAgainstReady = false;
+        this.updateFilteredArrays();
+        this.filterMatches();
+      }
+    });
+  }
 
   setView(mode: 'stats' | 'matches'): void {
     this.viewMode = mode;
@@ -155,7 +178,36 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.queryParamsSubscription?.unsubscribe();
     this.userMeSubscription?.unsubscribe();
+  }
+
+  private currentFiltersQuery(): ListFiltersQuery {
+    return {
+      chip: this.filterPanelChipSelected,
+      leagues: this.filterLeagueSelected,
+      teams: this.filterTeamSelected,
+      vs: this.filterTeamAgainstSelected,
+      seasonId: this.filterSeasonSelected?.id ?? 0,
+      location: this.filterLocationSelected,
+      order: this.filterOrder,
+    };
+  }
+
+  private applyFiltersQuery(filters: ListFiltersQuery): void {
+    this.filterPanelChipSelected = filters.chip;
+    this.filterLeagueSelected = filters.leagues;
+    this.filterTeamSelected = filters.teams;
+    this.filterTeamAgainstSelected = filters.vs;
+    this.filterLocationSelected = filters.location;
+    this.filterOrder = filters.order;
+    const season = this.seasons.find((item) => item.id === filters.seasonId);
+    this.filterSeasonSelected = season ?? { id: filters.seasonId, text: '' };
+    this.teamsAgainstReady = false;
+  }
+
+  private syncFiltersToUrl(): void {
+    this.filtersUrl.write(this.currentFiltersQuery());
   }
 
   /*
@@ -184,6 +236,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.matchesOriginal.sort(function(x, y){
         return y.fixture.timestamp - x.fixture.timestamp;
       })
+      this.matchesReady = true;
       this.populateSeasonsFromMatches();
       this.updateFilteredArrays();
       this.changeDetectorRef.detectChanges();
@@ -213,9 +266,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       {id: 0, text: "All time"},
       ...seasonObjects
     ];
-    
-    // Set the initial selected season to "All time" (first option)
-    this.filterSeasonSelected = this.seasons[0];
+
+    const preferredSeasonId = this.filterSeasonSelected?.id ?? 0;
+    this.filterSeasonSelected = this.seasons.find(season => season.id === preferredSeasonId) ?? this.seasons[0];
     
     // Initialize seasonsFiltered with all seasons
     this.seasonsFiltered = [...this.seasons];
@@ -403,22 +456,26 @@ export class HomeComponent implements OnInit, OnDestroy {
     Remove invalid selections that are no longer available
   */
   private cleanupInvalidSelections() {
-    // Clean up invalid league selections
-    const availableLeagueIds = this.leaguesFiltered.map(league => league.league_id);
-    this.filterLeagueSelected = this.filterLeagueSelected.filter(leagueId => 
-      availableLeagueIds.includes(leagueId)
-    );
-
-    // Clean up invalid location selection
-    const availableLocationIds = this.locationsFiltered.map(location => location.id);
-    if (this.filterLocationSelected && !availableLocationIds.includes(this.filterLocationSelected)) {
-      this.filterLocationSelected = '';
+    // Wait until source lists exist; an early pass would drop a restored selection.
+    if (this.leaguesLoaded && this.matchesReady) {
+      const availableLeagueIds = this.leaguesFiltered.map(league => league.league_id);
+      this.filterLeagueSelected = this.filterLeagueSelected.filter(leagueId => 
+        availableLeagueIds.includes(leagueId)
+      );
     }
 
-    // Clean up invalid season selection
-    const availableSeasonIds = this.seasonsFiltered.map(season => season.id);
-    if (this.filterSeasonSelected && !availableSeasonIds.includes(this.filterSeasonSelected.id)) {
-      this.filterSeasonSelected = this.seasonsFiltered[0] || this.seasons[0];
+    if (this.locationsReady && this.matchesReady) {
+      const availableLocationIds = this.locationsFiltered.map(location => location.id);
+      if (this.filterLocationSelected && !availableLocationIds.includes(this.filterLocationSelected)) {
+        this.filterLocationSelected = '';
+      }
+    }
+
+    if (this.matchesReady) {
+      const availableSeasonIds = this.seasonsFiltered.map(season => season.id);
+      if (this.filterSeasonSelected && !availableSeasonIds.includes(this.filterSeasonSelected.id)) {
+        this.filterSeasonSelected = this.seasonsFiltered[0] || this.seasons[0];
+      }
     }
 
     if (this.statsLoaded) {
@@ -426,7 +483,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.filterTeamSelected = this.filterTeamSelected.filter((id: number) => availableTeamIds.includes(id));
     }
 
-    if (this.teamsAgainstLoaded && this.filterTeamSelected.length > 0) {
+    if (this.teamsAgainstReady && this.filterTeamSelected.length > 0) {
       const againstIds = new Set(this.teamsAgainstViewed.map(t => t.team_id));
       this.filterTeamAgainstSelected = this.filterTeamAgainstSelected.filter((id: number) =>
         againstIds.has(id)
@@ -435,12 +492,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.filterTeamSelected.length === 0) {
       this.filterTeamAgainstSelected = [];
     }
+    this.syncFiltersToUrl();
   }
 
   getLocations() {
-    this.megagoal.getLocationsCounts().subscribe(result => {
-      this.locations = <Location[]>result;
-      this.updateFilteredArrays();
+    this.megagoal.getLocationsCounts().subscribe({
+      next: (result) => {
+        this.locations = <Location[]>result;
+        this.locationsReady = true;
+        this.updateFilteredArrays();
+      },
+      error: () => {
+        this.locations = [];
+        this.locationsReady = true;
+        this.updateFilteredArrays();
+      }
     })
   }
 
@@ -504,6 +570,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         const primary = new Set(this.filterTeamSelected);
         this.teamsAgainstViewed = rows.filter((r) => !primary.has(r.team_id));
         this.teamsAgainstLoaded = true;
+        this.teamsAgainstReady = true;
         this.cleanupInvalidSelections();
         this.updateFilteredArrays();
         this.applyMatchFiltering();
@@ -514,6 +581,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       error: () => {
         this.teamsAgainstViewed = [];
         this.teamsAgainstLoaded = true;
+        this.teamsAgainstReady = true;
         this.filterTeamAgainstSelected = [];
         this.cleanupInvalidSelections();
         this.updateFilteredArrays();
@@ -530,13 +598,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.statsService.getLeaguesViewed().subscribe({
       next: (result) => {
         this.leaguesViewed = result;
-        this.updateFilteredArrays();
         this.leaguesLoaded = true;
+        this.updateFilteredArrays();
         this.changeDetectorRef.detectChanges();
       },
       error: () => {
         this.leaguesViewed = [];
         this.leaguesLoaded = true;
+        this.updateFilteredArrays();
         this.changeDetectorRef.detectChanges();
       }
     })
@@ -679,30 +748,39 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   changeFilterPanelChipSelected(chip: number) {
     this.filterPanelChipSelected = chip;
+    this.teamsAgainstReady = false;
     this.updateFilteredArrays();
     this.filterMatches();
+    this.syncFiltersToUrl();
   }
 
   changeFilterLeagueSelected(leagues: number[]) {
     this.filterLeagueSelected = leagues;
+    this.teamsAgainstReady = false;
     this.updateFilteredArrays();
     this.filterMatches();
+    this.syncFiltersToUrl();
   }
 
   changeFilterSeasonSelected(season: SeasonInfo) {
     this.filterSeasonSelected = season;
+    this.teamsAgainstReady = false;
     this.updateFilteredArrays();
     this.filterMatches();
+    this.syncFiltersToUrl();
   }
 
   changeFilterLocationSelected(location: string) {
     this.filterLocationSelected = location;
+    this.teamsAgainstReady = false;
     this.updateFilteredArrays();
     this.filterMatches();
+    this.syncFiltersToUrl();
   }
 
   changeFilterTeamSelected(teams: number[]) {
     this.filterTeamSelected = teams;
+    this.teamsAgainstReady = false;
     if (teams.length === 0) {
       this.filterTeamAgainstSelected = [];
       this.teamsAgainstViewed = [];
@@ -710,6 +788,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
     this.updateFilteredArrays();
     this.filterMatches();
+    this.syncFiltersToUrl();
   }
 
   changeFilterTeamAgainstSelected(ids: number[]) {
@@ -718,6 +797,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.applyMatchFiltering();
     this.getFavouriteTeamStats();
     this.getGeneralStats();
+    this.syncFiltersToUrl();
   }
 
   changeFilterOrder(order: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc') {
@@ -725,6 +805,41 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Only sort matches, don't recalculate stats since filtered matches are the same
     this.sortMatches();
     this.changeDetectorRef.detectChanges();
+    this.syncFiltersToUrl();
+  }
+
+  /** Date order groups seasons; goal order mixes them, so separators stay off there. */
+  showSeasonSeparator(index: number): boolean {
+    if (this.filterOrder !== 'date_desc' && this.filterOrder !== 'date_asc') {
+      return false;
+    }
+    const current = this.matchesFiltered[index];
+    if (current?.league?.season == null) {
+      return false;
+    }
+    const previous = index > 0
+      ? this.matchesFiltered[index - 1]
+      : this.matchBeforeCurrentPage();
+    if (!previous) {
+      return true;
+    }
+    return previous.league.season !== current.league.season;
+  }
+
+  formatSeasonLabel(season: number): string {
+    return `${season}-${season + 1}`;
+  }
+
+  private matchBeforeCurrentPage(): Match | null {
+    const first = this.matchesFiltered[0];
+    if (!first) {
+      return null;
+    }
+    const index = this.matches.findIndex(match => match._id === first._id);
+    if (index <= 0) {
+      return null;
+    }
+    return this.matches[index - 1];
   }
 
   resetFilters() {
@@ -734,11 +849,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.filterTeamAgainstSelected = [];
     this.teamsAgainstViewed = [];
     this.teamsAgainstLoaded = true;
+    this.teamsAgainstReady = false;
     this.filterSeasonSelected = this.seasons[0]; // All time
     this.filterLocationSelected = ''; // All locations
     this.filterOrder = 'date_desc'; // Reset to descending (newest first)
     this.updateFilteredArrays();
     this.filterMatches();
+    this.syncFiltersToUrl();
   }
 
 }

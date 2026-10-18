@@ -97,7 +97,14 @@
         }
 
         <!-- Iterate the matches filtered array -->
-        @for (match of matchesFiltered; track $index) {
+        @for (match of matchesFiltered; track match._id; let i = $index) {
+          @if (showSeasonSeparator(i)) {
+            <div class="season-separator" role="separator" [attr.aria-label]="'Season ' + formatSeasonLabel(match.league.season)">
+              <span class="season-separator-line" aria-hidden="true"></span>
+              <span class="season-separator-label">{{ formatSeasonLabel(match.league.season) }}</span>
+              <span class="season-separator-line" aria-hidden="true"></span>
+            </div>
+          }
           <div class="matchCardAdapter">
             <app-real-match-card [match]="match" [watched]="true" [locations]="locations" />
           </div>

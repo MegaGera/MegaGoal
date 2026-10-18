@@ -3,6 +3,7 @@
   [class.player-card--row]="variant === 'row'"
   [class.player-card--top]="variant === 'row' && showTopRankAccent"
   [class.player-card--stats-inline]="variant === 'row' && statsInlineOnMobile"
+  [class.player-card--stats-row]="variant === 'row' && singleStatRowOnMobile"
   [class.player-card--seen]="seen"
   [routerLink]="['/app/player']"
   [queryParams]="{ id: playerId }">
@@ -70,7 +71,7 @@
       @if (showStatBadges) {
         <div
           class="player-card__stat-badges"
-          [class.player-card__stat-badges--stacked]="stackStatBadges">
+          [class.player-card__stat-badges--stacked]="stackStatBadges && !singleStatRowOnMobile">
           @if (showMatchesBadge) {
             <app-player-stat-badge icon="👁️" [value]="matchesWatched!"></app-player-stat-badge>
           }

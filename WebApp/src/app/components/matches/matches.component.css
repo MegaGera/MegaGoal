@@ -482,11 +482,63 @@
   gap: 30px;
 }
 
+.league-row {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
 .league-section {
-  margin-bottom: 15px;
+  margin-bottom: 0;
+  min-width: 0;
   transition: all 0.2s ease;
   background: transparent;
   padding: 2px 0;
+}
+
+@media (min-width: 769px) {
+  .league-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    align-items: start;
+  }
+
+  .favourites-section .league-row {
+    gap: 16px;
+  }
+
+  .league-section--span-1 {
+    grid-column: span 1;
+  }
+
+  .league-section--span-2 {
+    grid-column: span 2;
+  }
+
+  .league-section--span-3 {
+    grid-column: span 3;
+  }
+
+  .league-section--span-1 .matches-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .league-section--span-2 .matches-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .league-section--span-1 .league-header-aside,
+  .league-section--span-2 .league-header-aside {
+    flex-shrink: 1;
+    max-width: 46%;
+  }
+
+  .league-section--span-1 .league-country-pill,
+  .league-section--span-2 .league-country-pill {
+    min-width: 0;
+    max-width: 100%;
+  }
 }
 
 .favourites-section {
@@ -524,8 +576,8 @@
   color: #1a1a1a;
 }
 
-.favourites-section .league-section {
-  margin-bottom: 0;
+.favourites-section .league-row {
+  gap: 16px;
 }
 
 .league-header {
@@ -729,6 +781,7 @@
 .match-card-wrapper {
   transition: all 0.2s ease;
   padding: 0 12px;
+  min-width: 0;
 }
 
 .match-card-wrapper:hover {

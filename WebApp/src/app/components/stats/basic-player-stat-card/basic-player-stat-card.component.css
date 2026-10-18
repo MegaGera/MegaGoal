@@ -439,6 +439,14 @@
     overflow: visible;
   }
 
+  .player-card--stats-row .player-card__stat-badges,
+  .player-card--stats-row .player-card__stat-badges-pair {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
   .player-card--row.player-card--stats-inline {
     flex-wrap: nowrap;
     align-items: center;

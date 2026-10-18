@@ -34,6 +34,8 @@ export class BasicPlayerStatCardComponent {
   @Input() accentTopRanks = true;
   /** Keep watched/goals/assists on the same row on mobile (no wrap below). */
   @Input() statsInlineOnMobile = false;
+  /** Mobile list: watched, goals, and assists stay on one row under the player. */
+  @Input() singleStatRowOnMobile = false;
   /** Watched appearances — used for row metrics when set. */
   @Input() matchesWatched: number | null = null;
   @Input() goals: number | null = null;
