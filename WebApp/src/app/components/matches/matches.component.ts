@@ -21,6 +21,7 @@ import { Location } from '../../models/location';
 import { League, LeagueStats } from '../../models/league';
 import { UserMe } from '../../models/userMe';
 import { RealMatchCardComponent } from '../real-match-card/real-match-card.component';
+import { ViewportMountDirective } from '../../directives/viewport-mount.directive';
 import { FINISHED_STATUSES, isNotStartedStatus } from '../../config/matchStatus';
 
 @Component({
@@ -33,7 +34,8 @@ import { FINISHED_STATUSES, isNotStartedStatus } from '../../config/matchStatus'
     MatButtonModule,
     MatIconModule,
     NgIconComponent,
-    RealMatchCardComponent
+    RealMatchCardComponent,
+    ViewportMountDirective
   ],
   templateUrl: './matches.component.html',
   styleUrl: './matches.component.css',
@@ -781,6 +783,13 @@ export class MatchesComponent implements OnInit, OnDestroy {
 
   trackLeagueRow(row: string[]): string {
     return row.join('|');
+  }
+
+  /** Placeholder height for off-screen league bodies before first measure. */
+  leagueBodyEstimate(matchCount: number): number {
+    const cols = typeof window !== 'undefined' && window.innerWidth < 769 ? 1 : 3;
+    const rows = Math.max(1, Math.ceil(Math.max(matchCount, 1) / cols));
+    return rows * 220 + 32;
   }
 
   private isFavouriteTeamMatch(match: RealMatch): boolean {

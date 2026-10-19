@@ -47,4 +47,44 @@ export class AuthService {
   get adminStatusObservable() {
     return this.adminStatus$.asObservable();
   }
+
+  private readonly credentialOptions = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+    withCredentials: true,
+  };
+
+  /** Current MegaAuth session payload (username, email, permissions, …). */
+  getAuthUser(): Observable<{
+    id: string;
+    username: string;
+    email?: string;
+    permissions: unknown[];
+    test?: boolean;
+  }> {
+    return this.http
+      .get<{ message: string; data: {
+        id: string;
+        username: string;
+        email?: string;
+        permissions: unknown[];
+        test?: boolean;
+      } }>(this.url + '/validate', this.credentialOptions)
+      .pipe(map((res) => res.data));
+  }
+
+  changePassword(oldPassword: string, newPassword: string): Observable<{ id: string }> {
+    return this.http.post<{ id: string }>(
+      this.url + '/change-password',
+      { oldPassword, newPassword },
+      this.credentialOptions
+    );
+  }
+
+  changeEmail(email: string): Observable<{ id: string; email: string }> {
+    return this.http.post<{ id: string; email: string }>(
+      this.url + '/change-email',
+      { email },
+      this.credentialOptions
+    );
+  }
 }

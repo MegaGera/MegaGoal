@@ -52,4 +52,21 @@ export class ImagesService {
     return `https://media.api-sports.io/football/players/${id}.png`;
   }
 
+  /**
+   * Profile picture under MegaMedia megagoal/users/...
+   * `path` is relative to megagoal root, e.g. "users/gera.png".
+   */
+  getRouteImageProfile(path: string, updatedOn?: string | Date | null): string {
+    const normalized = path.replace(/^\/+/, '');
+    const base = `${this.url}/${normalized}`;
+    if (!updatedOn) {
+      return base;
+    }
+    const v = new Date(updatedOn).getTime();
+    if (Number.isNaN(v)) {
+      return base;
+    }
+    return `${base}?v=${v}`;
+  }
+
 }

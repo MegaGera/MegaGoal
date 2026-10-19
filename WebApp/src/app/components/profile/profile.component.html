@@ -1,129 +1,354 @@
 <div class="container profile-page">
   <section class="fade-in">
     @if (loading) {
-      <div class="card profile-page-card">
-        <div class="header-section header-section--embedded">
-          <div class="header-row">
-            <div class="header-left">
-              <h1 class="section-title">Profile</h1>
-              <p class="section-description">Your account details and saved favourites</p>
-            </div>
+      <div class="card profile-page-card" aria-busy="true" aria-label="Loading profile">
+        <div class="profile-hero">
+          <div class="profile-hero-banner" aria-hidden="true"></div>
+          <div class="profile-identity">
+            <div class="skeleton-block skeleton-avatar" aria-hidden="true"></div>
+            <div class="skeleton-block skeleton-username" aria-hidden="true"></div>
+            <div class="skeleton-block skeleton-description" aria-hidden="true"></div>
           </div>
         </div>
-        <p class="status-text">Loading profile…</p>
+
+        <div class="profile-body">
+          <section class="profile-panel">
+            <div class="skeleton-block skeleton-label" aria-hidden="true"></div>
+            <div class="skeleton-block skeleton-email" aria-hidden="true"></div>
+          </section>
+
+          <section class="profile-panel">
+            <div class="skeleton-block skeleton-label" aria-hidden="true"></div>
+            <div class="skeleton-favourite-list" aria-hidden="true">
+              <div class="skeleton-block skeleton-favourite-item"></div>
+              <div class="skeleton-block skeleton-favourite-item"></div>
+            </div>
+          </section>
+
+          <section class="profile-panel">
+            <div class="skeleton-block skeleton-label" aria-hidden="true"></div>
+            <div class="skeleton-favourite-list" aria-hidden="true">
+              <div class="skeleton-block skeleton-favourite-item"></div>
+              <div class="skeleton-block skeleton-favourite-item"></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="profile-password-row">
+          <div class="skeleton-block skeleton-button" aria-hidden="true"></div>
+        </div>
       </div>
     } @else if (loadFailed) {
-      <div class="card profile-page-card">
-        <div class="header-section header-section--embedded">
-          <div class="header-row">
-            <div class="header-left">
-              <h1 class="section-title">Profile</h1>
-              <p class="section-description">Your account details and saved favourites</p>
+      <div class="card profile-page-card profile-page-card--error">
+        <div class="profile-hero">
+          <div class="profile-hero-banner" aria-hidden="true"></div>
+          <div class="profile-identity">
+            <div class="profile-avatar profile-avatar--placeholder" aria-hidden="true">
+              <span class="profile-avatar-disk">
+                <svg class="profile-avatar-fallback" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 12c4.42 0 8 2.24 8 5v1H4v-1c0-2.76 3.58-5 8-5Z" />
+                </svg>
+              </span>
             </div>
+            <h1 class="profile-username-title">Profile</h1>
           </div>
         </div>
         <p class="status-text error">Could not load your profile. Try again later.</p>
       </div>
     } @else if (user) {
       <div class="card profile-page-card">
-        <div class="header-section header-section--embedded">
-          <div class="header-row">
-            <div class="header-left">
-              <h1 class="section-title">Profile</h1>
-              <p class="section-description">Your account details and saved favourites</p>
-            </div>
+        <div class="profile-hero">
+          <div class="profile-hero-banner" aria-hidden="true"></div>
+          <div class="profile-identity">
+            <input
+              #profilePictureInput
+              type="file"
+              class="profile-avatar-input"
+              accept="image/png,image/jpeg,image/webp"
+              [disabled]="profilePictureUploading"
+              (change)="onProfilePictureSelected($event)"
+            >
+            <button
+              type="button"
+              class="profile-avatar"
+              [class.profile-avatar--placeholder]="!profilePictureUrl"
+              [class.profile-avatar--uploading]="profilePictureUploading"
+              [disabled]="profilePictureUploading"
+              aria-label="Upload profile picture"
+              (click)="onAvatarClick(profilePictureInput)"
+            >
+              <span class="profile-avatar-disk">
+                @if (profilePictureUrl) {
+                  <img
+                    class="profile-avatar-image"
+                    [src]="profilePictureUrl"
+                    [alt]="user.username + ' profile picture'"
+                  >
+                } @else {
+                  <svg class="profile-avatar-fallback" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 12c4.42 0 8 2.24 8 5v1H4v-1c0-2.76 3.58-5 8-5Z" />
+                  </svg>
+                }
+                @if (profilePictureUploading) {
+                  <span class="profile-avatar-spinner" aria-hidden="true"></span>
+                }
+              </span>
+              @if (!profilePictureUploading) {
+                <span class="profile-avatar-hint" aria-hidden="true">
+                  <ng-icon name="jamPencil" size="16"></ng-icon>
+                </span>
+              }
+            </button>
+            @if (profilePictureError) {
+              <p class="profile-avatar-error">{{ profilePictureError }}</p>
+            }
+            <h1 class="profile-username-title">{{ user.username }}</h1>
+            <p class="profile-subtitle">Your account details and saved favourites</p>
           </div>
         </div>
 
         <div class="profile-body">
-          <h2 class="profile-field-label">Username</h2>
-          <p class="profile-username">{{ user.username }}</p>
-
-          <h2 class="profile-field-label favourites-heading">Favourite teams</h2>
-          @if (favouriteTeams.length === 0) {
-            <p class="empty-hint">No favourite teams yet. Add them from a team page.</p>
-          } @else {
-            <ul class="favourite-list">
-              @for (t of favouriteTeams; track t.id) {
-                <li class="favourite-item" [class.favourite-item--inactive]="!t.isFavourite">
-                  <a
-                    class="favourite-item-main favourite-link"
-                    [routerLink]="['/app/team']"
-                    [queryParams]="{ id: t.id }"
-                    [attr.aria-label]="'Open ' + t.name + ' team page'">
-                    <img
-                      class="favourite-logo"
-                      [src]="images.getRouteImageTeam(t.id)"
-                      [alt]="t.name + ' logo'">
-                    <span class="favourite-name">{{ t.name }}</span>
-                  </a>
+          @if (hasEmail) {
+            <section class="profile-panel">
+              <h2 class="profile-field-label">Email</h2>
+              @if (!editingEmail) {
+                <div class="profile-email-row">
+                  <p class="profile-email">{{ email }}</p>
                   <button
                     type="button"
-                    class="favourite-toggle"
-                    [class.favourite-toggle--active]="t.isFavourite"
-                    [disabled]="t.pending"
-                    [attr.aria-label]="
-                      t.isFavourite
-                        ? 'Remove ' + t.name + ' from your favourite teams'
-                        : 'Mark ' + t.name + ' as favourite team'
-                    "
-                    (click)="toggleFavouriteTeam(t)">
-                    <ng-icon [name]="t.isFavourite ? 'jamStarF' : 'jamStar'" size="18" aria-hidden="true"></ng-icon>
+                    class="email-action-btn"
+                    aria-label="Edit email"
+                    (click)="startEditEmail()"
+                  >
+                    <ng-icon name="jamPencil" size="18" aria-hidden="true"></ng-icon>
                   </button>
-                </li>
+                </div>
+              } @else {
+                <div class="profile-email-edit">
+                  <input
+                    id="profile-email-input"
+                    type="email"
+                    name="email"
+                    autocomplete="email"
+                    class="profile-email-input"
+                    [(ngModel)]="emailDraft"
+                    [disabled]="emailSubmitting"
+                    (keydown.enter)="$event.preventDefault(); saveEmail()"
+                    (keydown.escape)="cancelEditEmail()"
+                  >
+                  <div class="profile-email-edit-actions">
+                    <button
+                      type="button"
+                      class="email-action-btn email-action-btn--save"
+                      aria-label="Save email"
+                      [disabled]="emailSubmitting"
+                      (click)="saveEmail()"
+                    >
+                      @if (emailSubmitting) {
+                        <span class="email-spinner" aria-hidden="true"></span>
+                      } @else {
+                        <ng-icon name="jamCheck" size="18" aria-hidden="true"></ng-icon>
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      class="email-action-btn"
+                      aria-label="Cancel email edit"
+                      [disabled]="emailSubmitting"
+                      (click)="cancelEditEmail()"
+                    >
+                      <ng-icon name="jamClose" size="18" aria-hidden="true"></ng-icon>
+                    </button>
+                  </div>
+                </div>
+                @if (emailError) {
+                  <p class="email-message email-message--error">{{ emailError }}</p>
+                }
               }
-            </ul>
+            </section>
           }
 
-          <h2 class="profile-field-label favourites-heading">Favourite leagues</h2>
-          @if (favouriteLeagues.length === 0) {
-            <p class="empty-hint">No favourite leagues yet. Add them from a league page.</p>
-          } @else {
-            <ul class="favourite-list">
-              @for (l of favouriteLeagues; track l.id) {
-                <li class="favourite-item" [class.favourite-item--inactive]="!l.isFavourite">
-                  <a
-                    class="favourite-item-main favourite-link"
-                    [routerLink]="['/app/leagues', l.id]"
-                    [attr.aria-label]="'Open ' + l.name + ' league page'">
-                    <img
-                      class="favourite-logo"
-                      [src]="images.getRouteImageLeagueSm(l.id)"
-                      [alt]="l.name + ' logo'">
-                    <span class="favourite-name">{{ l.name }}</span>
-                  </a>
-                  <button
-                    type="button"
-                    class="favourite-toggle"
-                    [class.favourite-toggle--active]="l.isFavourite"
-                    [disabled]="l.pending"
-                    [attr.aria-label]="
-                      l.isFavourite
-                        ? 'Remove ' + l.name + ' from your favourite leagues'
-                        : 'Mark ' + l.name + ' as favourite league'
-                    "
-                    (click)="toggleFavouriteLeague(l)">
-                    <ng-icon [name]="l.isFavourite ? 'jamStarF' : 'jamStar'" size="18" aria-hidden="true"></ng-icon>
-                  </button>
-                </li>
-              }
-            </ul>
-          }
+          <section class="profile-panel">
+            <h2 class="profile-field-label">Favourite teams</h2>
+            @if (favouriteTeams.length === 0) {
+              <p class="empty-hint">No favourite teams yet. Add them from a team page.</p>
+            } @else {
+              <ul class="favourite-list">
+                @for (t of favouriteTeams; track t.id) {
+                  <li class="favourite-item" [class.favourite-item--inactive]="!t.isFavourite">
+                    <a
+                      class="favourite-item-main favourite-link"
+                      [routerLink]="['/app/team']"
+                      [queryParams]="{ id: t.id }"
+                      [attr.aria-label]="'Open ' + t.name + ' team page'">
+                      <img
+                        class="favourite-logo"
+                        [src]="images.getRouteImageTeam(t.id)"
+                        [alt]="t.name + ' logo'">
+                      <span class="favourite-name">{{ t.name }}</span>
+                    </a>
+                    <button
+                      type="button"
+                      class="favourite-toggle"
+                      [class.favourite-toggle--active]="t.isFavourite"
+                      [disabled]="t.pending"
+                      [attr.aria-label]="
+                        t.isFavourite
+                          ? 'Remove ' + t.name + ' from your favourite teams'
+                          : 'Mark ' + t.name + ' as favourite team'
+                      "
+                      (click)="toggleFavouriteTeam(t)">
+                      <ng-icon [name]="t.isFavourite ? 'jamStarF' : 'jamStar'" size="18" aria-hidden="true"></ng-icon>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+
+          <section class="profile-panel">
+            <h2 class="profile-field-label">Favourite leagues</h2>
+            @if (favouriteLeagues.length === 0) {
+              <p class="empty-hint">No favourite leagues yet. Add them from a league page.</p>
+            } @else {
+              <ul class="favourite-list">
+                @for (l of favouriteLeagues; track l.id) {
+                  <li class="favourite-item" [class.favourite-item--inactive]="!l.isFavourite">
+                    <a
+                      class="favourite-item-main favourite-link"
+                      [routerLink]="['/app/leagues', l.id]"
+                      [attr.aria-label]="'Open ' + l.name + ' league page'">
+                      <img
+                        class="favourite-logo"
+                        [src]="images.getRouteImageLeagueSm(l.id)"
+                        [alt]="l.name + ' logo'">
+                      <span class="favourite-name">{{ l.name }}</span>
+                    </a>
+                    <button
+                      type="button"
+                      class="favourite-toggle"
+                      [class.favourite-toggle--active]="l.isFavourite"
+                      [disabled]="l.pending"
+                      [attr.aria-label]="
+                        l.isFavourite
+                          ? 'Remove ' + l.name + ' from your favourite leagues'
+                          : 'Mark ' + l.name + ' as favourite league'
+                      "
+                      (click)="toggleFavouriteLeague(l)">
+                      <ng-icon [name]="l.isFavourite ? 'jamStarF' : 'jamStar'" size="18" aria-hidden="true"></ng-icon>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
         </div>
 
         <div class="profile-password-row">
-          <a
-            class="btn btn-primary megaauth-link"
-            [href]="megaAuthProfileUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Change password, opens MegaAuth in a new tab"
+          <button
+            type="button"
+            class="btn btn-primary"
+            aria-label="Change password"
+            (click)="openPasswordModal()"
           >
-            <span>Change password</span>
-            <ng-icon name="jamArrowSquareUpRight" size="20" class="external-icon" aria-hidden="true"></ng-icon>
-          </a>
+            Change password
+          </button>
         </div>
       </div>
     }
   </section>
 </div>
+
+@if (showPasswordModal) {
+  <div class="modal-overlay" (click)="closePasswordModal()">
+    <div
+      class="modal-content password-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="password-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="modal-header">
+        <h2 id="password-modal-title" class="modal-title">Change password</h2>
+        <button
+          type="button"
+          class="modal-close"
+          aria-label="Close"
+          [disabled]="passwordSubmitting"
+          (click)="closePasswordModal()"
+        >
+          <ng-icon name="jamClose" size="24" aria-hidden="true"></ng-icon>
+        </button>
+      </div>
+
+      <form class="modal-body" (ngSubmit)="submitPasswordChange()">
+        <div class="form-group">
+          <label for="change-password-old">Current password</label>
+          <input
+            id="change-password-old"
+            type="password"
+            name="oldPassword"
+            autocomplete="current-password"
+            [(ngModel)]="oldPassword"
+            [disabled]="passwordSubmitting"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="change-password-new">New password</label>
+          <input
+            id="change-password-new"
+            type="password"
+            name="newPassword"
+            autocomplete="new-password"
+            [(ngModel)]="newPassword"
+            [disabled]="passwordSubmitting"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="change-password-confirm">Confirm new password</label>
+          <input
+            id="change-password-confirm"
+            type="password"
+            name="confirmPassword"
+            autocomplete="new-password"
+            [(ngModel)]="confirmPassword"
+            [disabled]="passwordSubmitting"
+            required
+          >
+        </div>
+
+        @if (passwordError) {
+          <p class="password-message password-message--error">{{ passwordError }}</p>
+        }
+        @if (passwordSuccess) {
+          <p class="password-message password-message--success">{{ passwordSuccess }}</p>
+        }
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            [disabled]="passwordSubmitting"
+            (click)="closePasswordModal()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="passwordSubmitting"
+          >
+            @if (passwordSubmitting) {
+              <span class="btn-spinner" aria-hidden="true"></span>
+            }
+            <span>Save password</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

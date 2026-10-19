@@ -769,6 +769,15 @@
 }
 
 /* Matches grid */
+.league-matches-body {
+  min-width: 0;
+}
+
+.league-matches-placeholder {
+  width: 100%;
+  pointer-events: none;
+}
+
 .matches-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));

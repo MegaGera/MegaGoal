@@ -141,9 +141,6 @@ export class TeamComponent implements OnInit, OnDestroy {
   personalMatchesPerPage: number = 10;
   personalMatchesPageMatches: Match[] = [];
   personalMatchesCurrentPage: number = 1;
-  allMatchesPerPage: number = 10;
-  allMatchesPageMatches: RealMatch[] = [];
-  allMatchesCurrentPage: number = 1;
   currentSeasonMatchesPerPage: number = 10;
   lastPlayedPageMatches: RealMatch[] = [];
   lastPlayedCurrentPage: number = 1;
@@ -165,17 +162,6 @@ export class TeamComponent implements OnInit, OnDestroy {
   /** Team against picker: real-fixture opponents on All matches; watched opponents elsewhere. */
   get teamsAgainstDisplayed(): TeamsViewedStats[] {
     return this.viewMode === 'allMatches' ? this.teamsAgainstFromReal : this.teamsAgainstFromWatched;
-  }
-
-  /**
-   * Last played / Next split is only for the latest season; all other seasons and "All time" use the flat list.
-   */
-  get useAllMatchesLastNextLayout(): boolean {
-    const latest = this.seasons[0];
-    if (!latest || this.viewMode !== 'allMatches') {
-      return false;
-    }
-    return this.filterSeasonSelected?.id === latest.id;
   }
 
   filterOrder: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc' = 'date_desc'; // Order: date_desc (newest first), date_asc (oldest first), goals_desc (most goals), goals_asc (least goals)
@@ -295,12 +281,9 @@ export class TeamComponent implements OnInit, OnDestroy {
       return this.statsAppliedMatchesCount;
     }
     if (this.viewMode === 'allMatches') {
-      if (this.useAllMatchesLastNextLayout) {
-        return this.matchViewMode === 'lastPlayed'
-          ? this.startedRealMatches.length
-          : this.notStartedRealMatches.length;
-      }
-      return this.showRealMatches.length;
+      return this.matchViewMode === 'lastPlayed'
+        ? this.startedRealMatches.length
+        : this.notStartedRealMatches.length;
     }
     return 0;
   }
@@ -340,8 +323,8 @@ export class TeamComponent implements OnInit, OnDestroy {
         // Check if there are filter query params in the URL - if yes, restore them; if no, reset to defaults
         const hasFilterParams = params.has('season') || params.has('location') || 
                                 params.has('leagues') || params.has('order') ||
-                                params.has('vs') ||
-                                params.has('pagePersonal') || params.has('pageAllMatches') ||
+                                params.has('vs') || params.has('matchView') ||
+                                params.has('pagePersonal') ||
                                 params.has('pageLastPlayed') || params.has('pageNextMatches');
         
         if (hasFilterParams) {
@@ -576,11 +559,7 @@ export class TeamComponent implements OnInit, OnDestroy {
         return totalGoalsX - totalGoalsY; // Ascending (least goals first)
       }
     });
-    
-    // Initialize paginated matches with restored page state
-    const startIndex = (this.allMatchesCurrentPage - 1) * this.allMatchesPerPage;
-    const endIndex = startIndex + this.allMatchesPerPage;
-    this.allMatchesPageMatches = this.showRealMatches.slice(startIndex, endIndex);
+
     this.updateCurrentSeasonPaginatedMatches();
   }
 
@@ -622,13 +601,6 @@ export class TeamComponent implements OnInit, OnDestroy {
         return y.fixture.timestamp - x.fixture.timestamp;
       }
     });
-  }
-
-  /*
-    This methods filter half Real Matches for display in two columns
-  */
-  filterHalfRealMatches(matches: RealMatch[], col: number) {
-    return matches.filter((match, index) => index % 2 === col % 2);
   }
 
   trackByMatchId(index: number, match: any): number {
@@ -811,7 +783,6 @@ export class TeamComponent implements OnInit, OnDestroy {
     
     // Reset all pagination states
     this.personalMatchesCurrentPage = 1;
-    this.allMatchesCurrentPage = 1;
     this.lastPlayedCurrentPage = 1;
     this.nextMatchesCurrentPage = 1;
 
@@ -855,9 +826,9 @@ export class TeamComponent implements OnInit, OnDestroy {
 
     // Reset pagination
     this.personalMatchesCurrentPage = 1;
-    this.allMatchesCurrentPage = 1;
     this.lastPlayedCurrentPage = 1;
     this.nextMatchesCurrentPage = 1;
+    this.matchViewMode = 'lastPlayed';
 
     this.filterStatsLocations();
     this.ensureFilterLocationValidForStats();
@@ -882,9 +853,9 @@ export class TeamComponent implements OnInit, OnDestroy {
     
     // Reset pagination
     this.personalMatchesCurrentPage = 1;
-    this.allMatchesCurrentPage = 1;
     this.lastPlayedCurrentPage = 1;
     this.nextMatchesCurrentPage = 1;
+    this.matchViewMode = 'lastPlayed';
     
     // Clear restored season id
     this.restoredSeasonId = null;
@@ -1632,12 +1603,13 @@ export class TeamComponent implements OnInit, OnDestroy {
     }
     
     if (this.viewMode === 'allMatches') {
+      if (this.matchViewMode === 'nextMatches') {
+        queryParams.matchView = 'nextMatches';
+      }
       if (this.matchViewMode === 'lastPlayed' && this.lastPlayedCurrentPage > 1) {
         queryParams.pageLastPlayed = this.lastPlayedCurrentPage;
       } else if (this.matchViewMode === 'nextMatches' && this.nextMatchesCurrentPage > 1) {
         queryParams.pageNextMatches = this.nextMatchesCurrentPage;
-      } else if (!this.useAllMatchesLastNextLayout && this.allMatchesCurrentPage > 1) {
-        queryParams.pageAllMatches = this.allMatchesCurrentPage;
       }
     }
 
@@ -1705,19 +1677,21 @@ export class TeamComponent implements OnInit, OnDestroy {
       this.personalMatchesCurrentPage = +pagePersonal || 1;
     }
 
-    const pageAllMatches = params.get('pageAllMatches');
-    if (pageAllMatches) {
-      this.allMatchesCurrentPage = +pageAllMatches || 1;
+    const matchView = params.get('matchView');
+    if (matchView === 'nextMatches' || matchView === 'lastPlayed') {
+      this.matchViewMode = matchView;
     }
 
     const pageLastPlayed = params.get('pageLastPlayed');
     if (pageLastPlayed) {
       this.lastPlayedCurrentPage = +pageLastPlayed || 1;
+      this.matchViewMode = 'lastPlayed';
     }
 
     const pageNextMatches = params.get('pageNextMatches');
     if (pageNextMatches) {
       this.nextMatchesCurrentPage = +pageNextMatches || 1;
+      this.matchViewMode = 'nextMatches';
     }
   }
 
@@ -1726,11 +1700,6 @@ export class TeamComponent implements OnInit, OnDestroy {
    */
   onPersonalMatchesPageChange(page: number): void {
     this.personalMatchesCurrentPage = page;
-    this.updateQueryParams();
-  }
-
-  onAllMatchesPageChange(page: number): void {
-    this.allMatchesCurrentPage = page;
     this.updateQueryParams();
   }
 

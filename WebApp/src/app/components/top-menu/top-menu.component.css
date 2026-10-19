@@ -673,6 +673,8 @@
   cursor: pointer;
   transition: all 0.25s ease;
   padding: 0;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .user-button:hover,
@@ -681,10 +683,27 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
+.user-button--photo {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0;
+}
+
+.user-button--photo:hover,
+.user-button--photo.active {
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .user-icon {
   width: 2rem;
   height: 2rem;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.user-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* User Panel */

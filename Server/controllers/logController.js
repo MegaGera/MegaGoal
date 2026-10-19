@@ -169,6 +169,20 @@ const logPageVisit = async (username, pageName, pageData = {}, req) => {
   );
 };
 
+const logProfilePictureChanged = async (username, path, req) => {
+  await logUserAction(
+    username,
+    'PROFILE_PICTURE_CHANGED',
+    {
+      path
+    },
+    {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }
+  );
+};
+
 export {
   logUserAction,
   logMatchCreated,
@@ -178,5 +192,6 @@ export {
   logFeedbackSubmitted,
   logAdminAction,
   sendMailingMessage,
-  logPageVisit
+  logPageVisit,
+  logProfilePictureChanged
 }; 

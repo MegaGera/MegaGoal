@@ -469,119 +469,66 @@
             } @else if (isMobileView && teamMobileMatchesCount > 0) {
               <ng-container *ngTemplateOutlet="teamMobileMatchesInlineRow; context: { count: teamMobileMatchesCount }" />
             }
-            @if (useAllMatchesLastNextLayout) {
-              <div class="matches-section">
-                <div class="row mb-0">
-                  <div class="col-12">
-                    <div class="view-toggle-card mb-0">
-                      <div class="view-toggle">
-                        <button class="toggle-btn" [class.active]="matchViewMode === 'lastPlayed'" (click)="setMatchView('lastPlayed')">Last played</button>
-                        <button class="toggle-btn" [class.active]="matchViewMode === 'nextMatches'" (click)="setMatchView('nextMatches')">Next matches</button>
-                      </div>
+            <div class="matches-section">
+              <div class="row mb-0">
+                <div class="col-12">
+                  <div class="view-toggle-card view-toggle-card--nested mb-0">
+                    <div class="view-toggle view-toggle--nested">
+                      <button class="toggle-btn" [class.active]="matchViewMode === 'lastPlayed'" (click)="setMatchView('lastPlayed')">Last played</button>
+                      <button class="toggle-btn" [class.active]="matchViewMode === 'nextMatches'" (click)="setMatchView('nextMatches')">Next matches</button>
                     </div>
                   </div>
                 </div>
-
-                @if (matchViewMode === 'lastPlayed') {
-                  <div class="row g-3 mt-0">
-                    @for (match of lastPlayedPageMatches; track trackByMatchId($index, match)) {
-                      <div class="col-12 col-md-6">
-                        <div class="matchCardAdapter" [class.matchCardAdapterTwoColumns]="!isMobileView">
-                          <app-real-match-card 
-                            [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-                            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-                            [locations]="locations">
-                          </app-real-match-card>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                  <div class="paginationDiv mt-3">
-                    <app-pagination 
-                      [elements]="startedRealMatches" 
-                      [elementsPerPage]="currentSeasonMatchesPerPage" 
-                      [initialPage]="lastPlayedCurrentPage"
-                      [(elementsFiltered)]="lastPlayedPageMatches"
-                      (pageChange)="onLastPlayedPageChange($event)">
-                    </app-pagination>
-                  </div>
-                } @else {
-                  <div class="row g-3 mt-0">
-                    @for (match of nextMatchesPageMatches; track trackByMatchId($index, match)) {
-                      <div class="col-12 col-md-6">
-                        <div class="matchCardAdapter" [class.matchCardAdapterTwoColumns]="!isMobileView">
-                          <app-real-match-card 
-                            [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-                            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-                            [locations]="locations">
-                          </app-real-match-card>
-                        </div>
-                      </div>
-                    }
-                  </div>
-                  <div class="paginationDiv mt-3">
-                    <app-pagination 
-                      [elements]="notStartedRealMatches" 
-                      [elementsPerPage]="currentSeasonMatchesPerPage" 
-                      [initialPage]="nextMatchesCurrentPage"
-                      [(elementsFiltered)]="nextMatchesPageMatches"
-                      (pageChange)="onNextMatchesPageChange($event)">
-                    </app-pagination>
-                  </div>
-                }
               </div>
-            } @else {
-              <div class="matches-section">
-                @if (!isMobileView) {
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      @for (match of filterHalfRealMatches(allMatchesPageMatches, 0); track trackByMatchId($index, match)) {
-                        <div class="matchCardAdapter matchCardAdapterTwoColumns">
-                          <app-real-match-card 
-                            [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-                            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-                            [locations]="locations">
-                          </app-real-match-card>
-                        </div>
-                      }
-                    </div>
-                    <div class="col-md-6">
-                      @for (match of filterHalfRealMatches(allMatchesPageMatches, 1); track trackByMatchId($index, match)) {
-                        <div class="matchCardAdapter matchCardAdapterTwoColumns">
-                          <app-real-match-card 
-                            [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
-                            [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-                            [locations]="locations">
-                          </app-real-match-card>
-                        </div>
-                      }
-                    </div>
-                  </div>
-                } @else {
-                  <div>
-                    @for (match of allMatchesPageMatches; track trackByMatchId($index, match)) {
-                      <div class="matchCardAdapter">
+
+              @if (matchViewMode === 'lastPlayed') {
+                <div class="row matches-section__grid mt-0">
+                  @for (match of lastPlayedPageMatches; track trackByMatchId($index, match)) {
+                    <div class="col-12 col-md-6">
+                      <div class="matchCardAdapter" [class.matchCardAdapterTwoColumns]="!isMobileView">
                         <app-real-match-card 
                           [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
                           [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
                           [locations]="locations">
                         </app-real-match-card>
                       </div>
-                    }
-                  </div>
-                }
-
+                    </div>
+                  }
+                </div>
                 <div class="paginationDiv mt-3">
                   <app-pagination 
-                    [elements]="showRealMatches" 
-                    [elementsPerPage]="allMatchesPerPage" 
-                    [initialPage]="allMatchesCurrentPage"
-                    [(elementsFiltered)]="allMatchesPageMatches"
-                    (pageChange)="onAllMatchesPageChange($event)">
+                    [elements]="startedRealMatches" 
+                    [elementsPerPage]="currentSeasonMatchesPerPage" 
+                    [initialPage]="lastPlayedCurrentPage"
+                    [(elementsFiltered)]="lastPlayedPageMatches"
+                    (pageChange)="onLastPlayedPageChange($event)">
                   </app-pagination>
                 </div>
-              </div>
-            }
+              } @else {
+                <div class="row matches-section__grid mt-0">
+                  @for (match of nextMatchesPageMatches; track trackByMatchId($index, match)) {
+                    <div class="col-12 col-md-6">
+                      <div class="matchCardAdapter" [class.matchCardAdapterTwoColumns]="!isMobileView">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
+                          [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
+                          [locations]="locations">
+                        </app-real-match-card>
+                      </div>
+                    </div>
+                  }
+                </div>
+                <div class="paginationDiv mt-3">
+                  <app-pagination 
+                    [elements]="notStartedRealMatches" 
+                    [elementsPerPage]="currentSeasonMatchesPerPage" 
+                    [initialPage]="nextMatchesCurrentPage"
+                    [(elementsFiltered)]="nextMatchesPageMatches"
+                    (pageChange)="onNextMatchesPageChange($event)">
+                  </app-pagination>
+                </div>
+              }
+            </div>
             }
           </div>
         } @else if (viewMode === 'squad') {

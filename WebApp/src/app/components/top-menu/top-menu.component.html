@@ -149,10 +149,25 @@
             
             <!-- User dropdown -->
             <div class="user-dropdown">
-                <button class="user-button" (click)="toggleUserMenu()" [class.active]="isUserMenuOpen" aria-label="Account menu" [attr.aria-expanded]="isUserMenuOpen">
-                    <svg class="user-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path fill="currentColor" d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 12c4.42 0 8 2.24 8 5v1H4v-1c0-2.76 3.58-5 8-5Z" />
-                    </svg>
+                <button
+                    class="user-button"
+                    [class.user-button--photo]="!!profilePictureUrl"
+                    (click)="toggleUserMenu()"
+                    [class.active]="isUserMenuOpen"
+                    aria-label="Account menu"
+                    [attr.aria-expanded]="isUserMenuOpen"
+                >
+                    @if (profilePictureUrl) {
+                        <img
+                            class="user-avatar-image"
+                            [src]="profilePictureUrl"
+                            alt=""
+                        >
+                    } @else {
+                        <svg class="user-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="currentColor" d="M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 12c4.42 0 8 2.24 8 5v1H4v-1c0-2.76 3.58-5 8-5Z" />
+                        </svg>
+                    }
                 </button>
                 
                 <div class="user-panel" [class.open]="isUserMenuOpen">

@@ -25,10 +25,16 @@ export interface FavouriteLeagueRef {
   name: string;
 }
 
+export interface UserProfilePicture {
+  path: string;
+  updatedOn: string;
+}
+
 export interface UserMe {
   username: string;
   favouriteTeams: FavouriteTeamRef[];
   favouriteLeagues: FavouriteLeagueRef[];
   notifications: UserMeNotifications;
   createdOn: string;
+  profilePicture: UserProfilePicture | null;
 }

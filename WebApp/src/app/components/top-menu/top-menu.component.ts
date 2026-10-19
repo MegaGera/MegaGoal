@@ -53,6 +53,7 @@ export class TopMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   isUserMenuOpen = false;
   isAdmin = false;
   username: string | null = null;
+  profilePictureUrl: string | null = null;
   navFadeLeft = false;
   navFadeRight = false;
 
@@ -87,6 +88,12 @@ export class TopMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.userSubscription = this.megaGoalService.userMe$.subscribe(user => {
       this.username = user?.username ?? null;
+      this.profilePictureUrl = user?.profilePicture?.path
+        ? this.images.getRouteImageProfile(
+            user.profilePicture.path,
+            user.profilePicture.updatedOn
+          )
+        : null;
     });
     this.megaGoalService.getUserMe().subscribe({ error: () => {} });
     this.globalSearch.prefetchTopWatched();

@@ -60,13 +60,19 @@ const findMissingHomeNotifications = (home) => {
   return buildDefaultHomeNotifications().filter((n) => !existingNames.has(n.name));
 };
 
+const profilePictureSchema = z.object({
+  path: z.string().min(1),
+  updatedOn: z.coerce.date()
+});
+
 /** Core user profile fields stored in the `users` collection (without Mongo `_id`). */
 const userProfileSchema = z.object({
   username: z.string().min(1),
   favouriteTeams: z.array(favouriteTeamRefSchema),
   favouriteLeagues: z.array(favouriteLeagueRefSchema),
   notifications: notificationsSchema,
-  createdOn: z.coerce.date()
+  createdOn: z.coerce.date(),
+  profilePicture: profilePictureSchema.nullable().optional()
 });
 
 const userDocumentSchema = userProfileSchema.extend({
@@ -84,18 +90,20 @@ const buildNewUserDocument = ({ username }) =>
     notifications: {
       home: buildDefaultHomeNotifications()
     },
-    createdOn: new Date()
+    createdOn: new Date(),
+    profilePicture: null
   });
 
 /** Response shape for GET /user/me: omits `_id`; returns at most the catalog-active home notification. */
 const buildUserMeResponse = (parsed) => {
-  const { _id, notifications, ...rest } = parsed;
+  const { _id, notifications, profilePicture, ...rest } = parsed;
   const userNotification = notifications.home.find(
     (n) => n.name === catalogActiveNotification.name && n.status === 'active'
   );
 
   return {
     ...rest,
+    profilePicture: profilePicture ?? null,
     notifications: {
       home: userNotification
         ? [
@@ -152,6 +160,7 @@ export {
   parseSetFavouriteTeamPayload,
   parseUserDocument,
   parseUserDocuments,
+  profilePictureSchema,
   userDocumentSchema,
   userProfileSchema
 };

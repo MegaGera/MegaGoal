@@ -188,30 +188,43 @@
                   }
                 </div>
 
-                <div class="matches-grid">
-                  @for (match of displayedFavouriteMatches[leagueKey]; track match.fixture.id) {
-                    <div class="match-card-wrapper">
-                      <app-real-match-card 
-                        [match]="matchParser.realMatchToMatch(match, findWatchedMatch(match.fixture.id))"
-                        [watched]="isMatchWatched(match.fixture.id)"
-                        [locations]="locations"
-                        [size]="'md'">
-                      </app-real-match-card>
+                <div
+                  class="league-matches-body"
+                  appViewportMount
+                  [viewportMountEstimate]="leagueBodyEstimate(displayedFavouriteMatches[leagueKey].length)"
+                  #favBody="viewportMount">
+                  @if (favBody.isActive) {
+                    <div class="matches-grid">
+                      @for (match of displayedFavouriteMatches[leagueKey]; track match.fixture.id) {
+                        <div class="match-card-wrapper">
+                          <app-real-match-card 
+                            [match]="matchParser.realMatchToMatch(match, findWatchedMatch(match.fixture.id))"
+                            [watched]="isMatchWatched(match.fixture.id)"
+                            [locations]="locations"
+                            [size]="'md'">
+                          </app-real-match-card>
+                        </div>
+                      }
                     </div>
+                    
+                    @if (canShowMoreFavouriteMatches(leagueKey)) {
+                      <div class="show-more-matches-container">
+                        <button 
+                          class="show-more-matches-btn"
+                          (click)="showMoreFavouriteMatches(leagueKey)"
+                          aria-label="Show more favourite matches">
+                          <ng-icon name="jamPlus"></ng-icon>
+                          Show More Matches ({{ getRemainingFavouriteMatchesCount(leagueKey) }})
+                        </button>
+                      </div>
+                    }
+                  } @else {
+                    <div
+                      class="league-matches-placeholder"
+                      [style.height.px]="favBody.savedHeight"
+                      aria-hidden="true"></div>
                   }
                 </div>
-                
-                @if (canShowMoreFavouriteMatches(leagueKey)) {
-                  <div class="show-more-matches-container">
-                    <button 
-                      class="show-more-matches-btn"
-                      (click)="showMoreFavouriteMatches(leagueKey)"
-                      aria-label="Show more favourite matches">
-                      <ng-icon name="jamPlus"></ng-icon>
-                      Show More Matches ({{ getRemainingFavouriteMatchesCount(leagueKey) }})
-                    </button>
-                  </div>
-                }
               </div>
             }
             </div>
@@ -278,31 +291,44 @@
                 }
               </div>
 
-              <div class="matches-grid">
-                @for (match of displayedMatches[leagueKey]; track match.fixture.id) {
-                  <div class="match-card-wrapper">
-                    <app-real-match-card 
-                      [match]="matchParser.realMatchToMatch(match, findWatchedMatch(match.fixture.id))"
-                      [watched]="isMatchWatched(match.fixture.id)"
-                      [locations]="locations"
-                      [size]="'md'">
-                    </app-real-match-card>
+              <div
+                class="league-matches-body"
+                appViewportMount
+                [viewportMountEstimate]="leagueBodyEstimate(displayedMatches[leagueKey].length)"
+                #leagueBody="viewportMount">
+                @if (leagueBody.isActive) {
+                  <div class="matches-grid">
+                    @for (match of displayedMatches[leagueKey]; track match.fixture.id) {
+                      <div class="match-card-wrapper">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findWatchedMatch(match.fixture.id))"
+                          [watched]="isMatchWatched(match.fixture.id)"
+                          [locations]="locations"
+                          [size]="'md'">
+                        </app-real-match-card>
+                      </div>
+                    }
                   </div>
+                  
+                  <!-- Show more matches button -->
+                  @if (canShowMoreMatches(leagueKey)) {
+                    <div class="show-more-matches-container">
+                      <button 
+                        class="show-more-matches-btn"
+                        (click)="showMoreMatches(leagueKey)"
+                        aria-label="Show more matches">
+                        <ng-icon name="jamPlus"></ng-icon>
+                        Show More Matches ({{ getRemainingMatchesCount(leagueKey) }})
+                      </button>
+                    </div>
+                  }
+                } @else {
+                  <div
+                    class="league-matches-placeholder"
+                    [style.height.px]="leagueBody.savedHeight"
+                    aria-hidden="true"></div>
                 }
               </div>
-              
-              <!-- Show more matches button -->
-              @if (canShowMoreMatches(leagueKey)) {
-                <div class="show-more-matches-container">
-                  <button 
-                    class="show-more-matches-btn"
-                    (click)="showMoreMatches(leagueKey)"
-                    aria-label="Show more matches">
-                    <ng-icon name="jamPlus"></ng-icon>
-                    Show More Matches ({{ getRemainingMatchesCount(leagueKey) }})
-                  </button>
-                </div>
-              }
             </div>
           }
           </div>
@@ -373,30 +399,43 @@
                 }
               </div>
 
-              <div class="matches-grid">
-                @for (match of displayedFavouriteMatches[leagueKey]; track match.fixture.id) {
-                  <div class="match-card-wrapper">
-                    <app-real-match-card 
-                      [match]="matchParser.realMatchToMatch(match, findWatchedMatch(match.fixture.id))"
-                      [watched]="isMatchWatched(match.fixture.id)"
-                      [locations]="locations"
-                      [size]="'md'">
-                    </app-real-match-card>
+              <div
+                class="league-matches-body"
+                appViewportMount
+                [viewportMountEstimate]="leagueBodyEstimate(displayedFavouriteMatches[leagueKey].length)"
+                #favOnlyBody="viewportMount">
+                @if (favOnlyBody.isActive) {
+                  <div class="matches-grid">
+                    @for (match of displayedFavouriteMatches[leagueKey]; track match.fixture.id) {
+                      <div class="match-card-wrapper">
+                        <app-real-match-card 
+                          [match]="matchParser.realMatchToMatch(match, findWatchedMatch(match.fixture.id))"
+                          [watched]="isMatchWatched(match.fixture.id)"
+                          [locations]="locations"
+                          [size]="'md'">
+                        </app-real-match-card>
+                      </div>
+                    }
                   </div>
+                  
+                  @if (canShowMoreFavouriteMatches(leagueKey)) {
+                    <div class="show-more-matches-container">
+                      <button 
+                        class="show-more-matches-btn"
+                        (click)="showMoreFavouriteMatches(leagueKey)"
+                        aria-label="Show more favourite matches">
+                        <ng-icon name="jamPlus"></ng-icon>
+                        Show More Matches ({{ getRemainingFavouriteMatchesCount(leagueKey) }})
+                      </button>
+                    </div>
+                  }
+                } @else {
+                  <div
+                    class="league-matches-placeholder"
+                    [style.height.px]="favOnlyBody.savedHeight"
+                    aria-hidden="true"></div>
                 }
               </div>
-              
-              @if (canShowMoreFavouriteMatches(leagueKey)) {
-                <div class="show-more-matches-container">
-                  <button 
-                    class="show-more-matches-btn"
-                    (click)="showMoreFavouriteMatches(leagueKey)"
-                    aria-label="Show more favourite matches">
-                    <ng-icon name="jamPlus"></ng-icon>
-                    Show More Matches ({{ getRemainingFavouriteMatchesCount(leagueKey) }})
-                  </button>
-                </div>
-              }
             </div>
           }
           </div>

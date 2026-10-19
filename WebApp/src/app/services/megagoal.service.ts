@@ -715,4 +715,17 @@ export class MegaGoalService {
       )
       .pipe(tap((user) => this.userMeSubject.next(user)));
   }
+
+  /**
+   * Upload a profile picture (proxied to MegaMedia via MegaGoal Server).
+   */
+  uploadProfilePicture(file: File): Observable<UserMe> {
+    const form = new FormData();
+    form.append('image', file);
+    return this.http
+      .post<UserMe>(this.url + '/user/me/profile-picture', form, {
+        withCredentials: true,
+      })
+      .pipe(tap((user) => this.userMeSubject.next(user)));
+  }
 }
