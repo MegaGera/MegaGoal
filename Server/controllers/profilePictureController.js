@@ -61,10 +61,12 @@ export const uploadProfilePicture = async (req, res) => {
     }
 
     const base = megamediaBaseUrl();
-    const uploadUrl = `${base}${PROFILE_UPLOAD_PATH}`;
+    const uploadUrl =
+      `${base}${PROFILE_UPLOAD_PATH}` +
+      `?username=${encodeURIComponent(String(username))}`;
 
     const form = new FormData();
-    form.append('username', username);
+    form.append('username', String(username));
 
     let filename = path.basename(file.originalname || '') || 'profile';
     if (!path.extname(filename)) {
