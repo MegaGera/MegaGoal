@@ -119,7 +119,8 @@ const matchSchema = z.object({
 
 const setLocationPayloadSchema = z.object({
   fixtureId: z.coerce.number().int(),
-  location: z.string().min(1),
+  // UUID location id (string) or venue id (number/string) before official location is created
+  location: z.coerce.string().min(1),
   venue: z.object({
     id: z.coerce.number().int(),
     name: z.string()

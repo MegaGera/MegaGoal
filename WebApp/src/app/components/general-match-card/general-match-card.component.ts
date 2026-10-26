@@ -153,17 +153,16 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
     }
   }
 
-  setLocation(fixtureId: number, location: string) {
+  setLocation(fixtureId: number, location: string | number) {
+    const locationId = String(location);
     const selectedVenue = this.match.venue?.id != null
-      && String(location) === String(this.getLocationIdFromVenueId(this.match.venue.id));
+      && locationId === this.getLocationIdFromVenueId(this.match.venue.id);
 
-    const existingLocation = this.locations.find(loc => loc.venue_id === parseInt(location));
-    if (existingLocation) {
-      location = existingLocation.id;
-    }
+    const existingLocation = this.locations.find(loc => loc.venue_id === parseInt(locationId, 10));
+    const resolvedLocation = existingLocation?.id ?? locationId;
 
     const venue = selectedVenue ? this.match.venue : undefined;
-    this.megaGoal.setLocation(fixtureId, location, venue).subscribe(result => {});
+    this.megaGoal.setLocation(fixtureId, resolvedLocation, venue).subscribe(result => {});
   }
 
   getLocationList() {
@@ -172,8 +171,8 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
       .map(loc => ({ id: loc.id, name: loc.name }));
   }
 
-  getLocationIdFromVenueId(venueId: number) {
-    return this.locations.find(loc => loc.venue_id === venueId)?.id ?? venueId;
+  getLocationIdFromVenueId(venueId: number): string {
+    return this.locations.find(loc => loc.venue_id === venueId)?.id ?? String(venueId);
   }
 
   navigateToTeam(teamId: number) {

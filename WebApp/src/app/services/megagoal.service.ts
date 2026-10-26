@@ -313,10 +313,10 @@ export class MegaGoalService {
   /*
     Method to set a Location for a Match
   */
-  setLocation(fixtureId: number, location: string, venue?: { id: number; name: string }): Observable<number> {
+  setLocation(fixtureId: number, location: string | number, venue?: { id: number; name: string }): Observable<number> {
     const body: { fixtureId: number; location: string; venue?: { id: number; name: string } } = {
       fixtureId,
-      location,
+      location: String(location),
     };
     if (venue?.id != null) {
       body.venue = venue;
