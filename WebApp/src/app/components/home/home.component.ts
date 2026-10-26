@@ -32,6 +32,8 @@ import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { GeneralStatsComponent } from '../stats/general-stats/general-stats.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { MobileFiltersInlineRowComponent } from '../mobile-filters-inline-row/mobile-filters-inline-row.component';
+import { MobileFiltersBottomSheetComponent } from '../mobile-filters-bottom-sheet/mobile-filters-bottom-sheet.component';
+import { ActiveFilterBadgesComponent } from '../active-filter-badges/active-filter-badges.component';
 import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
 import { UserMe } from '../../models/userMe';
 import { NotificationComponent } from '../notification/notification.component';
@@ -40,7 +42,7 @@ import { NotificationComponent } from '../notification/notification.component';
   selector: 'app-home',
   standalone: true,
   imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, RealMatchCardComponent, PaginationComponent, MatProgressSpinnerModule, 
-    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent, FiltersHomeComponent, NotificationComponent, MobileFiltersInlineRowComponent],
+    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent, FiltersHomeComponent, NotificationComponent, MobileFiltersInlineRowComponent, MobileFiltersBottomSheetComponent, ActiveFilterBadgesComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   providers: [ImagesService, provideNgIconsConfig({
@@ -70,6 +72,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   statsLoaded: boolean = false;
   favouriteTeamStats: FavouriteTeamStats | null = null;
   favouriteTeamLoaded: boolean = false;
+  favouriteTeamError: boolean = false;
+  teamsViewedError: boolean = false;
   leaguesLoaded: boolean = false;
   private matchesReady: boolean = false;
   private locationsReady: boolean = false;
@@ -79,6 +83,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   /* User Stats for Hero Section */
   userStats: UserStats | null = null;
   userStatsLoaded: boolean = false;
+  userStatsError: boolean = false;
+
+  /** True when any Stats API call failed (Mongo/connection/timeouts). */
+  get statsConnectionError(): boolean {
+    return this.userStatsError || this.teamsViewedError || this.favouriteTeamError;
+  }
 
   userMe: UserMe | null = null;
   userMeLoaded: boolean = false;
@@ -155,6 +165,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   toggleMobileFilters(): void {
     this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
+  }
+
+  closeMobileFilters(): void {
+    this.mobileFiltersExpanded = false;
   }
 
   ngOnInit(): void {
@@ -524,6 +538,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (needPicker) {
       this.lastStandardFiltersKey = key;
       this.statsLoaded = false;
+      this.teamsViewedError = false;
       this.statsService.getTeamsViewed(
         this.filterPanelChipSelected,
         this.filterLeagueSelected,
@@ -532,11 +547,13 @@ export class HomeComponent implements OnInit, OnDestroy {
       ).subscribe({
         next: (result: TeamsViewedStats[]) => {
           this.stats.teamsViewed = result;
+          this.teamsViewedError = false;
           this.statsLoaded = true;
           afterPicker();
         },
         error: () => {
           this.stats.teamsViewed = [];
+          this.teamsViewedError = true;
           this.statsLoaded = true;
           afterPicker();
         }
@@ -613,10 +630,29 @@ export class HomeComponent implements OnInit, OnDestroy {
 
 
   getUserStats() {
-    this.statsService.getUserGeneralStats().subscribe(result => {
-      this.userStats = result;
-      this.userStatsLoaded = true;
-    })
+    this.userStatsLoaded = false;
+    this.userStatsError = false;
+    this.statsService.getUserGeneralStats().subscribe({
+      next: (result) => {
+        this.userStats = result;
+        this.userStatsError = false;
+        this.userStatsLoaded = true;
+      },
+      error: (error) => {
+        console.error('Error fetching user stats:', error);
+        this.userStats = null;
+        this.userStatsError = true;
+        this.userStatsLoaded = true;
+      }
+    });
+  }
+
+  /** Re-fetch Stats endpoints after a connection failure. */
+  retryStatsConnection(): void {
+    this.getUserStats();
+    this.getLeaguesStats();
+    this.lastStandardFiltersKey = '';
+    this.refreshStatsPipeline();
   }
 
   loadUserMe(): void {
@@ -634,6 +670,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getFavouriteTeamStats() {
     this.favouriteTeamLoaded = false;
+    this.favouriteTeamError = false;
 
     const favouriteId =
       this.filterTeamSelected.length > 0
@@ -641,6 +678,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         : this.stats.teamsViewed?.[0]?.team_id;
     if (favouriteId == null) {
       this.favouriteTeamStats = null;
+      // teams-viewed failed → empty list looks like "no team"; show connection error instead
+      this.favouriteTeamError = this.teamsViewedError;
       this.favouriteTeamLoaded = true;
       return;
     }
@@ -659,12 +698,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (stats: FavouriteTeamStats) => {
         this.favouriteTeamStats = stats;
+        this.favouriteTeamError = false;
         this.favouriteTeamLoaded = true;
       },
       error: (error: any) => {
         console.error('Error fetching favourite team stats:', error);
-        this.favouriteTeamLoaded = true;
         this.favouriteTeamStats = null;
+        this.favouriteTeamError = true;
+        this.favouriteTeamLoaded = true;
       }
     });
   }

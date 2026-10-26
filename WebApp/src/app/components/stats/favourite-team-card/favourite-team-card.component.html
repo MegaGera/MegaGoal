@@ -192,15 +192,40 @@
       }
     </div>
   </app-general-card>
-} @else {
-  <app-general-card [empty]="true">
+} @else if (hasError) {
+  <app-general-card [empty]="true" customClass="favourite-empty-card favourite-error-card">
     <div class="empty-state">
-      <ng-icon name="jamTrophy" class="empty-icon"></ng-icon>
-      <h4>No Favourite Team</h4>
-      <p>Set your favourite team to see personalized stats here</p>
-      <button class="action-btn primary">
-        <span>Set Favourite Team</span>
+      <span class="error-badge">
+        <ng-icon name="jamTriangleDanger" class="error-badge-icon"></ng-icon>
+        Connection error
+      </span>
+      <div class="empty-icon-wrap error" aria-hidden="true">
+        <ng-icon name="jamWifi" class="empty-icon"></ng-icon>
+      </div>
+      <div class="empty-copy">
+        <h4 class="empty-title">Stats unavailable</h4>
+        <p class="empty-description">Could not reach the stats service. Check your connection and try again.</p>
+      </div>
+      <button type="button" class="action-btn primary" (click)="onRetry()">
+        <ng-icon name="jamRefresh" class="action-btn-icon"></ng-icon>
+        <span>Retry</span>
       </button>
+    </div>
+  </app-general-card>
+} @else {
+  <app-general-card [empty]="true" customClass="favourite-empty-card">
+    <div class="empty-state">
+      <div class="empty-icon-wrap" aria-hidden="true">
+        <ng-icon name="jamTrophy" class="empty-icon"></ng-icon>
+      </div>
+      <div class="empty-copy">
+        <h4 class="empty-title">No Favourite Team</h4>
+        <p class="empty-description">Set your favourite team to see personalized stats here</p>
+      </div>
+      <a routerLink="/app/teams" class="action-btn primary">
+        <ng-icon name="jamTarget" class="action-btn-icon"></ng-icon>
+        <span>Set Favourite Team</span>
+      </a>
     </div>
   </app-general-card>
 } 

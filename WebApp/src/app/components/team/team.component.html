@@ -22,13 +22,10 @@
     </div>
 
     @if (isMobileView && mobileFiltersExpanded && viewMode !== 'squad') {
-      <div class="row">
-        <div class="col-12">
-          <div class="mobile-filters-wrapper" [class.mobile-filters-wrapper--expanded]="mobileFiltersExpanded">
-            <ng-container *ngTemplateOutlet="teamMobileFilters; context: { inline: false, collapsed: !mobileFiltersExpanded }" />
-          </div>
-        </div>
-      </div>
+      <app-mobile-filters-bottom-sheet
+        (closed)="closeMobileFilters()">
+        <ng-container *ngTemplateOutlet="teamMobileFilters; context: { inline: false, collapsed: false, sheetEmbed: true }" />
+      </app-mobile-filters-bottom-sheet>
     }
 
     <div class="tab-content row" id="team-tab-content">
@@ -42,8 +39,10 @@
               <app-favourite-team-card
                 [teamStats]="favouriteTeamStats"
                 [isLoading]="!favouriteTeamLoaded"
+                [hasError]="favouriteTeamError"
                 [interactable]="true"
-                [showHeader]="false">
+                [showHeader]="false"
+                (retry)="fetchFavouriteTeamStats()">
               </app-favourite-team-card>
 
               @if (viewMode === 'insights') {
@@ -105,8 +104,10 @@
                       <app-favourite-team-card
                         [teamStats]="favouriteTeamStats"
                         [isLoading]="!favouriteTeamLoaded"
+                        [hasError]="favouriteTeamError"
                         [interactable]="true"
-                        [showHeader]="false">
+                        [showHeader]="false"
+                        (retry)="fetchFavouriteTeamStats()">
                       </app-favourite-team-card>
                     } @else {
                       <div class="insights-sidebar-placeholder" aria-hidden="true"></div>
@@ -619,8 +620,11 @@
   </div>
 
   <ng-template #teamDesktopMatchesCountHeader let-count="count">
-    <div class="matches-header">
-      <h3 class="matches-title">{{ count }} matches</h3>
+    <div class="matches-count-block">
+      <div class="matches-header">
+        <h3 class="matches-title">{{ count }} matches</h3>
+      </div>
+      <ng-container *ngTemplateOutlet="teamActiveFilterBadges" />
     </div>
   </ng-template>
 
@@ -632,10 +636,27 @@
       <div mobileFilterToggle>
         <ng-container *ngTemplateOutlet="teamMobileFilters; context: { inline: true, collapsed: true }" />
       </div>
+      <div mobileFilterBadges>
+        <ng-container *ngTemplateOutlet="teamActiveFilterBadges" />
+      </div>
     </app-mobile-filters-inline-row>
   </ng-template>
 
-  <ng-template #teamMobileFilters let-inline="inline" let-collapsed="collapsed">
+  <ng-template #teamActiveFilterBadges>
+    <app-active-filter-badges
+      [showPanelChip]="false"
+      [season]="filterSeasonSelected"
+      [locationId]="filterLocationSelected"
+      [locations]="viewMode === 'allMatches' ? locations : statsLocations"
+      [leagueIds]="filterLeagueSelected"
+      [leagues]="currentLeagues"
+      [teamAgainstIds]="filterTeamAgainstSelected"
+      [teamsAgainst]="teamsAgainstDisplayed"
+      [primaryTeam]="{ id: team.team.id, name: team.team.name }"
+      [hidePrimaryTeamUnlessVs]="true" />
+  </ng-template>
+
+  <ng-template #teamMobileFilters let-inline="inline" let-collapsed="collapsed" let-sheetEmbed="sheetEmbed">
     <app-filters-home
       class="mobile-filters-panel team-filters-mobile"
       [class.mobile-filters-inline]="inline"
@@ -662,7 +683,8 @@
       [showLeagues]="currentLeagues.length > 0 || !leaguesLoaded"
       [showLocations]="viewMode !== 'allMatches'"
       [collapsed]="collapsed"
-      [iconOnlyCollapsed]="true"
+      [iconOnlyCollapsed]="!sheetEmbed"
+      [sheetEmbed]="!!sheetEmbed"
       (collapseToggle)="toggleMobileFilters()"
       (filterPanelChipSelectedChange)="onFilterPanelChipSelectedChange($event)"
       (filterLeagueSelectedChange)="onFilterLeagueSelectedChange($event)"

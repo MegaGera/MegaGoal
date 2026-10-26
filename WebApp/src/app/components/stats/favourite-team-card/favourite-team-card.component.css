@@ -244,29 +244,167 @@
 
 /* Empty State */
 
+:host ::ng-deep .general-card.favourite-empty-card {
+  background: linear-gradient(160deg, #ffffff 0%, #fff8f8 45%, #ffeaea 100%);
+  border: 1px solid rgba(220, 20, 60, 0.14);
+  box-shadow: 0 10px 28px rgba(220, 20, 60, 0.08);
+  min-height: 180px;
+  padding: 28px 20px;
+}
+
+:host ::ng-deep .general-card.favourite-empty-card::before {
+  transform: scaleY(1);
+  width: 3px;
+  background: linear-gradient(180deg, #dc143c, #ff8a8a);
+}
+
+:host ::ng-deep .general-card.favourite-empty-card:hover {
+  transform: none;
+  box-shadow: 0 12px 32px rgba(220, 20, 60, 0.12);
+}
+
+:host ::ng-deep .general-card.favourite-error-card {
+  background: linear-gradient(160deg, #ffffff 0%, #fff9f5 45%, #ffefe6 100%);
+  border-color: rgba(194, 65, 12, 0.18);
+  box-shadow: 0 10px 28px rgba(194, 65, 12, 0.08);
+}
+
+:host ::ng-deep .general-card.favourite-error-card::before {
+  background: linear-gradient(180deg, #c2410c, #fb923c);
+}
+
+:host ::ng-deep .general-card.favourite-error-card:hover {
+  box-shadow: 0 12px 32px rgba(194, 65, 12, 0.12);
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  text-align: center;
+  gap: 18px;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.error-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9a3412;
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.22), rgba(254, 215, 170, 0.55));
+  border: 1px solid rgba(194, 65, 12, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.error-badge-icon {
+  --ng-icon__size: 0.85rem;
+  display: inline-flex;
+}
+
+.empty-icon-wrap {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(220, 20, 60, 0.12), rgba(255, 107, 107, 0.08));
+  border: 1px solid rgba(220, 20, 60, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.empty-icon-wrap.error {
+  background: linear-gradient(145deg, rgba(194, 65, 12, 0.12), rgba(251, 146, 60, 0.1));
+  border-color: rgba(194, 65, 12, 0.16);
+}
+
+.empty-icon-wrap.error .empty-icon {
+  color: #c2410c;
 }
 
 .empty-icon {
-  color: #6c757d;
-  --ng-icon__size: 3rem;
-  opacity: 0.5;
+  color: #dc143c;
+  --ng-icon__size: 1.85rem;
+  opacity: 0.95;
 }
 
-.empty-state h4 {
-  color: #012971;
-  font-weight: 600;
+.empty-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.empty-title {
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
-.empty-state p {
-  color: #6c757d;
+.empty-description {
+  color: #64748b;
   margin: 0;
   font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  appearance: none;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.action-btn.primary {
+  color: #fff;
+  background: linear-gradient(135deg, #dc143c 0%, #e83e5a 55%, #ff6b6b 100%);
+  box-shadow:
+    0 8px 18px rgba(220, 20, 60, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.action-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 24px rgba(220, 20, 60, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.action-btn.primary:active {
+  transform: translateY(0);
+  box-shadow:
+    0 4px 12px rgba(220, 20, 60, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.action-btn.primary:focus-visible {
+  outline: 2px solid rgba(220, 20, 60, 0.45);
+  outline-offset: 3px;
+}
+
+.action-btn-icon {
+  --ng-icon__size: 1rem;
+  display: inline-flex;
 }
 
 /* Responsive Design */

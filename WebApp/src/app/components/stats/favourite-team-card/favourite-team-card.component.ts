@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { jamEyeF, jamTrophy, jamTarget } from '@ng-icons/jam-icons';
+import { jamEyeF, jamTrophy, jamTarget, jamWifi, jamRefresh, jamTriangleDanger } from '@ng-icons/jam-icons';
 import { ionFootball } from '@ng-icons/ionicons';
 import { FavouriteTeamStats } from '../../../models/favouriteTeamStats';
 import { ImagesService } from '../../../services/images.service';
@@ -16,17 +16,20 @@ import { BasicStatCardComponent } from '../basic-stat-card/basic-stat-card.compo
   imports: [CommonModule, NgOptimizedImage, NgIconComponent, MiniStatCardComponent, GeneralCardComponent, BasicStatCardComponent, RouterLink],
   templateUrl: './favourite-team-card.component.html',
   styleUrls: ['./favourite-team-card.component.css'],
-  providers: [ImagesService, provideIcons({ jamEyeF, jamTrophy, jamTarget, ionFootball })]
+  providers: [ImagesService, provideIcons({ jamEyeF, jamTrophy, jamTarget, jamWifi, jamRefresh, jamTriangleDanger, ionFootball })]
 })
 export class FavouriteTeamCardComponent {
   @Input() teamStats: FavouriteTeamStats | null = null;
   @Input() isLoading: boolean = false;
+  /** True when the stats request failed (e.g. Mongo/Stats connection timeout). */
+  @Input() hasError: boolean = false;
   @Input() teams: any[] = [];
   @Input() selectedTeamId: number | null = null;
   @Input() interactable: boolean = true;
   @Input() showHeader: boolean = true;
   @Input() showAllStatsOnMobile: boolean = false;
   @Output() teamSelected = new EventEmitter<number>();
+  @Output() retry = new EventEmitter<void>();
 
   constructor(public images: ImagesService) {}
 
@@ -38,5 +41,9 @@ export class FavouriteTeamCardComponent {
 
   onTeamSelect(teamId: number): void {
     this.teamSelected.emit(teamId);
+  }
+
+  onRetry(): void {
+    this.retry.emit();
   }
 } 

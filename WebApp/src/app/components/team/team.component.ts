@@ -33,6 +33,8 @@ import { provideNgIconsConfig } from '@ng-icons/core';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { MobileFiltersInlineRowComponent } from '../mobile-filters-inline-row/mobile-filters-inline-row.component';
+import { MobileFiltersBottomSheetComponent } from '../mobile-filters-bottom-sheet/mobile-filters-bottom-sheet.component';
+import { ActiveFilterBadgesComponent } from '../active-filter-badges/active-filter-badges.component';
 import { LeagueStats, TeamsViewedStats } from '../../models/league';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -75,7 +77,9 @@ interface TeamInsightsSummary {
     TeamCardComponent,
     TeamPerformanceOverviewComponent,
     CommonModule,
-    MobileFiltersInlineRowComponent
+    MobileFiltersInlineRowComponent,
+    MobileFiltersBottomSheetComponent,
+    ActiveFilterBadgesComponent,
   ],
   templateUrl: './team.component.html',
   styleUrl: './team.component.css',
@@ -123,6 +127,7 @@ export class TeamComponent implements OnInit, OnDestroy {
   filteredPersonalMatches: Match[] = [];
   favouriteTeamStats: FavouriteTeamStats | null = null;
   favouriteTeamLoaded: boolean = false;
+  favouriteTeamError: boolean = false;
   insightsLoaded: boolean = false;
   yourMatchesLoaded: boolean = false;
   allMatchesLoaded: boolean = false;
@@ -611,6 +616,10 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
   }
 
+  closeMobileFilters(): void {
+    this.mobileFiltersExpanded = false;
+  }
+
   findRealMatchInMatches(id: number) {
     // Check in allWatchedMatches to see if the match has been watched
     return this.allWatchedMatches.find(match => match.fixture.id === id);
@@ -627,6 +636,7 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   loadAllWatchedMatches(): void {
     this.favouriteTeamLoaded = false;
+    this.favouriteTeamError = false;
     this.insightsLoaded = false;
     this.yourMatchesLoaded = false;
     this.megagoal.getMatchesByTeam(this.team.team.id, true).subscribe({
@@ -1122,7 +1132,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     });
   }
 
-  private fetchFavouriteTeamStats(): void {
+  fetchFavouriteTeamStats(): void {
     if (!this.team) {
       return;
     }
@@ -1131,6 +1141,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     const seasonFilter = this.filterSeasonSelected?.id ?? 0; // 0 means "All time"
 
     this.favouriteTeamLoaded = false;
+    this.favouriteTeamError = false;
 
     const teamsParam = [this.team.team.id];
     const againstParam =
@@ -1162,6 +1173,7 @@ export class TeamComponent implements OnInit, OnDestroy {
               startXI_matches: stats.most_watched_rival_player.startXI_matches ?? 0
             }
           : null;
+        this.favouriteTeamError = false;
         this.favouriteTeamLoaded = true;
       },
       error: (error: any) => {
@@ -1176,6 +1188,7 @@ export class TeamComponent implements OnInit, OnDestroy {
         this.biggestRival = null;
         this.topRivalScorer = null;
         this.mostWatchedRivalPlayer = null;
+        this.favouriteTeamError = true;
         this.favouriteTeamLoaded = true;
       }
     });

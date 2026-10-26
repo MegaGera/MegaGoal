@@ -155,6 +155,12 @@
   margin-bottom: 0;
 }
 
+:host(.filters-home--sheet-embed) {
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+
 :host ::ng-deep .general-card.filters-card--icon-only {
   width: fit-content;
   margin-left: auto;
@@ -164,6 +170,24 @@
 
 :host ::ng-deep .general-card.filters-card--icon-only:hover {
   transform: translateY(-2px);
+}
+
+:host ::ng-deep .general-card.filters-card--sheet-embed {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+}
+
+:host ::ng-deep .general-card.filters-card--sheet-embed::before {
+  display: none;
+}
+
+:host ::ng-deep .general-card.filters-card--sheet-embed:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .filter-header.filter-header--collapsed {

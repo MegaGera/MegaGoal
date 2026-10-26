@@ -1,7 +1,11 @@
 <div class="container">
 
   <!-- Hero Section -->
-  <app-hero-section [userStats]="userStats" [userStatsLoaded]="userStatsLoaded"></app-hero-section>
+  <app-hero-section
+    [userStats]="userStats"
+    [userStatsLoaded]="userStatsLoaded"
+    [hideCarousel]="statsConnectionError">
+  </app-hero-section>
 
   @if (userMeLoaded && userMe && userMe.notifications.home[0]; as notification) {
     <app-notification
@@ -24,14 +28,11 @@
     </div>
   </div>
 
-  @if (isMobileView && this.matchesLoaded && this.matchesOriginal.length > 0 && (mobileFiltersExpanded || viewMode !== 'matches')) {
-    <div class="row">
-      <div class="col-12">
-        <div class="mobile-filters-wrapper" [class.mobile-filters-wrapper--expanded]="mobileFiltersExpanded">
-          <ng-container *ngTemplateOutlet="homeMobileFilters; context: { inline: false, collapsed: !mobileFiltersExpanded }" />
-        </div>
-      </div>
-    </div>
+  @if (isMobileView && this.matchesLoaded && this.matchesOriginal.length > 0 && mobileFiltersExpanded) {
+    <app-mobile-filters-bottom-sheet
+      (closed)="closeMobileFilters()">
+      <ng-container *ngTemplateOutlet="homeMobileFilters; context: { inline: false, collapsed: false, sheetEmbed: true }" />
+    </app-mobile-filters-bottom-sheet>
   }
 
   <div class="tab-content row m-auto" id="nav-tabContent">
@@ -43,12 +44,27 @@
       
       <!-- Left column: Stats information column -->
       @if (this.matchesLoaded && this.matchesOriginal.length > 0) {
+        @if (isMobileView && !mobileFiltersExpanded) {
+          <app-mobile-filters-inline-row>
+            <div class="matches-header">
+              <h3 class="matches-title">{{ matches.length }} matches</h3>
+            </div>
+            <div mobileFilterToggle>
+              <ng-container *ngTemplateOutlet="homeMobileFilters; context: { inline: true, collapsed: true }" />
+            </div>
+            <div mobileFilterBadges>
+              <ng-container *ngTemplateOutlet="homeActiveFilterBadges" />
+            </div>
+          </app-mobile-filters-inline-row>
+        }
         @if (this.matches.length > 0) {
           <!-- Favourite Team Card -->
           <app-favourite-team-card 
             [teamStats]="favouriteTeamStats" 
             [isLoading]="!favouriteTeamLoaded"
-            [showAllStatsOnMobile]="true">
+            [hasError]="favouriteTeamError || teamsViewedError"
+            [showAllStatsOnMobile]="true"
+            (retry)="retryStatsConnection()">
           </app-favourite-team-card>
 
           <!-- General Stats Component -->
@@ -89,10 +105,16 @@
             <div mobileFilterToggle>
               <ng-container *ngTemplateOutlet="homeMobileFilters; context: { inline: true, collapsed: true }" />
             </div>
+            <div mobileFilterBadges>
+              <ng-container *ngTemplateOutlet="homeActiveFilterBadges" />
+            </div>
           </app-mobile-filters-inline-row>
         } @else {
-          <div class="matches-header">
-            <h3 class="matches-title">{{ matches.length }} matches</h3>
+          <div class="matches-count-block">
+            <div class="matches-header">
+              <h3 class="matches-title">{{ matches.length }} matches</h3>
+            </div>
+            <ng-container *ngTemplateOutlet="homeActiveFilterBadges" />
           </div>
         }
 
@@ -175,7 +197,21 @@
     }
   </div>
 
-  <ng-template #homeMobileFilters let-inline="inline" let-collapsed="collapsed">
+  <ng-template #homeActiveFilterBadges>
+    <app-active-filter-badges
+      [panelChip]="filterPanelChipSelected"
+      [season]="filterSeasonSelected"
+      [locationId]="filterLocationSelected"
+      [locations]="locationsFiltered"
+      [leagueIds]="filterLeagueSelected"
+      [leagues]="leaguesFiltered"
+      [teamIds]="filterTeamSelected"
+      [teams]="teamsFiltered"
+      [teamAgainstIds]="filterTeamAgainstSelected"
+      [teamsAgainst]="teamsAgainstViewed" />
+  </ng-template>
+
+  <ng-template #homeMobileFilters let-inline="inline" let-collapsed="collapsed" let-sheetEmbed="sheetEmbed">
     <app-filters-home
       class="mobile-filters-panel"
       [class.mobile-filters-inline]="inline"
@@ -198,7 +234,8 @@
       [teamsAgainstViewed]="teamsAgainstViewed"
       [teamsAgainstLoaded]="teamsAgainstLoaded"
       [collapsed]="collapsed"
-      [iconOnlyCollapsed]="true"
+      [iconOnlyCollapsed]="!sheetEmbed"
+      [sheetEmbed]="!!sheetEmbed"
       (collapseToggle)="toggleMobileFilters()"
       (filterPanelChipSelectedChange)="changeFilterPanelChipSelected($event)"
       (filterLeagueSelectedChange)="changeFilterLeagueSelected($event)"

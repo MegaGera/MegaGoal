@@ -1,10 +1,16 @@
 .mobile-filters-inline-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.mobile-filters-inline-row__top {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-bottom: 16px;
 }
 
 .mobile-filters-inline-row__main {
@@ -22,6 +28,14 @@
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.mobile-filters-inline-row__badges {
+  width: 100%;
+}
+
+.mobile-filters-inline-row__badges:empty {
+  display: none;
 }
 
 .mobile-filters-inline-row ::ng-deep .mobile-filters-inline {

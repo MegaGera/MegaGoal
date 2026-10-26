@@ -29,6 +29,15 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* Count pill + active filter badges stack (desktop / non-inline) */
+.matches-count-block {
+  margin-bottom: 16px;
+}
+
+.matches-count-block .matches-header {
+  margin-bottom: 0;
+}
+
 @media (max-width: 767px) {
   .mobile-filters-wrapper {
     margin-left: 1.25rem;

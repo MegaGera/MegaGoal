@@ -1,0 +1,155 @@
+.mfs-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.45);
+  animation: mfs-overlay-in 0.2s ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mfs-overlay--closing {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.28s ease-in;
+  pointer-events: none;
+}
+
+.mfs-sheet {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  height: 70vh;
+  max-height: 70vh;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe4e4 50%, #ffd1d1 100%);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 28px rgba(15, 23, 42, 0.18);
+  border: 2px solid #ffb3b3;
+  border-bottom: none;
+  animation: mfs-sheet-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.mfs-sheet--dragging {
+  transition: none;
+  animation: none;
+}
+
+.mfs-sheet:not(.mfs-sheet--dragging):not(.mfs-sheet--closing) {
+  transition: transform 0.22s ease-out;
+}
+
+.mfs-sheet--closing {
+  animation: none;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.mfs-chrome {
+  flex-shrink: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mfs-handle-area {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 4px;
+  cursor: grab;
+}
+
+.mfs-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.mfs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 16px 12px;
+  border-bottom: 1px solid rgba(220, 20, 60, 0.15);
+  flex-shrink: 0;
+}
+
+.mfs-header-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mfs-header-icon {
+  color: #dc143c;
+  --ng-icon__size: 1.35rem;
+  display: inline-flex;
+  line-height: 0;
+}
+
+.mfs-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.mfs-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  border-radius: 999px;
+  cursor: pointer;
+  line-height: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mfs-close:hover,
+.mfs-close:focus-visible {
+  background: #f1f5f9;
+  color: #475569;
+  outline: none;
+}
+
+.mfs-close:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.mfs-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  touch-action: pan-y;
+}
+
+@keyframes mfs-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mfs-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

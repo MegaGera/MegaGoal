@@ -3,7 +3,9 @@
   <div class="hero-container">
     
     <!-- Left: Quick Stats -->
-    <app-quick-stats [userStats]="userStats" [userStatsLoaded]="userStatsLoaded"></app-quick-stats>
+    @if (!hideCarousel) {
+      <app-quick-stats [userStats]="userStats" [userStatsLoaded]="userStatsLoaded"></app-quick-stats>
+    }
     
     <!-- Center: Welcome -->
     <div class="hero-welcome">

@@ -1,0 +1,93 @@
+@if (hasAny) {
+  <div class="active-filter-badges" role="list" aria-label="Active filters">
+    @for (id of leagueIds; track id) {
+      <span
+        class="afb-logo afb-logo--league"
+        role="listitem"
+        [style.border-color]="leagueBorderColor(id)"
+        [attr.title]="leagueName(id)"
+        [attr.aria-label]="leagueName(id)">
+        <img
+          [ngSrc]="images.getRouteImageLeagueSm(id)"
+          [alt]="leagueName(id)"
+          width="22"
+          height="22"
+          priority="false" />
+      </span>
+    }
+
+    @if (panelChipLabel; as label) {
+      <span class="afb-text" role="listitem">{{ label }}</span>
+    }
+
+    @if (showPrimaryWithVs && primaryTeam) {
+      <span
+        class="afb-logo"
+        role="listitem"
+        [attr.title]="primaryTeam.name"
+        [attr.aria-label]="primaryTeam.name">
+        <img
+          [ngSrc]="images.getRouteImageTeam(primaryTeam.id)"
+          [alt]="primaryTeam.name"
+          width="22"
+          height="22"
+          priority="false" />
+      </span>
+      <span class="afb-vs" aria-hidden="true">vs</span>
+      @for (id of teamAgainstIds; track id) {
+        <span
+          class="afb-logo"
+          role="listitem"
+          [attr.title]="teamName(id)"
+          [attr.aria-label]="teamName(id)">
+          <img
+            [ngSrc]="images.getRouteImageTeam(id)"
+            [alt]="teamName(id)"
+            width="22"
+            height="22"
+            priority="false" />
+        </span>
+      }
+    } @else if (displayTeamIds.length > 0) {
+      @for (id of displayTeamIds; track id) {
+        <span
+          class="afb-logo"
+          role="listitem"
+          [attr.title]="teamName(id)"
+          [attr.aria-label]="teamName(id)">
+          <img
+            [ngSrc]="images.getRouteImageTeam(id)"
+            [alt]="teamName(id)"
+            width="22"
+            height="22"
+            priority="false" />
+        </span>
+      }
+      @if (showTeamAgainstAfterTeams) {
+        <span class="afb-vs" aria-hidden="true">vs</span>
+        @for (id of teamAgainstIds; track id) {
+          <span
+            class="afb-logo"
+            role="listitem"
+            [attr.title]="teamName(id)"
+            [attr.aria-label]="teamName(id)">
+            <img
+              [ngSrc]="images.getRouteImageTeam(id)"
+              [alt]="teamName(id)"
+              width="22"
+              height="22"
+              priority="false" />
+          </span>
+        }
+      }
+    }
+
+    @if (seasonLabel; as label) {
+      <span class="afb-text" role="listitem">{{ label }}</span>
+    }
+
+    @if (locationLabel; as label) {
+      <span class="afb-text" role="listitem">{{ label }}</span>
+    }
+  </div>
+}

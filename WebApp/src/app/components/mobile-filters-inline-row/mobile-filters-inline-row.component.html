@@ -1,8 +1,13 @@
 <div class="mobile-filters-inline-row">
-  <div class="mobile-filters-inline-row__main">
-    <ng-content />
+  <div class="mobile-filters-inline-row__top">
+    <div class="mobile-filters-inline-row__main">
+      <ng-content />
+    </div>
+    <div class="mobile-filters-inline-row__toggle">
+      <ng-content select="[mobileFilterToggle]" />
+    </div>
   </div>
-  <div class="mobile-filters-inline-row__toggle">
-    <ng-content select="[mobileFilterToggle]" />
+  <div class="mobile-filters-inline-row__badges">
+    <ng-content select="[mobileFilterBadges]" />
   </div>
 </div>

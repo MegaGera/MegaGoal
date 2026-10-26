@@ -1,0 +1,40 @@
+<div
+  class="mfs-overlay"
+  role="presentation"
+  [class.mfs-overlay--closing]="closing"
+  (click)="onBackdropClick()">
+  <div
+    class="mfs-sheet"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="title"
+    [class.mfs-sheet--dragging]="dragging"
+    [class.mfs-sheet--closing]="closing"
+    [style.transform]="closing || dragOffset ? 'translateY(' + dragOffset + 'px)' : null"
+    (click)="onSheetClick($event)">
+    <div #chrome class="mfs-chrome">
+      <div class="mfs-handle-area" aria-hidden="true">
+        <div class="mfs-handle"></div>
+      </div>
+
+      <div class="mfs-header">
+        <div class="mfs-header-title">
+          <ng-icon name="jamSettingsAlt" class="mfs-header-icon" size="1.35rem" aria-hidden="true"></ng-icon>
+          <h2 class="mfs-title">{{ title }}</h2>
+        </div>
+        <button
+          type="button"
+          class="mfs-close"
+          aria-label="Close filters"
+          [disabled]="closing"
+          (click)="onCloseClick()">
+          <ng-icon name="jamClose" size="1.25rem" aria-hidden="true"></ng-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="mfs-body">
+      <ng-content />
+    </div>
+  </div>
+</div>

@@ -19,6 +19,8 @@ import { QuickStatsComponent } from '../stats/quick-stats/quick-stats.component'
 export class HeroSectionComponent {
   @Input() userStats: UserStats | null = null;
   @Input() userStatsLoaded: boolean = false;
+  /** Hide the quick-stats carousel when Stats service is unreachable. */
+  @Input() hideCarousel: boolean = false;
 
   private welcomePhrases: string[] = [
     "You're part of our early community – thanks for trying MegaGoal! Your feedback matters",

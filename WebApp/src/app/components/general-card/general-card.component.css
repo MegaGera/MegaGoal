@@ -42,7 +42,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 120px;
+  min-height: 160px;
+  background: linear-gradient(160deg, #ffffff 0%, #fff8f8 45%, #ffeaea 100%);
 }
 
 /* Responsive Design */

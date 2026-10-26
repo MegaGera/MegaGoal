@@ -19,6 +19,8 @@ import { TeamSearchItem } from '../../models/teamSearch';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { MobileFiltersInlineRowComponent } from '../mobile-filters-inline-row/mobile-filters-inline-row.component';
+import { MobileFiltersBottomSheetComponent } from '../mobile-filters-bottom-sheet/mobile-filters-bottom-sheet.component';
+import { ActiveFilterBadgesComponent } from '../active-filter-badges/active-filter-badges.component';
 import { BasicTeamStatCardComponent } from '../stats/basic-team-stat-card/basic-team-stat-card.component';
 import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
 import { ListFiltersQuery, ListFiltersUrlSync, sameListFilters } from '../../utils/list-filters-query';
@@ -34,6 +36,8 @@ import { ListFiltersQuery, ListFiltersUrlSync, sameListFilters } from '../../uti
     PaginationComponent,
     FiltersHomeComponent,
     MobileFiltersInlineRowComponent,
+    MobileFiltersBottomSheetComponent,
+    ActiveFilterBadgesComponent,
     BasicTeamStatCardComponent,
   ],
   templateUrl: './teams.component.html',
@@ -127,6 +131,10 @@ export class TeamsComponent implements OnInit, OnDestroy {
 
   toggleMobileFilters(): void {
     this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
+  }
+
+  closeMobileFilters(): void {
+    this.mobileFiltersExpanded = false;
   }
 
   get isTeamSearchActive(): boolean {

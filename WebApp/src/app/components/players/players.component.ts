@@ -20,6 +20,8 @@ import { PlayerSearchItem } from '../../models/playerSearch';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { MobileFiltersInlineRowComponent } from '../mobile-filters-inline-row/mobile-filters-inline-row.component';
+import { MobileFiltersBottomSheetComponent } from '../mobile-filters-bottom-sheet/mobile-filters-bottom-sheet.component';
+import { ActiveFilterBadgesComponent } from '../active-filter-badges/active-filter-badges.component';
 import { BasicPlayerStatCardComponent } from '../stats/basic-player-stat-card/basic-player-stat-card.component';
 import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
 import { ListFiltersQuery, ListFiltersUrlSync, sameListFilters } from '../../utils/list-filters-query';
@@ -35,6 +37,8 @@ import { ListFiltersQuery, ListFiltersUrlSync, sameListFilters } from '../../uti
     PaginationComponent,
     FiltersHomeComponent,
     MobileFiltersInlineRowComponent,
+    MobileFiltersBottomSheetComponent,
+    ActiveFilterBadgesComponent,
     BasicPlayerStatCardComponent,
   ],
   templateUrl: './players.component.html',
@@ -132,6 +136,10 @@ export class PlayersComponent implements OnInit, OnDestroy {
 
   toggleMobileFilters(): void {
     this.mobileFiltersExpanded = !this.mobileFiltersExpanded;
+  }
+
+  closeMobileFilters(): void {
+    this.mobileFiltersExpanded = false;
   }
 
   ngOnInit(): void {

@@ -65,10 +65,27 @@ export class FiltersHomeComponent {
   @Input() collapsed: boolean = false;
   /** When true and collapsed, header is a single settings icon aligned right (no title/chevron). */
   @Input() iconOnlyCollapsed: boolean = false;
+  /** Embed inside mobile bottom sheet: no card chrome / header (sheet provides those). */
+  @Input() sheetEmbed: boolean = false;
 
   @HostBinding('class.filters-home--icon-only-collapsed')
   get iconOnlyCollapsedActive(): boolean {
     return this.iconOnlyCollapsed && this.collapsed;
+  }
+
+  @HostBinding('class.filters-home--sheet-embed')
+  get sheetEmbedActive(): boolean {
+    return this.sheetEmbed;
+  }
+
+  get cardCustomClass(): string {
+    if (this.sheetEmbed) {
+      return 'filters-card--sheet-embed';
+    }
+    if (this.iconOnlyCollapsed && this.collapsed) {
+      return 'filters-card--icon-only';
+    }
+    return '';
   }
 
   @Output() filterPanelChipSelectedChange = new EventEmitter<number>();

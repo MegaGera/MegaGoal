@@ -1,0 +1,66 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.active-filter-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+.afb-text {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ff8e8e, #ffb3b3);
+  border: 1px solid #ff8e8e;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.afb-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe4e4 50%, #ffd1d1 100%);
+  border: 1.5px solid #ff8e8e;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.afb-logo--league {
+  border-width: 2px;
+}
+
+.afb-logo img {
+  display: block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.afb-vs {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  color: #94a3b8;
+  flex-shrink: 0;
+  padding: 0 1px;
+}
