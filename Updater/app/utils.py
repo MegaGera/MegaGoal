@@ -207,16 +207,27 @@ class MatchUpdater:
         self.collection_real_matches.update_one(query_filter, {"$set": update_fields})
     
     def update_matches(self, match):
-        """Update matches in database"""
-        query_filter = {"fixture.id": match["fixture"]["id"]}
-        query_projection = {
-            "$set": {
-                "goals.home": match["goals"]["home"],
-                "goals.away": match["goals"]["away"],
-                "status": match["fixture"]["status"]["short"]
-            }
-        }
-        self.collection_matches.update_many(query_filter, query_projection)
+        """Copy score and short status onto every watched row for this fixture."""
+        fixture = match.get("fixture") or {}
+        fixture_id = fixture.get("id")
+        if fixture_id is None:
+            return
+
+        status = fixture.get("status") if isinstance(fixture.get("status"), dict) else {}
+        short = status.get("short")
+        goals = match.get("goals") if isinstance(match.get("goals"), dict) else {}
+
+        set_fields = {}
+        if "home" in goals:
+            set_fields["goals.home"] = goals["home"]
+        if "away" in goals:
+            set_fields["goals.away"] = goals["away"]
+        if short:
+            set_fields["status"] = short
+        if not set_fields:
+            return
+
+        self.collection_matches.update_many({"fixture.id": fixture_id}, {"$set": set_fields})
     
     def get_matches_from_api(self, league_id, season, date=None, date_to=None):
         """Get matches from API"""
@@ -244,6 +255,10 @@ class MatchUpdater:
                 if not self.real_match_finished(real_match):
                     self.update_real_match(match)
                     self.update_matches(match)
+                else:
+                    # Catalog is already final. Still copy its score and status onto
+                    # watched rows so a stale matches document cannot linger.
+                    self.update_matches(real_match)
             else:
                 self.collection_real_matches.insert_one(match)
     

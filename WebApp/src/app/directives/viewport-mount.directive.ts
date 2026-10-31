@@ -11,6 +11,12 @@ import {
 /**
  * Observes the host and exposes `isActive` so heavy children can be
  * mounted only near the viewport. Keeps scroll height via `savedHeight`.
+ *
+ * The first IntersectionObserver notification can report a just-inserted
+ * host as hidden. That state does not update again until the host leaves
+ * and re-enters, so a league already on screen stays empty. The initial
+ * decision is taken from layout, after the next frame, and a later
+ * "hidden" notification is ignored while the host is still near the viewport.
  */
 @Directive({
   selector: '[appViewportMount]',
@@ -28,7 +34,9 @@ export class ViewportMountDirective implements AfterViewInit, OnDestroy {
   savedHeight = 280;
 
   private observer?: IntersectionObserver;
-  private eagerCheckTimer: ReturnType<typeof setTimeout> | null = null;
+  private frameIds: number[] = [];
+  private layoutReady = false;
+  private destroyed = false;
 
   constructor(
     private readonly el: ElementRef<HTMLElement>,
@@ -38,12 +46,49 @@ export class ViewportMountDirective implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.savedHeight = Math.max(80, this.viewportMountEstimate);
+    this.scheduleInitialCheck();
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.cancelInitialCheck();
+    this.observer?.disconnect();
+    this.observer = undefined;
+  }
+
+  private scheduleInitialCheck(): void {
+    const first = requestAnimationFrame(() => {
+      const second = requestAnimationFrame(() => {
+        this.frameIds = [];
+        if (this.destroyed) {
+          return;
+        }
+        this.layoutReady = true;
+        this.zone.run(() => this.applyIntersection(this.isNearViewport()));
+        this.startObserver();
+      });
+      this.frameIds = [second];
+    });
+    this.frameIds = [first];
+  }
+
+  private cancelInitialCheck(): void {
+    for (const id of this.frameIds) {
+      cancelAnimationFrame(id);
+    }
+    this.frameIds = [];
+  }
+
+  private startObserver(): void {
+    if (this.destroyed) {
+      return;
+    }
 
     this.zone.runOutsideAngular(() => {
       this.observer = new IntersectionObserver(
         (entries) => {
-          const entry = entries[0];
-          if (!entry) {
+          const entry = entries[entries.length - 1];
+          if (!entry || this.destroyed) {
             return;
           }
           this.zone.run(() => this.applyIntersection(entry.isIntersecting));
@@ -56,28 +101,20 @@ export class ViewportMountDirective implements AfterViewInit, OnDestroy {
       );
       this.observer.observe(this.el.nativeElement);
     });
-
-    // Near-viewport check on the next macrotask (avoids first-paint flash + CD errors)
-    this.eagerCheckTimer = setTimeout(() => {
-      this.eagerCheckTimer = null;
-      if (!this.observer) {
-        return;
-      }
-      this.zone.run(() => this.applyIntersection(this.isNearViewport()));
-    }, 0);
-  }
-
-  ngOnDestroy(): void {
-    if (this.eagerCheckTimer != null) {
-      clearTimeout(this.eagerCheckTimer);
-      this.eagerCheckTimer = null;
-    }
-    this.observer?.disconnect();
-    this.observer = undefined;
   }
 
   private applyIntersection(isIntersecting: boolean): void {
-    if (isIntersecting) {
+    if (this.destroyed) {
+      return;
+    }
+
+    // A hidden report before layout is not trustworthy and would stick.
+    if (!isIntersecting && !this.layoutReady) {
+      return;
+    }
+
+    const visible = isIntersecting || this.isNearViewport();
+    if (visible) {
       if (!this.isActive) {
         this.isActive = true;
         this.cdr.detectChanges();
@@ -98,9 +135,13 @@ export class ViewportMountDirective implements AfterViewInit, OnDestroy {
   }
 
   private isNearViewport(): boolean {
-    const marginPx = this.parseVerticalMargin(this.viewportMountRootMargin);
     const rect = this.el.nativeElement.getBoundingClientRect();
-    return rect.top < window.innerHeight + marginPx && rect.bottom > -marginPx;
+    if (rect.top === 0 && rect.bottom === 0 && rect.width === 0 && rect.height === 0) {
+      return false;
+    }
+    const marginPx = this.parseVerticalMargin(this.viewportMountRootMargin);
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    return rect.top < viewportHeight + marginPx && rect.bottom > -marginPx;
   }
 
   private parseVerticalMargin(rootMargin: string): number {

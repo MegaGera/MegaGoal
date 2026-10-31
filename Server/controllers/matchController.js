@@ -165,6 +165,23 @@ const createMatch = async (req, res) => {
       }
     }
 
+    const realMatch = await db.collection('real_matches').findOne(
+      { "fixture.id": match.fixture.id },
+      { projection: { "fixture.status.short": 1, goals: 1 } }
+    );
+    if (realMatch) {
+      const short = realMatch.fixture?.status?.short;
+      if (short != null && short !== '') {
+        match.status = String(short);
+      }
+      if (realMatch.goals && typeof realMatch.goals === 'object') {
+        match.goals = {
+          home: realMatch.goals.home ?? null,
+          away: realMatch.goals.away ?? null,
+        };
+      }
+    }
+
     let matchExists = await db.collection('matches').findOne({ "fixture.id": match.fixture.id, "user.username": username });
     if (matchExists) {
       return res.status(400).json({ message: "Match already exists" });
