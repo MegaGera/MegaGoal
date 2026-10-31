@@ -11,6 +11,8 @@ import { catchError } from 'rxjs/operators';
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
 import { StatsService } from '../../services/stats.service';
+import { AuthService } from '../../services/auth.service';
+import { UpdaterService } from '../../services/updater.service';
 import { Player } from '../../models/player';
 import {
   PlayerStats,
@@ -65,6 +67,9 @@ export class PlayerInfoComponent implements OnInit {
 
   isMobileView = false;
   mobileSection: 'stats' | 'teams' = 'stats';
+  isAdmin = false;
+  updatingCareer = false;
+  careerUpdateError: string | null = null;
 
   readonly skeletonStatSlots = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   readonly skeletonTeamSlots = [1, 2, 3, 4];
@@ -92,15 +97,23 @@ export class PlayerInfoComponent implements OnInit {
   /** Lazy-loaded career match lists keyed by `${season}:${teamId}`. */
   private careerMatchesCache = new Map<string, Match[]>();
   private careerMatchesLoadingKeys = new Set<string>();
+  /** Ignores a career reload that finishes after the open player changes. */
+  private careerReloadToken = 0;
 
   constructor(
     private megagoal: MegaGoalService, 
     private router: Router, 
     private activatedRoute: ActivatedRoute,
     private statsService: StatsService,
+    private authService: AuthService,
+    private updaterService: UpdaterService,
     public images: ImagesService
   ) {
     this.updateIsMobileView();
+    this.authService.isAdmin().subscribe(isAdmin => {
+      this.isAdmin = isAdmin;
+      this.syncMobileSection();
+    });
     this.activatedRoute.queryParamMap.subscribe(params => {
       this.queryPlayerId = +params.get('id')! || 0;
       this.init();
@@ -121,7 +134,7 @@ export class PlayerInfoComponent implements OnInit {
   }
 
   get showPlayerMobileTabs(): boolean {
-    return this.isMobileView && (this.hasStatsSection || this.hasTeams() || this.statsLoading);
+    return this.isMobileView && (this.hasStatsSection || this.hasTeams() || this.statsLoading || this.isAdmin);
   }
 
   get hasStatsSection(): boolean {
@@ -146,6 +159,9 @@ export class PlayerInfoComponent implements OnInit {
     this.expandedTeamMatches.clear();
     this.careerMatchesCache.clear();
     this.careerMatchesLoadingKeys.clear();
+    this.careerReloadToken++;
+    this.updatingCareer = false;
+    this.careerUpdateError = null;
     
     this.megagoal.getPlayerById(this.queryPlayerId).subscribe(result => {
       if (result != undefined) {
@@ -208,11 +224,11 @@ export class PlayerInfoComponent implements OnInit {
   }
 
   private syncMobileSection(): void {
-    if (this.mobileSection === 'stats' && !this.hasStatsSection && this.hasTeams()) {
+    if (this.mobileSection === 'stats' && !this.hasStatsSection && (this.hasTeams() || this.isAdmin)) {
       this.mobileSection = 'teams';
       return;
     }
-    if (this.mobileSection === 'teams' && !this.hasTeams() && this.hasStatsSection) {
+    if (this.mobileSection === 'teams' && !this.hasTeams() && !this.isAdmin && this.hasStatsSection) {
       this.mobileSection = 'stats';
     }
   }
@@ -278,6 +294,106 @@ export class PlayerInfoComponent implements OnInit {
     return clubSide ?? teams[0];
   }
   
+  /**
+   * Admin-only: fetch this player's career from the external API and refresh the teams block.
+   */
+  reloadPlayerCareer(): void {
+    if (!this.isAdmin || this.updatingCareer || !this.queryPlayerId) {
+      return;
+    }
+
+    const token = ++this.careerReloadToken;
+    const playerId = this.queryPlayerId;
+    this.updatingCareer = true;
+    this.careerUpdateError = null;
+
+    this.updaterService.updatePlayerTeams(playerId).subscribe({
+      next: (response: { status?: string; message?: string }) => {
+        if (token !== this.careerReloadToken || playerId !== this.queryPlayerId) {
+          return;
+        }
+        if (response?.status === 'error') {
+          this.updatingCareer = false;
+          this.careerUpdateError = response.message?.trim() || 'Could not reload career';
+          return;
+        }
+        this.refreshCareerBlock(playerId, token);
+      },
+      error: (error: unknown) => {
+        if (token !== this.careerReloadToken || playerId !== this.queryPlayerId) {
+          return;
+        }
+        this.updatingCareer = false;
+        this.careerUpdateError = this.readCareerError(error);
+      }
+    });
+  }
+
+  private refreshCareerBlock(playerId: number, token: number): void {
+    forkJoin({
+      player: this.megagoal.getPlayerById(playerId),
+      career: this.statsService.getPlayerCareerStats(playerId).pipe(
+        catchError((error: unknown) => {
+          console.error('Error reloading player career stats:', error);
+          return of(undefined);
+        })
+      )
+    }).subscribe({
+      next: ({ player, career }) => {
+        if (token !== this.careerReloadToken || playerId !== this.queryPlayerId) {
+          return;
+        }
+        if (!player) {
+          this.updatingCareer = false;
+          this.careerUpdateError = 'Career was updated, but it could not be reloaded.';
+          return;
+        }
+        this.player = player;
+        this.playerAge = this.calculatePlayerAge(this.player.player?.birth?.date);
+        this.playerBirthPlace = this.buildBirthPlace(this.player.player?.birth);
+        this.playerCareerStats = career;
+        this.careerStatsLoading = false;
+        this.teamsSeasonsMode = 'all';
+        this.expandedTeamMatches.clear();
+        this.careerMatchesCache.clear();
+        this.careerMatchesLoadingKeys.clear();
+        this.updateTeamsSeasonsList();
+        this.loadCurrentSeasonTeams();
+        this.syncMobileSection();
+        this.updatingCareer = false;
+        this.careerUpdateError = null;
+      },
+      error: (error: unknown) => {
+        if (token !== this.careerReloadToken || playerId !== this.queryPlayerId) {
+          return;
+        }
+        console.error('Error refreshing player career:', error);
+        this.updatingCareer = false;
+        this.careerUpdateError = 'Career was updated, but it could not be reloaded.';
+      }
+    });
+  }
+
+  private readCareerError(error: unknown): string {
+    if (error && typeof error === 'object') {
+      const body = (error as { error?: unknown }).error;
+      if (typeof body === 'string' && body.trim()) {
+        return body.trim();
+      }
+      if (body && typeof body === 'object') {
+        const detail = (body as { detail?: unknown }).detail;
+        const message = (body as { message?: unknown }).message;
+        if (typeof detail === 'string' && detail.trim()) {
+          return detail.trim();
+        }
+        if (typeof message === 'string' && message.trim()) {
+          return message.trim();
+        }
+      }
+    }
+    return 'Could not reload career';
+  }
+
   setTeamsSeasonsMode(mode: 'watched' | 'all'): void {
     if (this.teamsSeasonsMode === mode) {
       return;

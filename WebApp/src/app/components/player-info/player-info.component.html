@@ -81,7 +81,7 @@
               Stats
             </button>
           }
-          @if (hasTeams() || statsLoading) {
+          @if (hasTeams() || statsLoading || isAdmin) {
             <button
               type="button"
               class="toggle-btn"
@@ -98,7 +98,7 @@
 
     <div
       class="player-main-grid"
-      *ngIf="statsLoading || hasStatsSection || hasTeams()">
+      *ngIf="statsLoading || hasStatsSection || hasTeams() || isAdmin">
 
       <!-- Stats: skeleton while loading, then real card -->
       @if (statsLoading) {
@@ -187,12 +187,15 @@
             <div class="skeleton-block skeleton-team-row"></div>
           }
         </div>
-      } @else if (hasTeams()) {
+      } @else if (hasTeams() || isAdmin) {
         <app-general-card
           customClass="teams-seasons-card"
           [class.player-mobile-pane-hidden]="isMobileView && showPlayerMobileTabs && mobileSection !== 'teams'">
-          <div class="teams-card-header insights-card-header" *ngIf="!isMobileView">
-            <h3>🏆 Teams & Seasons</h3>
+          <div class="teams-card-header insights-card-header" *ngIf="!isMobileView || isAdmin">
+            <h3 *ngIf="!isMobileView">🏆 Teams & Seasons</h3>
+            @if (isAdmin) {
+              <ng-container *ngTemplateOutlet="reloadCareerButton"></ng-container>
+            }
           </div>
           <div class="view-toggle-card teams-seasons-mode-toggle">
             <div class="view-toggle" role="group" aria-label="Teams and seasons filter">
@@ -320,9 +323,30 @@
     <!-- No Teams Message -->
     <div
       class="no-teams-message"
-      *ngIf="!statsLoading && !hasTeams() && (!isMobileView || mobileSection === 'teams' || !hasStatsSection)">
+      *ngIf="!isAdmin && !statsLoading && !hasTeams() && (!isMobileView || mobileSection === 'teams' || !hasStatsSection)">
       <p>No team or watched match history for this player.</p>
     </div>
+
+    <ng-template #reloadCareerButton>
+      <button
+        type="button"
+        class="reload-career-btn"
+        [disabled]="updatingCareer"
+        [class.reload-career-btn--error]="!!careerUpdateError && !updatingCareer"
+        [attr.title]="careerUpdateError || 'Reload this player\'s career'"
+        [attr.aria-busy]="updatingCareer"
+        (click)="reloadPlayerCareer()">
+        @if (updatingCareer) {
+          <span class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Reloading career</span>
+          </span>
+        } @else if (careerUpdateError) {
+          <span class="reload-career-btn__error">{{ careerUpdateError }}</span>
+        } @else {
+          Reload career
+        }
+      </button>
+    </ng-template>
 
   </div>
 </div>
