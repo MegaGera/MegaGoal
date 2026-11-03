@@ -271,7 +271,7 @@
                             <a
                               class="teams-stats-team-link"
                               [routerLink]="['/app/team']"
-                              [queryParams]="{ id: item.team.team.id }">
+                              [queryParams]="{ id: item.team.team.id, view: 'insights' }">
                               <img
                                 class="teams-stats-team-logo"
                                 [src]="images.getRouteImageTeam(item.team.team.id)"

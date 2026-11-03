@@ -653,7 +653,8 @@
       [teamAgainstIds]="filterTeamAgainstSelected"
       [teamsAgainst]="teamsAgainstDisplayed"
       [primaryTeam]="{ id: team.team.id, name: team.team.name }"
-      [hidePrimaryTeamUnlessVs]="true" />
+      [hidePrimaryTeamUnlessVs]="true"
+      (removeFilter)="onActiveFilterBadgeRemove($event)" />
   </ng-template>
 
   <ng-template #teamMobileFilters let-inline="inline" let-collapsed="collapsed" let-sheetEmbed="sheetEmbed">

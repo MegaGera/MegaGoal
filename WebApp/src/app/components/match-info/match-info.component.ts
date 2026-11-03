@@ -61,7 +61,11 @@ export class MatchInfoComponent {
     this.updateViewportMode();
 
     this.activatedRoute.queryParamMap.subscribe(params => {
-      this.queryMatchId = +params.get('id')! || 0;
+      const nextId = +params.get('id')! || 0;
+      if (this.match && this.queryMatchId === nextId) {
+        return;
+      }
+      this.queryMatchId = nextId;
       this.init();
     });
     

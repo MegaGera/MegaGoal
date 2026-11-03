@@ -30,7 +30,7 @@
                     <a
                       class="standings-team-link"
                       routerLink="/app/team"
-                      [queryParams]="{ id: row.team.id }"
+                      [queryParams]="{ id: row.team.id, view: 'insights' }"
                       [attr.aria-label]="'Open ' + row.team.name + ' team page'">
                       <img
                         class="standings-team-badge"

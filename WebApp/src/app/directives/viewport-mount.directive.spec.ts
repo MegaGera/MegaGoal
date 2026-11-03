@@ -108,6 +108,18 @@ describe('ViewportMountDirective', () => {
     expect(host().querySelector('.mounted')).not.toBeNull();
   }));
 
+  it('keeps a mounted host mounted while the list is detached from the document', fakeAsync(() => {
+    fixture.detectChanges();
+    stubRect(40, 280);
+    tick(32);
+    fixture.detectChanges();
+
+    spyOnProperty(host(), 'isConnected', 'get').and.returnValue(false);
+    notify(false);
+
+    expect(host().querySelector('.mounted')).not.toBeNull();
+  }));
+
   it('leaves an off-screen host unmounted and mounts it when it enters', fakeAsync(() => {
     fixture.detectChanges();
     stubRect(4000, 280);

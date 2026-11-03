@@ -13,6 +13,19 @@
   padding: 0 4px;
 }
 
+button.afb-text,
+button.afb-logo {
+  cursor: pointer;
+  font-family: inherit;
+  appearance: none;
+}
+
+button.afb-text:focus-visible,
+button.afb-logo:focus-visible {
+  outline: 2px solid #334155;
+  outline-offset: 2px;
+}
+
 .afb-text {
   display: inline-flex;
   align-items: center;

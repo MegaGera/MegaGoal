@@ -43,7 +43,7 @@ export class TeamCardComponent {
     }
 
     if (this.isTeam && this.teamId !== undefined) {
-      return { id: this.teamId };
+      return { id: this.teamId, view: 'insights' };
     }
 
     return {};

@@ -234,7 +234,10 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  private destroyed = false;
+
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.userMeSubscription?.unsubscribe();
   }
 
@@ -245,6 +248,18 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
 
   private updateMobileLayout(): void {
     this.isMobileLayout = typeof window !== 'undefined' && window.innerWidth < 1025;
+  }
+
+  private isOnThisLeague(leagueId: number): boolean {
+    if (this.destroyed) {
+      return false;
+    }
+    const url = this.router.parseUrl(this.router.url);
+    const segments = url.root.children['primary']?.segments ?? [];
+    return segments.length === 3
+      && segments[0].path === 'app'
+      && segments[1].path === 'leagues'
+      && Number(segments[2].path) === leagueId;
   }
 
   setMobileSection(section: 'teams' | 'standings' | 'matches'): void {
@@ -269,6 +284,9 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
     this.groupedRealMatches = [];
     this.megagoal.getTopLeagues().subscribe({
       next: (leagues: League[]) => {
+        if (!this.isOnThisLeague(leagueId)) {
+          return;
+        }
         this.selectedLeague = leagues.find(league => league.league.id === leagueId);
         if (this.selectedLeague) {
           // Generate seasons dynamically from league data
@@ -298,8 +316,7 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
             next: () => {},
             error: (error) => console.error('Error logging page visit:', error)
           });
-        } else {
-          // League not found, redirect to league selector
+        } else if (this.isOnThisLeague(leagueId)) {
           this.setLoading(false);
           this.router.navigate(['/app/leagues']);
         }
@@ -307,7 +324,9 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
       error: (error: any) => {
         console.error('Error fetching league:', error);
         this.setLoading(false);
-        this.router.navigate(['/app/leagues']);
+        if (this.isOnThisLeague(leagueId)) {
+          this.router.navigate(['/app/leagues']);
+        }
       }
     });
   }
@@ -339,28 +358,35 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
   */
   getRealMatches() {
     if (this.selectedLeague !== undefined && this.selectedSeason !== undefined) {
+      const leagueId = this.selectedLeague.league.id;
+      const seasonId = this.selectedSeason.id;
       this.isLoadingMatches = true;
-      this.megagoal.getRealMatchesByLeagueIDAndSeason(this.selectedLeague.league.id, this.selectedSeason.id, true).subscribe({
+      this.megagoal.getRealMatchesByLeagueIDAndSeason(leagueId, seasonId, true).subscribe({
         next: (result) => {
+          if (!this.isOnThisLeague(leagueId) || this.selectedSeason?.id !== seasonId) {
+            return;
+          }
           this.realMatches = result;
           this.realMatches.sort(function(x, y){
               return y.fixture.timestamp - x.fixture.timestamp;
           });
           this.groupRealMatches();
-          
-          // Add default URL parameters after real matches are loaded
+
+          // Season and matchday are known only after this load. Replace the
+          // current history entry so back does not stop on the address without them.
           const currentUrl = this.router.url;
           if (!currentUrl.includes('season=') || !currentUrl.includes('matchday=')) {
             this.router.navigate([], {
               relativeTo: this.route,
-              queryParams: { 
-                season: this.selectedSeason.id,
-                matchday: this.selectedMatchday + 1 // Convert 0-based index to 1-based matchday
+              queryParams: {
+                season: seasonId,
+                matchday: this.selectedMatchday + 1
               },
-              queryParamsHandling: 'merge'
+              queryParamsHandling: 'merge',
+              replaceUrl: true
             });
           }
-          
+
           this.isLoadingMatches = false;
         },
         error: (error: any) => {

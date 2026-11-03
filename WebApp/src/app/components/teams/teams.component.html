@@ -185,7 +185,8 @@
       [locationId]="filterLocationSelected"
       [locations]="locationsFiltered"
       [leagueIds]="filterLeagueSelected"
-      [leagues]="leaguesFiltered" />
+      [leagues]="leaguesFiltered"
+      (removeFilter)="onActiveFilterBadgeRemove($event)" />
   </ng-template>
 
   <ng-template #teamsMobileFilters let-inline="inline" let-collapsed="collapsed" let-sheetEmbed="sheetEmbed">

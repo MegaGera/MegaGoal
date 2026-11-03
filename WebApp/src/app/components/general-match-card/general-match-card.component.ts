@@ -177,7 +177,7 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
 
   navigateToTeam(teamId: number) {
     this.router.navigate(['/app/team'], { 
-      queryParams: { id: teamId } 
+      queryParams: { id: teamId, view: 'insights' } 
     }).then(() => {
       window.scrollTo(0, 0);
     });

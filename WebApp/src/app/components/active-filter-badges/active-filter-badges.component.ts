@@ -1,10 +1,18 @@
-import { Component, HostBinding, Input } from '@angular/core';
+import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { SeasonInfo } from '../../models/season';
 import { Location } from '../../models/location';
 import { LeagueStats, TeamsViewedStats } from '../../models/league';
 import { ImagesService } from '../../services/images.service';
 import { LeagueColorsService } from '../../services/league-colors.service';
+
+export type ActiveFilterBadgeRemove =
+  | { kind: 'chip' }
+  | { kind: 'season' }
+  | { kind: 'location' }
+  | { kind: 'league'; id: number }
+  | { kind: 'team'; id: number }
+  | { kind: 'opponent'; id: number };
 
 @Component({
   selector: 'app-active-filter-badges',
@@ -38,6 +46,8 @@ export class ActiveFilterBadgesComponent {
    * then show primary + vs + opponents.
    */
   @Input() hidePrimaryTeamUnlessVs = false;
+
+  @Output() removeFilter = new EventEmitter<ActiveFilterBadgeRemove>();
 
   constructor(
     public images: ImagesService,
@@ -126,5 +136,29 @@ export class ActiveFilterBadgesComponent {
 
   leagueBorderColor(leagueId: number): string {
     return this.leagueColors.getLeagueColors(leagueId).card_main_color;
+  }
+
+  removeChip(): void {
+    this.removeFilter.emit({ kind: 'chip' });
+  }
+
+  removeSeason(): void {
+    this.removeFilter.emit({ kind: 'season' });
+  }
+
+  removeLocation(): void {
+    this.removeFilter.emit({ kind: 'location' });
+  }
+
+  removeLeague(id: number): void {
+    this.removeFilter.emit({ kind: 'league', id });
+  }
+
+  removeTeam(id: number): void {
+    this.removeFilter.emit({ kind: 'team', id });
+  }
+
+  removeOpponent(id: number): void {
+    this.removeFilter.emit({ kind: 'opponent', id });
   }
 }

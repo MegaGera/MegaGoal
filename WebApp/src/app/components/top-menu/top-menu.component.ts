@@ -312,7 +312,7 @@ export class TopMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (item.type === 'team') {
-      void this.router.navigate(['/app/team'], { queryParams: { id: item.id } });
+      void this.router.navigate(['/app/team'], { queryParams: { id: item.id, view: 'insights' } });
     } else if (item.type === 'player') {
       void this.router.navigate(['/app/player'], { queryParams: { id: item.id } });
     } else {

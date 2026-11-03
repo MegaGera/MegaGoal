@@ -408,7 +408,7 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
   }
 
   navigateToTeam(teamId: number) {
-    this.router.navigate(['/app/team'], { queryParams: { id: teamId } }).then(() => {
+    this.router.navigate(['/app/team'], { queryParams: { id: teamId, view: 'insights' } }).then(() => {
       window.scrollTo(0, 0);
     });
   }

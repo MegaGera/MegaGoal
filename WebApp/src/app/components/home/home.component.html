@@ -44,7 +44,7 @@
       
       <!-- Left column: Stats information column -->
       @if (this.matchesLoaded && this.matchesOriginal.length > 0) {
-        @if (isMobileView && !mobileFiltersExpanded) {
+        @if (isMobileView) {
           <app-mobile-filters-inline-row>
             <div class="matches-header">
               <h3 class="matches-title">{{ matches.length }} matches</h3>
@@ -208,7 +208,8 @@
       [teamIds]="filterTeamSelected"
       [teams]="teamsFiltered"
       [teamAgainstIds]="filterTeamAgainstSelected"
-      [teamsAgainst]="teamsAgainstViewed" />
+      [teamsAgainst]="teamsAgainstViewed"
+      (removeFilter)="onActiveFilterBadgeRemove($event)" />
   </ng-template>
 
   <ng-template #homeMobileFilters let-inline="inline" let-collapsed="collapsed" let-sheetEmbed="sheetEmbed">

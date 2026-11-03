@@ -1,7 +1,7 @@
 <div class="team-row-wrapper">
   <div class="team-row-card">
     <div class="team-info-section">
-      <a [routerLink]="['/app/team']" [queryParams]="{ id: teamData.team.id }" class="team-link">
+      <a [routerLink]="['/app/team']" [queryParams]="{ id: teamData.team.id, view: 'insights' }" class="team-link">
         <img 
           [src]="images.getRouteImageTeam(teamData.team.id)" 
           [alt]="teamData.team.name"
@@ -9,7 +9,7 @@
           (error)="onImageError($event)">
       </a>
       <div class="team-details">
-        <a [routerLink]="['/app/team']" [queryParams]="{ id: teamData.team.id }" class="team-link">
+        <a [routerLink]="['/app/team']" [queryParams]="{ id: teamData.team.id, view: 'insights' }" class="team-link">
           <h4 class="team-name">{{ teamData.team.name }}</h4>
         </a>
         <span class="team-country" *ngIf="teamData.team.country">{{ teamData.team.country }}</span>

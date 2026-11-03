@@ -28,7 +28,7 @@
           <a
             class="player-team-mark"
             [routerLink]="['/app/team']"
-            [queryParams]="{ id: teamId }"
+            [queryParams]="{ id: teamId, view: 'insights' }"
             [attr.aria-label]="'Open ' + (currentClubName ?? 'team') + ' team page'"
             [style.border]="'2px solid ' + leagueAccentBorderColor">
             <img

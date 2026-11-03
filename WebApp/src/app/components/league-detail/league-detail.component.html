@@ -250,7 +250,7 @@
                   class="team-card"
                   (click)="selectTeam(team)" 
                   routerLink="/app/team" 
-                  [queryParams]="{id: team.team.id}" 
+                  [queryParams]="{ id: team.team.id, view: 'insights' }" 
                   routerLinkActive="active" 
                   ariaCurrentWhenActive="page"
                   [attr.aria-label]="'View ' + team.team.name + ' team details'">

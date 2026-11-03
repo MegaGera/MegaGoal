@@ -108,6 +108,12 @@ export class ViewportMountDirective implements AfterViewInit, OnDestroy {
       return;
     }
 
+    // Route reuse detaches the list from the document. That is not a scroll
+    // off screen, so keep the mounted cards for when the list comes back.
+    if (!this.el.nativeElement.isConnected) {
+      return;
+    }
+
     // A hidden report before layout is not trustworthy and would stick.
     if (!isIntersecting && !this.layoutReady) {
       return;

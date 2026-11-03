@@ -15,7 +15,7 @@
     @if (showHeader) {
       <div class="card-header">
         <div class="team-info">
-          <a [routerLink]="['/app/team']" [queryParams]="{id: teamStats.team_id}" class="team-logo-link">
+          <a [routerLink]="['/app/team']" [queryParams]="{ id: teamStats.team_id, view: 'insights' }" class="team-logo-link">
             <div class="team-logo-container">
               <img 
                 [ngSrc]="images.getRouteImageTeam(teamStats.team_id)" 
@@ -28,7 +28,7 @@
           </a>
           <div class="team-details">
             <div class="team-name-row">
-              <a [routerLink]="['/app/team']" [queryParams]="{id: teamStats.team_id}" class="team-name-link">
+              <a [routerLink]="['/app/team']" [queryParams]="{ id: teamStats.team_id, view: 'insights' }" class="team-name-link">
                 <h3 class="team-name">{{ teamStats.team_name }}</h3>
               </a>
               <div class="top-viewed-badge">

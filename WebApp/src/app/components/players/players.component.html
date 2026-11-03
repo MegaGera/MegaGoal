@@ -205,7 +205,8 @@
       [teamIds]="filterTeamSelected"
       [teams]="teamsFiltered"
       [teamAgainstIds]="filterTeamAgainstSelected"
-      [teamsAgainst]="teamsAgainstViewed" />
+      [teamsAgainst]="teamsAgainstViewed"
+      (removeFilter)="onActiveFilterBadgeRemove($event)" />
   </ng-template>
 
   <ng-template #playersMobileFilters let-inline="inline" let-collapsed="collapsed" let-sheetEmbed="sheetEmbed">

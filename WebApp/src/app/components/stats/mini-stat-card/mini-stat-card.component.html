@@ -67,7 +67,7 @@
     </div>
   </a>
 } @else if (interactable && team_id !== undefined && !isPlayerType()) {
-  <a [routerLink]="['/app/team']" [queryParams]="{id: team_id}" class="mini-stat-card-link">
+  <a [routerLink]="['/app/team']" [queryParams]="{ id: team_id, view: 'insights' }" class="mini-stat-card-link">
     <div class="mini-stat-card" [ngClass]="type">
       <div class="stat-highlight-icon">
         @if (shouldShowTeamBadge()) {

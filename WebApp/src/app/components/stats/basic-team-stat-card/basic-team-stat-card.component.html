@@ -3,7 +3,7 @@
   [class.team-card--top]="rank != null && rank <= 3"
   [class.team-card--seen]="seen"
   [routerLink]="['/app/team']"
-  [queryParams]="{ id: teamId }">
+  [queryParams]="{ id: teamId, view: 'insights' }">
 
   @if (rank != null) {
     <div class="team-card__rank" [attr.data-rank]="rank">

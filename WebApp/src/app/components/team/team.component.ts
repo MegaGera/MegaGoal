@@ -34,7 +34,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { MobileFiltersInlineRowComponent } from '../mobile-filters-inline-row/mobile-filters-inline-row.component';
 import { MobileFiltersBottomSheetComponent } from '../mobile-filters-bottom-sheet/mobile-filters-bottom-sheet.component';
-import { ActiveFilterBadgesComponent } from '../active-filter-badges/active-filter-badges.component';
+import { ActiveFilterBadgeRemove, ActiveFilterBadgesComponent } from '../active-filter-badges/active-filter-badges.component';
 import { LeagueStats, TeamsViewedStats } from '../../models/league';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -114,8 +114,9 @@ export class TeamComponent implements OnInit, OnDestroy {
   
   // Store restored state before data loads
   private restoredSeasonId: number | null = null;
-  /** When true, after watched matches load, sync default view to URL (and use All Matches if none watched). */
+  /** When true, the opening address had no view, so write it after watched matches load. */
   private syncDefaultViewToUrlAfterWatchedLoad = false;
+  private destroyed = false;
   realMatches: RealMatch[] = [];
   showRealMatches: RealMatch[] = [];
   matches: Match[] = [];
@@ -373,7 +374,7 @@ export class TeamComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Cleanup if needed
+    this.destroyed = true;
   }
 
   @HostListener('window:resize', ['$event'])
@@ -388,6 +389,9 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   init(hasViewParam: boolean = false) {
     this.megagoal.getTeamById(this.queryTeamId).subscribe(result => {
+      if (!this.isOnThisTeam()) {
+        return;
+      }
       if (result != undefined) {
         this.team = result;
         if (this.viewMode === 'squad' && !this.hasSquad) {
@@ -410,11 +414,13 @@ export class TeamComponent implements OnInit, OnDestroy {
           next: () => {},
           error: (error) => console.error('Error logging page visit:', error)
         });
-      } else {
+      } else if (this.isOnThisTeam()) {
         this.router.navigate(["/app/leagues"]);
       }
     }, error => {
-      this.router.navigate(["/app/leagues"]);
+      if (this.isOnThisTeam()) {
+        this.router.navigate(["/app/leagues"]);
+      }
     })
 
   }
@@ -663,19 +669,34 @@ export class TeamComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * If the user opened the team without a `view` query param and has no watched matches,
-   * default to All Matches (fixtures) instead of an empty Stats view.
+   * A team opened on Stats with no watched matches moves to All Matches.
+   * That write replaces the current history entry, and it does not run after the user has left.
    */
   private applyDefaultViewAfterWatchedMatchesLoaded(): void {
-    if (!this.syncDefaultViewToUrlAfterWatchedLoad) {
+    const shouldWriteOpeningView = this.syncDefaultViewToUrlAfterWatchedLoad;
+    this.syncDefaultViewToUrlAfterWatchedLoad = false;
+    if (!this.isOnThisTeam()) {
       return;
     }
-    this.syncDefaultViewToUrlAfterWatchedLoad = false;
-    if (this.allWatchedMatches.length === 0) {
+    if (this.allWatchedMatches.length === 0 && this.viewMode === 'insights') {
       this.setView('allMatches');
-    } else {
+      return;
+    }
+    if (shouldWriteOpeningView) {
       this.updateQueryParams();
     }
+  }
+
+  private isOnThisTeam(): boolean {
+    if (this.destroyed) {
+      return false;
+    }
+    const url = this.router.parseUrl(this.router.url);
+    const segments = url.root.children['primary']?.segments ?? [];
+    if (segments.length !== 2 || segments[0].path !== 'app' || segments[1].path !== 'team') {
+      return false;
+    }
+    return Number(url.queryParams['id']) === this.queryTeamId;
   }
 
   setView(mode: 'insights' | 'yourMatches' | 'allMatches' | 'squad'): void {
@@ -822,6 +843,28 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterMatches();
     this.filterInsightsData({ skipAgainstListFetch: true });
     this.updateQueryParams();
+  }
+
+  onActiveFilterBadgeRemove(event: ActiveFilterBadgeRemove): void {
+    switch (event.kind) {
+      case 'season':
+        this.onFilterSeasonSelectedChange(this.allTimeSeasonOption);
+        break;
+      case 'location':
+        this.onFilterLocationSelectedChange('');
+        break;
+      case 'league':
+        this.onFilterLeagueSelectedChange(this.filterLeagueSelected.filter((id) => id !== event.id));
+        break;
+      case 'opponent':
+        this.onFilterTeamAgainstSelectedChange(
+          this.filterTeamAgainstSelected.filter((id) => id !== event.id),
+        );
+        break;
+      case 'chip':
+      case 'team':
+        break;
+    }
   }
 
   resetFilters(): void {
@@ -1583,6 +1626,9 @@ export class TeamComponent implements OnInit, OnDestroy {
    * Save current state to query parameters
    */
   private updateQueryParams(): void {
+    if (!this.isOnThisTeam()) {
+      return;
+    }
     // Build clean query params object - only include what we want
     const queryParams: any = {
       id: this.queryTeamId,

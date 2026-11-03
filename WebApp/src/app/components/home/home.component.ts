@@ -33,7 +33,7 @@ import { GeneralStatsComponent } from '../stats/general-stats/general-stats.comp
 import { FiltersHomeComponent } from '../filters-home/filters-home.component';
 import { MobileFiltersInlineRowComponent } from '../mobile-filters-inline-row/mobile-filters-inline-row.component';
 import { MobileFiltersBottomSheetComponent } from '../mobile-filters-bottom-sheet/mobile-filters-bottom-sheet.component';
-import { ActiveFilterBadgesComponent } from '../active-filter-badges/active-filter-badges.component';
+import { ActiveFilterBadgeRemove, ActiveFilterBadgesComponent } from '../active-filter-badges/active-filter-badges.component';
 import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
 import { UserMe } from '../../models/userMe';
 import { NotificationComponent } from '../notification/notification.component';
@@ -881,6 +881,29 @@ export class HomeComponent implements OnInit, OnDestroy {
       return null;
     }
     return this.matches[index - 1];
+  }
+
+  onActiveFilterBadgeRemove(event: ActiveFilterBadgeRemove): void {
+    switch (event.kind) {
+      case 'chip':
+        this.changeFilterPanelChipSelected(0);
+        break;
+      case 'season':
+        this.changeFilterSeasonSelected(this.seasons[0]);
+        break;
+      case 'location':
+        this.changeFilterLocationSelected('');
+        break;
+      case 'league':
+        this.changeFilterLeagueSelected(this.filterLeagueSelected.filter((id) => id !== event.id));
+        break;
+      case 'team':
+        this.changeFilterTeamSelected(this.filterTeamSelected.filter((id) => id !== event.id));
+        break;
+      case 'opponent':
+        this.changeFilterTeamAgainstSelected(this.filterTeamAgainstSelected.filter((id) => id !== event.id));
+        break;
+    }
   }
 
   resetFilters() {
