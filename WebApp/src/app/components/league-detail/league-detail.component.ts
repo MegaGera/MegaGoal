@@ -544,21 +544,15 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
     This method get teams by season
   */
   getTeamsBySeason(season: SeasonInfo): void {
-    this.selectedSeason = season;
-    // Reset matchday to 1 (index 0) when season changes
-    this.selectedMatchday = 0;
-    this.queryMatchday = 0; // Update query matchday to match (0-based index)
-    this.getTeamsByLeagueAndSeason(this.selectedLeague!.league.id, season.id);
-    this.getRealMatches();
-    this.getMatches();
-    
-    // Reset match pagination
-    this.currentMatchesPage = 1;
-    
-    // Update URL with new season parameter and reset matchday to 1
+    // The select already points at the new season. Put this instance back so
+    // browser back can show it unchanged. The next history entry loads that season.
+    const current = this.seasonsFiltered.find((item) => item.id === this.querySeasonId);
+    if (current) {
+      this.selectedSeason = current;
+    }
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { 
+      queryParams: {
         season: season.id,
         matchday: 1
       },

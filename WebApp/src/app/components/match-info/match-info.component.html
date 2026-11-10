@@ -116,11 +116,16 @@
     <div class="mobile-tab-pane" [class.show]="viewMode === 'lineups'">
       <h3 class="match-panel-title">Lineups</h3>
       <app-match-lineups
-        *ngIf="viewMode === 'lineups' && match.lineups"
-        [lineups]="match.lineups"
+        *ngIf="viewMode === 'lineups' && (match.lineups || isAdmin)"
+        [lineups]="match.lineups || []"
         [events]="match.events || []"
         [homeTeamId]="match.teams.home.id"
-        [awayTeamId]="match.teams.away.id">
+        [awayTeamId]="match.teams.away.id"
+        [isAdmin]="isAdmin"
+        [fixtureId]="match.fixture.id"
+        [homeTeam]="match.teams.home"
+        [awayTeam]="match.teams.away"
+        (lineupsChange)="match.lineups = $event">
       </app-match-lineups>
     </div>
 
@@ -175,11 +180,16 @@
         <div class="match-panel-card">
           <h3 class="match-panel-title">Lineups</h3>
           <app-match-lineups
-            *ngIf="match.lineups"
-            [lineups]="match.lineups"
+            *ngIf="match.lineups || isAdmin"
+            [lineups]="match.lineups || []"
             [events]="match.events || []"
             [homeTeamId]="match.teams.home.id"
-            [awayTeamId]="match.teams.away.id">
+            [awayTeamId]="match.teams.away.id"
+            [isAdmin]="isAdmin"
+            [fixtureId]="match.fixture.id"
+            [homeTeam]="match.teams.home"
+            [awayTeam]="match.teams.away"
+            (lineupsChange)="match.lineups = $event">
           </app-match-lineups>
         </div>
       </div>

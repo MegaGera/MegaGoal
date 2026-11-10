@@ -1,4 +1,4 @@
-<div class="lineups-section" *ngIf="lineups && lineups.length > 0">
+<div class="lineups-section" *ngIf="shownLineups.length > 0">
   <h2 class="section-title">Lineups</h2>
 
   <!-- Single pitch: home top half, away bottom half (reversed rows) -->
@@ -286,6 +286,80 @@
 </div>
 
 <!-- No Lineups Message -->
-<div class="no-lineups" *ngIf="!lineups || lineups.length === 0">
+<div class="no-lineups" *ngIf="shownLineups.length === 0">
   <p>No lineups available for this match</p>
+</div>
+
+<button type="button" class="lineup-edit-open" *ngIf="isAdmin" (click)="openEditor()">
+  Edit
+</button>
+
+<div class="lineup-modal" *ngIf="editing && draft" (click)="closeEditor()">
+  <div class="lineup-modal-card" role="dialog" aria-modal="true" aria-label="Edit lineups" (click)="$event.stopPropagation()">
+    <div class="lineup-modal-header">
+      <h3>Edit lineups</h3>
+      <button type="button" class="lineup-modal-close" (click)="closeEditor()" [disabled]="saving" aria-label="Close">×</button>
+    </div>
+    <div class="lineup-modal-actions">
+      <button type="button" class="lineup-admin-btn" (click)="swapSides()" [disabled]="saving">Swap sides</button>
+      <button type="button" class="lineup-admin-btn" (click)="swapTrainers()" [disabled]="saving">Swap trainers</button>
+      <button type="button" class="lineup-admin-btn lineup-admin-btn--save" (click)="save()" [disabled]="saving">Save</button>
+    </div>
+    <p class="lineup-admin-error" *ngIf="saveError">{{ saveError }}</p>
+    <div class="lineup-admin-editor">
+      <div class="lineup-admin-side" *ngFor="let side of editorSides">
+        <h4 class="lineup-admin-side-title">{{ sideName(side) }}</h4>
+        <p class="lineup-admin-formation">{{ lineupFor(side).formation || 'No formation yet' }}</p>
+        <p class="lineup-admin-formation">Trainer: {{ lineupFor(side).coach?.name || 'None' }}</p>
+
+        <h5>Starting XI</h5>
+        <div class="lineup-edit-row" *ngFor="let row of lineupFor(side).startXI; let i = index">
+          <input class="lineup-edit-number" type="number" min="0" max="99" [(ngModel)]="row.player.number" [name]="'num-' + side + '-xi-' + i">
+          <span class="lineup-edit-name">{{ row.player.name }}</span>
+          <select [(ngModel)]="row.player.pos" [name]="'pos-' + side + '-xi-' + i">
+            <option *ngFor="let pos of positionOptions" [value]="pos">{{ pos }}</option>
+          </select>
+          <input class="lineup-edit-grid" type="text" placeholder="2:3" [(ngModel)]="row.player.grid" (ngModelChange)="onGridChange(side)" [name]="'grid-' + side + '-' + i">
+          <button type="button" class="lineup-edit-action" (click)="beginReplace(side, 'startXI', i)">Replace</button>
+          <button type="button" class="lineup-edit-action" (click)="movePlayer(side, 'startXI', i)">Bench</button>
+          <button type="button" class="lineup-edit-action" (click)="removePlayer(side, 'startXI', i)">Remove</button>
+        </div>
+
+        <h5>Substitutes</h5>
+        <div class="lineup-edit-row" *ngFor="let row of lineupFor(side).substitutes; let i = index">
+          <input class="lineup-edit-number" type="number" min="0" max="99" [(ngModel)]="row.player.number" [name]="'num-' + side + '-sub-' + i">
+          <span class="lineup-edit-name">{{ row.player.name }}</span>
+          <select [(ngModel)]="row.player.pos" [name]="'pos-' + side + '-sub-' + i">
+            <option *ngFor="let pos of positionOptions" [value]="pos">{{ pos }}</option>
+          </select>
+          <button type="button" class="lineup-edit-action" (click)="beginReplace(side, 'substitutes', i)">Replace</button>
+          <button type="button" class="lineup-edit-action" (click)="movePlayer(side, 'substitutes', i)">Start</button>
+          <button type="button" class="lineup-edit-action" (click)="removePlayer(side, 'substitutes', i)">Remove</button>
+        </div>
+
+        <label class="lineup-search-label">
+          {{ replaceTarget?.side === side ? 'Replace with' : 'Add player' }}
+          <input
+            type="search"
+            [ngModel]="editorSearch[side].query"
+            (ngModelChange)="onPlayerQuery(side, $event)"
+            [name]="'search-' + side"
+            placeholder="Search player"
+            autocomplete="off">
+        </label>
+        <div class="lineup-search-skeleton" *ngIf="editorSearch[side].loading" aria-hidden="true">
+          <span></span>
+          <span></span>
+        </div>
+        <div class="lineup-search-results" *ngIf="!editorSearch[side].loading && editorSearch[side].results.length > 0">
+          <button
+            type="button"
+            *ngFor="let player of editorSearch[side].results"
+            (click)="pickPlayer(side, player)">
+            {{ player.name }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

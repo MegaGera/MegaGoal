@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { jamCheck, jamClose, jamPencil, jamStar, jamStarF } from '@ng-icons/jam-icons';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { forkJoin, Subscription } from 'rxjs';
 import { MegaGoalService } from '../../services/megagoal.service';
 import { AuthService } from '../../services/auth.service';
 import { UserMe } from '../../models/userMe';
@@ -16,10 +18,18 @@ interface FavouriteListItem {
   pending: boolean;
 }
 
+type FavouriteKind = 'team' | 'league';
+
+interface FavouriteSearchHit {
+  type: FavouriteKind;
+  id: number;
+  name: string;
+}
+
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NgIconComponent],
+  imports: [CommonModule, FormsModule, RouterModule, NgIconComponent, DragDropModule],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
   providers: [
@@ -27,12 +37,25 @@ interface FavouriteListItem {
     provideIcons({ jamCheck, jamClose, jamPencil, jamStar, jamStarF }),
   ],
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   user: UserMe | null = null;
   favouriteTeams: FavouriteListItem[] = [];
   favouriteLeagues: FavouriteListItem[] = [];
   loading = true;
   loadFailed = false;
+
+  favouriteQuery = '';
+  favouriteSearchOpen = false;
+  favouriteSearchLoading = false;
+  favouriteSearchError = false;
+  favouriteSearchResults: FavouriteSearchHit[] = [];
+  private favouriteSearchTimer: ReturnType<typeof setTimeout> | null = null;
+  private favouriteSearchSub?: Subscription;
+  private favouriteSearchRequestId = 0;
+  private pendingFavourites = new Set<string>();
+  private reorderGeneration: Record<FavouriteKind, number> = { team: 0, league: 0 };
+
+  @ViewChild('favouriteSearchRoot') favouriteSearchRoot?: ElementRef<HTMLElement>;
 
   /** Custom profile picture URL when available; null shows the default avatar. */
   profilePictureUrl: string | null = null;
@@ -61,6 +84,13 @@ export class ProfileComponent implements OnInit {
 
   get hasEmail(): boolean {
     return !!this.email?.trim();
+  }
+
+  ngOnDestroy(): void {
+    if (this.favouriteSearchTimer) {
+      clearTimeout(this.favouriteSearchTimer);
+    }
+    this.favouriteSearchSub?.unsubscribe();
   }
 
   ngOnInit(): void {
@@ -228,52 +258,208 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  toggleFavouriteTeam(team: FavouriteListItem): void {
-    if (team.pending) {
+  onFavouriteQueryChange(value: string): void {
+    this.favouriteQuery = value;
+    if (this.favouriteSearchTimer) {
+      clearTimeout(this.favouriteSearchTimer);
+      this.favouriteSearchTimer = null;
+    }
+
+    const requestId = ++this.favouriteSearchRequestId;
+    this.favouriteSearchSub?.unsubscribe();
+    const trimmed = value.trim();
+    if (!trimmed) {
+      this.favouriteSearchResults = [];
+      this.favouriteSearchLoading = false;
+      this.favouriteSearchError = false;
+      this.favouriteSearchOpen = false;
       return;
     }
 
-    const nextFavourite = !team.isFavourite;
-    team.pending = true;
+    this.favouriteSearchOpen = true;
+    this.favouriteSearchLoading = true;
+    this.favouriteSearchError = false;
+    this.favouriteSearchTimer = setTimeout(() => {
+      this.favouriteSearchTimer = null;
+      if (requestId !== this.favouriteSearchRequestId) {
+        return;
+      }
+      this.runFavouriteSearch(trimmed, requestId);
+    }, 250);
+  }
 
-    this.megaGoalService.setFavouriteTeam(team.id, team.name, nextFavourite).subscribe({
-      next: (updatedUser) => {
-        this.applyUser(updatedUser);
-        const localItem = this.favouriteTeams.find((t) => t.id === team.id);
-        if (localItem) {
-          localItem.isFavourite = nextFavourite;
-          localItem.pending = false;
-        }
-      },
+  onFavouriteSearchFocus(): void {
+    if (this.favouriteQuery.trim()) {
+      this.favouriteSearchOpen = true;
+    }
+  }
+
+  selectFavouriteHit(hit: FavouriteSearchHit): void {
+    if (this.isFavouritePending(hit.type, hit.id)) {
+      return;
+    }
+    const list = hit.type === 'team' ? this.favouriteTeams : this.favouriteLeagues;
+    const existing = list.find((item) => item.id === hit.id);
+    const item: FavouriteListItem = existing ?? {
+      id: hit.id,
+      name: hit.name,
+      isFavourite: false,
+      pending: false,
+    };
+    if (hit.type === 'team') {
+      this.toggleFavouriteTeam(item);
+    } else {
+      this.toggleFavouriteLeague(item);
+    }
+  }
+
+  isHitFavourite(hit: FavouriteSearchHit): boolean {
+    const list = hit.type === 'team' ? this.favouriteTeams : this.favouriteLeagues;
+    return list.some((item) => item.id === hit.id && item.isFavourite);
+  }
+
+  isFavouritePending(type: FavouriteKind, id: number): boolean {
+    return this.pendingFavourites.has(this.favouriteKey(type, id));
+  }
+
+  favouriteListBusy(type: FavouriteKind): boolean {
+    const prefix = `${type}:`;
+    for (const key of this.pendingFavourites) {
+      if (key.startsWith(prefix)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  hitImageUrl(hit: FavouriteSearchHit): string {
+    return hit.type === 'team'
+      ? this.images.getRouteImageTeam(hit.id)
+      : this.images.getRouteImageLeagueSm(hit.id);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const root = this.favouriteSearchRoot?.nativeElement;
+    const target = event.target;
+    if (!root || !(target instanceof Node) || root.contains(target)) {
+      return;
+    }
+    this.favouriteSearchOpen = false;
+  }
+
+  dropFavourites(type: FavouriteKind, event: CdkDragDrop<FavouriteListItem[]>): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    const list = type === 'team' ? this.favouriteTeams : this.favouriteLeagues;
+    const previousIndex = event.previousIndex;
+    const currentIndex = event.currentIndex;
+    const previousIds = list.filter((item) => item.isFavourite).map((item) => item.id);
+
+    // Same turn as the drop. A later tick paints the old order first, which shows up as a
+    // refresh when the row moved upward.
+    moveItemInArray(list, previousIndex, currentIndex);
+    const ids = list.filter((item) => item.isFavourite).map((item) => item.id);
+    if (ids.join(',') === previousIds.join(',')) {
+      return;
+    }
+
+    const generation = ++this.reorderGeneration[type];
+    const request =
+      type === 'team'
+        ? this.megaGoalService.reorderFavouriteTeams(ids)
+        : this.megaGoalService.reorderFavouriteLeagues(ids);
+
+    request.subscribe({
+      next: () => {},
       error: (err) => {
-        team.pending = false;
-        console.error('Error updating favourite team:', err);
+        if (generation !== this.reorderGeneration[type]) {
+          return;
+        }
+        moveItemInArray(list, currentIndex, previousIndex);
+        console.error(`Error reordering favourite ${type}s:`, err);
       },
     });
   }
 
+  toggleFavouriteTeam(team: FavouriteListItem): void {
+    this.toggleFavourite('team', team);
+  }
+
   toggleFavouriteLeague(league: FavouriteListItem): void {
-    if (league.pending) {
+    this.toggleFavourite('league', league);
+  }
+
+  private toggleFavourite(type: FavouriteKind, item: FavouriteListItem): void {
+    if (this.isFavouritePending(type, item.id)) {
       return;
     }
 
-    const nextFavourite = !league.isFavourite;
-    league.pending = true;
+    const nextFavourite = !item.isFavourite;
+    this.pendingFavourites.add(this.favouriteKey(type, item.id));
+    item.pending = true;
 
-    this.megaGoalService.setFavouriteLeague(league.id, league.name, nextFavourite).subscribe({
+    const request =
+      type === 'team'
+        ? this.megaGoalService.setFavouriteTeam(item.id, item.name, nextFavourite)
+        : this.megaGoalService.setFavouriteLeague(item.id, item.name, nextFavourite);
+
+    request.subscribe({
       next: (updatedUser) => {
+        this.pendingFavourites.delete(this.favouriteKey(type, item.id));
         this.applyUser(updatedUser);
-        const localItem = this.favouriteLeagues.find((l) => l.id === league.id);
-        if (localItem) {
-          localItem.isFavourite = nextFavourite;
-          localItem.pending = false;
-        }
       },
       error: (err) => {
-        league.pending = false;
-        console.error('Error updating favourite league:', err);
+        this.pendingFavourites.delete(this.favouriteKey(type, item.id));
+        item.pending = false;
+        console.error(`Error updating favourite ${type}:`, err);
       },
     });
+  }
+
+  private runFavouriteSearch(query: string, requestId: number): void {
+    this.favouriteSearchSub?.unsubscribe();
+    this.favouriteSearchLoading = true;
+    this.favouriteSearchError = false;
+
+    this.favouriteSearchSub = forkJoin({
+      teams: this.megaGoalService.searchTeams(query, { limit: 8 }),
+      leagues: this.megaGoalService.searchLeagues(query, { limit: 8 }),
+    }).subscribe({
+      next: ({ teams, leagues }) => {
+        if (requestId !== this.favouriteSearchRequestId) {
+          return;
+        }
+        const teamHits: FavouriteSearchHit[] = teams.teams
+          .filter((team) => Number.isFinite(team.id) && team.name)
+          .map((team) => ({ type: 'team', id: team.id, name: team.name }));
+        const leagueHits: FavouriteSearchHit[] = leagues.leagues
+          .filter((league) => Number.isFinite(league.id) && league.name)
+          .map((league) => ({ type: 'league', id: league.id, name: league.name }));
+        const merged: FavouriteSearchHit[] = [];
+        const count = Math.max(teamHits.length, leagueHits.length);
+        for (let i = 0; i < count; i++) {
+          if (teamHits[i]) merged.push(teamHits[i]);
+          if (leagueHits[i]) merged.push(leagueHits[i]);
+        }
+        this.favouriteSearchResults = merged;
+        this.favouriteSearchLoading = false;
+      },
+      error: () => {
+        if (requestId !== this.favouriteSearchRequestId) {
+          return;
+        }
+        this.favouriteSearchResults = [];
+        this.favouriteSearchLoading = false;
+        this.favouriteSearchError = true;
+      },
+    });
+  }
+
+  private favouriteKey(type: FavouriteKind, id: number): string {
+    return `${type}:${id}`;
   }
 
   private resetPasswordForm(): void {

@@ -6,7 +6,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -25,6 +25,18 @@ import { MatchRowComponent } from './team-row/match-row/match-row.component';
 import { PlayerHeaderComponent } from './player-header/player-header.component';
 import { BasicStatCardComponent } from '../stats/basic-stat-card/basic-stat-card.component';
 import { GeneralCardComponent } from '../general-card/general-card.component';
+
+interface ClubSeasonSlice {
+  season: number;
+  matchesPlayed: number;
+}
+
+interface ClubGroup {
+  teamId: number;
+  team: any;
+  teamStats: TeamSeasonStats;
+  seasons: ClubSeasonSlice[];
+}
 
 @Component({
   selector: 'app-player-info',
@@ -52,8 +64,11 @@ export class PlayerInfoComponent implements OnInit {
   careerStatsLoading: boolean = true;
   
   teamsSeasonsGroups: { season: number; items: { team: any; teamStats?: TeamSeasonStats }[] }[] = [];
+  teamsClubGroups: ClubGroup[] = [];
   /** Filter for Teams & Seasons: watched-only vs full career history. */
   teamsSeasonsMode: 'watched' | 'all' = 'watched';
+  /** Season dividers, or one summed row per club. */
+  teamsGroupMode: 'season' | 'team' = 'team';
   playerAge: number | null = null;
   playerBirthPlace: string | null = null;
 
@@ -73,6 +88,7 @@ export class PlayerInfoComponent implements OnInit {
 
   readonly skeletonStatSlots = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   readonly skeletonTeamSlots = [1, 2, 3, 4];
+  readonly skeletonMatchSlots = [1, 2, 3];
 
   readonly teamsStatsLegend = [
     { icon: '🏟️', label: 'Matches played', key: 'matches_played' as const },
@@ -155,7 +171,9 @@ export class PlayerInfoComponent implements OnInit {
     this.playerStats = undefined;
     this.playerCareerStats = undefined;
     this.teamsSeasonsGroups = [];
+    this.teamsClubGroups = [];
     this.teamsSeasonsMode = 'watched';
+    this.teamsGroupMode = 'team';
     this.expandedTeamMatches.clear();
     this.careerMatchesCache.clear();
     this.careerMatchesLoadingKeys.clear();
@@ -403,11 +421,20 @@ export class PlayerInfoComponent implements OnInit {
     this.updateTeamsSeasonsList();
   }
 
+  setTeamsGroupMode(mode: 'season' | 'team'): void {
+    if (this.teamsGroupMode === mode) {
+      return;
+    }
+    this.teamsGroupMode = mode;
+    this.expandedTeamMatches.clear();
+  }
+
   updateTeamsSeasonsList(): void {
     this.teamsSeasonsGroups =
       this.teamsSeasonsMode === 'watched'
         ? this.buildWatchedTeamsSeasonsGroups()
         : this.buildAllPlayedTeamsSeasonsGroups();
+    this.teamsClubGroups = this.buildClubGroups(this.teamsSeasonsGroups);
   }
 
   private buildWatchedTeamsSeasonsGroups(): {
@@ -535,6 +562,80 @@ export class PlayerInfoComponent implements OnInit {
     return { team: { id: teamId, name: teamName } };
   }
 
+  private buildClubGroups(
+    groups: { season: number; items: { team: any; teamStats?: TeamSeasonStats }[] }[]
+  ): ClubGroup[] {
+    const byTeam = new Map<number, ClubGroup>();
+
+    for (const group of groups) {
+      for (const item of group.items) {
+        const teamId = item.team?.team?.id ?? item.teamStats?.team_id;
+        if (teamId == null) {
+          continue;
+        }
+        const teamName = item.team?.team?.name ?? item.teamStats?.team_name ?? `Team ${teamId}`;
+        let club = byTeam.get(teamId);
+        if (!club) {
+          club = {
+            teamId,
+            team: item.team,
+            teamStats: this.emptyTeamStats(teamId, teamName),
+            seasons: []
+          };
+          byTeam.set(teamId, club);
+        }
+        const played = item.teamStats?.matches_played ?? 0;
+        const slice = club.seasons.find((entry) => entry.season === group.season);
+        if (slice) {
+          slice.matchesPlayed += played;
+        } else {
+          club.seasons.push({ season: group.season, matchesPlayed: played });
+        }
+        this.addTeamStats(club.teamStats, item.teamStats);
+      }
+    }
+
+    return [...byTeam.values()].sort((a, b) => {
+      const aSeason = Math.max(...a.seasons.map((entry) => entry.season));
+      const bSeason = Math.max(...b.seasons.map((entry) => entry.season));
+      if (bSeason !== aSeason) {
+        return bSeason - aSeason;
+      }
+      const aName = a.team?.team?.name ?? a.teamStats.team_name;
+      const bName = b.team?.team?.name ?? b.teamStats.team_name;
+      return aName.localeCompare(bName);
+    });
+  }
+
+  private emptyTeamStats(teamId: number, teamName: string): TeamSeasonStats {
+    return {
+      team_id: teamId,
+      team_name: teamName,
+      matches: [],
+      matches_played: 0,
+      matches_viewed: 0,
+      goals: 0,
+      assists: 0,
+      yellow_cards: 0,
+      red_cards: 0
+    };
+  }
+
+  private addTeamStats(target: TeamSeasonStats, source?: TeamSeasonStats): void {
+    if (!source) {
+      return;
+    }
+    target.matches_played = (target.matches_played ?? 0) + (source.matches_played ?? 0);
+    target.matches_viewed += source.matches_viewed ?? 0;
+    target.goals += source.goals ?? 0;
+    target.assists += source.assists ?? 0;
+    target.yellow_cards += source.yellow_cards ?? 0;
+    target.red_cards += source.red_cards ?? 0;
+    if (source.matches?.length) {
+      target.matches.push(...source.matches);
+    }
+  }
+
   formatSeasonDisplay(season: number): string {
     return `${season}/${(season + 1).toString().slice(-2)}`;
   }
@@ -615,6 +716,14 @@ export class PlayerInfoComponent implements OnInit {
     return this.careerMatchesLoadingKeys.has(this.teamMatchesKey(season, teamId));
   }
 
+  isClubMatchesExpanded(teamId: number): boolean {
+    return this.expandedTeamMatches.has(this.clubMatchesKey(teamId));
+  }
+
+  isClubMatchesLoading(teamId: number): boolean {
+    return this.careerMatchesLoadingKeys.has(this.clubMatchesKey(teamId));
+  }
+
   toggleTeamMatches(season: number, teamId: number): void {
     const key = this.teamMatchesKey(season, teamId);
     if (this.expandedTeamMatches.has(key)) {
@@ -656,10 +765,113 @@ export class PlayerInfoComponent implements OnInit {
     return this.sortMatches(stats?.matches ?? []);
   }
 
+  toggleClubMatches(club: ClubGroup): void {
+    const key = this.clubMatchesKey(club.teamId);
+    if (this.expandedTeamMatches.has(key)) {
+      this.expandedTeamMatches.delete(key);
+      return;
+    }
+
+    const pending = this.teamsSeasonsMode === 'all' ? this.clubSeasonsToFetch(club) : [];
+    if (pending.length === 0) {
+      this.expandedTeamMatches.add(key);
+      return;
+    }
+    if (this.careerMatchesLoadingKeys.has(key)) {
+      this.expandedTeamMatches.add(key);
+      return;
+    }
+
+    this.careerMatchesLoadingKeys.add(key);
+    this.expandedTeamMatches.add(key);
+    const playerId = this.queryPlayerId;
+    forkJoin(
+      pending.map((slice) =>
+        this.statsService.getPlayerTeamSeasonMatches(playerId, club.teamId, slice.season).pipe(
+          map((result) => result.matches ?? []),
+          catchError((error) => {
+            console.error('Error loading team season matches:', error);
+            return of([] as Match[]);
+          })
+        )
+      )
+    ).subscribe((lists) => {
+      if (playerId !== this.queryPlayerId) {
+        return;
+      }
+      lists.forEach((matches, index) => {
+        const slice = pending[index];
+        this.careerMatchesCache.set(this.teamMatchesKey(slice.season, club.teamId), matches);
+      });
+      this.careerMatchesLoadingKeys.delete(key);
+    });
+  }
+
+  getClubMatches(club: ClubGroup): Match[] {
+    const matches = this.teamsSeasonsMode === 'all'
+      ? club.seasons.flatMap(
+          (slice) => this.careerMatchesCache.get(this.teamMatchesKey(slice.season, club.teamId)) ?? []
+        )
+      : (club.teamStats.matches ?? []);
+    return this.sortMatchesBySeason(this.uniqueMatches(matches));
+  }
+
+  clubMatchGroups(club: ClubGroup): { season: number; matches: Match[] }[] {
+    const groups: { season: number; matches: Match[] }[] = [];
+    for (const match of this.getClubMatches(club)) {
+      const season = match.league?.season;
+      const last = groups[groups.length - 1];
+      if (!last || last.season !== season) {
+        groups.push({ season, matches: [match] });
+      } else {
+        last.matches.push(match);
+      }
+    }
+    return groups;
+  }
+
+  formatSeasonLabel(season: number): string {
+    return `${season}-${season + 1}`;
+  }
+
+  private uniqueMatches(matches: Match[]): Match[] {
+    const seen = new Set<number>();
+    const unique: Match[] = [];
+    for (const match of matches) {
+      const id = match.fixture?.id;
+      if (id != null) {
+        if (seen.has(id)) {
+          continue;
+        }
+        seen.add(id);
+      }
+      unique.push(match);
+    }
+    return unique;
+  }
+
+  private clubSeasonsToFetch(club: ClubGroup): ClubSeasonSlice[] {
+    return club.seasons.filter(
+      (slice) =>
+        slice.matchesPlayed > 0 &&
+        !this.careerMatchesCache.has(this.teamMatchesKey(slice.season, club.teamId))
+    );
+  }
+
   private sortMatches(matches: Match[]): Match[] {
     return [...matches].sort(
       (a, b) => (b.fixture?.timestamp || 0) - (a.fixture?.timestamp || 0)
     );
+  }
+
+  private sortMatchesBySeason(matches: Match[]): Match[] {
+    return [...matches].sort((a, b) => {
+      const seasonDiff = (b.league?.season || 0) - (a.league?.season || 0);
+      if (seasonDiff !== 0) {
+        return seasonDiff;
+      }
+      return (b.fixture?.timestamp || 0) - (a.fixture?.timestamp || 0);
+    });
   }
 
   onTeamImageError(event: Event): void {
@@ -671,6 +883,10 @@ export class PlayerInfoComponent implements OnInit {
 
   private teamMatchesKey(season: number, teamId: number): string {
     return `${season}:${teamId}`;
+  }
+
+  private clubMatchesKey(teamId: number): string {
+    return `team:${teamId}`;
   }
   
 }

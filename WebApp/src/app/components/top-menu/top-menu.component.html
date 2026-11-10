@@ -77,7 +77,11 @@
                           role="option"
                           [attr.aria-selected]="i === searchActiveIndex"
                           (mousedown)="selectResult(item, $event)">
-                          <span class="global-search__result-media">
+                          <span
+                            class="global-search__result-media"
+                            [class.global-search__result-media--team]="item.type === 'team'"
+                            [class.global-search__result-media--league]="item.type === 'league'"
+                            [style.border]="item.type === 'league' ? '2px solid ' + leagueBorderColor(item) : null">
                             @if (hasResultImage(item)) {
                               <img
                                 [src]="resultImageUrl(item)"

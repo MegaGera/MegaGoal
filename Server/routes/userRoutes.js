@@ -1,5 +1,12 @@
 import express from 'express';
-import { getMe, markHomeNotification, setFavouriteTeam, setFavouriteLeague } from '../controllers/userController.js';
+import {
+  getMe,
+  markHomeNotification,
+  setFavouriteTeam,
+  setFavouriteLeague,
+  reorderFavouriteTeams,
+  reorderFavouriteLeagues
+} from '../controllers/userController.js';
 import {
   profilePictureUpload,
   uploadProfilePicture
@@ -11,6 +18,8 @@ router.get('/me', getMe);
 router.post('/me/notifications/home', markHomeNotification);
 router.patch('/me/favourite-teams', setFavouriteTeam);
 router.patch('/me/favourite-leagues', setFavouriteLeague);
+router.patch('/me/favourite-teams/order', reorderFavouriteTeams);
+router.patch('/me/favourite-leagues/order', reorderFavouriteLeagues);
 router.post(
   '/me/profile-picture',
   (req, res, next) => {

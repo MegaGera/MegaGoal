@@ -128,7 +128,7 @@ export async function enrichGlobalSearchItems(items) {
     else if (item.type === 'league') leagueIds.push(item.id);
   }
 
-  const [teamDocs, playerDocs, leagueDocs] = await Promise.all([
+  const [teamDocs, playerDocs, leagueDocs, leagueSettings] = await Promise.all([
     teamIds.length
       ? db
           .collection('teams')
@@ -163,6 +163,15 @@ export async function enrichGlobalSearchItems(items) {
           )
           .toArray()
       : [],
+    leagueIds.length
+      ? db
+          .collection('league_settings')
+          .find(
+            { league_id: { $in: [...new Set(leagueIds)] } },
+            { projection: { _id: 0, league_id: 1, colors: 1 } }
+          )
+          .toArray()
+      : [],
   ]);
 
   /** @type {Map<number, { country: string | null, flag: string | null }>} */
@@ -194,6 +203,14 @@ export async function enrichGlobalSearchItems(items) {
     });
   }
 
+  /** @type {Map<number, { base_color?: string, card_main_color?: string, card_trans_color?: string } | null>} */
+  const leagueColors = new Map();
+  for (const row of leagueSettings) {
+    const id = Number(row?.league_id);
+    if (!Number.isFinite(id)) continue;
+    leagueColors.set(id, leagueColorsOrNull(row?.colors));
+  }
+
   /** @type {Map<number, { country: string | null, flag: string | null }>} */
   const leagueMeta = new Map();
   for (const doc of leagueDocs) {
@@ -219,10 +236,26 @@ export async function enrichGlobalSearchItems(items) {
       const meta = leagueMeta.get(item.id);
       if (!item.subtitle) item.subtitle = meta?.country ?? null;
       if (!item.flagUrl) item.flagUrl = meta?.flag ?? null;
+      item.colors = leagueColors.get(item.id) ?? null;
     }
   }
 
   return items;
+}
+
+function leagueColorsOrNull(colors) {
+  if (!colors || typeof colors !== 'object') return null;
+  const pick = (value) =>
+    typeof value === 'string' && value.trim() ? value.trim() : undefined;
+  const base_color = pick(colors.base_color);
+  const card_main_color = pick(colors.card_main_color);
+  const card_trans_color = pick(colors.card_trans_color);
+  if (!base_color && !card_main_color && !card_trans_color) return null;
+  return {
+    ...(base_color ? { base_color } : {}),
+    ...(card_main_color ? { card_main_color } : {}),
+    ...(card_trans_color ? { card_trans_color } : {}),
+  };
 }
 
 function aggregateTeams(matches) {

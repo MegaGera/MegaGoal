@@ -197,22 +197,42 @@
               <ng-container *ngTemplateOutlet="reloadCareerButton"></ng-container>
             }
           </div>
-          <div class="view-toggle-card teams-seasons-mode-toggle">
-            <div class="view-toggle" role="group" aria-label="Teams and seasons filter">
-              <button
-                type="button"
-                class="toggle-btn"
-                [class.active]="teamsSeasonsMode === 'watched'"
-                (click)="setTeamsSeasonsMode('watched')">
-                Only watched
-              </button>
-              <button
-                type="button"
-                class="toggle-btn"
-                [class.active]="teamsSeasonsMode === 'all'"
-                (click)="setTeamsSeasonsMode('all')">
-                All Career
-              </button>
+          <div class="teams-seasons-toggles">
+            <div class="view-toggle-card teams-seasons-mode-toggle">
+              <div class="view-toggle" role="group" aria-label="Group teams">
+                <button
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="teamsGroupMode === 'team'"
+                  (click)="setTeamsGroupMode('team')">
+                  By team
+                </button>
+                <button
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="teamsGroupMode === 'season'"
+                  (click)="setTeamsGroupMode('season')">
+                  By season
+                </button>
+              </div>
+            </div>
+            <div class="view-toggle-card teams-seasons-mode-toggle">
+              <div class="view-toggle" role="group" aria-label="Teams and seasons filter">
+                <button
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="teamsSeasonsMode === 'watched'"
+                  (click)="setTeamsSeasonsMode('watched')">
+                  Only watched
+                </button>
+                <button
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="teamsSeasonsMode === 'all'"
+                  (click)="setTeamsSeasonsMode('all')">
+                  All Career
+                </button>
+              </div>
             </div>
           </div>
           @if (teamsSeasonsGroups.length > 0) {
@@ -241,6 +261,7 @@
                     </tr>
                   </thead>
                   <tbody>
+                    @if (teamsGroupMode === 'season') {
                     @for (group of teamsSeasonsGroups; track group.season) {
                       <tr class="teams-stats-season-row">
                         <td [attr.colspan]="2 + visibleTeamsStatsLegend.length">
@@ -291,10 +312,78 @@
                             <td [attr.colspan]="2 + visibleTeamsStatsLegend.length">
                               <div class="teams-stats-matches">
                                 @if (isCareerMatchesLoading(group.season, item.team.team.id)) {
-                                  <p class="teams-stats-matches-loading">Loading matches…</p>
+                                  <div class="teams-stats-matches-skeleton" aria-hidden="true">
+                                    @for (slot of skeletonMatchSlots; track slot) {
+                                      <div class="skeleton-block skeleton-match-row"></div>
+                                    }
+                                  </div>
                                 } @else {
                                   @for (match of getExpandedMatches(group.season, item.team.team.id, item.teamStats); track match.fixture.id) {
                                     <app-match-row [match]="match"></app-match-row>
+                                  }
+                                }
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      }
+                    }
+                    } @else {
+                      @for (club of teamsClubGroups; track club.teamId) {
+                        <tr>
+                          <td class="teams-stats-expand-col">
+                            @if (hasExpandableMatches(club.teamStats)) {
+                              <button
+                                type="button"
+                                class="teams-stats-expand-hit"
+                                [attr.aria-expanded]="isClubMatchesExpanded(club.teamId)"
+                                [attr.aria-label]="(isClubMatchesExpanded(club.teamId) ? 'Hide' : 'Show') + ' matches for ' + club.team.team.name"
+                                (click)="toggleClubMatches(club)">
+                                <span class="teams-stats-expand-icon" aria-hidden="true">
+                                  {{ isClubMatchesExpanded(club.teamId) ? '▲' : '▼' }}
+                                </span>
+                              </button>
+                            }
+                          </td>
+                          <td class="teams-stats-team-col">
+                            <a
+                              class="teams-stats-team-link"
+                              [routerLink]="['/app/team']"
+                              [queryParams]="{ id: club.team.team.id, view: 'insights' }">
+                              <img
+                                class="teams-stats-team-logo"
+                                [src]="images.getRouteImageTeam(club.team.team.id)"
+                                [alt]="club.team.team.name"
+                                width="28"
+                                height="28"
+                                (error)="onTeamImageError($event)">
+                              <span class="teams-stats-team-name">{{ club.team.team.name }}</span>
+                            </a>
+                          </td>
+                          @for (entry of visibleTeamsStatsLegend; track entry.icon) {
+                            <td class="teams-stats-num-col">{{ teamStatValue(club.teamStats, entry.key) }}</td>
+                          }
+                        </tr>
+                        @if (isClubMatchesExpanded(club.teamId)) {
+                          <tr class="teams-stats-matches-row">
+                            <td [attr.colspan]="2 + visibleTeamsStatsLegend.length">
+                              <div class="teams-stats-matches">
+                                @if (isClubMatchesLoading(club.teamId)) {
+                                  <div class="teams-stats-matches-skeleton" aria-hidden="true">
+                                    @for (slot of skeletonMatchSlots; track slot) {
+                                      <div class="skeleton-block skeleton-match-row"></div>
+                                    }
+                                  </div>
+                                } @else {
+                                  @for (group of clubMatchGroups(club); track group.season) {
+                                    <div class="season-separator" role="separator" [attr.aria-label]="'Season ' + formatSeasonLabel(group.season)">
+                                      <span class="season-separator-line" aria-hidden="true"></span>
+                                      <span class="season-separator-label">{{ formatSeasonLabel(group.season) }}</span>
+                                      <span class="season-separator-line" aria-hidden="true"></span>
+                                    </div>
+                                    @for (match of group.matches; track match.fixture.id) {
+                                      <app-match-row [match]="match"></app-match-row>
+                                    }
                                   }
                                 }
                               </div>

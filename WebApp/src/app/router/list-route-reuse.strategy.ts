@@ -11,9 +11,12 @@ interface DetachedListHandle extends DetachedRouteHandle {
 }
 
 /**
- * Home, Teams, Matches, Players, and the match page stay mounted after the user leaves.
- * Browser back and forward put that same instance back on screen.
- * Opening one of them from a link or the menu drops the saved instance and loads again.
+ * Every screen stays mounted after the user leaves.
+ * Browser back and forward put that same instance back on screen, so it does not load again.
+ * Opening a screen from a link or the menu drops the saved instance and loads again.
+ *
+ * A team, player, match, league season, and matches date each keep their own instance.
+ * Filter query changes stay on the same instance.
  *
  * The router asks for the saved handle twice during one navigation
  * (while building the route tree, then while attaching the outlet) and
@@ -62,15 +65,63 @@ export class ListRouteReuseStrategy implements RouteReuseStrategy {
   }
 
   shouldReuseRoute(future: ActivatedRouteSnapshot, curr: ActivatedRouteSnapshot): boolean {
-    return future.routeConfig === curr.routeConfig;
+    if (future.routeConfig !== curr.routeConfig) {
+      return false;
+    }
+    const futureKey = this.cacheKey(future);
+    const currKey = this.cacheKey(curr);
+    if (futureKey === currKey) {
+      return true;
+    }
+    return this.sameLeagueWhileSeasonSettles(future, curr);
   }
 
   private cacheKey(route: ActivatedRouteSnapshot): string | null {
-    if (route.routeConfig?.data?.['reuseList'] !== true) {
+    const config = route.routeConfig;
+    if (!config?.component) {
       return null;
     }
-    const path = route.routeConfig.path;
-    return path ? path : null;
+    const path = config.path ?? '';
+    const query = route.queryParams ?? {};
+    const params = route.params ?? {};
+
+    if (path === 'leagues/:id') {
+      const season = query['season'];
+      return season ? `leagues/${params['id']}/season/${season}` : `leagues/${params['id']}`;
+    }
+    if (path === 'team') {
+      return `team/${query['id'] ?? ''}`;
+    }
+    if (path === 'player') {
+      return `player/${query['id'] ?? ''}`;
+    }
+    if (path === 'match') {
+      return `match/${query['id'] ?? ''}`;
+    }
+    if (path === 'matches') {
+      return `matches/${query['date'] || this.todayIso()}`;
+    }
+    return path === '' ? 'landing' : path;
+  }
+
+  /**
+   * The league page writes season onto the current history entry after the first load.
+   * That write must keep the instance that is already on screen.
+   */
+  private sameLeagueWhileSeasonSettles(future: ActivatedRouteSnapshot, curr: ActivatedRouteSnapshot): boolean {
+    if (future.routeConfig?.path !== 'leagues/:id') {
+      return false;
+    }
+    if ((future.params ?? {})['id'] !== (curr.params ?? {})['id']) {
+      return false;
+    }
+    const futureSeason = (future.queryParams ?? {})['season'];
+    const currSeason = (curr.queryParams ?? {})['season'];
+    return !futureSeason || !currSeason;
+  }
+
+  private todayIso(): string {
+    return new Date().toISOString().split('T')[0];
   }
 
   private navigationTrigger(): string | undefined {

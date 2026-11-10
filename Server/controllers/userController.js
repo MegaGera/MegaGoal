@@ -5,9 +5,11 @@ import {
   buildUserMeResponse,
   findMissingHomeNotifications,
   parseMarkHomeNotificationPayload,
+  parseReorderFavouritesPayload,
   parseSetFavouriteLeaguePayload,
   parseSetFavouriteTeamPayload,
-  parseUserDocument
+  parseUserDocument,
+  reorderFavouriteItems
 } from '../entities/userEntity.js';
 
 const getMe = async (req, res) => {
@@ -223,4 +225,81 @@ const setFavouriteLeague = async (req, res) => {
   }
 };
 
-export { getMe, markHomeNotification, setFavouriteTeam, setFavouriteLeague };
+const reorderFavourites = async (req, res, { field, action, idKey }) => {
+  const db = getDB();
+  try {
+    const username = req.validateData.username;
+    if (!username) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const { ids } = parseReorderFavouritesPayload(req.body);
+
+    const existing = await db.collection('users').findOneAndUpdate(
+      { username },
+      { $setOnInsert: buildNewUserDocument({ username }) },
+      { upsert: true, returnDocument: 'after' }
+    );
+
+    if (!existing) {
+      return res.status(500).json({ message: 'Failed to load user profile' });
+    }
+
+    const parsed = parseUserDocument(existing);
+    const ordered = reorderFavouriteItems(parsed[field], ids);
+    if (!ordered) {
+      return res.status(400).json({ message: 'Order must include every favourite once' });
+    }
+
+    const after = await db.collection('users').findOneAndUpdate(
+      { username },
+      { $set: { [field]: ordered } },
+      { returnDocument: 'after' }
+    );
+
+    if (!after) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const validated = parseUserDocument(after);
+    await logUserAction(
+      username,
+      action,
+      { [idKey]: ids },
+      {
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      }
+    );
+    res.send(buildUserMeResponse(validated));
+  } catch (error) {
+    console.error(`Error reordering ${field}:`, error);
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const reorderFavouriteTeams = (req, res) =>
+  reorderFavourites(req, res, {
+    field: 'favouriteTeams',
+    action: 'REORDER_FAVOURITE_TEAMS',
+    idKey: 'teamIds'
+  });
+
+const reorderFavouriteLeagues = (req, res) =>
+  reorderFavourites(req, res, {
+    field: 'favouriteLeagues',
+    action: 'REORDER_FAVOURITE_LEAGUES',
+    idKey: 'leagueIds'
+  });
+
+export {
+  getMe,
+  markHomeNotification,
+  setFavouriteTeam,
+  setFavouriteLeague,
+  reorderFavouriteTeams,
+  reorderFavouriteLeagues
+};

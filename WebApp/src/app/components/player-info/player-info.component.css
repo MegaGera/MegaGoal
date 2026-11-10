@@ -112,8 +112,16 @@
   gap: 1rem;
 }
 
-.teams-seasons-mode-toggle {
+.teams-seasons-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
   margin-bottom: 0.75rem;
+}
+
+.teams-seasons-toggles .view-toggle-card {
+  margin-bottom: 0;
 }
 
 .teams-seasons-empty {
@@ -258,22 +266,37 @@
 
 .teams-stats-matches-row td {
   padding: 0.75rem 0.5rem 1rem;
-  background: #f8fafc;
+  background: transparent;
   border-bottom: 1px solid #e2e8f0;
+}
+
+.teams-stats-matches-skeleton .skeleton-block {
+  background: linear-gradient(90deg, #f6e6eb 25%, #ffe4ec 50%, #f6e6eb 75%);
+  background-size: 200% 100%;
 }
 
 .teams-stats-matches {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.35rem;
+  max-height: 32rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 0.15rem;
+  scrollbar-width: thin;
+  scrollbar-color: #e7b7c2 transparent;
 }
 
-.teams-stats-matches-loading {
-  margin: 0;
-  padding: 0.75rem 0.25rem;
-  color: #64748b;
-  font-size: 0.9rem;
-  text-align: center;
+.teams-stats-matches-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.skeleton-match-row {
+  height: 3.35rem;
+  width: 100%;
+  border-radius: 12px;
 }
 
 .visually-hidden {
@@ -308,6 +331,34 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #64748b;
+}
+
+.season-separator {
+  display: flex;
+  align-items: center;
+  align-self: center;
+  flex-shrink: 0;
+  gap: 0.75rem;
+  width: 90%;
+  margin: 0.75rem auto 0.15rem;
+}
+
+.season-separator-line {
+  flex: 1;
+  height: 1px;
+  background: #cbd5e1;
+}
+
+.season-separator-label {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
 }
 
 .teams-card-header {
@@ -586,6 +637,33 @@
   .general-card.teams-seasons-card {
     padding: 1.5rem;
     gap: 1.25rem;
+  }
+
+  .teams-seasons-toggles {
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .teams-seasons-toggles .view-toggle-card {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .teams-seasons-toggles .view-toggle {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 0.1rem;
+    padding: 0.12rem;
+  }
+
+  .teams-seasons-toggles .toggle-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.28rem 0.2rem;
+    font-size: 0.65rem;
+    line-height: 1.15;
+    white-space: nowrap;
   }
 
   .reload-career-btn {

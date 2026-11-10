@@ -1,58 +1,54 @@
 <a [routerLink]="['/app/match']" [queryParams]="{ id: match.fixture.id }" class="match-row-link">
   <div class="match-row" [class.match-row--watched]="isWatched()">
-    <div class="match-content">
-      <!-- Teams and Score Row -->
-      <div class="match-teams-row">
-        <div class="match-teams-content">
-          <img 
-            [src]="images.getRouteImageTeam(match.teams.home.id)" 
-            [alt]="match.teams.home.name"
-            class="team-icon"
-            (error)="onImageError($event)">
-          <span class="team-name">{{ match.teams.home.name }}</span>
-          <span class="score">{{ match.goals.home }} - {{ match.goals.away }}</span>
-          <span class="team-name">{{ match.teams.away.name }}</span>
-          <img 
-            [src]="images.getRouteImageTeam(match.teams.away.id)" 
-            [alt]="match.teams.away.name"
-            class="team-icon"
-            (error)="onImageError($event)">
-        </div>
-        <div class="match-league-date-row">
-          <span class="match-league">{{ match.league.name }}</span>
-          <span class="match-date">{{ formatDate(match.fixture.timestamp) }}</span>
-        </div>
-      </div>
-      
-      <!-- Player stats badges -->
-      <div class="match-stats-badges" *ngIf="hasPlayerStats()">
-        <app-player-stat-badge 
-          *ngIf="started()" 
-          icon=""
-          value="XI">
-        </app-player-stat-badge>
-        <app-player-stat-badge 
-          *ngIf="hasGoals()" 
-          icon="⚽"
-          [value]="match.player_stats!.goals">
-        </app-player-stat-badge>
-        <app-player-stat-badge 
-          *ngIf="hasAssists()" 
-          icon="🎯"
-          [value]="match.player_stats!.assists">
-        </app-player-stat-badge>
-        <app-player-stat-badge 
-          *ngIf="hasYellowCards()" 
-          icon="🟨"
-          [value]="match.player_stats!.yellow_cards">
-        </app-player-stat-badge>
-        <app-player-stat-badge 
-          *ngIf="hasRedCards()" 
-          icon="🟥"
-          [value]="match.player_stats!.red_cards">
-        </app-player-stat-badge>
-      </div>
-    </div>
+    <span class="league-crest" [style.border]="'2px solid ' + leagueBorder">
+      <img
+        class="league-crest-logo"
+        [src]="images.getRouteImageLeagueSm(match.league.id)"
+        [alt]="match.league.name"
+        (error)="onImageError($event)">
+    </span>
+
+    <span class="match-meta">
+      <span class="match-round" [title]="match.league.round">{{ roundLabel() }}</span>
+      <span class="match-date">{{ formatDate(match.fixture.timestamp) }}</span>
+    </span>
+
+    <span class="match-teams">
+      <span class="match-side match-side--home">
+        <span class="team-name" [title]="match.teams.home.name">{{ match.teams.home.name }}</span>
+        <img
+          [src]="images.getRouteImageTeam(match.teams.home.id)"
+          [alt]="match.teams.home.name"
+          class="team-icon"
+          (error)="onImageError($event)">
+      </span>
+      <span class="score">{{ match.goals.home }}–{{ match.goals.away }}</span>
+      <span class="match-side">
+        <img
+          [src]="images.getRouteImageTeam(match.teams.away.id)"
+          [alt]="match.teams.away.name"
+          class="team-icon"
+          (error)="onImageError($event)">
+        <span class="team-name" [title]="match.teams.away.name">{{ match.teams.away.name }}</span>
+      </span>
+    </span>
+
+    <span
+      class="match-marks"
+      [class.match-marks--stacked]="statMarks.length > 2"
+      [style.grid-template-columns]="statMarks.length > 2 ? 'repeat(' + markColumns() + ', max-content)' : null">
+      <span
+        *ngFor="let mark of statMarks; let i = index"
+        class="mark"
+        [ngClass]="'mark--' + mark.kind"
+        [attr.title]="mark.title"
+        [style.grid-column]="secondRowColumn(i)">
+        <span *ngIf="mark.icon === 'ball'" aria-hidden="true">⚽</span>
+        <span *ngIf="mark.icon === 'target'" aria-hidden="true">🎯</span>
+        <span *ngIf="mark.icon === 'yellow'" class="card-dot card-dot--yellow" aria-hidden="true"></span>
+        <span *ngIf="mark.icon === 'red'" class="card-dot card-dot--red" aria-hidden="true"></span>
+        {{ mark.value }}
+      </span>
+    </span>
   </div>
 </a>
-

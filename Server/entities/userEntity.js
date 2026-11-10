@@ -144,6 +144,36 @@ const setFavouriteLeaguePayloadSchema = z.object({
 
 const parseSetFavouriteLeaguePayload = (body) => setFavouriteLeaguePayloadSchema.parse(body);
 
+const reorderFavouritesPayloadSchema = z.object({
+  ids: z.array(z.number().int().positive()).max(200)
+});
+
+const parseReorderFavouritesPayload = (body) => reorderFavouritesPayloadSchema.parse(body);
+
+/**
+ * Rebuild a favourite array in the given id order.
+ * The ids must be the current set, each once.
+ * @param {Array<{ id: number, name: string }>} items
+ * @param {number[]} ids
+ */
+const reorderFavouriteItems = (items, ids) => {
+  if (ids.length !== items.length) {
+    return null;
+  }
+  const byId = new Map(items.map((item) => [item.id, item]));
+  const seen = new Set();
+  const ordered = [];
+  for (const id of ids) {
+    const item = byId.get(id);
+    if (!item || seen.has(id)) {
+      return null;
+    }
+    seen.add(id);
+    ordered.push(item);
+  }
+  return ordered;
+};
+
 export {
   buildNewUserDocument,
   buildUserMeResponse,
@@ -156,8 +186,10 @@ export {
   notificationStatusSchema,
   notificationsSchema,
   parseMarkHomeNotificationPayload,
+  parseReorderFavouritesPayload,
   parseSetFavouriteLeaguePayload,
   parseSetFavouriteTeamPayload,
+  reorderFavouriteItems,
   parseUserDocument,
   parseUserDocuments,
   profilePictureSchema,

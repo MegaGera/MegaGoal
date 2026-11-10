@@ -321,6 +321,16 @@ export class TopMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     this.closeSearch();
   }
 
+  /** Same fallback order as the matches page league crest. */
+  leagueBorderColor(item: GlobalSearchResultItem): string {
+    const colors = item.colors;
+    const raw =
+      colors?.base_color?.trim() ||
+      colors?.card_main_color?.trim() ||
+      colors?.card_trans_color?.trim();
+    return raw || '#94a3b8';
+  }
+
   resultImageUrl(item: GlobalSearchResultItem): string {
     if (item.type === 'team') return this.images.getRouteImageTeam(item.id);
     if (item.type === 'player') return this.images.getRouteImagePlayer(item.id);

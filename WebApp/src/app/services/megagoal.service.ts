@@ -10,7 +10,7 @@ import { Team, shortTeam } from '../models/team';
 import { Location } from '../models/location';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { RealMatch } from '../models/realMatch';
+import { LineupData, RealMatch } from '../models/realMatch';
 import { environment } from '../../environments/environment';
 import { LeaguesSettings } from '../models/leaguesSettings';
 import { MatchRequest } from '../models/matchRequest';
@@ -501,6 +501,14 @@ export class MegaGoalService {
     return this.http.get<RealMatch[]>(this.url + '/admin/landing_matches', this.options);
   }
 
+  saveMatchLineups(fixtureId: number, lineups: LineupData[]): Observable<{ lineups: LineupData[] }> {
+    return this.http.put<{ lineups: LineupData[] }>(
+      `${this.url}/admin/real_matches/${fixtureId}/lineups`,
+      { lineups },
+      this.options
+    );
+  }
+
   /**
    * Ranked team name search. Optional filters: leagues, season, teamSelection.
    */
@@ -713,6 +721,24 @@ export class MegaGoalService {
         { id, name, favourite },
         this.options
       )
+      .pipe(tap((user) => this.userMeSubject.next(user)));
+  }
+
+  /**
+   * Persist favourite team array order. `ids` must be the current set, each once.
+   */
+  reorderFavouriteTeams(ids: number[]): Observable<UserMe> {
+    return this.http
+      .patch<UserMe>(this.url + '/user/me/favourite-teams/order', { ids }, this.options)
+      .pipe(tap((user) => this.userMeSubject.next(user)));
+  }
+
+  /**
+   * Persist favourite league array order. `ids` must be the current set, each once.
+   */
+  reorderFavouriteLeagues(ids: number[]): Observable<UserMe> {
+    return this.http
+      .patch<UserMe>(this.url + '/user/me/favourite-leagues/order', { ids }, this.options)
       .pipe(tap((user) => this.userMeSubject.next(user)));
   }
 

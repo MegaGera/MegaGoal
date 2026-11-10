@@ -12,6 +12,12 @@ export type GlobalSearchResultItem = {
   flagUrl?: string | null;
   goals?: number | null;
   assists?: number | null;
+  /** League settings palette. Present on league hits; null when the league has no colors. */
+  colors?: {
+    base_color?: string;
+    card_main_color?: string;
+    card_trans_color?: string;
+  } | null;
 };
 
 export type GlobalSearchResult = {

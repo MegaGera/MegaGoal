@@ -1,5 +1,5 @@
 import express from 'express';
-import { changeIsActive, changeUpdateFrequency, changeDailyUpdate, changeLeagueColors, createLeagueSetting, deleteLeagueSetting, getRealMatchesWithoutStatistics, addLandingMatch, removeLandingMatch, getLandingMatches, createDatabaseIndexes } from '../controllers/adminController.js';
+import { changeIsActive, changeUpdateFrequency, changeDailyUpdate, changeLeagueColors, createLeagueSetting, deleteLeagueSetting, getRealMatchesWithoutStatistics, addLandingMatch, removeLandingMatch, getLandingMatches, createDatabaseIndexes, updateMatchLineups } from '../controllers/adminController.js';
 
 const router = express.Router();
 
@@ -10,6 +10,7 @@ router.patch('/leagues_settings/colors', changeLeagueColors);
 router.post('/leagues_settings/create', createLeagueSetting);
 router.delete('/leagues_settings/delete', deleteLeagueSetting);
 router.get('/real_matches/without_statistics', getRealMatchesWithoutStatistics);
+router.put('/real_matches/:fixtureId/lineups', updateMatchLineups);
 router.post('/landing_matches/add', addLandingMatch);
 router.delete('/landing_matches/remove', removeLandingMatch);
 router.get('/landing_matches', getLandingMatches);

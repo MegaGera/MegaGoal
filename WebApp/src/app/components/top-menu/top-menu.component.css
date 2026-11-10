@@ -448,7 +448,7 @@
 }
 
 .global-search__result--player {
-  background: rgba(5, 150, 105, 0.08);
+  background: rgba(124, 58, 237, 0.18);
 }
 
 .global-search__result--league {
@@ -460,7 +460,7 @@
 }
 
 .global-search__result--player .global-search__result-type {
-  color: #059669;
+  color: #7c3aed;
 }
 
 .global-search__result--league .global-search__result-type {
@@ -480,7 +480,7 @@
 
 .global-search__result--player:hover,
 .global-search__result--player.global-search__result--active {
-  background: rgba(5, 150, 105, 0.14);
+  background: rgba(124, 58, 237, 0.26);
   filter: none;
 }
 
@@ -506,10 +506,27 @@
   justify-content: center;
 }
 
+.global-search__result-media--team {
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.global-search__result-media--league {
+  border-radius: 10px;
+  background: #f8f9fa;
+  box-sizing: border-box;
+}
+
 .global-search__result-media img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.global-search__result-media--league img {
+  width: 22px;
+  height: 22px;
 }
 
 .global-search__result-fallback {

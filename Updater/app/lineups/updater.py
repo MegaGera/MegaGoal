@@ -108,6 +108,14 @@ class LineupsUpdater:
     def update_match_lineups(self, fixture_id: int, full_update=True):
         """Fetch and persist lineups for a given fixture into real_matches document"""
         try:
+            existing = self.collection_real_matches.find_one(
+                {"fixture.id": int(fixture_id)},
+                {"lineups_manual": 1}
+            )
+            if existing and existing.get("lineups_manual"):
+                print(f"Skipping {self.data_type} for fixture {fixture_id}: admin correction")
+                return True
+
             data_json = self._get_data_from_api(fixture_id)
             data_response = data_json.get("response", [])
 
@@ -191,7 +199,8 @@ class LineupsUpdater:
                         {self.data_field_checked: {"$exists": False}},
                         {self.data_field_checked: False}
                     ]
-                }
+                },
+                {"lineups_manual": {"$ne": True}}
             ]
         })
         

@@ -139,7 +139,14 @@ const parseRealMatch = (document) => realMatchSchema.parse(document);
 const parseRealMatches = (documents) => z.array(realMatchSchema).parse(documents);
 const parseFixtureId = (id) => z.coerce.number().int().parse(id);
 
+const adminLineupUpdateSchema = z.object({
+  lineups: z.array(lineupSchema).length(2)
+});
+
+const parseAdminLineupUpdate = (body) => adminLineupUpdateSchema.parse(body);
+
 export {
+  parseAdminLineupUpdate,
   parseFixtureId,
   parseRealMatch,
   parseRealMatches

@@ -49,6 +49,9 @@ import { FINISHED_STATUSES, isNotStartedStatus } from '../../config/matchStatus'
 export class MatchesComponent implements OnInit, OnDestroy {
   isLoading = true;
   selectedDate: string = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD for native input
+  /** Date this instance loaded. Another day is a separate history entry. */
+  private pageDate = this.selectedDate;
+  private matchesUrlReady = false;
   // maxDate: string = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
   matches: RealMatch[] = [];
   groupedMatches: { [key: string]: RealMatch[] } = {};
@@ -124,67 +127,69 @@ export class MatchesComponent implements OnInit, OnDestroy {
   }
 
   private checkUrlParameters(): void {
-    // Check URL parameters
     this.route.queryParams.subscribe(params => {
-      // Check if 'live' parameter is present in URL
-      if (params['live'] === 'true') {
-        this.showLiveMatches = true;
-        // If live matches are requested but no date specified, go to today
-        if (!params['date']) {
+      const live = params['live'] === 'true';
+      const dateInUrl = params['date'] as string | undefined;
+
+      if (!this.matchesUrlReady) {
+        this.showLiveMatches = live;
+        if (dateInUrl) {
+          this.selectedDate = dateInUrl;
+        } else if (live) {
           this.selectedDate = new Date().toISOString().split('T')[0];
         }
+        this.pageDate = this.selectedDate;
+        this.matchesUrlReady = true;
+        return;
       }
-      
-      // Check if 'date' parameter is present in URL
-      if (params['date']) {
-        this.selectedDate = params['date'];
+
+      // Same instance: live is a filter. A different day has its own instance.
+      if (dateInUrl && dateInUrl !== this.pageDate) {
+        this.pageDate = dateInUrl;
+        this.selectedDate = dateInUrl;
+        this.showLiveMatches = live;
+        this.getMatchesForDate();
+        return;
+      }
+      if (live !== this.showLiveMatches) {
+        this.showLiveMatches = live;
+        this.applyLiveMatchesFilter();
       }
     });
   }
 
   onDateChange(): void {
-    this.updateDateUrlParameter();
-    this.getMatchesForDate();
+    const nextDate = this.selectedDate;
+    this.selectedDate = this.pageDate;
+    this.navigateToMatchesDay(nextDate);
   }
 
-  private updateDateUrlParameter(): void {
-    const queryParams: any = { date: this.selectedDate };
-    
-    // Check if live matches should be active (only for today's date)
-    if (this.showLiveMatches && this.isToday()) {
-      queryParams.live = 'true';
-    } else if (this.showLiveMatches && !this.isToday()) {
-      // If live is active but date is not today, deactivate live matches
-      this.showLiveMatches = false;
-      this.resetToAllMatches();
+  private navigateToMatchesDay(date: string): void {
+    const queryParams: Record<string, string> = { date };
+    const today = new Date().toISOString().split('T')[0];
+    if (this.showLiveMatches && date === today) {
+      queryParams['live'] = 'true';
     }
-    
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: queryParams
+      queryParams
     });
   }
 
   goToToday(): void {
-    this.selectedDate = new Date().toISOString().split('T')[0];
-    this.updateDateUrlParameter();
-    this.getMatchesForDate();
+    this.navigateToMatchesDay(new Date().toISOString().split('T')[0]);
   }
 
   goToPreviousDay(): void {
-    const currentDate = new Date(this.selectedDate);
+    const currentDate = new Date(this.pageDate);
     currentDate.setDate(currentDate.getDate() - 1);
-    this.selectedDate = currentDate.toISOString().split('T')[0];
-    this.updateDateUrlParameter();
-    this.getMatchesForDate();
+    this.navigateToMatchesDay(currentDate.toISOString().split('T')[0]);
   }
 
   goToNextDay(): void {
-    const currentDate = new Date(this.selectedDate);
+    const currentDate = new Date(this.pageDate);
     currentDate.setDate(currentDate.getDate() + 1);
-    this.selectedDate = currentDate.toISOString().split('T')[0];
-    this.updateDateUrlParameter();
-    this.getMatchesForDate();
+    this.navigateToMatchesDay(currentDate.toISOString().split('T')[0]);
   }
 
   isToday(): boolean {

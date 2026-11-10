@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { getDB } from '../config/db.js';
 import { logAdminAction } from './logController.js';
 import { createIndexes, ensureIndexes } from '../config/indexes.js';
@@ -16,6 +17,7 @@ import {
   parseLandingMatchPayload,
   parseLandingMatchSettings
 } from '../entities/settingsEntity.js';
+import { parseAdminLineupUpdate, parseFixtureId } from '../entities/realMatchEntity.js';
 
 const enrichSettingsWithStandingsRegistry = (settingsRows, standingsDocs) => {
   const seasonsByLeague = new Map();
@@ -423,6 +425,217 @@ export const getLandingMatches = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 }
+
+const gridPattern = /^\d+:\d+$/;
+
+function formationFromStartXI(startXI) {
+  const counts = new Map();
+  for (const row of startXI || []) {
+    const grid = row?.player?.grid;
+    if (typeof grid !== 'string' || !gridPattern.test(grid)) continue;
+    const rowNumber = Number(grid.split(':')[0]);
+    counts.set(rowNumber, (counts.get(rowNumber) || 0) + 1);
+  }
+  const rows = [...counts.keys()].sort((a, b) => a - b);
+  if (rows.length === 0) return null;
+  const outfield = rows[0] === 1 && counts.get(1) === 1 ? rows.slice(1) : rows;
+  if (outfield.length === 0) return null;
+  return outfield.map((row) => String(counts.get(row))).join('-');
+}
+
+const lineupBuckets = [
+  ['startXI', 'starting XI'],
+  ['substitutes', 'bench']
+];
+
+function lineupText(value) {
+  if (value == null) return null;
+  const text = String(value).trim();
+  return text || null;
+}
+
+function lineupNumber(value) {
+  if (value == null || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function describeLineupPlayer(player) {
+  const number = player.number != null ? `#${player.number} ` : '';
+  const position = player.pos ? ` ${player.pos}` : '';
+  return `${number}${player.name || 'Unknown'}${position}`.replace(/\s+/g, ' ').trim();
+}
+
+function indexLineupPlayers(lineup) {
+  const players = new Map();
+  for (const [bucket] of lineupBuckets) {
+    for (const row of lineup?.[bucket] || []) {
+      const player = row?.player;
+      if (!player || !Number.isInteger(player.id)) continue;
+      players.set(player.id, {
+        bucket,
+        name: lineupText(player.name),
+        number: lineupNumber(player.number),
+        pos: lineupText(player.pos),
+        grid: lineupText(player.grid)
+      });
+    }
+  }
+  return players;
+}
+
+function diffLineupSide(label, before, after) {
+  const changes = [];
+  const beforeFormation = lineupText(before?.formation);
+  const afterFormation = lineupText(after?.formation);
+  if (beforeFormation !== afterFormation) {
+    changes.push(`${label}: formation ${beforeFormation || 'none'} → ${afterFormation || 'none'}`);
+  }
+
+  const beforeCoach = lineupText(before?.coach?.name);
+  const afterCoach = lineupText(after?.coach?.name);
+  const beforeCoachId = before?.coach?.id ?? null;
+  const afterCoachId = after?.coach?.id ?? null;
+  if (beforeCoach !== afterCoach) {
+    changes.push(`${label}: coach ${beforeCoach || 'none'} → ${afterCoach || 'none'}`);
+  } else if (beforeCoachId !== afterCoachId) {
+    changes.push(`${label}: coach ${beforeCoach || 'none'} id ${beforeCoachId ?? 'none'} → ${afterCoachId ?? 'none'}`);
+  }
+
+  const previousPlayers = indexLineupPlayers(before);
+  const nextPlayers = indexLineupPlayers(after);
+  const bucketName = Object.fromEntries(lineupBuckets);
+
+  for (const [, player] of nextPlayers) {
+    const previous = previousPlayers.get(id);
+    if (!previous) {
+      changes.push(`${label}: added ${describeLineupPlayer(player)} to ${bucketName[player.bucket]}`);
+      continue;
+    }
+    if (previous.bucket !== player.bucket) {
+      changes.push(`${label}: moved ${describeLineupPlayer(player)} from ${bucketName[previous.bucket]} to ${bucketName[player.bucket]}`);
+    }
+    const fieldChanges = [];
+    if (previous.number !== player.number) {
+      fieldChanges.push(`number ${previous.number ?? 'none'} → ${player.number ?? 'none'}`);
+    }
+    if (previous.pos !== player.pos) {
+      fieldChanges.push(`position ${previous.pos || 'none'} → ${player.pos || 'none'}`);
+    }
+    if (previous.grid !== player.grid) {
+      fieldChanges.push(`grid ${previous.grid || 'none'} → ${player.grid || 'none'}`);
+    }
+    if (previous.name !== player.name) {
+      fieldChanges.push(`name ${previous.name || 'none'} → ${player.name || 'none'}`);
+    }
+    if (fieldChanges.length) {
+      changes.push(`${label}: ${describeLineupPlayer(previous)} ${fieldChanges.join(', ')}`);
+    }
+  }
+
+  for (const [, player] of previousPlayers) {
+    if (!nextPlayers.has(id)) {
+      changes.push(`${label}: removed ${describeLineupPlayer(player)} from ${bucketName[player.bucket]}`);
+    }
+  }
+  return changes;
+}
+
+function assertLineupPlayers(lineup, seen) {
+  for (const bucket of [lineup.startXI || [], lineup.substitutes || []]) {
+    for (const row of bucket) {
+      const player = row?.player;
+      if (!player || !Number.isInteger(player.id) || player.id <= 0) {
+        throw new Error('Each player needs an id');
+      }
+      if (!player.name || !String(player.name).trim()) {
+        throw new Error('Each player needs a name');
+      }
+      if (!Number.isInteger(player.number) || player.number < 0 || player.number > 99) {
+        throw new Error(`Shirt number for ${player.name} must be 0–99`);
+      }
+      if (!player.pos || !String(player.pos).trim()) {
+        throw new Error(`Position for ${player.name} is required`);
+      }
+      if (player.grid != null && !gridPattern.test(player.grid)) {
+        throw new Error(`Grid for ${player.name} must look like 2:3`);
+      }
+      if (seen.has(player.id)) {
+        throw new Error(`Player ${player.name} is listed more than once`);
+      }
+      seen.add(player.id);
+    }
+  }
+  if ((lineup.startXI || []).length > 11) {
+    throw new Error('Starting XI cannot have more than 11 players');
+  }
+}
+
+export const updateMatchLineups = async (req, res) => {
+  const db = getDB();
+  try {
+    const fixtureId = parseFixtureId(req.params.fixtureId);
+    const { lineups } = parseAdminLineupUpdate(req.body);
+
+    const match = await db.collection('real_matches').findOne(
+      { 'fixture.id': fixtureId },
+      { projection: { 'teams.home': 1, 'teams.away': 1, lineups: 1 } }
+    );
+    if (!match) {
+      return res.status(404).json({ message: 'Match not found' });
+    }
+
+    const homeId = match.teams?.home?.id;
+    const awayId = match.teams?.away?.id;
+    const byTeam = new Map(lineups.map((lineup) => [lineup.team.id, lineup]));
+    if (!byTeam.has(homeId) || !byTeam.has(awayId) || byTeam.size !== 2) {
+      return res.status(400).json({ message: 'Lineups must be the home and away teams of this match' });
+    }
+
+    const ordered = [byTeam.get(homeId), byTeam.get(awayId)];
+    const seen = new Set();
+    for (const lineup of ordered) {
+      assertLineupPlayers(lineup, seen);
+      const derived = formationFromStartXI(lineup.startXI);
+      if (derived) lineup.formation = derived;
+    }
+
+    const username = req.validateData?.username || 'dev';
+    const homeName = match.teams?.home?.name || 'Home';
+    const awayName = match.teams?.away?.name || 'Away';
+    const previousByTeam = new Map((match.lineups || []).map((lineup) => [lineup?.team?.id, lineup]));
+    const changes = [
+      ...diffLineupSide(homeName, previousByTeam.get(homeId), ordered[0]),
+      ...diffLineupSide(awayName, previousByTeam.get(awayId), ordered[1])
+    ];
+    await db.collection('real_matches').updateOne(
+      { 'fixture.id': fixtureId },
+      {
+        $set: {
+          lineups: ordered,
+          lineups_manual: true,
+          lineups_manual_at: new Date()
+        }
+      }
+    );
+    await logAdminAction(username, 'UPDATE_MATCH_LINEUPS', {
+      fixtureId,
+      home: homeName,
+      away: awayName,
+      changes
+    }, req);
+    res.json({ lineups: ordered });
+  } catch (error) {
+    console.error('Error updating match lineups:', error);
+    if (error instanceof z.ZodError || error.name === 'ZodError') {
+      return res.status(400).json({ message: 'Invalid lineups' });
+    }
+    if (error.message && !error.message.includes('Mongo')) {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'Failed to save lineups' });
+  }
+};
 
 // Create/ensure database indexes (for performance optimization)
 export const createDatabaseIndexes = async (req, res) => {

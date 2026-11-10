@@ -14,6 +14,8 @@ export class LeagueColorsService {
 
   // Map league IDs to colors (card_main_color, card_trans_color)
   private leagueColorsMap: Map<number, { card_main_color: string, card_trans_color: string }> = new Map();
+  /** Crest border, same fallback as the matches list: base, then card colors. */
+  private leagueBorderMap: Map<number, string> = new Map();
 
   // Default colors for leagues without colors set
   private defaultColors = {
@@ -24,6 +26,7 @@ export class LeagueColorsService {
   // Flag to track if colors are being loaded
   private isLoadingColors: boolean = false;
   private colorsLoadPromise: Promise<void> | null = null;
+  private fullColorsLoaded = false;
 
   constructor(private megaGoalService: MegaGoalService) { }
 
@@ -40,6 +43,7 @@ export class LeagueColorsService {
       // Note: colors are now in league.colors object from server (added dynamically)
       // Handle both new format (colors object) and legacy format (direct properties)
       const colors = (league as any).colors;
+      this.rememberBorder(leagueId, colors);
       if (colors) {
         // New format: colors.card_main_color and colors.card_trans_color
         if (colors.card_main_color && colors.card_trans_color) {
@@ -100,8 +104,7 @@ export class LeagueColorsService {
       return this.colorsLoadPromise;
     }
 
-    // If map already has data, no need to load
-    if (this.leagueColorsMap.size > 0) {
+    if (this.fullColorsLoaded) {
       return Promise.resolve();
     }
 
@@ -114,6 +117,7 @@ export class LeagueColorsService {
           const colors = colorsMap[leagueId];
           
           if (colors) {
+            this.rememberBorder(leagueId, colors);
             // New format: colors.card_main_color and colors.card_trans_color
             if (colors.card_main_color && colors.card_trans_color) {
               this.leagueColorsMap.set(leagueId, {
@@ -130,7 +134,8 @@ export class LeagueColorsService {
             }
           }
         });
-        
+
+        this.fullColorsLoaded = true;
         this.isLoadingColors = false;
         this.colorsLoadPromise = null;
       })
@@ -164,5 +169,27 @@ export class LeagueColorsService {
   /** Remove cached colors for a league (e.g. after deleting league settings or clearing preview overrides). */
   removeLeagueColors(leagueId: number): void {
     this.leagueColorsMap.delete(leagueId);
+    this.leagueBorderMap.delete(leagueId);
+  }
+
+  /** Border used on league crests. Loads league colors once if this league is not cached yet. */
+  async ensureLeagueBorderColor(leagueId: number): Promise<string> {
+    if (!this.leagueBorderMap.has(leagueId)) {
+      await this.loadColorsFromAPI();
+    }
+    return this.leagueBorderMap.get(leagueId) || '#94a3b8';
+  }
+
+  private rememberBorder(
+    leagueId: number,
+    colors?: { base_color?: string; card_main_color?: string; card_trans_color?: string }
+  ): void {
+    const raw =
+      colors?.base_color?.trim() ||
+      colors?.card_main_color?.trim() ||
+      colors?.card_trans_color?.trim();
+    if (raw) {
+      this.leagueBorderMap.set(leagueId, raw);
+    }
   }
 }
