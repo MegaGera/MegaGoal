@@ -262,10 +262,17 @@
 
           <!-- Available Matches List -->
           @if (loadingAvailableRealMatches) {
-            <div class="text-center">
-              <div class="spinner-border spinner-border-sm" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
+            <div class="locations-skeleton-list" aria-busy="true" aria-label="Loading matches">
+              @for (item of skeletonMatchSlots; track item) {
+                <div class="locations-skeleton-row" aria-hidden="true">
+                  <div class="skeleton-block locations-skeleton-icon"></div>
+                  <div class="skeleton-block locations-skeleton-name"></div>
+                  <div class="skeleton-block locations-skeleton-score"></div>
+                  <div class="skeleton-block locations-skeleton-name"></div>
+                  <div class="skeleton-block locations-skeleton-icon"></div>
+                  <div class="skeleton-block locations-skeleton-meta"></div>
+                </div>
+              }
             </div>
           } @else {
             <cdk-virtual-scroll-viewport itemSize="40" class="matches-container">
@@ -350,10 +357,17 @@
         </div>
 
           @if (loadingViewedMatches) {
-            <div class="text-center">
-              <div class="spinner-border spinner-border-sm" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
+            <div class="locations-skeleton-list" aria-busy="true" aria-label="Loading viewed matches">
+              @for (item of skeletonMatchSlots; track item) {
+                <div class="locations-skeleton-row" aria-hidden="true">
+                  <div class="skeleton-block locations-skeleton-icon"></div>
+                  <div class="skeleton-block locations-skeleton-name"></div>
+                  <div class="skeleton-block locations-skeleton-score"></div>
+                  <div class="skeleton-block locations-skeleton-name"></div>
+                  <div class="skeleton-block locations-skeleton-icon"></div>
+                  <div class="skeleton-block locations-skeleton-meta"></div>
+                </div>
+              }
             </div>
           } @else {
             <cdk-virtual-scroll-viewport itemSize="40" class="matches-container-viewed">

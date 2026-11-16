@@ -180,6 +180,7 @@
               <mat-form-field appearance="outline">
                 <mat-label>Select Season</mat-label>
                 <mat-select
+                  #seasonSelect
                   [(ngModel)]="selectedSeason"
                   (selectionChange)="getTeamsBySeason(selectedSeason)"
                   aria-label="Select season">

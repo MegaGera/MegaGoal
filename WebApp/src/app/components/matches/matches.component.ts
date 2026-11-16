@@ -375,14 +375,28 @@ export class MatchesComponent implements OnInit, OnDestroy {
     return `${year}-${month}-${day}`;
   }
 
-  formatDisplayDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+  formatDateInField(dateString: string): string {
+    return this.dateFromIsoDay(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     });
+  }
+
+  formatDisplayDate(dateString: string): string {
+    return this.dateFromIsoDay(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  /** `YYYY-MM-DD` is a calendar day, not UTC midnight. */
+  private dateFromIsoDay(dateString: string): Date {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
   }
 
 

@@ -37,7 +37,6 @@
 	--color-club-world-cup-trans: rgba(255, 191, 0, 0.9);
 	--color-none: #000000;
 	--color-none-trans: rgba(92, 86, 86, 0.9);
-	--img-team-shadow: 0 0 0 15px;
 }
 
 .match-card-container {
@@ -494,5 +493,119 @@
   .mobile-info-bold {
     font-weight: 700;
   }
+}
+
+::ng-deep .match-page-location-panel .add-location-action {
+	position: sticky;
+	bottom: 2px;
+	display: block;
+	width: fit-content;
+	max-width: 100%;
+	margin: 8px auto 2px;
+	padding: 6px 12px;
+	border: 0;
+	border-radius: 999px;
+	background: #dc143c;
+	color: #fff;
+	font-size: 0.82rem;
+	font-weight: 600;
+	line-height: 1.2;
+	cursor: pointer;
+	opacity: 1;
+}
+
+::ng-deep .match-page-location-panel .add-location-action:hover {
+	background: #b01030;
+	color: #fff;
+	opacity: 1;
+}
+
+.new-location-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	background: rgba(15, 23, 42, 0.45);
+}
+
+.new-location-dialog {
+	width: min(100%, 360px);
+	padding: 20px;
+	border-radius: 16px;
+	background: #fff;
+	box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+}
+
+.new-location-title {
+	margin: 0 0 14px;
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: #1e293b;
+}
+
+.new-location-label {
+	display: block;
+	margin-bottom: 6px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: #475569;
+}
+
+.new-location-input {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 10px 12px;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+	font-size: 1rem;
+	color: #1e293b;
+}
+
+.new-location-input:focus {
+	outline: none;
+	border-color: #dc143c;
+	box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.15);
+}
+
+.new-location-error {
+	margin: 8px 0 0;
+	color: #b91c1c;
+	font-size: 0.85rem;
+}
+
+.new-location-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
+}
+
+.new-location-cancel,
+.new-location-save {
+	padding: 8px 14px;
+	border-radius: 10px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.new-location-cancel {
+	border: 1px solid #e2e8f0;
+	background: #fff;
+	color: #475569;
+}
+
+.new-location-save {
+	border: 0;
+	background: #dc143c;
+	color: #fff;
+}
+
+.new-location-save:disabled,
+.new-location-cancel:disabled {
+	opacity: 0.6;
+	cursor: default;
 }
 

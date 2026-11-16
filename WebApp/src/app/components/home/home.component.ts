@@ -2,7 +2,6 @@ import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, signal }
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, NgClass, NgOptimizedImage } from '@angular/common';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSelectModule } from '@angular/material/select'
@@ -41,7 +40,7 @@ import { NotificationComponent } from '../notification/notification.component';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, RealMatchCardComponent, PaginationComponent, MatProgressSpinnerModule, 
+  imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, RealMatchCardComponent, PaginationComponent, 
     MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent, FiltersHomeComponent, NotificationComponent, MobileFiltersInlineRowComponent, MobileFiltersBottomSheetComponent, ActiveFilterBadgesComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
@@ -52,6 +51,7 @@ import { NotificationComponent } from '../notification/notification.component';
 export class HomeComponent implements OnInit, OnDestroy {
 
   readonly panelOpenState = signal(false);
+  readonly skeletonMatchSlots = [1, 2, 3, 4];
 
   private userMeSubscription?: Subscription;
   private queryParamsSubscription?: Subscription;
@@ -63,6 +63,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   matches: Match[] = [];
   matchesOriginal: Match[] = [];
   matchesLoaded: boolean = false;
+  /** Whole-page logo until the header and match list are ready. Stats keep loading on their own. */
+  homeShellReady: boolean = false;
+  readonly homeLogoSrc = 'https://server.megamedia.megagera.com/megagera/MG.png';
   matchesPerPage: number = 20;
   matchesFiltered: Match[] = [];
   leaguesViewed: LeagueStats[] = [];
@@ -245,17 +248,28 @@ export class HomeComponent implements OnInit, OnDestroy {
     Get all matches from the service
   */
   getAllMatches() {
-    this.megagoal.getAllMatches(true).subscribe(result => {
-      this.matchesOriginal = <Match[]>result;
-      this.matchesOriginal.sort(function(x, y){
-        return y.fixture.timestamp - x.fixture.timestamp;
-      })
-      this.matchesReady = true;
-      this.populateSeasonsFromMatches();
-      this.updateFilteredArrays();
-      this.changeDetectorRef.detectChanges();
-      this.matchesLoaded = true;
-      this.filterMatches();
+    this.megagoal.getAllMatches(true).subscribe({
+      next: (result) => {
+        this.matchesOriginal = <Match[]>result;
+        this.matchesOriginal.sort(function(x, y){
+          return y.fixture.timestamp - x.fixture.timestamp;
+        })
+        this.matchesReady = true;
+        this.populateSeasonsFromMatches();
+        this.updateFilteredArrays();
+        this.changeDetectorRef.detectChanges();
+        this.matchesLoaded = true;
+        this.filterMatches();
+        this.homeShellReady = true;
+      },
+      error: (error) => {
+        console.error('Error loading matches:', error);
+        this.matchesOriginal = [];
+        this.matchesReady = true;
+        this.matchesLoaded = true;
+        this.filterMatches();
+        this.homeShellReady = true;
+      }
     })
   }
 

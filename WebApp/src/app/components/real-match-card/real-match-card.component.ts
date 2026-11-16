@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatchViewsCountBadgeComponent } from './match-views-count-badge/match-views-count-badge.component';
 import { Router, RouterLink } from '@angular/router';
@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select'
+import { MatSelect, MatSelectModule } from '@angular/material/select'
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { jamEyeCloseF, jamEyeF, jamInfoF } from '@ng-icons/jam-icons';
@@ -18,6 +18,7 @@ import { Match } from '../../models/match';
 import { Location } from '../../models/location';
 import { MatchParserService } from '../../services/match-parser.service';
 import { isNotStartedStatus } from '../../config/matchStatus';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -39,6 +40,10 @@ import { isNotStartedStatus } from '../../config/matchStatus';
   }), provideIcons({ jamEyeCloseF, jamEyeF, jamInfoF })]
 })
 export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestroy {
+  @ViewChild(MatSelect)
+  set locationSelect(select: MatSelect | undefined) {
+    this.watchLocationPanel(select);
+  }
   @Input() match!: Match;
   @Input() watched: boolean = false;
   @Input() locations!: Location[];
@@ -86,6 +91,13 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
    */
   locationSelectInteractable = false;
   locationPanelOpen = false;
+  newLocationOpen = false;
+  newLocationName = '';
+  newLocationError = '';
+  savingLocation = false;
+  @ViewChild('newLocationInput') private newLocationInput?: ElementRef<HTMLInputElement>;
+  private watchedLocationSelect?: MatSelect;
+  private locationPanelAttach?: Subscription;
   private locationInteractableTimer: ReturnType<typeof setTimeout> | null = null;
   private locationLeaveCheckTimer: ReturnType<typeof setTimeout> | null = null;
   private static readonly TOUCH_ENABLE_DELAY_MS = 280;
@@ -96,7 +108,8 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
     private megaGoal: MegaGoalService,
     public matchParser: MatchParserService,
     private router: Router,
-    private leagueColorsService: LeagueColorsService
+    private leagueColorsService: LeagueColorsService,
+    private host: ElementRef<HTMLElement>
   ) {
     this.orderLocations();
   }
@@ -190,6 +203,7 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
   }
 
   ngOnDestroy(): void {
+    this.locationPanelAttach?.unsubscribe();
     this.clearLocationInteractableTimer();
     this.clearLocationLeaveCheckTimer();
     this.clearViewsBadgeCollapseTimers();
@@ -217,8 +231,130 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
     }, RealMatchCardComponent.LEAVE_PANEL_CHECK_MS);
   }
 
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.newLocationOpen && !this.savingLocation) {
+      this.closeNewLocation();
+    }
+  }
+
+  openNewLocation(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.watchedLocationSelect?.close();
+    this.newLocationName = '';
+    this.newLocationError = '';
+    this.newLocationOpen = true;
+    setTimeout(() => this.newLocationInput?.nativeElement.focus());
+  }
+
+  closeNewLocation(): void {
+    if (this.savingLocation) {
+      return;
+    }
+    this.newLocationOpen = false;
+    this.newLocationError = '';
+  }
+
+  saveNewLocation(): void {
+    const name = this.newLocationName.trim();
+    if (!name || this.savingLocation) {
+      return;
+    }
+    const existing = (this.locations ?? []).find((loc) =>
+      !loc.stadium && loc.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (existing) {
+      this.applyLocation(existing.id);
+      this.newLocationOpen = false;
+      return;
+    }
+    this.savingLocation = true;
+    this.newLocationError = '';
+    this.megaGoal.createLocation({ name }).subscribe({
+      next: (created) => {
+        const location: Location = {
+          name: created.name,
+          id: created.id,
+          user: { username: '' },
+          private: true,
+          stadium: false,
+          official: false,
+          matchCount: 0
+        };
+        if (!this.locations) {
+          this.locations = [];
+        }
+        this.locations.push(location);
+        this.orderLocations();
+        this.applyLocation(created.id);
+        this.savingLocation = false;
+        this.newLocationOpen = false;
+      },
+      error: () => {
+        this.savingLocation = false;
+        this.newLocationError = 'Could not save that location.';
+      }
+    });
+  }
+
   onLocationPanelOpenedChange(opened: boolean): void {
     this.locationPanelOpen = opened;
+    if (opened) {
+      this.centerLocationPanel();
+    }
+  }
+
+  private watchLocationPanel(select: MatSelect | undefined): void {
+    if (select === this.watchedLocationSelect) {
+      return;
+    }
+    this.locationPanelAttach?.unsubscribe();
+    this.locationPanelAttach = undefined;
+    this.watchedLocationSelect = select;
+    const overlay = (select as unknown as {
+      _overlayDir?: {
+        attach: { subscribe(handler: () => void): Subscription };
+        positionChange: { subscribe(handler: () => void): Subscription };
+      };
+    } | undefined)?._overlayDir;
+    if (!overlay) {
+      return;
+    }
+    const place = new Subscription();
+    place.add(overlay.attach.subscribe(() => {
+      const pane = this.locationPanelPane();
+      if (pane) {
+        pane.style.visibility = 'hidden';
+      }
+      requestAnimationFrame(() => this.centerLocationPanel());
+    }));
+    place.add(overlay.positionChange.subscribe(() => {
+      requestAnimationFrame(() => this.centerLocationPanel());
+    }));
+    this.locationPanelAttach = place;
+  }
+
+  private centerLocationPanel(): void {
+    const panel = document.querySelector('.location-options-panel') as HTMLElement | null;
+    const pane = panel?.closest('.cdk-overlay-pane') as HTMLElement | null;
+    const card = this.host.nativeElement.querySelector('.generalMatchCard');
+    if (!panel || !pane || !card) {
+      return;
+    }
+    pane.style.transform = 'none';
+    const cardRect = card.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
+    const left = cardRect.left + (cardRect.width - panelRect.width) / 2;
+    const top = cardRect.top + (cardRect.height - panelRect.height) / 2;
+    const maxLeft = window.innerWidth - panelRect.width - 8;
+    const maxTop = window.innerHeight - panelRect.height - 8;
+    pane.style.transform = `translate(${Math.max(8, Math.min(left, maxLeft)) - panelRect.left}px, ${Math.max(8, Math.min(top, maxTop)) - panelRect.top}px)`;
+    pane.style.visibility = 'visible';
+  }
+
+  private locationPanelPane(): HTMLElement | null {
+    return document.querySelector('.location-options-panel')?.closest('.cdk-overlay-pane') as HTMLElement | null;
   }
 
   private scheduleLocationSelectInteractable(delayMs: number): void {
@@ -348,6 +484,11 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
 
     const venue = selectedVenue ? this.match.venue : undefined;
     this.megaGoal.setLocation(fixtureId, resolvedLocation, venue).subscribe(result => { });
+  }
+
+  private applyLocation(locationId: string): void {
+    this.match.location = locationId;
+    this.setLocation(this.match.fixture.id, locationId);
   }
 
   getDefaultLeagueImg(event: any) {

@@ -506,7 +506,7 @@ function diffLineupSide(label, before, after) {
   const nextPlayers = indexLineupPlayers(after);
   const bucketName = Object.fromEntries(lineupBuckets);
 
-  for (const [, player] of nextPlayers) {
+  for (const [id, player] of nextPlayers) {
     const previous = previousPlayers.get(id);
     if (!previous) {
       changes.push(`${label}: added ${describeLineupPlayer(player)} to ${bucketName[player.bucket]}`);
@@ -533,7 +533,7 @@ function diffLineupSide(label, before, after) {
     }
   }
 
-  for (const [, player] of previousPlayers) {
+  for (const [id, player] of previousPlayers) {
     if (!nextPlayers.has(id)) {
       changes.push(`${label}: removed ${describeLineupPlayer(player)} from ${bucketName[player.bucket]}`);
     }

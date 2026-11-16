@@ -42,13 +42,16 @@
                 title="Previous day">
                 <ng-icon name="jamChevronLeft"></ng-icon>
               </button>
-              <input 
-                type="date"
-                id="date-input"
-                class="date-input"
-                [(ngModel)]="selectedDate"
-                (change)="onDateChange()"
-                aria-label="Select date for matches">
+              <div class="date-field">
+                <input 
+                  type="date"
+                  id="date-input"
+                  class="date-input"
+                  [(ngModel)]="selectedDate"
+                  (change)="onDateChange()"
+                  [attr.aria-label]="'Select date, ' + formatDateInField(selectedDate)">
+                <span class="date-field-value" aria-hidden="true">{{ formatDateInField(selectedDate) }}</span>
+              </div>
               <button 
                 class="date-nav-btn next-day-btn"
                 (click)="goToNextDay()"

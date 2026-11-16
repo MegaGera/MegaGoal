@@ -1,24 +1,35 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
+import { jamEyeCloseF, jamEyeF } from '@ng-icons/jam-icons';
 import { ImagesService } from '../../../../services/images.service';
 import { LeagueColorsService } from '../../../../services/league-colors.service';
+import { MegaGoalService } from '../../../../services/megagoal.service';
+import { MatchParserService } from '../../../../services/match-parser.service';
 import { Match } from '../../../../models/match';
 
 @Component({
   selector: 'app-match-row',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, NgIconComponent],
   templateUrl: './match-row.component.html',
-  styleUrl: './match-row.component.css'
+  styleUrl: './match-row.component.css',
+  providers: [
+    provideNgIconsConfig({ size: '1.2rem' }),
+    provideIcons({ jamEyeCloseF, jamEyeF })
+  ]
 })
 export class MatchRowComponent implements OnInit {
   @Input() match!: Match;
   leagueBorder = '#94a3b8';
+  toggling = false;
 
   constructor(
     public images: ImagesService,
-    private leagueColors: LeagueColorsService
+    private leagueColors: LeagueColorsService,
+    private megaGoal: MegaGoalService,
+    private matchParser: MatchParserService
   ) {}
 
   ngOnInit(): void {
@@ -56,6 +67,37 @@ export class MatchRowComponent implements OnInit {
     return this.match.watched !== false;
   }
 
+  /** Same mark and unmark calls as the match card. The row link does not open. */
+  toggleWatched(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.toggling) {
+      return;
+    }
+    const mark = !this.isWatched();
+    const previous = this.match.watched;
+    this.match.watched = mark;
+    this.toggling = true;
+    const done = () => {
+      this.toggling = false;
+    };
+    const failed = () => {
+      this.match.watched = previous;
+      this.toggling = false;
+    };
+    if (mark) {
+      this.megaGoal.createMatch(this.watchPayload()).subscribe({ next: done, error: failed });
+      return;
+    }
+    this.megaGoal.deleteMatch(this.match.fixture.id).subscribe({ next: done, error: failed });
+  }
+
+  private watchPayload() {
+    const request = this.matchParser.matchToMatchRequest(this.match);
+    delete request.watched;
+    return request;
+  }
+
   onImageError(event: Event): void {
     const target = event.target as HTMLImageElement;
     if (target) {
@@ -71,50 +113,31 @@ export class MatchRowComponent implements OnInit {
     });
   }
 
-  hasGoals(): boolean {
-    return this.match.player_stats !== undefined && this.match.player_stats.goals > 0;
-  }
-
-  hasAssists(): boolean {
-    return this.match.player_stats !== undefined && this.match.player_stats.assists > 0;
-  }
-
-  hasYellowCards(): boolean {
-    return this.match.player_stats !== undefined && this.match.player_stats.yellow_cards > 0;
-  }
-
-  hasRedCards(): boolean {
-    return this.match.player_stats !== undefined && this.match.player_stats.red_cards > 0;
-  }
-
-  started(): boolean {
-    return this.match.player_stats !== undefined && this.match.player_stats.started;
-  }
-
-  get statMarks(): { kind: string; title: string; value: string | number; icon?: string }[] {
+  /** One icon per goal, assist, or card. */
+  get statIcons(): Array<'ball' | 'target' | 'yellow' | 'red'> {
     const stats = this.match.player_stats;
-    const marks: { kind: string; title: string; value: string | number; icon?: string }[] = [];
-    if (this.started()) marks.push({ kind: 'xi', title: 'Started', value: 'XI' });
-    if (this.hasGoals()) marks.push({ kind: 'goal', title: 'Goals', value: stats!.goals, icon: 'ball' });
-    if (this.hasAssists()) marks.push({ kind: 'assist', title: 'Assists', value: stats!.assists, icon: 'target' });
-    if (this.hasYellowCards()) marks.push({ kind: 'yellow', title: 'Yellow cards', value: stats!.yellow_cards, icon: 'yellow' });
-    if (this.hasRedCards()) marks.push({ kind: 'red', title: 'Red cards', value: stats!.red_cards, icon: 'red' });
-    return marks;
+    if (!stats) {
+      return [];
+    }
+    const icons: Array<'ball' | 'target' | 'yellow' | 'red'> = [];
+    for (let i = 0; i < stats.goals; i++) icons.push('ball');
+    for (let i = 0; i < stats.assists; i++) icons.push('target');
+    for (let i = 0; i < stats.yellow_cards; i++) icons.push('yellow');
+    for (let i = 0; i < stats.red_cards; i++) icons.push('red');
+    return icons;
   }
 
-  /** Keeps more than two badges on two rows. */
-  markColumns(): number {
-    return Math.ceil(this.statMarks.length / 2);
-  }
-
-  /** Column where the second line starts, so that line sits on the right. */
-  secondRowColumn(index: number): number | null {
-    const count = this.statMarks.length;
-    if (count <= 2) return null;
-    const columns = Math.ceil(count / 2);
-    if (index !== columns) return null;
-    const start = columns * 2 - count + 1;
-    return start > 1 ? start : null;
+  get statTitle(): string {
+    const stats = this.match.player_stats;
+    if (!stats) {
+      return '';
+    }
+    const parts: string[] = [];
+    if (stats.goals > 0) parts.push(stats.goals === 1 ? '1 goal' : `${stats.goals} goals`);
+    if (stats.assists > 0) parts.push(stats.assists === 1 ? '1 assist' : `${stats.assists} assists`);
+    if (stats.yellow_cards > 0) parts.push(stats.yellow_cards === 1 ? '1 yellow card' : `${stats.yellow_cards} yellow cards`);
+    if (stats.red_cards > 0) parts.push(stats.red_cards === 1 ? '1 red card' : `${stats.red_cards} red cards`);
+    return parts.join(', ');
   }
 }
 

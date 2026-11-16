@@ -1,5 +1,5 @@
-<a [routerLink]="['/app/match']" [queryParams]="{ id: match.fixture.id }" class="match-row-link">
-  <div class="match-row" [class.match-row--watched]="isWatched()">
+<div class="match-row" [class.match-row--watched]="isWatched()">
+  <a [routerLink]="['/app/match']" [queryParams]="{ id: match.fixture.id }" class="match-row-link">
     <span class="league-crest" [style.border]="'2px solid ' + leagueBorder">
       <img
         class="league-crest-logo"
@@ -33,22 +33,23 @@
       </span>
     </span>
 
-    <span
-      class="match-marks"
-      [class.match-marks--stacked]="statMarks.length > 2"
-      [style.grid-template-columns]="statMarks.length > 2 ? 'repeat(' + markColumns() + ', max-content)' : null">
-      <span
-        *ngFor="let mark of statMarks; let i = index"
-        class="mark"
-        [ngClass]="'mark--' + mark.kind"
-        [attr.title]="mark.title"
-        [style.grid-column]="secondRowColumn(i)">
-        <span *ngIf="mark.icon === 'ball'" aria-hidden="true">⚽</span>
-        <span *ngIf="mark.icon === 'target'" aria-hidden="true">🎯</span>
-        <span *ngIf="mark.icon === 'yellow'" class="card-dot card-dot--yellow" aria-hidden="true"></span>
-        <span *ngIf="mark.icon === 'red'" class="card-dot card-dot--red" aria-hidden="true"></span>
-        {{ mark.value }}
-      </span>
-    </span>
-  </div>
-</a>
+    <div class="match-stats" *ngIf="statIcons.length" [attr.title]="statTitle" [attr.aria-label]="statTitle">
+      <ng-container *ngFor="let icon of statIcons">
+        <span *ngIf="icon === 'ball'" class="stat-icon" aria-hidden="true">⚽</span>
+        <span *ngIf="icon === 'target'" class="stat-icon" aria-hidden="true">🎯</span>
+        <span *ngIf="icon === 'yellow'" class="card-dot card-dot--yellow" aria-hidden="true"></span>
+        <span *ngIf="icon === 'red'" class="card-dot card-dot--red" aria-hidden="true"></span>
+      </ng-container>
+    </div>
+  </a>
+  <button
+    type="button"
+    class="match-watch"
+    [class.match-watch--open]="isWatched()"
+    [disabled]="toggling"
+    [attr.aria-label]="isWatched() ? 'Mark as not seen' : 'Mark as seen'"
+    [attr.title]="isWatched() ? 'Mark as not seen' : 'Mark as seen'"
+    (click)="toggleWatched($event)">
+    <ng-icon [name]="isWatched() ? 'jamEyeF' : 'jamEyeCloseF'"></ng-icon>
+  </button>
+</div>

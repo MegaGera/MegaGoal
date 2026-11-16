@@ -82,7 +82,7 @@ describe('ListRouteReuseStrategy', () => {
     expect(secondHandle.componentRef.destroy).not.toHaveBeenCalled();
   });
 
-  it('keeps a separate instance per team, player, match, league season, and matches date', () => {
+  it('keeps a separate instance per team, player, match, and matches date', () => {
     const playerConfig: Route = { path: 'player', component: class {} };
     const samePlayer = snapshot('player', { queryParams: { id: '9' }, config: playerConfig });
     const otherPlayer = snapshot('player', { queryParams: { id: '4' }, config: playerConfig });
@@ -108,7 +108,13 @@ describe('ListRouteReuseStrategy', () => {
     });
     expect(strategy.shouldReuseRoute(season, bare)).toBeTrue();
     expect(strategy.shouldReuseRoute(otherMatchday, season)).toBeTrue();
-    expect(strategy.shouldReuseRoute(otherSeason, season)).toBeFalse();
+    expect(strategy.shouldReuseRoute(otherSeason, season)).toBeTrue();
+    const otherLeague = snapshot('leagues/:id', {
+      params: { id: '140' },
+      queryParams: { season: '2024', matchday: '1' },
+      config: leagueConfig,
+    });
+    expect(strategy.shouldReuseRoute(otherLeague, season)).toBeFalse();
 
     const matchesConfig: Route = { path: 'matches', component: class {} };
     const day = snapshot('matches', { queryParams: { date: '2026-01-01' }, config: matchesConfig });

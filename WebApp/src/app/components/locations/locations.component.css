@@ -702,26 +702,58 @@
   font-weight: 500;
 }
 
-/* Loading states */
-.spinner-border {
-  width: 2rem;
-  height: 2rem;
-  border: 0.25em solid #e5e7eb;
-  border-top: 0.25em solid #dc143c;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.locations-skeleton-list {
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
 }
 
-.spinner-border-sm {
-  width: 1rem;
-  height: 1rem;
-  border: 0.125em solid #e5e7eb;
-  border-top: 0.125em solid #dc143c;
+.locations-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  padding: 0.5rem;
+  border-bottom: 1px solid #d0d0d0;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.skeleton-block {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: locations-skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.locations-skeleton-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+}
+
+.locations-skeleton-name {
+  width: 22%;
+  max-width: 140px;
+  height: 0.85rem;
+  flex-shrink: 1;
+}
+
+.locations-skeleton-score {
+  width: 2.2rem;
+  height: 0.85rem;
+}
+
+.locations-skeleton-meta {
+  width: 28%;
+  max-width: 160px;
+  height: 0.7rem;
+  margin-left: auto;
+  flex-shrink: 1;
+}
+
+@keyframes locations-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* Virtual scroll styling */

@@ -1,3 +1,8 @@
+@if (!homeShellReady) {
+  <div class="home-logo-skeleton" aria-busy="true" aria-label="Loading home">
+    <img class="home-logo-skeleton-mark" [src]="homeLogoSrc" alt="" aria-hidden="true">
+  </div>
+} @else {
 <div class="container">
 
   <!-- Hero Section -->
@@ -155,8 +160,20 @@
           </div>
         </div>
       } @else if (!this.matchesLoaded) {
-        <div class="spinner">
-          <mat-spinner />
+        <div class="home-matches-skeleton" aria-busy="true" aria-label="Loading matches">
+          @for (item of skeletonMatchSlots; track item) {
+            <div class="home-match-skeleton" aria-hidden="true">
+              <div class="home-skeleton-team">
+                <div class="skeleton-block home-skeleton-logo"></div>
+                <div class="skeleton-block home-skeleton-name"></div>
+              </div>
+              <div class="skeleton-block home-skeleton-score"></div>
+              <div class="home-skeleton-team">
+                <div class="skeleton-block home-skeleton-logo"></div>
+                <div class="skeleton-block home-skeleton-name"></div>
+              </div>
+            </div>
+          }
         </div>
       }
 
@@ -250,3 +267,4 @@
   </ng-template>
 
 </div>
+}

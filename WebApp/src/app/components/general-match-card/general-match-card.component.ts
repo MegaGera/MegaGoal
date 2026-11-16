@@ -1,11 +1,11 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelect, MatSelectModule } from '@angular/material/select';
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { jamEyeCloseF, jamEyeF } from '@ng-icons/jam-icons';
@@ -31,6 +31,8 @@ import { MatchViewsCountBadgeComponent } from '../real-match-card/match-views-co
   }), provideIcons({ jamEyeCloseF, jamEyeF })]
 })
 export class GeneralMatchCardComponent implements OnInit, OnChanges {
+  @ViewChild(MatSelect) private locationSelect?: MatSelect;
+  @ViewChild('newLocationInput') private newLocationInput?: ElementRef<HTMLInputElement>;
   @Input() realMatch!: RealMatch;
   @Output() watchedChange = new EventEmitter<boolean>();
   @Output() watchedMatchChange = new EventEmitter<Match | null>();
@@ -38,6 +40,10 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
   match!: Match;
   watched: boolean = false;
   locations: Location[] = [];
+  newLocationOpen = false;
+  newLocationName = '';
+  newLocationError = '';
+  savingLocation = false;
 
   private viewsAdjustment = 0;
 
@@ -153,6 +159,69 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
     }
   }
 
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.newLocationOpen && !this.savingLocation) {
+      this.closeNewLocation();
+    }
+  }
+
+  openNewLocation(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.locationSelect?.close();
+    this.newLocationName = '';
+    this.newLocationError = '';
+    this.newLocationOpen = true;
+    setTimeout(() => this.newLocationInput?.nativeElement.focus());
+  }
+
+  closeNewLocation(): void {
+    if (this.savingLocation) {
+      return;
+    }
+    this.newLocationOpen = false;
+    this.newLocationError = '';
+  }
+
+  saveNewLocation(): void {
+    const name = this.newLocationName.trim();
+    if (!name || this.savingLocation || !this.match) {
+      return;
+    }
+    const existing = this.locations.find((loc) =>
+      !loc.stadium && loc.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (existing) {
+      this.applyLocation(existing.id);
+      this.newLocationOpen = false;
+      return;
+    }
+    this.savingLocation = true;
+    this.newLocationError = '';
+    this.megaGoal.createLocation({ name }).subscribe({
+      next: (created) => {
+        this.locations.push({
+          name: created.name,
+          id: created.id,
+          user: { username: '' },
+          private: true,
+          stadium: false,
+          official: false,
+          matchCount: 0
+        });
+        this.orderLocations();
+        this.applyLocation(created.id);
+        this.savingLocation = false;
+        this.newLocationOpen = false;
+      },
+      error: () => {
+        this.savingLocation = false;
+        this.newLocationError = 'Could not save that location.';
+      }
+    });
+  }
+
   setLocation(fixtureId: number, location: string | number) {
     const locationId = String(location);
     const selectedVenue = this.match.venue?.id != null
@@ -163,6 +232,11 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
 
     const venue = selectedVenue ? this.match.venue : undefined;
     this.megaGoal.setLocation(fixtureId, resolvedLocation, venue).subscribe(result => {});
+  }
+
+  private applyLocation(locationId: string): void {
+    this.match.location = locationId;
+    this.setLocation(this.match.fixture.id, locationId);
   }
 
   getLocationList() {

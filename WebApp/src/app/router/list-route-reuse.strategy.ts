@@ -15,8 +15,8 @@ interface DetachedListHandle extends DetachedRouteHandle {
  * Browser back and forward put that same instance back on screen, so it does not load again.
  * Opening a screen from a link or the menu drops the saved instance and loads again.
  *
- * A team, player, match, league season, and matches date each keep their own instance.
- * Filter query changes stay on the same instance.
+ * A team, player, match, and matches date each keep their own instance.
+ * A league season stays on the same league page. Filter query changes stay on the same instance.
  *
  * The router asks for the saved handle twice during one navigation
  * (while building the route tree, then while attaching the outlet) and
@@ -73,7 +73,7 @@ export class ListRouteReuseStrategy implements RouteReuseStrategy {
     if (futureKey === currKey) {
       return true;
     }
-    return this.sameLeagueWhileSeasonSettles(future, curr);
+    return this.sameLeague(future, curr);
   }
 
   private cacheKey(route: ActivatedRouteSnapshot): string | null {
@@ -105,19 +105,14 @@ export class ListRouteReuseStrategy implements RouteReuseStrategy {
   }
 
   /**
-   * The league page writes season onto the current history entry after the first load.
-   * That write must keep the instance that is already on screen.
+   * Season and matchday are query params. Changing them, including the first
+   * write of season onto the current address, keeps the league page on screen.
    */
-  private sameLeagueWhileSeasonSettles(future: ActivatedRouteSnapshot, curr: ActivatedRouteSnapshot): boolean {
+  private sameLeague(future: ActivatedRouteSnapshot, curr: ActivatedRouteSnapshot): boolean {
     if (future.routeConfig?.path !== 'leagues/:id') {
       return false;
     }
-    if ((future.params ?? {})['id'] !== (curr.params ?? {})['id']) {
-      return false;
-    }
-    const futureSeason = (future.queryParams ?? {})['season'];
-    const currSeason = (curr.queryParams ?? {})['season'];
-    return !futureSeason || !currSeason;
+    return (future.params ?? {})['id'] === (curr.params ?? {})['id'];
   }
 
   private todayIso(): string {

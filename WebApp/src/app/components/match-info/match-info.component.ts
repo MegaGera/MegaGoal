@@ -48,6 +48,10 @@ export class MatchInfoComponent {
   watched = false;
   watchedMatch: Match | null = null;
   matchEngagement: MatchEngagementAggregate | null = null;
+  readonly skeletonTabSlots = [1, 2, 3, 4];
+  readonly skeletonPanelSlots = [1, 2, 3];
+  readonly skeletonRowSlots = [1, 2, 3, 4, 5];
+  private loadGeneration = 0;
 
   constructor(
     private megagoal: MegaGoalService, 
@@ -152,7 +156,12 @@ export class MatchInfoComponent {
   }
 
   init() {
+    const generation = ++this.loadGeneration;
+    this.loading = true;
     this.megagoal.getRealMatchById(this.queryMatchId).subscribe(result => {
+      if (generation !== this.loadGeneration) {
+        return;
+      }
       if (result != undefined) {
         this.match = result;
         if (this.match.statistics && this.match.statistics.length >= 2) {
@@ -182,6 +191,9 @@ export class MatchInfoComponent {
         this.router.navigate(["/app/matches"]);
       }
     }, error => {
+      if (generation !== this.loadGeneration) {
+        return;
+      }
       this.router.navigate(["/app/matches"]);
     });
   }

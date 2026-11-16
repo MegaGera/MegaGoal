@@ -45,10 +45,8 @@
 
   <!-- Match Highlights Video Section -->
   <div class="highlights-section" *ngIf="isFinished() && highlightsVideo && highlightsVideo.videoId">
-    <div class="video-container" *ngIf="loadingVideo">
-      <div class="video-loading">
-        <div class="spinner"></div>
-      </div>
+    <div class="video-container" *ngIf="loadingVideo" aria-busy="true" aria-label="Loading highlights">
+      <div class="skeleton-block video-skeleton-frame" aria-hidden="true"></div>
     </div>
     <div class="video-wrapper" *ngIf="!loadingVideo && highlightsEmbedUrl">
       <iframe 
@@ -198,8 +196,51 @@
 
 </div>
 
-<!-- Loading State -->
-<div class="loading-container" *ngIf="loading">
-  <div class="spinner"></div>
-  <p>Loading match information...</p>
-</div>
+@if (loading) {
+  <section class="match-info-container match-page-skeleton" aria-busy="true" aria-label="Loading match">
+    <div class="match-skeleton-header" aria-hidden="true">
+      <div class="skeleton-block skeleton-league-crest"></div>
+      <div class="match-skeleton-header-text">
+        <div class="skeleton-block skeleton-league-title"></div>
+        <div class="skeleton-block skeleton-league-meta"></div>
+      </div>
+      <div class="skeleton-block skeleton-country-pill"></div>
+    </div>
+
+    <div class="match-skeleton-card" aria-hidden="true">
+      <div class="match-skeleton-team">
+        <div class="skeleton-block skeleton-team-logo"></div>
+        <div class="skeleton-block skeleton-team-name"></div>
+      </div>
+      <div class="skeleton-block skeleton-score"></div>
+      <div class="match-skeleton-team">
+        <div class="skeleton-block skeleton-team-logo"></div>
+        <div class="skeleton-block skeleton-team-name"></div>
+      </div>
+    </div>
+
+    @if (isMobileView) {
+      <div class="match-skeleton-tabs" aria-hidden="true">
+        @for (item of skeletonTabSlots; track item) {
+          <div class="skeleton-block skeleton-tab"></div>
+        }
+      </div>
+      <div class="match-skeleton-panel" aria-hidden="true">
+        @for (item of skeletonRowSlots; track item) {
+          <div class="skeleton-block skeleton-panel-row"></div>
+        }
+      </div>
+    } @else {
+      <div class="match-skeleton-panels" aria-hidden="true">
+        @for (panel of skeletonPanelSlots; track panel) {
+          <div class="match-skeleton-panel">
+            <div class="skeleton-block skeleton-panel-title"></div>
+            @for (item of skeletonRowSlots; track item) {
+              <div class="skeleton-block skeleton-panel-row"></div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </section>
+}

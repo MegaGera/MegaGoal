@@ -1,8 +1,8 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
 import { jamPlus, jamStar, jamStarF } from '@ng-icons/jam-icons';
 import { Subscription } from 'rxjs';
@@ -53,6 +53,7 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
   /* Seasons */
   seasonsFiltered: SeasonInfo[] = [];
   selectedSeason!: SeasonInfo;
+  @ViewChild('seasonSelect') private seasonSelect?: MatSelect;
 
   /* Teams */
   teams: Team[] = [];
@@ -210,9 +211,9 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
         // Update season if different
         if (seasonChanged && newSeasonId !== null) {
           const newSeason = this.seasonsFiltered.find(season => season.id === newSeasonId);
-          if (newSeason && this.selectedSeason?.id !== newSeasonId) {
+          if (newSeason) {
             this.selectedSeason = newSeason;
-            this.getTeamsByLeagueAndSeason(this.selectedLeague.league.id, this.selectedSeason.id);
+            this.getTeamsByLeagueAndSeason(this.selectedLeague.league.id, newSeason.id, false);
             this.getRealMatches();
             this.getMatches();
           }
@@ -544,12 +545,7 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
     This method get teams by season
   */
   getTeamsBySeason(season: SeasonInfo): void {
-    // The select already points at the new season. Put this instance back so
-    // browser back can show it unchanged. The next history entry loads that season.
-    const current = this.seasonsFiltered.find((item) => item.id === this.querySeasonId);
-    if (current) {
-      this.selectedSeason = current;
-    }
+    this.closeSeasonSelect();
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {
@@ -560,21 +556,43 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  private closeSeasonSelect(): void {
+    const select = this.seasonSelect;
+    if (!select) {
+      return;
+    }
+    const overlayRef = (select as unknown as {
+      _overlayDir?: { overlayRef?: { detach(): void; overlayElement?: HTMLElement } };
+    })._overlayDir?.overlayRef;
+    select.close();
+    const backdrop = overlayRef?.overlayElement?.previousElementSibling;
+    overlayRef?.detach();
+    if (backdrop?.classList.contains('cdk-overlay-backdrop')) {
+      backdrop.remove();
+    }
+  }
+
   /*
     This method get teams by league and season
   */
-  getTeamsByLeagueAndSeason(id: number, season: number): void {
-    this.setLoading(true);
+  getTeamsByLeagueAndSeason(id: number, season: number, pageLoading = true): void {
+    if (pageLoading) {
+      this.setLoading(true);
+    }
     this.megagoal.getTeamsByLeagueAndSeason(id, season).subscribe({
       next: (result: Team[]) => {
         this.teams = [...result];
         this.sortTeamsByFavourite();
         this.showTeams = this.teams.slice(0, 24);
-        this.setLoading(false);
+        if (pageLoading) {
+          this.setLoading(false);
+        }
       },
       error: (error: any) => {
         console.error('Error fetching teams by league and season:', error);
-        this.setLoading(false);
+        if (pageLoading) {
+          this.setLoading(false);
+        }
       }
     });
   }

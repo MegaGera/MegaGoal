@@ -264,11 +264,119 @@
   margin-top: 4%;
 }
 
-.spinner {
+.home-matches-skeleton {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+  width: 90%;
+  margin: 2% auto 0;
+}
+
+.home-match-skeleton {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  margin-top: 4%;
+  gap: 1rem;
+  min-height: 14rem;
+  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 0 2px 0 rgba(48, 48, 48, 0.1), 0 4px 4px 0 rgba(48, 48, 48, 0.1);
+}
+
+.home-skeleton-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.skeleton-block {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: home-skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.home-skeleton-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+}
+
+.home-skeleton-name {
+  width: 7rem;
+  max-width: 100%;
+  height: 0.95rem;
+}
+
+.home-skeleton-score {
+  width: 4.5rem;
+  height: 2rem;
+  border-radius: 8px;
+}
+
+@keyframes home-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.home-logo-skeleton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100dvh - 4.5rem);
+  width: 100%;
+}
+
+.home-logo-skeleton-mark {
+  width: min(220px, 58vw);
+  height: auto;
+  display: block;
+  animation: home-logo-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes home-logo-pulse {
+  0%, 100% { filter: brightness(0) invert(0.72); }
+  50% { filter: brightness(0) invert(0.92); }
+}
+
+@media only screen and (max-width: 767px) {
+  .home-matches-skeleton {
+    gap: 0.65rem;
+    margin-top: 5%;
+  }
+
+  .home-match-skeleton {
+    box-sizing: border-box;
+    height: 14vh;
+    min-height: 14vh;
+    gap: 0.35rem;
+    padding: 0.3rem 0.45rem;
+    overflow: hidden;
+  }
+
+  .home-skeleton-team {
+    gap: 0.2rem;
+  }
+
+  .home-skeleton-logo {
+    width: 26px;
+    height: 26px;
+  }
+
+  .home-skeleton-name {
+    width: 68%;
+    height: 0.5rem;
+  }
+
+  .home-skeleton-score {
+    width: 2.2rem;
+    height: 0.85rem;
+  }
 }
 
 .imgTeamIcon {

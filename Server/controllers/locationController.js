@@ -71,9 +71,9 @@ export const createLocation = async (req, res) => {
     const { name } = parseCreateLocationBody(req.body);
     const location = buildUserLocation({ name, username });
 
-    let result = await db.collection('locations').insertOne(location);
+    await db.collection('locations').insertOne(location);
     console.log("Location " + location.name + " inserted for user " + req.validateData.username);
-    res.status(201).json(result.insertedId);
+    res.status(201).json({ id: location.id, name: location.name });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

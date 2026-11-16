@@ -61,7 +61,7 @@
       @if (watched) {
         <div class="location-selector-row">
           <div class="location-selector">
-            <mat-select name="locationSelect" class="location-mat-select" panelWidth="null" 
+            <mat-select name="locationSelect" class="location-mat-select" panelClass="match-page-location-panel" panelWidth="null" 
               [(ngModel)]="match.location" 
               (selectionChange)="setLocation(match.fixture.id, $event.value)">
               @if (match.venue && match.venue.id) {
@@ -74,6 +74,13 @@
                   <span>{{location.name}}</span>
                 </mat-option>
               }
+              <button
+                type="button"
+                class="add-location-action"
+                (mousedown)="$event.preventDefault(); $event.stopPropagation()"
+                (click)="openNewLocation($event)">
+                Add a new location
+              </button>
             </mat-select>
           </div>
         </div>
@@ -119,4 +126,28 @@
     </div>
   </div>
 </div>
+
+@if (newLocationOpen) {
+  <div class="new-location-backdrop" (click)="closeNewLocation()">
+    <form class="new-location-dialog" (click)="$event.stopPropagation()" (ngSubmit)="saveNewLocation()">
+      <h2 class="new-location-title">Add a new location</h2>
+      <label class="new-location-label" for="match-page-new-location-name">Location name</label>
+      <input
+        id="match-page-new-location-name"
+        #newLocationInput
+        class="new-location-input"
+        name="locationName"
+        [(ngModel)]="newLocationName"
+        autocomplete="off"
+        [disabled]="savingLocation">
+      @if (newLocationError) {
+        <p class="new-location-error">{{ newLocationError }}</p>
+      }
+      <div class="new-location-actions">
+        <button type="button" class="new-location-cancel" (click)="closeNewLocation()" [disabled]="savingLocation">Cancel</button>
+        <button type="submit" class="new-location-save" [disabled]="savingLocation || !newLocationName.trim()">Save</button>
+      </div>
+    </form>
+  </div>
+}
 
