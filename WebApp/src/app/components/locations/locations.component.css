@@ -152,6 +152,12 @@
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 }
 
+@media (max-width: 768px) {
+  .location-place-results {
+    max-height: 120px;
+  }
+}
+
 .location-place-result {
   display: flex;
   flex-direction: column;
@@ -1369,6 +1375,15 @@ cdk-virtual-scroll-viewport ::ng-deep .cdk-virtual-scroll-content-wrapper {
       #dc143c 94%,
       transparent
     );
+  }
+
+  .location-side-panel:has(> app-location-map:only-child) {
+    height: 420px;
+  }
+
+  .location-side-panel:has(> app-location-map:only-child) > app-location-map {
+    height: 100%;
+    min-height: 0;
   }
 
   .location-side-panel:empty {

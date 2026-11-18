@@ -382,8 +382,11 @@ export class MegaGoalService {
     return this.http.get<Location[]>(this.url + '/location/counts/', this.options);
   }
 
-  searchLocationPlaces(query: string): Observable<LocationPlaceResult[]> {
-    const params = new HttpParams().set('q', query);
+  searchLocationPlaces(query: string, bias?: { lat: number; lng: number } | null): Observable<LocationPlaceResult[]> {
+    let params = new HttpParams().set('q', query);
+    if (bias) {
+      params = params.set('lat', String(bias.lat)).set('lng', String(bias.lng));
+    }
     return this.http.get<LocationPlaceResult[]>(this.url + '/location/places/', { ...this.options, params });
   }
 

@@ -194,6 +194,12 @@
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 }
 
+@media (max-width: 768px) {
+  .location-place-results {
+    max-height: 120px;
+  }
+}
+
 .location-place-result {
   display: flex;
   flex-direction: column;

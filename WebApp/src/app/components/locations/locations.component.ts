@@ -12,7 +12,7 @@ import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose,
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
-import { DEFAULT_MAP_STADIUMS, Location, LocationPlace, LocationPlaceResult } from '../../models/location';
+import { DEFAULT_MAP_STADIUMS, lastMapPin, Location, LocationPlace, LocationPlaceResult, rememberMapPin } from '../../models/location';
 import { LocationMapComponent, LocationMapPin } from './location-map/location-map.component';
 import { NewLocationDialogComponent, NewLocationDraft } from './new-location-dialog/new-location-dialog.component';
 import { RealMatch } from '../../models/realMatch';
@@ -250,6 +250,20 @@ export class LocationsComponent implements OnInit {
     this.searchingPlaces = false;
   }
 
+  @HostListener('document:pointerdown', ['$event'])
+  dismissPlaceResults(event: PointerEvent): void {
+    if (!this.placeResults.length) {
+      return;
+    }
+    const target = event.target;
+    if (target instanceof Element && target.closest('.location-place-search')) {
+      return;
+    }
+    this.placeResults = [];
+    this.searchingPlaces = false;
+    this.placeSearchSerial++;
+  }
+
   private normalizeSearchText(value: string): string {
     return value
       .normalize('NFD')
@@ -370,9 +384,11 @@ export class LocationsComponent implements OnInit {
       this.resolveStadiumPin(location);
       return;
     }
-    if (!location.place) {
-      this.previewPin = this.randomStadiumPin();
+    if (location.place) {
+      rememberMapPin(location.place);
+      return;
     }
+    this.previewPin = this.randomStadiumPin();
   }
 
   private resolveStadiumPin(location: Location): void {
@@ -402,6 +418,17 @@ export class LocationsComponent implements OnInit {
     });
   }
 
+  private placeSearchBias(): { lat: number; lng: number } | null {
+    if (this.draftPin) {
+      return this.draftPin;
+    }
+    const place = this.selectedLocation?.place;
+    if (place) {
+      return { lat: place.lat, lng: place.lng };
+    }
+    return lastMapPin();
+  }
+
   onPlaceQueryChange(value: string): void {
     this.placeQuery = value;
     this.placeError = '';
@@ -420,7 +447,7 @@ export class LocationsComponent implements OnInit {
         return;
       }
       this.searchingPlaces = true;
-      this.megagoal.searchLocationPlaces(query).subscribe({
+      this.megagoal.searchLocationPlaces(query, this.placeSearchBias()).subscribe({
         next: (results) => {
           if (serial !== this.placeSearchSerial) {
             return;
@@ -441,10 +468,14 @@ export class LocationsComponent implements OnInit {
   }
 
   choosePlaceResult(result: LocationPlaceResult): void {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     this.placeQuery = '';
     this.placeResults = [];
     this.placeSearchSerial++;
     this.draftPin = { lat: result.lat, lng: result.lng };
+    rememberMapPin(this.draftPin);
     this.savePlace({
       provider: 'osm',
       lat: result.lat,
@@ -458,6 +489,7 @@ export class LocationsComponent implements OnInit {
 
   onPinPicked(pin: { lat: number; lng: number }): void {
     this.draftPin = pin;
+    rememberMapPin(pin);
     this.savePlace({
       provider: 'osm',
       lat: pin.lat,

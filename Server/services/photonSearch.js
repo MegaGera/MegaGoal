@@ -1,8 +1,7 @@
 const PHOTON_URL = 'https://photon.komoot.io/api/';
-const BERNABEU_LAT = 40.453054;
-const BERNABEU_LNG = -3.688344;
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const CACHE_LIMIT = 100;
+const LOCATION_BIAS_SCALE = 0.8;
 
 const cache = new Map();
 
@@ -65,8 +64,13 @@ const writeCache = (key, results) => {
   cache.delete(oldestKey);
 };
 
-const searchPhotonPlaces = async (query) => {
-  const key = query.trim().toLowerCase();
+const searchPhotonPlaces = async (query, bias) => {
+  const lat = bias?.lat;
+  const lng = bias?.lng;
+  const hasBias = Number.isFinite(lat) && Number.isFinite(lng);
+  const key = hasBias
+    ? `${query.trim().toLowerCase()}@${lat.toFixed(2)},${lng.toFixed(2)}`
+    : query.trim().toLowerCase();
   const cached = readCache(key);
   if (cached) {
     return cached;
@@ -75,8 +79,11 @@ const searchPhotonPlaces = async (query) => {
   const url = new URL(PHOTON_URL);
   url.searchParams.set('q', query.trim());
   url.searchParams.set('limit', '6');
-  url.searchParams.set('lat', String(BERNABEU_LAT));
-  url.searchParams.set('lon', String(BERNABEU_LNG));
+  if (hasBias) {
+    url.searchParams.set('lat', String(lat));
+    url.searchParams.set('lon', String(lng));
+    url.searchParams.set('location_bias_scale', String(LOCATION_BIAS_SCALE));
+  }
 
   const response = await fetch(url, {
     headers: {

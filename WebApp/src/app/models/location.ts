@@ -17,6 +17,35 @@ export interface LocationPlaceResult {
     lng: number
 }
 
+const LAST_MAP_PIN_KEY = 'megagoal.lastMapPin';
+
+export function rememberMapPin(pin: { lat: number; lng: number }): void {
+    try {
+        localStorage.setItem(LAST_MAP_PIN_KEY, JSON.stringify({ lat: pin.lat, lng: pin.lng }));
+    } catch {
+        return;
+    }
+}
+
+export function lastMapPin(): { lat: number; lng: number } | null {
+    try {
+        const raw = localStorage.getItem(LAST_MAP_PIN_KEY);
+        if (!raw) {
+            return null;
+        }
+        const parsed = JSON.parse(raw) as { lat?: unknown; lng?: unknown };
+        if (typeof parsed.lat !== 'number' || typeof parsed.lng !== 'number') {
+            return null;
+        }
+        if (parsed.lat < -90 || parsed.lat > 90 || parsed.lng < -180 || parsed.lng > 180) {
+            return null;
+        }
+        return { lat: parsed.lat, lng: parsed.lng };
+    } catch {
+        return null;
+    }
+}
+
 export const SANTIAGO_BERNABEU = { lat: 40.453054, lng: -3.688344 };
 
 export const DEFAULT_MAP_STADIUMS = [

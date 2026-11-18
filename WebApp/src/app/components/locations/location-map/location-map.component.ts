@@ -196,11 +196,9 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
       return;
     }
     if (this.centeredKey === key) {
-      this.map.resize();
       return;
     }
     this.centeredKey = key;
-    this.map.resize();
     if (pins.length === 0) {
       this.map.easeTo({ center: [SANTIAGO_BERNABEU.lng, SANTIAGO_BERNABEU.lat], zoom: 2 });
       return;
@@ -250,19 +248,26 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
         });
       });
     } else {
-      this.mapMarker.setLngLat(lngLat);
-      this.mapMarker.setDraggable(this.interactive);
+      const current = this.mapMarker.getLngLat();
+      const moved = Math.abs(current.lat - marker.lat) > 1e-7 || Math.abs(current.lng - marker.lng) > 1e-7;
+      if (moved) {
+        this.mapMarker.setLngLat(lngLat);
+      }
+      if (this.mapMarker.isDraggable() !== this.interactive) {
+        this.mapMarker.setDraggable(this.interactive);
+      }
+      if (!moved) {
+        return;
+      }
     }
     this.moveTo(marker.lng, marker.lat, `${marker.lat},${marker.lng}`);
   }
 
   private moveTo(lng: number, lat: number, key: string): void {
     if (!this.map || this.centeredKey === key) {
-      this.map?.resize();
       return;
     }
     this.centeredKey = key;
-    this.map.resize();
     this.map.easeTo({ center: [lng, lat] });
   }
 }

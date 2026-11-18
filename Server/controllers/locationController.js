@@ -9,6 +9,18 @@ import {
 } from '../entities/locationEntity.js';
 import { searchPhotonPlaces } from '../services/photonSearch.js';
 
+const readPlaceBias = (query) => {
+  const lat = Number(query.lat);
+  const lng = Number(query.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    return null;
+  }
+  return { lat, lng };
+};
+
 // Get locations
 export const getLocations = async (req, res) => {
   const db = getDB();
@@ -90,7 +102,7 @@ export const searchLocationPlaces = async (req, res) => {
       res.send([]);
       return;
     }
-    const results = await searchPhotonPlaces(query);
+    const results = await searchPhotonPlaces(query, readPlaceBias(req.query));
     res.send(results);
   } catch (error) {
     res.status(502).json({ message: 'Place search is unavailable.' });

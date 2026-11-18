@@ -1,16 +1,26 @@
 :host {
-  display: block;
-  flex: 1;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   min-height: 280px;
 }
 
 .location-map-canvas {
+  flex: 1 1 auto;
   width: 100%;
   height: 100%;
   min-height: 280px;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   overflow: hidden;
+  touch-action: none;
+}
+
+:host ::ng-deep .maplibregl-canvas-container,
+:host ::ng-deep .maplibregl-canvas-container.maplibregl-touch-drag-pan,
+:host ::ng-deep .maplibregl-canvas,
+:host ::ng-deep .maplibregl-canvas-container.maplibregl-touch-drag-pan .maplibregl-canvas {
+  touch-action: none !important;
 }
 
 .location-map-canvas:fullscreen {

@@ -1,8 +1,8 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { jamClose, jamSearch } from '@ng-icons/jam-icons';
-import { DEFAULT_MAP_STADIUMS, LocationPlace, LocationPlaceResult } from '../../../models/location';
+import { DEFAULT_MAP_STADIUMS, lastMapPin, LocationPlace, LocationPlaceResult, rememberMapPin } from '../../../models/location';
 import { MegaGoalService } from '../../../services/megagoal.service';
 import { LocationMapComponent } from '../location-map/location-map.component';
 
@@ -68,6 +68,13 @@ export class NewLocationDialogComponent implements AfterViewInit {
     this.save.emit({ name, place: this.draftPlace });
   }
 
+  private placeSearchBias(): { lat: number; lng: number } | null {
+    if (this.draftPlace) {
+      return { lat: this.draftPlace.lat, lng: this.draftPlace.lng };
+    }
+    return lastMapPin();
+  }
+
   onPlaceQueryChange(value: string): void {
     this.placeQuery = value;
     this.placeError = '';
@@ -86,7 +93,7 @@ export class NewLocationDialogComponent implements AfterViewInit {
         return;
       }
       this.searchingPlaces = true;
-      this.megagoal.searchLocationPlaces(query).subscribe({
+      this.megagoal.searchLocationPlaces(query, this.placeSearchBias()).subscribe({
         next: (results) => {
           if (serial !== this.searchSerial) {
             return;
@@ -117,8 +124,26 @@ export class NewLocationDialogComponent implements AfterViewInit {
     this.searchingPlaces = false;
   }
 
+  @HostListener('document:pointerdown', ['$event'])
+  dismissPlaceResults(event: PointerEvent): void {
+    if (!this.placeResults.length) {
+      return;
+    }
+    const target = event.target;
+    if (target instanceof Element && target.closest('.location-place-search')) {
+      return;
+    }
+    this.placeResults = [];
+    this.searchingPlaces = false;
+    this.searchSerial++;
+  }
+
   choosePlaceResult(result: LocationPlaceResult): void {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     this.clearPlaceSearch();
+    rememberMapPin(result);
     this.draftPlace = {
       provider: 'osm',
       lat: result.lat,
@@ -131,6 +156,7 @@ export class NewLocationDialogComponent implements AfterViewInit {
   }
 
   onPinPicked(pin: { lat: number; lng: number }): void {
+    rememberMapPin(pin);
     this.draftPlace = {
       provider: 'osm',
       lat: pin.lat,
