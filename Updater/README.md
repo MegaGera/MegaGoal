@@ -72,6 +72,7 @@ The Updater service includes admin authentication middleware that validates all 
 - `POST /update_league_current_season/` - Update league current season
 - `POST /update_leagues/` - Update all leagues
 - `POST /update_countries/` - Sync countries from API-Football (`/countries`); inserts only new names into `countries`
+- `POST /update_venues/` - Sync venues for one country from API-Football (`/venues?country=`); upserts by venue id into `venues` and leaves venues the API no longer returns
 - `POST /check_available_seasons/` - Check and update available seasons
 - `POST /update_teams/` - Update teams for a specific league and season
 

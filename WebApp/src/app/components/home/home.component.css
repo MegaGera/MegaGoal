@@ -216,6 +216,17 @@
 }
 
 /* No Stats Available Message */
+.home-location-map {
+  height: 280px;
+  margin-bottom: 16px;
+}
+
+.home-location-map app-location-map {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+}
+
 .no-stats-container {
   display: flex;
   justify-content: center;

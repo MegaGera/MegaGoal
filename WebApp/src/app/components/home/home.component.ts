@@ -16,6 +16,7 @@ import { ImagesService } from '../../services/images.service';
 import { LeagueColorsService } from '../../services/league-colors.service';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
+import { LocationMapComponent, LocationMapPin } from '../locations/location-map/location-map.component';
 import { SeasonInfo } from '../../models/season';
 import { UserStats } from '../../models/userStats';
 import { GeneralStats } from '../../models/generalStats';
@@ -42,7 +43,7 @@ import { NotificationComponent } from '../notification/notification.component';
   selector: 'app-home',
   standalone: true,
   imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, RealMatchCardComponent, PaginationComponent, 
-    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent, FiltersHomeComponent, NotificationComponent, MobileFiltersInlineRowComponent, MobileFiltersBottomSheetComponent, ActiveFilterBadgesComponent],
+    MatExpansionModule, MatChipsModule, MatSelectModule, NgClass, TeamStatsListComponent, HeroSectionComponent, FavouriteTeamCardComponent, GeneralStatsComponent, FiltersHomeComponent, NotificationComponent, MobileFiltersInlineRowComponent, MobileFiltersBottomSheetComponent, ActiveFilterBadgesComponent, LocationMapComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   providers: [ImagesService, provideNgIconsConfig({
@@ -72,6 +73,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   leaguesViewed: LeagueStats[] = [];
   locations: Location[] = [];
   locationsFiltered: Location[] = [];
+  private locationMapPinsCache: { key: string; pins: LocationMapPin[] } = { key: '', pins: [] };
   stats: { teamsViewed: TeamsViewedStats[] } = { teamsViewed: []};
   statsLoaded: boolean = false;
   favouriteTeamStats: FavouriteTeamStats | null = null;
@@ -157,6 +159,44 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   setView(mode: 'stats' | 'matches'): void {
     this.viewMode = mode;
+  }
+
+  get showLocationMap(): boolean {
+    return this.locationMapPins.length > 0 && (!this.isMobileView || this.viewMode === 'stats');
+  }
+
+  get locationMapPins(): LocationMapPin[] {
+    if (!this.matchesLoaded || !this.locationsReady) {
+      return [];
+    }
+    const located = new Map(
+      this.locations
+        .filter(location => location.place)
+        .map(location => [location.id, location])
+    );
+    const counts = new Map<string, number>();
+    for (const match of this.matches) {
+      if (!match.location || !located.has(match.location)) {
+        continue;
+      }
+      counts.set(match.location, (counts.get(match.location) ?? 0) + 1);
+    }
+    const pins = [...counts.entries()].map(([id, matchCount]) => {
+      const location = located.get(id)!;
+      return {
+        id,
+        name: location.name,
+        lat: location.place!.lat,
+        lng: location.place!.lng,
+        matchCount
+      };
+    });
+    const key = pins.map(pin => `${pin.id}:${pin.lat},${pin.lng}:${pin.name}:${pin.matchCount}`).join('|');
+    if (key === this.locationMapPinsCache.key) {
+      return this.locationMapPinsCache.pins;
+    }
+    this.locationMapPinsCache = { key, pins };
+    return pins;
   }
 
   @HostListener('window:resize')

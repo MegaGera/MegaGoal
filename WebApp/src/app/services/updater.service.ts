@@ -51,6 +51,17 @@ export class UpdaterService {
   }
 
   /**
+   * Sync venues for one country from API-Football (/venues). Upserts by venue id.
+   */
+  updateVenues(country: string): Observable<any> {
+    return this.http.post<any>(
+      this.url + '/update_venues/',
+      { country },
+      this.options
+    );
+  }
+
+  /**
    * Sync countries from API-Football (/countries). Inserts only new names.
    */
   updateCountries(): Observable<any> {

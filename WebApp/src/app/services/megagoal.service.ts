@@ -22,6 +22,7 @@ import { LeagueSearchResult } from '../models/leagueSearch';
 import { GlobalSearchResult } from '../models/globalSearch';
 import { UserMe } from '../models/userMe';
 import { LeagueStandingsSummaryResponse } from '../models/leagueStandingsSummary';
+import { Venue, VenueCountry } from '../models/venue';
 
 @Injectable({
   providedIn: 'root'
@@ -474,6 +475,17 @@ export class MegaGoalService {
   */
   getAllFeedback(): Observable<UserFeedback[]> {
     return this.http.get<UserFeedback[]>(this.url + '/feedback/', this.options);
+  }
+
+  getVenueCountries(): Observable<VenueCountry[]> {
+    return this.http.get<VenueCountry[]>(this.url + '/admin/venues/countries', this.options);
+  }
+
+  getVenuesByCountry(country: string): Observable<Venue[]> {
+    return this.http.get<Venue[]>(
+      this.url + '/admin/venues',
+      { ...this.options, params: { country } }
+    );
   }
 
   /*

@@ -63,6 +63,17 @@
           </app-mobile-filters-inline-row>
         }
         @if (this.matches.length > 0) {
+          @if (showLocationMap) {
+            <div class="home-location-map">
+              <app-location-map
+                [pins]="locationMapPins"
+                [interactive]="false"
+                [showPinEdit]="false"
+                [showPinFilter]="true"
+                (pinSelected)="changeFilterLocationSelected($event)">
+              </app-location-map>
+            </div>
+          }
           <!-- Favourite Team Card -->
           <app-favourite-team-card 
             [teamStats]="favouriteTeamStats" 

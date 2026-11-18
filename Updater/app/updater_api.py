@@ -11,6 +11,7 @@ from .lineups import LineupsUpdater
 from .events import EventsUpdater
 from .statistics import StatisticsUpdater
 from .standings import StandingsUpdater
+from .venues import VenuesUpdater, UnknownCountryError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -101,6 +102,9 @@ class UpdatePlayersRequest(BaseModel):
 
 class UpdatePlayerTeamsRequest(BaseModel):
     player_id: int
+
+class UpdateVenuesRequest(BaseModel):
+    country: str
 
 class UpdateLeaguePlayersRequest(BaseModel):
     league_id: int
@@ -201,6 +205,29 @@ async def update_countries(request: Request):
             ),
             **result,
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/update_venues/")
+async def update_venues(req: UpdateVenuesRequest, request: Request):
+    """Fetch API-Football /venues for one country and upsert into the venues collection."""
+    await validate_admin(request)
+    updater = VenuesUpdater()
+    try:
+        result = updater.update_venues_by_country(req.country)
+        return {
+            "status": "success",
+            "message": (
+                f"Venues synced for {result['country']}: "
+                f"{result['inserted']} inserted, {result['updated']} updated "
+                f"({result['fetched']} from API)"
+            ),
+            **result,
+        }
+    except UnknownCountryError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -162,6 +162,12 @@ export const createIndexes = async () => {
       { background: true }
     );
     console.log('✓ onze_plays indexes created');
+
+    // ==================== venues Collection ====================
+    const venuesCollection = db.collection('venues');
+    await venuesCollection.createIndex({ id: 1 }, { background: true, unique: true });
+    await venuesCollection.createIndex({ country: 1 }, { background: true });
+    console.log('✓ venues indexes created');
     
     console.log('✓ All database indexes created successfully');
     
@@ -191,6 +197,7 @@ export const ensureIndexes = async () => {
     const usersCollection = db.collection('users');
     const countriesCollection = db.collection('countries');
     const onzePlaysCollection = db.collection('onze_plays');
+    const venuesCollection = db.collection('venues');
     
     // Get existing indexes
     const existingRealMatchesIndexes = await realMatchesCollection.indexes();
@@ -199,6 +206,7 @@ export const ensureIndexes = async () => {
     const existingUsersIndexes = await usersCollection.indexes();
     const existingCountriesIndexes = await countriesCollection.indexes();
     const existingOnzePlaysIndexes = await onzePlaysCollection.indexes();
+    const existingVenuesIndexes = await venuesCollection.indexes();
     
     const getIndexKey = (index) => {
       const key = index.key || {};
@@ -344,6 +352,22 @@ export const ensureIndexes = async () => {
           unique: idxSpec.unique || false
         });
         console.log(`  Created index: onze_plays.${keyString}`);
+      }
+    }
+
+    const venuesIndexes = [
+      { key: { id: 1 }, unique: true },
+      { key: { country: 1 } },
+    ];
+
+    for (const idxSpec of venuesIndexes) {
+      const keyString = JSON.stringify(idxSpec.key);
+      if (!indexExists(existingVenuesIndexes, keyString)) {
+        await venuesCollection.createIndex(idxSpec.key, {
+          background: true,
+          unique: idxSpec.unique || false
+        });
+        console.log(`  Created index: venues.${keyString}`);
       }
     }
     

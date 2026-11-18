@@ -1,0 +1,125 @@
+<div class="admin-venues">
+  @if (!selectedCountry) {
+    <div class="admin-header-row">
+      <div>
+        <h1 class="section-title">Venues</h1>
+        <p class="section-description">Countries and how many stadiums are stored for each one. If this list is empty, sync countries from Leagues administration first.</p>
+      </div>
+    </div>
+
+    <input
+      class="search-input"
+      type="search"
+      placeholder="Search countries"
+      [(ngModel)]="countrySearch"
+    />
+
+    @if (loadingCountries && countries.length === 0) {
+      <div class="skeleton-list" aria-hidden="true">
+        @for (row of [1, 2, 3, 4, 5, 6, 7, 8]; track row) {
+          <div class="skeleton-row"></div>
+        }
+      </div>
+    } @else if (error && countries.length === 0) {
+      <div class="alert" role="alert">
+        {{ error }}
+        <button type="button" class="btn btn-sm" (click)="loadCountries()">Retry</button>
+      </div>
+    } @else if (filteredCountries.length === 0) {
+      <p class="empty-message">No countries match that search.</p>
+    } @else {
+      <div class="country-list">
+        @for (country of filteredCountries; track country.name) {
+          <button type="button" class="country-row" (click)="openCountry(country)">
+            <span class="country-identity">
+              @if (country.flag) {
+                <img class="country-flag" [src]="country.flag" [alt]="country.name" />
+              }
+              <span class="country-name">{{ country.name }}</span>
+            </span>
+            <span class="venue-count">{{ country.venueCount }}</span>
+          </button>
+        }
+      </div>
+    }
+  } @else {
+    <div class="admin-header-row">
+      <div class="detail-title">
+        <button type="button" class="btn btn-ghost" (click)="backToCountries()">Back</button>
+        <div>
+          <h1 class="section-title">
+            @if (selectedCountry.flag) {
+              <img class="country-flag" [src]="selectedCountry.flag" [alt]="selectedCountry.name" />
+            }
+            {{ selectedCountry.name }}
+          </h1>
+          <p class="section-description">{{ selectedCountry.venueCount }} venues stored</p>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="updateVenues()" [disabled]="updating">
+        @if (updating) {
+          <span class="btn-spinner" aria-hidden="true"></span>
+        }
+        Update venues
+      </button>
+    </div>
+
+    @if (updateMessage) {
+      <p class="update-message">{{ updateMessage }}</p>
+    }
+    @if (error) {
+      <div class="alert" role="alert">{{ error }}</div>
+    }
+
+    <input
+      class="search-input"
+      type="search"
+      placeholder="Search venues"
+      [(ngModel)]="venueSearch"
+    />
+
+    @if (loadingVenues && venues.length === 0) {
+      <div class="skeleton-list" aria-hidden="true">
+        @for (row of [1, 2, 3, 4]; track row) {
+          <div class="skeleton-card"></div>
+        }
+      </div>
+    } @else if (venues.length === 0) {
+      <p class="empty-message">No venues stored for this country yet.</p>
+    } @else if (filteredVenues.length === 0) {
+      <p class="empty-message">No venues match that search.</p>
+    } @else {
+      <div class="venue-list">
+        @for (venue of filteredVenues; track venue.id) {
+          <article class="venue-card">
+            @if (venue.image) {
+              <img class="venue-image" [src]="venue.image" [alt]="venue.name" />
+            }
+            <div class="venue-body">
+              <h2 class="venue-name">{{ venue.name }}</h2>
+              <p class="venue-meta">{{ venue.city || '—' }}</p>
+              <dl class="venue-fields">
+                <div>
+                  <dt>Address</dt>
+                  <dd>{{ venue.address || '—' }}</dd>
+                </div>
+                <div>
+                  <dt>Capacity</dt>
+                  <dd>{{ formatCapacity(venue.capacity) }}</dd>
+                </div>
+                <div>
+                  <dt>Surface</dt>
+                  <dd>{{ venue.surface || '—' }}</dd>
+                </div>
+                <div>
+                  <dt>Id</dt>
+                  <dd>{{ venue.id }}</dd>
+                </div>
+              </dl>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  }
+</div>

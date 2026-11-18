@@ -1,5 +1,6 @@
 import express from 'express';
 import { changeIsActive, changeUpdateFrequency, changeDailyUpdate, changeLeagueColors, createLeagueSetting, deleteLeagueSetting, getRealMatchesWithoutStatistics, addLandingMatch, removeLandingMatch, getLandingMatches, createDatabaseIndexes, updateMatchLineups } from '../controllers/adminController.js';
+import { getVenueCountries, getVenuesByCountry } from '../controllers/venueController.js';
 
 const router = express.Router();
 
@@ -14,6 +15,8 @@ router.put('/real_matches/:fixtureId/lineups', updateMatchLineups);
 router.post('/landing_matches/add', addLandingMatch);
 router.delete('/landing_matches/remove', removeLandingMatch);
 router.get('/landing_matches', getLandingMatches);
+router.get('/venues/countries', getVenueCountries);
+router.get('/venues', getVenuesByCountry);
 router.post('/database/indexes', createDatabaseIndexes);
 
 export default router;

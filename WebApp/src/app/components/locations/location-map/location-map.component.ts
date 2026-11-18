@@ -20,6 +20,8 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
   @Input() marker: { lat: number; lng: number } | null = null;
   @Input() pins: LocationMapPin[] | null = null;
   @Input() interactive = false;
+  @Input() showPinEdit = true;
+  @Input() showPinFilter = false;
   @Output() pinPicked = new EventEmitter<{ lat: number; lng: number }>();
   @Output() pinSelected = new EventEmitter<string>();
 
@@ -68,7 +70,7 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['marker'] || changes['pins'] || changes['interactive']) {
+    if (changes['marker'] || changes['pins'] || changes['interactive'] || changes['showPinEdit'] || changes['showPinFilter']) {
       this.syncView();
     }
   }
@@ -98,7 +100,7 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
       return;
     }
     const pins = this.pins;
-    const key = pins.map(pin => `${pin.id}:${pin.lat},${pin.lng}:${pin.name}:${pin.matchCount}`).join('|');
+    const key = `${this.showPinEdit ? 1 : 0}${this.showPinFilter ? 1 : 0}|${pins.map(pin => `${pin.id}:${pin.lat},${pin.lng}:${pin.name}:${pin.matchCount}`).join('|')}`;
     if (key === this.overviewKey) {
       this.fitOverview(pins, key);
       return;
@@ -127,16 +129,31 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
       const matches = document.createElement('span');
       matches.className = 'location-map-label__count';
       matches.textContent = count === 1 ? '1 match' : `${count} matches`;
-      const edit = document.createElement('button');
-      edit.type = 'button';
-      edit.className = 'location-map-label__edit';
-      edit.setAttribute('aria-label', `Edit ${pin.name}`);
-      edit.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
-      edit.addEventListener('click', (event) => {
-        event.stopPropagation();
-        this.zone.run(() => this.pinSelected.emit(pin.id));
-      });
-      top.append(name, edit);
+      top.append(name);
+      if (this.showPinEdit) {
+        const edit = document.createElement('button');
+        edit.type = 'button';
+        edit.className = 'location-map-label__edit';
+        edit.setAttribute('aria-label', `Edit ${pin.name}`);
+        edit.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+        edit.addEventListener('click', (event) => {
+          event.stopPropagation();
+          this.zone.run(() => this.pinSelected.emit(pin.id));
+        });
+        top.append(edit);
+      }
+      if (this.showPinFilter) {
+        const filter = document.createElement('button');
+        filter.type = 'button';
+        filter.className = 'location-map-label__edit';
+        filter.setAttribute('aria-label', `Filter by ${pin.name}`);
+        filter.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v5l-4 2v-7L3 5z"/></svg>';
+        filter.addEventListener('click', (event) => {
+          event.stopPropagation();
+          this.zone.run(() => this.pinSelected.emit(pin.id));
+        });
+        top.append(filter);
+      }
       label.append(top, matches);
       label.addEventListener('click', (event) => event.stopPropagation());
       const popup = new Popup({
