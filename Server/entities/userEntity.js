@@ -34,11 +34,19 @@ const HOME_NOTIFICATION_CATALOG = [
   },
   {
     name: 'match_reactions_voting',
-    catalogActive: true,
+    catalogActive: false,
     message:
       'Reactions and player voting are here! Open any match, share how the game felt, and vote for your favourite players.',
     actionPath: '/app/matches',
     actionAriaLabel: 'Browse matches'
+  },
+  {
+    name: 'location_map',
+    catalogActive: true,
+    message:
+      'Locations now have a map. Open the Locations page to pin where you watched a match, or search a real place such as a stadium or a pub.',
+    actionPath: '/app/locations',
+    actionAriaLabel: 'Open locations'
   }
 ];
 

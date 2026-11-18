@@ -234,7 +234,7 @@
 }
 
 .new-location-map app-location-map {
-  display: block;
+  display: flex;
   height: 100%;
   min-height: 0;
 }
@@ -267,7 +267,10 @@
 
 .location-place-summary__address {
   color: #6b7280;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .location-place-clear {

@@ -285,6 +285,10 @@
   color: white !important;
 }
 
+.filter-chip--stadium {
+  font-size: 1rem !important;
+}
+
 /* League Grid */
 .league-grid {
   display: grid;

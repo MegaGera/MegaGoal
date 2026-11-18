@@ -36,6 +36,8 @@ export class FiltersHomeComponent {
   @Input() filterTeamSelected: number[] = [];
   @Input() filterSeasonSelected!: SeasonInfo;
   @Input() filterLocationSelected: string = '';
+  /** Official stadium locations only. Independent of All / Clubs / Nations. */
+  @Input() filterStadium = false;
   @Input() filterOrder: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc' = 'date_desc';
   @Input() seasons: SeasonInfo[] = [];
   @Input() locations: Location[] = [];
@@ -94,6 +96,7 @@ export class FiltersHomeComponent {
   @Output() filterTeamAgainstSelectedChange = new EventEmitter<number[]>();
   @Output() filterSeasonSelectedChange = new EventEmitter<SeasonInfo>();
   @Output() filterLocationSelectedChange = new EventEmitter<string>();
+  @Output() filterStadiumChange = new EventEmitter<boolean>();
   @Output() filterOrderChange = new EventEmitter<'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc'>();
   @Output() resetFiltersChange = new EventEmitter<void>();
   @Output() collapseToggle = new EventEmitter<void>();
@@ -170,6 +173,11 @@ export class FiltersHomeComponent {
   changeFilterPanelChipSelected(chip: number) {
     this.filterPanelChipSelected = chip;
     this.filterPanelChipSelectedChange.emit(chip);
+  }
+
+  toggleStadiumFilter(): void {
+    this.filterStadium = !this.filterStadium;
+    this.filterStadiumChange.emit(this.filterStadium);
   }
 
   changeFilterLeagueSelected(league: number) {

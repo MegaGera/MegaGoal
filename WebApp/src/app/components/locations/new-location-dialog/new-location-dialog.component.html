@@ -21,8 +21,10 @@
         <input
           type="text"
           class="location-search__input"
+          name="placeQuery"
           [ngModel]="placeQuery"
           (ngModelChange)="onPlaceQueryChange($event)"
+          [ngModelOptions]="{standalone: true}"
           (keydown.enter)="$event.preventDefault()"
           [disabled]="saving"
           placeholder="Search a pub, address, stadium…"
@@ -68,7 +70,7 @@
         <span class="location-place-summary__address">{{ placeSummaryAddress }}</span>
       }
     </div>
-    <button type="button" class="location-place-clear" (click)="clearPlace()" [disabled]="saving || !draftPlace">Remove from map</button>
+    <button type="button" class="location-place-clear" (click)="clearPlace()" [disabled]="saving || !draftPlace">Clear pin</button>
   </div>
   @if (placeError) {
     <p class="new-location-error">{{ placeError }}</p>

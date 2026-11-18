@@ -591,6 +591,7 @@
             [filterTeamAgainstSelected]="filterTeamAgainstSelected"
             [filterSeasonSelected]="filterSeasonSelected"
             [filterLocationSelected]="filterLocationSelected"
+            [filterStadium]="filterStadium"
             [filterOrder]="filterOrder"
             [seasons]="viewMode === 'allMatches' ? seasonOptions : statsSeasonOptions"
             [locations]="viewMode === 'allMatches' ? locations : statsLocations"
@@ -612,6 +613,7 @@
             (filterTeamAgainstSelectedChange)="onFilterTeamAgainstSelectedChange($event)"
             (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"
             (filterLocationSelectedChange)="onFilterLocationSelectedChange($event)"
+            (filterStadiumChange)="onFilterStadiumChange($event)"
             (filterOrderChange)="onFilterOrderChange($event)"
             (resetFiltersChange)="resetFilters()">
           </app-filters-home>
@@ -649,6 +651,7 @@
       [showPanelChip]="false"
       [season]="filterSeasonSelected"
       [locationId]="filterLocationSelected"
+      [stadium]="filterStadium"
       [locations]="viewMode === 'allMatches' ? locations : statsLocations"
       [leagueIds]="filterLeagueSelected"
       [leagues]="currentLeagues"
@@ -669,6 +672,7 @@
       [filterTeamAgainstSelected]="filterTeamAgainstSelected"
       [filterSeasonSelected]="filterSeasonSelected"
       [filterLocationSelected]="filterLocationSelected"
+      [filterStadium]="filterStadium"
       [filterOrder]="filterOrder"
       [seasons]="viewMode === 'allMatches' ? seasonOptions : statsSeasonOptions"
       [locations]="viewMode === 'allMatches' ? locations : statsLocations"
@@ -694,6 +698,7 @@
       (filterTeamAgainstSelectedChange)="onFilterTeamAgainstSelectedChange($event)"
       (filterSeasonSelectedChange)="onFilterSeasonSelectedChange($event)"
       (filterLocationSelectedChange)="onFilterLocationSelectedChange($event)"
+      (filterStadiumChange)="onFilterStadiumChange($event)"
       (filterOrderChange)="onFilterOrderChange($event)"
       (resetFiltersChange)="resetFilters()">
     </app-filters-home>

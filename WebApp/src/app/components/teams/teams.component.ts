@@ -24,6 +24,7 @@ import { ActiveFilterBadgeRemove, ActiveFilterBadgesComponent } from '../active-
 import { BasicTeamStatCardComponent } from '../stats/basic-team-stat-card/basic-team-stat-card.component';
 import { NATIONS_LEAGUE_IDS } from '../../config/topLeagues';
 import { ListFiltersQuery, ListFiltersUrlSync, sameListFilters } from '../../utils/list-filters-query';
+import { matchAtOfficialStadium, officialStadiumLocationIds } from '../../utils/official-stadium';
 
 @Component({
   selector: 'app-teams',
@@ -75,6 +76,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
   filterTeamSelected: number[] = [];
   filterTeamAgainstSelected: number[] = [];
   filterLocationSelected = '';
+  filterStadium = false;
 
   seasons: SeasonInfo[] = [{ id: 0, text: 'All time' }];
   seasonsFiltered: SeasonInfo[] = [];
@@ -168,6 +170,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
       vs: this.filterTeamAgainstSelected,
       seasonId: this.filterSeasonSelected?.id ?? 0,
       location: this.filterLocationSelected,
+      stadium: this.filterStadium,
       order: 'date_desc',
     };
   }
@@ -178,6 +181,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
     this.filterTeamSelected = filters.teams;
     this.filterTeamAgainstSelected = filters.vs;
     this.filterLocationSelected = filters.location;
+    this.filterStadium = filters.stadium;
     const season = this.seasons.find((item) => item.id === filters.seasonId);
     this.filterSeasonSelected = season ?? { id: filters.seasonId, text: '' };
     this.teamsAgainstReady = false;
@@ -267,6 +271,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
           1,
           100,
           trimmed,
+          this.filterStadium,
         )
         .pipe(
           catchError(() =>
@@ -398,6 +403,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
       leagues,
       seasonId,
       this.filterLocationSelected || '',
+      this.filterStadium ? '1' : '0',
     ].join('|');
   }
 
@@ -418,7 +424,15 @@ export class TeamsComponent implements OnInit, OnDestroy {
     if (this.filterLocationSelected) {
       m = m.filter((match) => match.location === this.filterLocationSelected);
     }
-    return m;
+    return m.filter((match) => this.matchPassesStadium(match));
+  }
+
+  private matchPassesStadium(match: Match): boolean {
+    return matchAtOfficialStadium(
+      match.location,
+      officialStadiumLocationIds(this.locations),
+      this.filterStadium,
+    );
   }
 
   private rebuildTeamsFiltered(): void {
@@ -452,6 +466,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
         (match) => match.location === this.filterLocationSelected,
       );
     }
+    seasonsFilteredMatches = seasonsFilteredMatches.filter((match) => this.matchPassesStadium(match));
     seasonsFilteredMatches = this.appendTeamFilterForCrossFilters(seasonsFilteredMatches);
     const availableSeasonIds = [
       ...new Set(seasonsFilteredMatches.map((match) => match.league.season)),
@@ -480,6 +495,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
         (match) => match.location === this.filterLocationSelected,
       );
     }
+    leaguesFilteredMatches = leaguesFilteredMatches.filter((match) => this.matchPassesStadium(match));
     leaguesFilteredMatches = this.appendTeamFilterForCrossFilters(leaguesFilteredMatches);
     const availableLeagueIds = [
       ...new Set(leaguesFilteredMatches.map((match) => match.league.id)),
@@ -508,6 +524,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
         this.filterLeagueSelected.includes(match.league.id),
       );
     }
+    locationsFilteredMatches = locationsFilteredMatches.filter((match) => this.matchPassesStadium(match));
     locationsFilteredMatches = this.appendTeamFilterForCrossFilters(locationsFilteredMatches);
     const availableLocationIds = [
       ...new Set(locationsFilteredMatches.map((match) => match.location)),
@@ -612,6 +629,9 @@ export class TeamsComponent implements OnInit, OnDestroy {
           this.filterLeagueSelected,
           this.filterSeasonSelected?.id ?? 0,
           this.filterLocationSelected,
+          undefined,
+          undefined,
+          this.filterStadium,
         )
         .subscribe({
           next: (result: TeamsViewedStats[]) => {
@@ -648,6 +668,8 @@ export class TeamsComponent implements OnInit, OnDestroy {
         this.filterSeasonSelected?.id ?? 0,
         this.filterLocationSelected,
         this.filterTeamSelected,
+        undefined,
+        this.filterStadium,
       )
       .subscribe({
         next: (rows: TeamsViewedStats[]) => {
@@ -698,6 +720,8 @@ export class TeamsComponent implements OnInit, OnDestroy {
         against,
         this.teamsPage,
         this.teamsPerPage,
+        '',
+        this.filterStadium,
       )
       .subscribe({
         next: (result) => {
@@ -764,6 +788,13 @@ export class TeamsComponent implements OnInit, OnDestroy {
     this.syncFiltersToUrl();
   }
 
+  changeFilterStadium(enabled: boolean): void {
+    this.filterStadium = enabled;
+    this.teamsAgainstReady = false;
+    this.filterTeams();
+    this.syncFiltersToUrl();
+  }
+
   changeFilterTeamSelected(teams: number[]): void {
     this.filterTeamSelected = teams;
     this.teamsAgainstReady = false;
@@ -784,6 +815,9 @@ export class TeamsComponent implements OnInit, OnDestroy {
     switch (event.kind) {
       case 'chip':
         this.changeFilterPanelChipSelected(0);
+        break;
+      case 'stadium':
+        this.changeFilterStadium(false);
         break;
       case 'season':
         this.changeFilterSeasonSelected(this.seasons[0]);
@@ -810,6 +844,7 @@ export class TeamsComponent implements OnInit, OnDestroy {
     this.filterTeamAgainstSelected = [];
     this.teamsAgainstReady = false;
     this.filterLocationSelected = '';
+    this.filterStadium = false;
     this.filterSeasonSelected = this.seasons[0];
     this.filterTeams();
     this.syncFiltersToUrl();

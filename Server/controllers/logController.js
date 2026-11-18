@@ -86,6 +86,74 @@ const logMatchUpdateLocation = async (username, data, req) => {
   );
 };
 
+const logLocationOfficialPlaceSet = async (username, data, req) => {
+  await logUserAction(
+    username,
+    'LOCATION_OFFICIAL_PLACE_SET',
+    {
+      locationId: data.locationId,
+      name: data.name,
+      osmId: data.osmId,
+      osmType: data.osmType,
+      ...(data.osmName ? { osmName: data.osmName } : {}),
+      lat: data.lat,
+      lng: data.lng
+    },
+    {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }
+  );
+};
+
+const logLocationCreated = async (username, data, req) => {
+  await logUserAction(
+    username,
+    'LOCATION_CREATED',
+    {
+      locationId: data.locationId,
+      name: data.name
+    },
+    {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }
+  );
+};
+
+const logLocationDeleted = async (username, data, req) => {
+  await logUserAction(
+    username,
+    'LOCATION_DELETED',
+    {
+      locationId: data.locationId,
+      name: data.name
+    },
+    {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }
+  );
+};
+
+const logLocationUpdated = async (username, data, req) => {
+  await logUserAction(
+    username,
+    'LOCATION_UPDATED',
+    {
+      locationId: data.locationId,
+      name: data.name,
+      edit: data.edit,
+      ...(data.previousName ? { previousName: data.previousName } : {}),
+      ...(Number.isFinite(data.lat) ? { lat: data.lat, lng: data.lng } : {})
+    },
+    {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }
+  );
+};
+
 const logMatchInteraction = async (username, data, req) => {
   await logUserAction(
     username,
@@ -187,6 +255,10 @@ export {
   logUserAction,
   logMatchCreated,
   logMatchUpdateLocation,
+  logLocationOfficialPlaceSet,
+  logLocationCreated,
+  logLocationDeleted,
+  logLocationUpdated,
   logMatchDeleted,
   logMatchInteraction,
   logFeedbackSubmitted,

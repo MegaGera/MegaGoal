@@ -7,6 +7,7 @@ import {
   parseRenameLocationBody,
   parseSetLocationPlaceBody
 } from '../entities/locationEntity.js';
+import { logLocationCreated, logLocationDeleted, logLocationOfficialPlaceSet, logLocationUpdated } from './logController.js';
 import { searchPhotonPlaces } from '../services/photonSearch.js';
 
 const readPlaceBias = (query) => {
@@ -89,6 +90,7 @@ export const createLocation = async (req, res) => {
 
     await db.collection('locations').insertOne(location);
     console.log("Location " + location.name + " inserted for user " + req.validateData.username);
+    await logLocationCreated(username, { locationId: location.id, name: location.name }, req);
     res.status(201).json({ id: location.id, name: location.name });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -125,6 +127,12 @@ export const renameLocation = async (req, res) => {
       return;
     }
     await db.collection('locations').updateOne({ id, 'user.username': username }, { $set: { name } });
+    await logLocationUpdated(username, {
+      locationId: id,
+      name,
+      previousName: existing.name,
+      edit: 'name'
+    }, req);
     res.send({ id, name });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -152,12 +160,57 @@ export const setLocationPlace = async (req, res) => {
       ? { $set: { place, official } }
       : { $set: { official: false }, $unset: { place: '' } };
     await db.collection('locations').updateOne({ id, 'user.username': username }, update);
+    if (place?.osmId) {
+      await logLocationOfficialPlaceSet(username, {
+        locationId: id,
+        name: existing.name,
+        osmId: place.osmId,
+        osmType: place.osmType,
+        osmName: place.osmName,
+        lat: place.lat,
+        lng: place.lng
+      }, req);
+    } else if (place) {
+      await logLocationUpdated(username, {
+        locationId: id,
+        name: existing.name,
+        edit: 'pin',
+        lat: place.lat,
+        lng: place.lng
+      }, req);
+    }
     res.send({
       id,
       official,
       stadium: false,
       place: place ?? null
     });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+export const deleteLocation = async (req, res) => {
+  const db = getDB();
+  try {
+    const username = req.validateData.username;
+    const id = parseLocationId(req.params.id);
+    const existing = await db.collection('locations').findOne({ id, 'user.username': username });
+    if (!existing) {
+      res.status(404).json({ message: 'Location not found' });
+      return;
+    }
+    if (existing.stadium) {
+      res.status(400).json({ message: 'Stadium locations stay linked to the match venue' });
+      return;
+    }
+    await db.collection('matches').updateMany(
+      { 'user.username': username, location: id },
+      { $set: { location: null } }
+    );
+    await db.collection('locations').deleteOne({ id, 'user.username': username });
+    await logLocationDeleted(username, { locationId: id, name: existing.name }, req);
+    res.send({ id });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

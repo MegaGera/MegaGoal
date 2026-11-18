@@ -145,6 +145,9 @@
             </div>
             @if (!selectedLocation.stadium) {
               <button type="button" class="location-name-save" (click)="saveLocationName()" [disabled]="!canSaveLocationName">Save</button>
+              <button type="button" class="location-name-delete" (click)="askDeleteLocation()" [disabled]="deletingLocation" aria-label="Delete location">
+                <ng-icon name="jamTrash" size="1.15rem" aria-hidden="true"></ng-icon>
+              </button>
             }
           </div>
 
@@ -192,11 +195,13 @@
             </div>
           }
 
-          <app-location-map
-            [marker]="mapMarker"
-            [interactive]="canEditPlace"
-            (pinPicked)="onPinPicked($event)">
-          </app-location-map>
+          <div class="location-pin-map">
+            <app-location-map
+              [marker]="mapMarker"
+              [interactive]="canEditPlace"
+              (pinPicked)="onPinPicked($event)">
+            </app-location-map>
+          </div>
 
           <div class="location-place-summary">
             <div class="location-place-summary__text">
@@ -208,7 +213,7 @@
               }
             </div>
             @if (!selectedLocation.stadium) {
-              <button type="button" class="location-place-clear" (click)="clearPlace()" [disabled]="savingPlace || !selectedLocation.place">Remove from map</button>
+              <button type="button" class="location-place-clear" (click)="clearPlace()" [disabled]="savingPlace || deletingLocation || !selectedLocation.place">Clear pin</button>
             }
           </div>
           @if (placeError) {
@@ -531,6 +536,22 @@
   </div>
   </section>
 </div>
+
+@if (deleteLocationOpen && selectedLocation) {
+  <div class="new-location-backdrop" (click)="closeDeleteLocation()">
+    <div class="delete-location-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-location-title" (click)="$event.stopPropagation()">
+      <h2 id="delete-location-title" class="new-location-title">Delete this location?</h2>
+      <p class="delete-location-text"><strong>{{ selectedLocation.name }}</strong> will be removed. Matches you watched there stay on your list, without this location.</p>
+      @if (deleteLocationError) {
+        <p class="new-location-error">{{ deleteLocationError }}</p>
+      }
+      <div class="new-location-actions">
+        <button type="button" class="new-location-cancel" (click)="closeDeleteLocation()" [disabled]="deletingLocation">Cancel</button>
+        <button type="button" class="delete-location-confirm" (click)="confirmDeleteLocation()" [disabled]="deletingLocation">Delete</button>
+      </div>
+    </div>
+  </div>
+}
 
 @if (newLocationOpen) {
   <div class="new-location-backdrop" (click)="closeNewLocation()">

@@ -106,12 +106,9 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
     this.clearOverview();
     this.overviewKey = key;
     const ordered = [...pins].sort((a, b) => b.matchCount - a.matchCount);
-    const counts = ordered.map(pin => Math.max(0, pin.matchCount || 0));
-    const minCount = Math.min(...counts);
-    const maxCount = Math.max(...counts);
     for (const pin of ordered) {
       const count = Math.max(0, pin.matchCount || 0);
-      const size = this.bubbleSize(count, minCount, maxCount);
+      const size = this.bubbleSize(count);
       const bubble = document.createElement('div');
       bubble.className = 'location-map-bubble';
       bubble.style.width = `${size}px`;
@@ -141,15 +138,21 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
       });
       top.append(name, edit);
       label.append(top, matches);
+      label.addEventListener('click', (event) => event.stopPropagation());
       const popup = new Popup({
         offset: size / 2 + 10,
         closeButton: false,
-        closeOnClick: false,
+        closeOnClick: true,
         anchor: 'bottom',
         className: 'location-map-label-popup'
       })
         .setLngLat([pin.lng, pin.lat])
         .setDOMContent(label);
+      popup.on('close', () => {
+        if (this.openLabel === popup) {
+          this.openLabel = null;
+        }
+      });
       bubble.addEventListener('click', (event) => {
         event.stopPropagation();
         this.showLocationLabel(popup, pin.lng, pin.lat);
@@ -171,21 +174,20 @@ export class LocationMapComponent implements AfterViewInit, OnChanges, OnDestroy
       popup.addTo(this.map);
     }
     this.openLabel = popup;
-    const zoom = Math.max(this.map.getZoom(), 13);
+    const zoom = Math.max(this.map.getZoom(), 10);
     this.centeredKey = `focus:${lng},${lat}`;
     this.map.easeTo({ center: [lng, lat], zoom, duration: 700 });
   }
 
-  private bubbleSize(matchCount: number, minCount: number, maxCount: number): number {
-    const minSize = 18;
+  private bubbleSize(matchCount: number): number {
+    const minSize = 16;
     const maxSize = 64;
     const count = Math.max(0, matchCount);
-    if (maxCount <= minCount) {
-      return 32;
+    if (count <= 1) {
+      return minSize;
     }
-    const span = Math.sqrt(maxCount) - Math.sqrt(minCount);
-    const t = span === 0 ? 0 : (Math.sqrt(count) - Math.sqrt(minCount)) / span;
-    return Math.round(minSize + Math.min(1, Math.max(0, t)) * (maxSize - minSize));
+    const grown = 1 - Math.exp(-0.09 * (count - 1));
+    return Math.round(minSize + grown * (maxSize - minSize));
   }
 
   private fitOverview(pins: LocationMapPin[], key: string): void {

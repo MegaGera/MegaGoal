@@ -30,13 +30,17 @@ export class StatsService {
   private withTeamsParams(
     params: HttpParams,
     teams?: number[],
-    teamsAgainst?: number[]
+    teamsAgainst?: number[],
+    stadium = false
   ): HttpParams {
     if (teams?.length) {
       params = params.set('teams', teams.join(','));
     }
     if (teamsAgainst?.length) {
       params = params.set('teams_against', teamsAgainst.join(','));
+    }
+    if (stadium) {
+      params = params.set('stadium', '1');
     }
     return params;
   }
@@ -50,7 +54,8 @@ export class StatsService {
     season: number,
     location: string = '',
     teams?: number[],
-    teamsAgainst?: number[]
+    teamsAgainst?: number[],
+    stadium = false
   ): Observable<TeamsViewedStats[]> {
     let params = new HttpParams()
     .set('team_selection', teamSelection)
@@ -60,7 +65,7 @@ export class StatsService {
     if (location) {
       params = params.set('location', location);
     }
-    params = this.withTeamsParams(params, teams, teamsAgainst);
+    params = this.withTeamsParams(params, teams, teamsAgainst, stadium);
     
     return this.http.get<TeamsViewedStats[]>(this.url + '/teams-viewed/', { ...this.options, params: params });
   }
@@ -78,7 +83,8 @@ export class StatsService {
     teamsAgainst?: number[],
     page: number = 1,
     limit: number = 10,
-    search: string = ''
+    search: string = '',
+    stadium = false
   ): Observable<TeamsViewedPage> {
     let params = new HttpParams()
       .set('team_selection', teamSelection)
@@ -94,7 +100,7 @@ export class StatsService {
     if (trimmedSearch) {
       params = params.set('search', trimmedSearch);
     }
-    params = this.withTeamsParams(params, teams, teamsAgainst);
+    params = this.withTeamsParams(params, teams, teamsAgainst, stadium);
 
     return this.http.get<TeamsViewedPage>(this.url + '/teams-viewed/', {
       ...this.options,
@@ -118,7 +124,8 @@ export class StatsService {
     page: number = 1,
     limit: number = 10,
     search: string = '',
-    playerIds?: number[]
+    playerIds?: number[],
+    stadium = false
   ): Observable<PlayersViewedPage> {
     let params = new HttpParams()
       .set('team_selection', teamSelection)
@@ -137,7 +144,7 @@ export class StatsService {
     if (playerIds && playerIds.length > 0) {
       params = params.set('player_ids', playerIds.join(','));
     }
-    params = this.withTeamsParams(params, teams, teamsAgainst);
+    params = this.withTeamsParams(params, teams, teamsAgainst, stadium);
 
     return this.http.get<PlayersViewedPage>(this.url + '/players-viewed/', {
       ...this.options,
@@ -185,7 +192,8 @@ export class StatsService {
     filterSeasonSelected: number,
     location: string = '',
     teams?: number[],
-    teamsAgainst?: number[]
+    teamsAgainst?: number[],
+    stadium = false
   ): Observable<FavouriteTeamStats> {
     let params = new HttpParams()
       .set('team_id', team_id.toString())
@@ -195,7 +203,7 @@ export class StatsService {
     if (location) {
       params = params.set('location', location);
     }
-    params = this.withTeamsParams(params, teams, teamsAgainst);
+    params = this.withTeamsParams(params, teams, teamsAgainst, stadium);
     
     return this.http.get<FavouriteTeamStats>(this.url + '/favourite-team-stats/', { ...this.options, params: params });
   }
@@ -209,7 +217,8 @@ export class StatsService {
     filterSeasonSelected: number,
     location: string = '',
     teams?: number[],
-    teamsAgainst?: number[]
+    teamsAgainst?: number[],
+    stadium = false
   ): Observable<GeneralStats> {
     let params = new HttpParams()
       .set('team_selection', teamSelection)
@@ -219,7 +228,7 @@ export class StatsService {
     if (location) {
       params = params.set('location', location);
     }
-    params = this.withTeamsParams(params, teams, teamsAgainst);
+    params = this.withTeamsParams(params, teams, teamsAgainst, stadium);
     
     return this.http.get<GeneralStats>(this.url + '/general-stats/', { ...this.options, params: params });
   }

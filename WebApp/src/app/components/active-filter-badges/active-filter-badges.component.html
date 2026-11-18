@@ -27,6 +27,15 @@
         (click)="removeChip()">{{ label }}</button>
     }
 
+    @if (stadium) {
+      <button
+        type="button"
+        class="afb-text afb-text--stadium"
+        role="listitem"
+        aria-label="Remove official stadiums"
+        (click)="removeStadium()">🏟️</button>
+    }
+
     @if (showPrimaryWithVs && primaryTeam) {
       <span
         class="afb-logo"

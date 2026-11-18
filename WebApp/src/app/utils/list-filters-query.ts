@@ -10,6 +10,8 @@ export interface ListFiltersQuery {
   vs: number[];
   seasonId: number;
   location: string;
+  /** Official stadium locations only. Independent of the clubs/nations chip. */
+  stadium: boolean;
   order: ListFilterOrder;
 }
 
@@ -23,6 +25,7 @@ export function emptyListFiltersQuery(): ListFiltersQuery {
     vs: [],
     seasonId: 0,
     location: '',
+    stadium: false,
     order: 'date_desc',
   };
 }
@@ -63,6 +66,11 @@ export function listFiltersFromParamMap(
     filters.location = location;
   }
 
+  const stadium = params.get('stadium');
+  if (stadium === '1' || stadium === 'true') {
+    filters.stadium = true;
+  }
+
   if (includeOrder) {
     const order = params.get('order');
     if (order && ORDERS.includes(order as ListFilterOrder)) {
@@ -97,6 +105,9 @@ export function listFiltersToQueryParams(
   if (filters.location) {
     queryParams['location'] = filters.location;
   }
+  if (filters.stadium) {
+    queryParams['stadium'] = '1';
+  }
   if (includeOrder && filters.order !== 'date_desc') {
     queryParams['order'] = filters.order;
   }
@@ -112,6 +123,7 @@ export function sameListFilters(a: ListFiltersQuery, b: ListFiltersQuery): boole
     sameIds(a.vs, b.vs) &&
     a.seasonId === b.seasonId &&
     a.location === b.location &&
+    a.stadium === b.stadium &&
     a.order === b.order
   );
 }

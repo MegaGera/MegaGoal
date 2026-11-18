@@ -8,6 +8,7 @@ import { LeagueColorsService } from '../../services/league-colors.service';
 
 export type ActiveFilterBadgeRemove =
   | { kind: 'chip' }
+  | { kind: 'stadium' }
   | { kind: 'season' }
   | { kind: 'location' }
   | { kind: 'league'; id: number }
@@ -26,6 +27,8 @@ export class ActiveFilterBadgesComponent {
   /** 0=All (hidden), 1=Clubs, 2=Nations */
   @Input() panelChip = 0;
   @Input() showPanelChip = true;
+  /** Official stadium filter. Independent of the clubs/nations chip. */
+  @Input() stadium = false;
 
   @Input() season: SeasonInfo | null = null;
   @Input() locationId = '';
@@ -110,6 +113,7 @@ export class ActiveFilterBadgesComponent {
   get hasAny(): boolean {
     return (
       !!this.panelChipLabel ||
+      this.stadium ||
       !!this.seasonLabel ||
       !!this.locationLabel ||
       this.leagueIds.length > 0 ||
@@ -140,6 +144,10 @@ export class ActiveFilterBadgesComponent {
 
   removeChip(): void {
     this.removeFilter.emit({ kind: 'chip' });
+  }
+
+  removeStadium(): void {
+    this.removeFilter.emit({ kind: 'stadium' });
   }
 
   removeSeason(): void {

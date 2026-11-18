@@ -45,9 +45,9 @@
 
   @if (!collapsed || sheetEmbed) {
     <!-- Filter team selection row -->
-    @if (showPanelChips) {
-      <div class="filter-section">
-        <div class="filter-chips">
+    <div class="filter-section">
+      <div class="filter-chips">
+        @if (showPanelChips) {
           <mat-chip 
             class="filter-chip" 
             [ngClass]="{'filter-chip-selected': filterPanelChipSelected == 0}"
@@ -66,9 +66,17 @@
             (click)="changeFilterPanelChipSelected(2)">
             Nations
           </mat-chip>
-        </div>
+        }
+        <mat-chip
+          class="filter-chip filter-chip--stadium"
+          [ngClass]="{'filter-chip-selected': filterStadium}"
+          (click)="toggleStadiumFilter()"
+          aria-label="Official stadiums"
+          [attr.aria-pressed]="filterStadium">
+          <span aria-hidden="true">🏟️</span>
+        </mat-chip>
       </div>
-    }
+    </div>
 
     <!-- Teams (optional; home passes teamsFiltered like leagues; team page uses locked single badge) -->
     @if (showTeams && (teamPrimaryLocked != null || !teamsLoaded || teamsViewed.length > 0)) {

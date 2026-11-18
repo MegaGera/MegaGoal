@@ -398,6 +398,10 @@ export class MegaGoalService {
     );
   }
 
+  deleteLocation(id: string): Observable<{ id: string }> {
+    return this.http.delete<{ id: string }>(this.url + '/location/' + id, this.options);
+  }
+
   setLocationPlace(id: string, place: LocationPlace | null): Observable<{ id: string; official: boolean; stadium: boolean; place: LocationPlace | null }> {
     return this.http.put<{ id: string; official: boolean; stadium: boolean; place: LocationPlace | null }>(
       this.url + '/location/' + id + '/place',

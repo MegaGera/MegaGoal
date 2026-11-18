@@ -187,6 +187,7 @@
             [filterTeamSelected]="filterTeamSelected"
             [filterSeasonSelected]="filterSeasonSelected"
             [filterLocationSelected]="filterLocationSelected"
+            [filterStadium]="filterStadium"
             [filterOrder]="filterOrder"
             [seasons]="seasonsFiltered"
             [locations]="locationsFiltered"
@@ -206,6 +207,7 @@
             (filterTeamAgainstSelectedChange)="changeFilterTeamAgainstSelected($event)"
             (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
             (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
+            (filterStadiumChange)="changeFilterStadium($event)"
             (filterOrderChange)="changeFilterOrder($event)"
             (resetFiltersChange)="resetFilters()">
           </app-filters-home>
@@ -219,6 +221,7 @@
       [panelChip]="filterPanelChipSelected"
       [season]="filterSeasonSelected"
       [locationId]="filterLocationSelected"
+      [stadium]="filterStadium"
       [locations]="locationsFiltered"
       [leagueIds]="filterLeagueSelected"
       [leagues]="leaguesFiltered"
@@ -238,6 +241,7 @@
       [filterTeamSelected]="filterTeamSelected"
       [filterSeasonSelected]="filterSeasonSelected"
       [filterLocationSelected]="filterLocationSelected"
+      [filterStadium]="filterStadium"
       [filterOrder]="filterOrder"
       [seasons]="seasonsFiltered"
       [locations]="locationsFiltered"
@@ -261,6 +265,7 @@
       (filterTeamAgainstSelectedChange)="changeFilterTeamAgainstSelected($event)"
       (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
       (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
+      (filterStadiumChange)="changeFilterStadium($event)"
       (filterOrderChange)="changeFilterOrder($event)"
       (resetFiltersChange)="resetFilters()">
     </app-filters-home>

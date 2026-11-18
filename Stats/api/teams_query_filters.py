@@ -13,6 +13,22 @@ def parse_teams_query_params(request):
     return teams_arr, against_arr
 
 
+def add_official_stadium_filter(filters, request, username):
+    """
+    When ?stadium=1, keep watched matches whose location is one of the user's
+    official stadium locations. Independent of the clubs/nations chip.
+    """
+    raw = (request.query_params.get('stadium') or '').strip().lower()
+    if raw not in ('1', 'true', 'yes'):
+        return
+    from django.conf import settings
+    ids = list(settings.MONGO_DB['locations'].distinct(
+        'id',
+        {'user.username': username, 'stadium': True},
+    ))
+    filters.append({'location': {'$in': ids}})
+
+
 def add_teams_mongo_filters(filters, teams_arr, against_arr):
     """
     Mutates filters list in place.

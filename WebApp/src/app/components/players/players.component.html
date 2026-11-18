@@ -168,6 +168,7 @@
             [filterTeamSelected]="filterTeamSelected"
             [filterSeasonSelected]="filterSeasonSelected"
             [filterLocationSelected]="filterLocationSelected"
+            [filterStadium]="filterStadium"
             [seasons]="seasonsFiltered"
             [locations]="locationsFiltered"
             [leaguesViewed]="leaguesFiltered"
@@ -187,6 +188,7 @@
             (filterTeamAgainstSelectedChange)="changeFilterTeamAgainstSelected($event)"
             (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
             (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
+            (filterStadiumChange)="changeFilterStadium($event)"
             (resetFiltersChange)="resetFilters()">
           </app-filters-home>
         }
@@ -199,6 +201,7 @@
       [panelChip]="filterPanelChipSelected"
       [season]="filterSeasonSelected"
       [locationId]="filterLocationSelected"
+      [stadium]="filterStadium"
       [locations]="locationsFiltered"
       [leagueIds]="filterLeagueSelected"
       [leagues]="leaguesFiltered"
@@ -218,6 +221,7 @@
       [filterTeamSelected]="filterTeamSelected"
       [filterSeasonSelected]="filterSeasonSelected"
       [filterLocationSelected]="filterLocationSelected"
+      [filterStadium]="filterStadium"
       [seasons]="seasonsFiltered"
       [locations]="locationsFiltered"
       [leaguesViewed]="leaguesFiltered"
@@ -241,6 +245,7 @@
       (filterTeamAgainstSelectedChange)="changeFilterTeamAgainstSelected($event)"
       (filterSeasonSelectedChange)="changeFilterSeasonSelected($event)"
       (filterLocationSelectedChange)="changeFilterLocationSelected($event)"
+      (filterStadiumChange)="changeFilterStadium($event)"
       (resetFiltersChange)="resetFilters()">
     </app-filters-home>
   </ng-template>

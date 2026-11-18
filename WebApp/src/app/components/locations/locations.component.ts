@@ -8,7 +8,7 @@ import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/ma
 import { MatInputModule } from '@angular/material/input';
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose, jamChevronLeft } from '@ng-icons/jam-icons';
+import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose, jamChevronLeft, jamTrash } from '@ng-icons/jam-icons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
@@ -31,7 +31,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
   styleUrl: './locations.component.css',
   providers: [provideNgIconsConfig({
     size: '1.5em',
-  }), provideIcons({ jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose, jamChevronLeft })]
+  }), provideIcons({ jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose, jamChevronLeft, jamTrash })]
 })
 export class LocationsComponent implements OnInit {
 
@@ -53,6 +53,9 @@ export class LocationsComponent implements OnInit {
   placeResults: LocationPlaceResult[] = [];
   searchingPlaces = false;
   savingPlace = false;
+  deleteLocationOpen = false;
+  deletingLocation = false;
+  deleteLocationError = '';
   placeError = '';
   draftPin: { lat: number; lng: number } | null = null;
   private placeSearchSerial = 0;
@@ -141,6 +144,10 @@ export class LocationsComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    if (this.deleteLocationOpen && !this.deletingLocation) {
+      this.closeDeleteLocation();
+      return;
+    }
     if (this.newLocationOpen && !this.savingLocation) {
       this.closeNewLocation();
     }
@@ -500,6 +507,49 @@ export class LocationsComponent implements OnInit {
   clearPlace(): void {
     this.draftPin = null;
     this.savePlace(null);
+  }
+
+  askDeleteLocation(): void {
+    if (!this.selectedLocation || this.selectedLocation.stadium || this.deletingLocation) {
+      return;
+    }
+    this.deleteLocationError = '';
+    this.deleteLocationOpen = true;
+  }
+
+  closeDeleteLocation(): void {
+    if (this.deletingLocation) {
+      return;
+    }
+    this.deleteLocationOpen = false;
+    this.deleteLocationError = '';
+  }
+
+  confirmDeleteLocation(): void {
+    if (!this.selectedLocation || this.selectedLocation.stadium || this.deletingLocation) {
+      return;
+    }
+    const locationId = this.selectedLocation.id;
+    this.deletingLocation = true;
+    this.deleteLocationError = '';
+    this.megagoal.deleteLocation(locationId).subscribe({
+      next: () => {
+        this.deletingLocation = false;
+        this.deleteLocationOpen = false;
+        this.locations = this.locations.filter(location => location.id !== locationId);
+        this.viewedMatches.forEach(match => {
+          if (match.location === locationId) {
+            match.location = '';
+          }
+        });
+        this.clearLocationSelection();
+        this.getLocationsCounts(false);
+      },
+      error: () => {
+        this.deletingLocation = false;
+        this.deleteLocationError = 'Could not delete that location.';
+      }
+    });
   }
 
   saveLocationName(): void {

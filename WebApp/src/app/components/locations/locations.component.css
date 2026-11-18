@@ -35,9 +35,9 @@
 
 .location-picker-panel {
   position: relative;
-  flex: 0 0 calc(50% - 12px);
-  width: calc(50% - 12px);
-  max-width: calc(50% - 12px);
+  flex: 0 0 calc(40% - 12px);
+  width: calc(40% - 12px);
+  max-width: calc(40% - 12px);
   box-sizing: border-box;
   padding-right: 24px;
 }
@@ -67,6 +67,17 @@
   flex-direction: column;
   gap: 12px;
   min-height: 420px;
+}
+
+.location-pin-map {
+  height: 320px;
+  flex: 0 0 320px;
+}
+
+.location-pin-map app-location-map {
+  display: flex;
+  height: 100%;
+  min-height: 0;
 }
 
 .location-place-search {
@@ -232,6 +243,35 @@
 }
 
 .location-place-clear:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.delete-location-dialog {
+  width: min(100%, 420px);
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+}
+
+.delete-location-text {
+  margin: 0;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.delete-location-confirm {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #dc143c;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete-location-confirm:disabled {
   opacity: 0.6;
   cursor: default;
 }
@@ -470,9 +510,29 @@
   cursor: pointer;
 }
 
-.location-name-save:disabled {
+.location-name-save:disabled,
+.location-name-delete:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.location-name-delete {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: #dc143c;
+  color: #fff;
+  cursor: pointer;
+}
+
+.location-name-delete:hover:not(:disabled) {
+  background: #b01030;
 }
 
 .location-map-prompt {
@@ -630,7 +690,7 @@
 }
 
 .new-location-map app-location-map {
-  display: block;
+  display: flex;
   height: 100%;
   min-height: 0;
 }

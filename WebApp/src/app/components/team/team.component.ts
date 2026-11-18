@@ -21,6 +21,7 @@ import { SeasonInfo } from '../../models/season';
 import { Match } from '../../models/match';
 import { isNotStartedStatus } from '../../config/matchStatus';
 import { Location } from '../../models/location';
+import { matchAtOfficialStadium, officialStadiumLocationIds } from '../../utils/official-stadium';
 import { FavouriteTeamCardComponent } from '../stats/favourite-team-card/favourite-team-card.component';
 import { BasicStatCardComponent } from '../stats/basic-stat-card/basic-stat-card.component';
 import { GeneralCardComponent } from '../general-card/general-card.component';
@@ -156,6 +157,7 @@ export class TeamComponent implements OnInit, OnDestroy {
   notStartedRealMatches: RealMatch[] = [];
   filterPanelChipSelected: number = 1;
   filterLocationSelected: string = '';
+  filterStadium = false;
   filterLeagueSelected: number[] = [];
   /** Watched / stats / API: restrict to H2H vs these opponents (page team always implied). */
   filterTeamAgainstSelected: number[] = [];
@@ -837,6 +839,16 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.updateQueryParams();
   }
 
+  onFilterStadiumChange(enabled: boolean): void {
+    this.filterStadium = enabled;
+    this.filterStatsLocations();
+    this.ensureFilterLocationValidForStats();
+    this.updateLeaguesForStats();
+    this.filterMatches();
+    this.filterInsightsData();
+    this.updateQueryParams();
+  }
+
   onFilterLocationSelectedChange(location: string): void {
     this.filterLocationSelected = location;
     this.updateLeaguesForStats();
@@ -872,6 +884,9 @@ export class TeamComponent implements OnInit, OnDestroy {
       case 'chip':
       case 'team':
         break;
+      case 'stadium':
+        this.onFilterStadiumChange(false);
+        break;
     }
   }
 
@@ -879,6 +894,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterLeagueSelected = [];
     this.filterTeamAgainstSelected = [];
     this.filterLocationSelected = '';
+    this.filterStadium = false;
     this.filterSeasonSelected = this.allTimeSeasonOption;
     this.selectedSeason = this.seasons[0];
     this.filterOrder = 'date_desc'; // Reset to descending (newest first)
@@ -908,6 +924,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.filterLeagueSelected = [];
     this.filterTeamAgainstSelected = [];
     this.filterLocationSelected = '';
+    this.filterStadium = false;
     this.filterSeasonSelected = this.allTimeSeasonOption;
     this.filterOrder = 'date_desc';
     this.filterPanelChipSelected = 1;
@@ -1018,7 +1035,9 @@ export class TeamComponent implements OnInit, OnDestroy {
           this.filterLeagueSelected,
           this.filterSeasonSelected?.id ?? 0,
           this.filterLocationSelected,
-          [tid]
+          [tid],
+          undefined,
+          this.filterStadium
         )
         .pipe(catchError(() => of([] as TeamsViewedStats[]))),
       real: this.realTeamOpponentsSummary$(tid).pipe(
@@ -1204,7 +1223,8 @@ export class TeamComponent implements OnInit, OnDestroy {
       seasonFilter,
       this.filterLocationSelected,
       teamsParam,
-      againstParam
+      againstParam,
+      this.filterStadium
     ).subscribe({
       next: (stats: FavouriteTeamStats) => {
         this.favouriteTeamStats = stats;
@@ -1258,6 +1278,14 @@ export class TeamComponent implements OnInit, OnDestroy {
     this.personalMatchesPageMatches = base.slice(startIndex, endIndex);
   }
 
+  private matchPassesStadium(match: Match): boolean {
+    return matchAtOfficialStadium(
+      match.location,
+      officialStadiumLocationIds(this.locations),
+      this.filterStadium,
+    );
+  }
+
   private matchPassesOpponentFilter(match: Match): boolean {
     if (!this.team || this.filterTeamAgainstSelected.length === 0) {
       return true;
@@ -1275,7 +1303,7 @@ export class TeamComponent implements OnInit, OnDestroy {
       const matchesLocation = !this.filterLocationSelected || match.location === this.filterLocationSelected;
       const matchesSeason = !this.filterSeasonSelected || this.filterSeasonSelected.id === 0 || match.league.season === this.filterSeasonSelected.id;
       const hasValidGoals = match.goals?.home != null && match.goals?.away != null;
-      return matchesLeague && matchesLocation && matchesSeason && hasValidGoals && this.matchPassesOpponentFilter(match);
+      return matchesLeague && matchesLocation && matchesSeason && hasValidGoals && this.matchPassesOpponentFilter(match) && this.matchPassesStadium(match);
     });
 
     // Sort by order (create new array to trigger change detection)
@@ -1319,7 +1347,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     const baseMatches = this.allWatchedMatches.filter(match => {
       const matchesLocation = !this.filterLocationSelected || match.location === this.filterLocationSelected;
       const matchesSeason = !this.filterSeasonSelected || this.filterSeasonSelected.id === 0 || match.league.season === this.filterSeasonSelected.id;
-      return matchesLocation && matchesSeason && this.matchPassesOpponentFilter(match);
+      return matchesLocation && matchesSeason && this.matchPassesOpponentFilter(match) && this.matchPassesStadium(match);
     });
 
     const leagueCounts = new Map<number, { name: string; count: number }>();
@@ -1524,7 +1552,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     const matches = (seasonId === 0
       ? this.allWatchedMatches
       : this.allWatchedMatches.filter(match => match.league?.season === seasonId)
-    ).filter((m) => this.matchPassesOpponentFilter(m));
+    ).filter((m) => this.matchPassesOpponentFilter(m) && this.matchPassesStadium(m));
 
     const locationIds = new Set<string>();
     matches.forEach(match => {
@@ -1651,6 +1679,10 @@ export class TeamComponent implements OnInit, OnDestroy {
     if (this.filterLocationSelected) {
       queryParams.location = this.filterLocationSelected;
     }
+
+    if (this.filterStadium) {
+      queryParams.stadium = '1';
+    }
     
     if (this.filterLeagueSelected.length > 0) {
       queryParams.leagues = this.filterLeagueSelected.join(',');
@@ -1718,6 +1750,11 @@ export class TeamComponent implements OnInit, OnDestroy {
     const location = params.get('location');
     if (location) {
       this.filterLocationSelected = location;
+    }
+
+    const stadium = params.get('stadium');
+    if (stadium === '1' || stadium === 'true') {
+      this.filterStadium = true;
     }
 
     const leagues = params.get('leagues');

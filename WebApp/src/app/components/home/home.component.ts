@@ -26,6 +26,7 @@ import { TeamStatsListComponent } from '../stats/team-stats-list/team-stats-list
 import { HeroSectionComponent } from '../hero-section/hero-section.component';
 import { StatsService } from '../../services/stats.service';
 import { ListFiltersQuery, ListFiltersUrlSync, sameListFilters } from '../../utils/list-filters-query';
+import { matchAtOfficialStadium, officialStadiumLocationIds } from '../../utils/official-stadium';
 import { FavouriteTeamCardComponent } from '../stats/favourite-team-card/favourite-team-card.component';
 import { FavouriteTeamStats } from '../../models/favouriteTeamStats';
 import { GeneralStatsComponent } from '../stats/general-stats/general-stats.component';
@@ -106,6 +107,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   /** Opponents: match must pair a selected team with one of these (home/away). */
   filterTeamAgainstSelected: number[] = [];
   filterLocationSelected: string = ''; // Location filter
+  filterStadium = false;
   filterOrder: 'date_desc' | 'date_asc' | 'goals_desc' | 'goals_asc' = 'date_desc'; // Order: date_desc (newest first), date_asc (oldest first), goals_desc (most goals), goals_asc (least goals)
 
   /* Seasons */
@@ -207,6 +209,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       vs: this.filterTeamAgainstSelected,
       seasonId: this.filterSeasonSelected?.id ?? 0,
       location: this.filterLocationSelected,
+      stadium: this.filterStadium,
       order: this.filterOrder,
     };
   }
@@ -217,6 +220,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.filterTeamSelected = filters.teams;
     this.filterTeamAgainstSelected = filters.vs;
     this.filterLocationSelected = filters.location;
+    this.filterStadium = filters.stadium;
     this.filterOrder = filters.order;
     const season = this.seasons.find((item) => item.id === filters.seasonId);
     this.filterSeasonSelected = season ?? { id: filters.seasonId, text: '' };
@@ -333,7 +337,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.filterPanelChipSelected,
       leagues,
       seasonId,
-      this.filterLocationSelected || ''
+      this.filterLocationSelected || '',
+      this.filterStadium ? '1' : '0'
     ].join('|');
   }
 
@@ -355,7 +360,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.filterLocationSelected) {
       m = m.filter(match => match.location === this.filterLocationSelected);
     }
-    return m;
+    return m.filter(match => this.matchPassesStadium(match));
+  }
+
+  private matchPassesStadium(match: Match): boolean {
+    return matchAtOfficialStadium(
+      match.location,
+      officialStadiumLocationIds(this.locations),
+      this.filterStadium,
+    );
   }
 
   private rebuildTeamsFiltered(): void {
@@ -405,6 +418,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         match.location === this.filterLocationSelected
       );
     }
+    seasonsFilteredMatches = seasonsFilteredMatches.filter(match => this.matchPassesStadium(match));
 
     seasonsFilteredMatches = this.appendTeamFilterForCrossFilters(seasonsFilteredMatches);
     
@@ -435,6 +449,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         match.location === this.filterLocationSelected
       );
     }
+    leaguesFilteredMatches = leaguesFilteredMatches.filter(match => this.matchPassesStadium(match));
 
     leaguesFilteredMatches = this.appendTeamFilterForCrossFilters(leaguesFilteredMatches);
     
@@ -465,6 +480,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.filterLeagueSelected.includes(match.league.id)
       );
     }
+    locationsFilteredMatches = locationsFilteredMatches.filter(match => this.matchPassesStadium(match));
 
     locationsFilteredMatches = this.appendTeamFilterForCrossFilters(locationsFilteredMatches);
     
@@ -557,7 +573,10 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.filterPanelChipSelected,
         this.filterLeagueSelected,
         this.filterSeasonSelected?.id ?? 0,
-        this.filterLocationSelected
+        this.filterLocationSelected,
+        undefined,
+        undefined,
+        this.filterStadium
       ).subscribe({
         next: (result: TeamsViewedStats[]) => {
           this.stats.teamsViewed = result;
@@ -595,7 +614,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.filterLeagueSelected,
       this.filterSeasonSelected?.id ?? 0,
       this.filterLocationSelected,
-      this.filterTeamSelected
+      this.filterTeamSelected,
+      undefined,
+      this.filterStadium
     ).subscribe({
       next: (rows: TeamsViewedStats[]) => {
         const primary = new Set(this.filterTeamSelected);
@@ -708,7 +729,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.filterSeasonSelected?.id ?? 0,
       this.filterLocationSelected,
       teamsArg,
-      againstArg
+      againstArg,
+      this.filterStadium
     ).subscribe({
       next: (stats: FavouriteTeamStats) => {
         this.favouriteTeamStats = stats;
@@ -737,7 +759,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.filterSeasonSelected?.id ?? 0,
       this.filterLocationSelected,
       teamsArg,
-      againstArg
+      againstArg,
+      this.filterStadium
     ).subscribe({
       next: (stats: GeneralStats) => {
         this.generalStats = stats;
@@ -833,6 +856,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.syncFiltersToUrl();
   }
 
+  changeFilterStadium(enabled: boolean): void {
+    this.filterStadium = enabled;
+    this.teamsAgainstReady = false;
+    this.updateFilteredArrays();
+    this.filterMatches();
+    this.syncFiltersToUrl();
+  }
+
   changeFilterTeamSelected(teams: number[]) {
     this.filterTeamSelected = teams;
     this.teamsAgainstReady = false;
@@ -902,6 +933,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       case 'chip':
         this.changeFilterPanelChipSelected(0);
         break;
+      case 'stadium':
+        this.changeFilterStadium(false);
+        break;
       case 'season':
         this.changeFilterSeasonSelected(this.seasons[0]);
         break;
@@ -930,6 +964,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.teamsAgainstReady = false;
     this.filterSeasonSelected = this.seasons[0]; // All time
     this.filterLocationSelected = ''; // All locations
+    this.filterStadium = false;
     this.filterOrder = 'date_desc'; // Reset to descending (newest first)
     this.updateFilteredArrays();
     this.filterMatches();

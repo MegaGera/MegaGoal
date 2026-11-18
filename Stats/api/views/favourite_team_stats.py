@@ -9,7 +9,7 @@ import pandas as pd
 import os
 from datetime import datetime
 
-from ..teams_query_filters import parse_teams_query_params, add_teams_mongo_filters
+from ..teams_query_filters import parse_teams_query_params, add_teams_mongo_filters, add_official_stadium_filter
 
 class FavouriteTeamStatsAPIView(APIView):
     def get(self, request, *args, **kwargs):
@@ -59,6 +59,8 @@ class FavouriteTeamStatsAPIView(APIView):
         # Location filter
         if location != '':
             filters.append({'location': location})
+
+        add_official_stadium_filter(filters, request, username)
 
         teams_arr, against_arr = parse_teams_query_params(request)
         add_teams_mongo_filters(filters, teams_arr, against_arr)
