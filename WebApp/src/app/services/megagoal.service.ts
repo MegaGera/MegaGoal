@@ -7,7 +7,7 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { League, TeamsViewedStats } from '../models/league';
 import { Match, MatchEngagementAggregate, MatchReaction, MatchUserPicks, WatchedMatchRef } from '../models/match';
 import { Team, shortTeam } from '../models/team';
-import { Location } from '../models/location';
+import { Location, LocationPlace, LocationPlaceResult } from '../models/location';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { LineupData, RealMatch } from '../models/realMatch';
@@ -380,6 +380,27 @@ export class MegaGoalService {
   */
   getLocationsCounts(): Observable<Location[]> {
     return this.http.get<Location[]>(this.url + '/location/counts/', this.options);
+  }
+
+  searchLocationPlaces(query: string): Observable<LocationPlaceResult[]> {
+    const params = new HttpParams().set('q', query);
+    return this.http.get<LocationPlaceResult[]>(this.url + '/location/places/', { ...this.options, params });
+  }
+
+  renameLocation(id: string, name: string): Observable<{ id: string; name: string }> {
+    return this.http.patch<{ id: string; name: string }>(
+      this.url + '/location/' + id,
+      { name },
+      this.options
+    );
+  }
+
+  setLocationPlace(id: string, place: LocationPlace | null): Observable<{ id: string; official: boolean; stadium: boolean; place: LocationPlace | null }> {
+    return this.http.put<{ id: string; official: boolean; stadium: boolean; place: LocationPlace | null }>(
+      this.url + '/location/' + id + '/place',
+      { place },
+      this.options
+    );
   }
 
   /*

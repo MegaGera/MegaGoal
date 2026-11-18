@@ -377,7 +377,8 @@
                       [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
                       [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
                       [locations]="locations"
-                      [size]="'md'">
+                      [size]="'md'"
+                      (locationSet)="rememberMatchLocation($event)">
                     </app-real-match-card>
                   </div>
                 }

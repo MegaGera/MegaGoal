@@ -2,8 +2,12 @@ import { getDB } from '../config/db.js';
 import {
   buildUserLocation,
   parseCreateLocationBody,
-  parseLocationDocuments
+  parseLocationDocuments,
+  parseLocationId,
+  parseRenameLocationBody,
+  parseSetLocationPlaceBody
 } from '../entities/locationEntity.js';
+import { searchPhotonPlaces } from '../services/photonSearch.js';
 
 // Get locations
 export const getLocations = async (req, res) => {
@@ -74,6 +78,74 @@ export const createLocation = async (req, res) => {
     await db.collection('locations').insertOne(location);
     console.log("Location " + location.name + " inserted for user " + req.validateData.username);
     res.status(201).json({ id: location.id, name: location.name });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+export const searchLocationPlaces = async (req, res) => {
+  try {
+    const query = String(req.query.q ?? '').trim();
+    if (query.length < 2 || query.length > 80) {
+      res.send([]);
+      return;
+    }
+    const results = await searchPhotonPlaces(query);
+    res.send(results);
+  } catch (error) {
+    res.status(502).json({ message: 'Place search is unavailable.' });
+  }
+}
+
+export const renameLocation = async (req, res) => {
+  const db = getDB();
+  try {
+    const username = req.validateData.username;
+    const id = parseLocationId(req.params.id);
+    const { name } = parseRenameLocationBody(req.body);
+    const existing = await db.collection('locations').findOne({ id, 'user.username': username });
+    if (!existing) {
+      res.status(404).json({ message: 'Location not found' });
+      return;
+    }
+    if (existing.stadium) {
+      res.status(400).json({ message: 'Stadium locations stay linked to the match venue' });
+      return;
+    }
+    await db.collection('locations').updateOne({ id, 'user.username': username }, { $set: { name } });
+    res.send({ id, name });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+export const setLocationPlace = async (req, res) => {
+  const db = getDB();
+  try {
+    const username = req.validateData.username;
+    const id = parseLocationId(req.params.id);
+    const { place } = parseSetLocationPlaceBody(req.body);
+    const existing = await db.collection('locations').findOne({ id, 'user.username': username });
+    if (!existing) {
+      res.status(404).json({ message: 'Location not found' });
+      return;
+    }
+    if (existing.stadium) {
+      res.status(400).json({ message: 'Stadium locations stay linked to the match venue' });
+      return;
+    }
+
+    const official = Boolean(place?.osmId);
+    const update = place
+      ? { $set: { place, official } }
+      : { $set: { official: false }, $unset: { place: '' } };
+    await db.collection('locations').updateOne({ id, 'user.username': username }, update);
+    res.send({
+      id,
+      official,
+      stadium: false,
+      place: place ?? null
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

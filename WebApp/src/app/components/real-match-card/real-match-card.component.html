@@ -153,25 +153,12 @@
 </div>
 
 @if (newLocationOpen) {
-  <div class="new-location-backdrop" (click)="closeNewLocation()">
-    <form class="new-location-dialog" (click)="$event.stopPropagation()" (ngSubmit)="saveNewLocation()">
-      <h2 class="new-location-title">Add a new location</h2>
-      <label class="new-location-label" for="new-location-name">Location name</label>
-      <input
-        id="new-location-name"
-        #newLocationInput
-        class="new-location-input"
-        name="locationName"
-        [(ngModel)]="newLocationName"
-        autocomplete="off"
-        [disabled]="savingLocation">
-      @if (newLocationError) {
-        <p class="new-location-error">{{ newLocationError }}</p>
-      }
-      <div class="new-location-actions">
-        <button type="button" class="new-location-cancel" (click)="closeNewLocation()" [disabled]="savingLocation">Cancel</button>
-        <button type="submit" class="new-location-save" [disabled]="savingLocation || !newLocationName.trim()">Save</button>
-      </div>
-    </form>
+  <div class="new-location-backdrop" #newLocationBackdrop (click)="closeNewLocation()">
+    <app-new-location-dialog
+      [saving]="savingLocation"
+      [error]="newLocationError"
+      (save)="saveNewLocation($event)"
+      (cancel)="closeNewLocation()">
+    </app-new-location-dialog>
   </div>
 }

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatchViewsCountBadgeComponent } from './match-views-count-badge/match-views-count-badge.component';
 import { Router, RouterLink } from '@angular/router';
@@ -16,9 +16,12 @@ import { MegaGoalService } from '../../services/megagoal.service';
 import { LeagueColorsService } from '../../services/league-colors.service';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
+import { NewLocationDialogComponent, NewLocationDraft } from '../locations/new-location-dialog/new-location-dialog.component';
 import { MatchParserService } from '../../services/match-parser.service';
 import { isNotStartedStatus } from '../../config/matchStatus';
 import { Subscription } from 'rxjs';
+import { bindLocationPanelToCard } from './location-select-panel';
+import { BodyDialogPortal } from './body-dialog-portal';
 
 
 @Component({
@@ -32,6 +35,7 @@ import { Subscription } from 'rxjs';
     FormsModule,
     RouterLink,
     MatchViewsCountBadgeComponent,
+    NewLocationDialogComponent,
   ],
   templateUrl: './real-match-card.component.html',
   styleUrl: './real-match-card.component.css',
@@ -49,6 +53,8 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
   @Input() locations!: Location[];
   @Input() size: string = 'lg';
   @Input() interactable: boolean = true;
+  /** Parent pages that rebuild the match each change detection store this id. */
+  @Output() locationSet = new EventEmitter<{ fixtureId: number; locationId: string }>();
 
   /** Session delta after mark/unmark watched (global watched_count is optimistic). */
   private viewsAdjustment = 0;
@@ -92,10 +98,10 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
   locationSelectInteractable = false;
   locationPanelOpen = false;
   newLocationOpen = false;
-  newLocationName = '';
   newLocationError = '';
   savingLocation = false;
-  @ViewChild('newLocationInput') private newLocationInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('newLocationBackdrop') private newLocationBackdrop?: ElementRef<HTMLElement>;
+  private newLocationPortal = new BodyDialogPortal();
   private watchedLocationSelect?: MatSelect;
   private locationPanelAttach?: Subscription;
   private locationInteractableTimer: ReturnType<typeof setTimeout> | null = null;
@@ -204,6 +210,7 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
 
   ngOnDestroy(): void {
     this.locationPanelAttach?.unsubscribe();
+    this.newLocationPortal.detach();
     this.clearLocationInteractableTimer();
     this.clearLocationLeaveCheckTimer();
     this.clearViewsBadgeCollapseTimers();
@@ -242,22 +249,27 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
     event.preventDefault();
     event.stopPropagation();
     this.watchedLocationSelect?.close();
-    this.newLocationName = '';
     this.newLocationError = '';
     this.newLocationOpen = true;
-    setTimeout(() => this.newLocationInput?.nativeElement.focus());
+    setTimeout(() => {
+      const backdrop = this.newLocationBackdrop?.nativeElement;
+      if (backdrop) {
+        this.newLocationPortal.attach(backdrop);
+      }
+    });
   }
 
   closeNewLocation(): void {
     if (this.savingLocation) {
       return;
     }
+    this.newLocationPortal.detach();
     this.newLocationOpen = false;
     this.newLocationError = '';
   }
 
-  saveNewLocation(): void {
-    const name = this.newLocationName.trim();
+  saveNewLocation(draft: NewLocationDraft): void {
+    const name = draft.name.trim();
     if (!name || this.savingLocation) {
       return;
     }
@@ -266,30 +278,41 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
     );
     if (existing) {
       this.applyLocation(existing.id);
-      this.newLocationOpen = false;
+      this.closeNewLocation();
       return;
     }
     this.savingLocation = true;
     this.newLocationError = '';
     this.megaGoal.createLocation({ name }).subscribe({
       next: (created) => {
-        const location: Location = {
-          name: created.name,
-          id: created.id,
-          user: { username: '' },
-          private: true,
-          stadium: false,
-          official: false,
-          matchCount: 0
+        const finish = (place: NewLocationDraft['place']) => {
+          const location: Location = {
+            name: created.name,
+            id: created.id,
+            user: { username: '' },
+            private: true,
+            stadium: false,
+            official: Boolean(place?.osmId),
+            matchCount: 0,
+            ...(place ? { place } : {})
+          };
+          if (!this.locations) {
+            this.locations = [];
+          }
+          this.locations.push(location);
+          this.orderLocations();
+          this.applyLocation(created.id);
+          this.savingLocation = false;
+          this.closeNewLocation();
         };
-        if (!this.locations) {
-          this.locations = [];
+        if (!draft.place) {
+          finish(null);
+          return;
         }
-        this.locations.push(location);
-        this.orderLocations();
-        this.applyLocation(created.id);
-        this.savingLocation = false;
-        this.newLocationOpen = false;
+        this.megaGoal.setLocationPlace(created.id, draft.place).subscribe({
+          next: (updated) => finish(updated.place),
+          error: () => finish(null)
+        });
       },
       error: () => {
         this.savingLocation = false;
@@ -300,9 +323,6 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
 
   onLocationPanelOpenedChange(opened: boolean): void {
     this.locationPanelOpen = opened;
-    if (opened) {
-      this.centerLocationPanel();
-    }
   }
 
   private watchLocationPanel(select: MatSelect | undefined): void {
@@ -312,49 +332,10 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
     this.locationPanelAttach?.unsubscribe();
     this.locationPanelAttach = undefined;
     this.watchedLocationSelect = select;
-    const overlay = (select as unknown as {
-      _overlayDir?: {
-        attach: { subscribe(handler: () => void): Subscription };
-        positionChange: { subscribe(handler: () => void): Subscription };
-      };
-    } | undefined)?._overlayDir;
-    if (!overlay) {
-      return;
-    }
-    const place = new Subscription();
-    place.add(overlay.attach.subscribe(() => {
-      const pane = this.locationPanelPane();
-      if (pane) {
-        pane.style.visibility = 'hidden';
-      }
-      requestAnimationFrame(() => this.centerLocationPanel());
-    }));
-    place.add(overlay.positionChange.subscribe(() => {
-      requestAnimationFrame(() => this.centerLocationPanel());
-    }));
-    this.locationPanelAttach = place;
-  }
-
-  private centerLocationPanel(): void {
-    const panel = document.querySelector('.location-options-panel') as HTMLElement | null;
-    const pane = panel?.closest('.cdk-overlay-pane') as HTMLElement | null;
-    const card = this.host.nativeElement.querySelector('.generalMatchCard');
-    if (!panel || !pane || !card) {
-      return;
-    }
-    pane.style.transform = 'none';
-    const cardRect = card.getBoundingClientRect();
-    const panelRect = panel.getBoundingClientRect();
-    const left = cardRect.left + (cardRect.width - panelRect.width) / 2;
-    const top = cardRect.top + (cardRect.height - panelRect.height) / 2;
-    const maxLeft = window.innerWidth - panelRect.width - 8;
-    const maxTop = window.innerHeight - panelRect.height - 8;
-    pane.style.transform = `translate(${Math.max(8, Math.min(left, maxLeft)) - panelRect.left}px, ${Math.max(8, Math.min(top, maxTop)) - panelRect.top}px)`;
-    pane.style.visibility = 'visible';
-  }
-
-  private locationPanelPane(): HTMLElement | null {
-    return document.querySelector('.location-options-panel')?.closest('.cdk-overlay-pane') as HTMLElement | null;
+    this.locationPanelAttach = bindLocationPanelToCard(
+      select,
+      () => this.host.nativeElement.querySelector('.generalMatchCard')
+    );
   }
 
   private scheduleLocationSelectInteractable(delayMs: number): void {
@@ -483,11 +464,12 @@ export class RealMatchCardComponent implements AfterViewInit, OnChanges, OnDestr
     const resolvedLocation = existingLocation?.id ?? locationId;
 
     const venue = selectedVenue ? this.match.venue : undefined;
+    this.match.location = resolvedLocation;
+    this.locationSet.emit({ fixtureId, locationId: resolvedLocation });
     this.megaGoal.setLocation(fixtureId, resolvedLocation, venue).subscribe(result => { });
   }
 
   private applyLocation(locationId: string): void {
-    this.match.location = locationId;
     this.setLocation(this.match.fixture.id, locationId);
   }
 

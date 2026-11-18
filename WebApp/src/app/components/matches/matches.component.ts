@@ -421,6 +421,11 @@ export class MatchesComponent implements OnInit, OnDestroy {
     return { _id: '', location: location ?? '' } as Match;
   }
 
+  /** The card's match object is rebuilt every change detection from this map. */
+  rememberMatchLocation(event: { fixtureId: number; locationId: string }): void {
+    this.watchedByFixture.set(event.fixtureId, event.locationId);
+  }
+
   loadLocations(): void {
     this.megaGoalService.getLocationsCounts().subscribe({
       next: (locations) => {

@@ -707,6 +707,14 @@ export class LeagueDetailComponent implements OnInit, OnDestroy {
     return this.matches.find(match => match.fixture.id === fixtureId);
   }
 
+  /** The card is rebuilt from this list on every change detection. */
+  rememberMatchLocation(event: { fixtureId: number; locationId: string }): void {
+    const stored = this.matches.find(match => match.fixture.id === event.fixtureId);
+    if (stored) {
+      stored.location = event.locationId;
+    }
+  }
+
   /*
     Parse the matchday name from API round field:
      - Regular Season - [N] -> Matchday - [N]

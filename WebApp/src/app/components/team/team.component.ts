@@ -631,6 +631,14 @@ export class TeamComponent implements OnInit, OnDestroy {
     return this.allWatchedMatches.find(match => match.fixture.id === id);
   }
 
+  /** Last played and next matches rebuild the card from this list. */
+  rememberMatchLocation(event: { fixtureId: number; locationId: string }): void {
+    const stored = this.allWatchedMatches.find(match => match.fixture.id === event.fixtureId);
+    if (stored) {
+      stored.location = event.locationId;
+    }
+  }
+
   getLocations() {
     this.megagoal.getLocationsCounts().subscribe(result => {
       this.locations = <Location[]>result;

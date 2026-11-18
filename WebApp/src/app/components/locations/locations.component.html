@@ -6,6 +6,14 @@
           <h1 class="section-title">Locations</h1>
           <p class="section-description">View, create, and manage your locations where you watched the matches</p>
         </div>
+        <div class="header-right">
+          <button
+            type="button"
+            class="add-location-action"
+            (click)="openNewLocation($event)">
+            Add a new location
+          </button>
+        </div>
       </div>
     </div>
 
@@ -18,19 +26,49 @@
           <p class="location-panel-subtitle">Search and select a location to filter your matches</p>
         </div>
 
-        <mat-form-field appearance="outline" class="small-form-field location-search-field">
-          <mat-label>Search locations</mat-label>
-          <input
-            type="text"
-            matInput
-            [(ngModel)]="locationSearchQuery"
-            placeholder="Search by name…"
-            autocomplete="off"
-            spellcheck="false"
-            aria-label="Search locations by name"
-          />
-          <ng-icon matSuffix name="jamSearch" class="location-search-icon" aria-hidden="true"></ng-icon>
-        </mat-form-field>
+        <div class="location-list-tools">
+          <div class="location-search" [class.location-search--active]="!!locationSearchQuery.trim()">
+            <div class="location-search__field">
+              <span class="location-search__icon-wrap" aria-hidden="true">
+                <ng-icon name="jamSearch" class="location-search__icon" size="1.15rem"></ng-icon>
+              </span>
+              <input
+                type="text"
+                class="location-search__input"
+                [(ngModel)]="locationSearchQuery"
+                placeholder="Search locations by name…"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Search locations by name"
+              />
+              @if (locationSearchQuery.trim()) {
+                <button type="button" class="location-search__clear" (click)="clearLocationSearch()" aria-label="Clear search">
+                  <ng-icon name="jamClose" size="0.9rem" aria-hidden="true"></ng-icon>
+                </button>
+              }
+            </div>
+          </div>
+          <button
+            type="button"
+            class="location-filter-btn"
+            [class.location-filter-btn--active]="locationListFilter === 'map'"
+            (click)="toggleLocationFilter('map')"
+            [attr.aria-pressed]="locationListFilter === 'map'"
+            title="Locations on the map"
+            aria-label="Show only locations on the map">
+            📍
+          </button>
+          <button
+            type="button"
+            class="location-filter-btn"
+            [class.location-filter-btn--active]="locationListFilter === 'stadium'"
+            (click)="toggleLocationFilter('stadium')"
+            [attr.aria-pressed]="locationListFilter === 'stadium'"
+            title="Stadiums"
+            aria-label="Show only stadiums">
+            🏟️
+          </button>
+        </div>
 
         <div class="location-list" role="listbox" aria-label="Locations">
           <button
@@ -56,14 +94,17 @@
                 @if (location.stadium) {
                   <span class="location-stadium-badge" aria-hidden="true">🏟️</span>
                 }
+                @if (location.place) {
+                  <span class="location-map-badge" [attr.title]="location.place.osmId ? 'Official place' : 'Personal pin'" aria-hidden="true">📍</span>
+                }
                 {{location.name}}
               </span>
               <span class="location-list-item__count">{{location.matchCount}}</span>
             </button>
           } @empty {
             <div class="location-list-empty" role="status">
-              @if (locationSearchQuery.trim()) {
-                No locations match your search.
+              @if (locationSearchQuery.trim() || locationListFilter !== 'all') {
+                No locations match this search.
               } @else {
                 You have no locations yet. Create one to get started.
               }
@@ -71,36 +112,109 @@
           }
         </div>
       </div>
-
-      <div class="location-create-panel">
-        <div class="location-create-card location-panel-card">
-          <div class="location-create-card__header">
-            <h2 class="location-panel-title">Create location</h2>
-            <p class="location-panel-subtitle">Give your viewing spot a name</p>
+      <div class="location-side-panel">
+        @if (!selectedLocation) {
+          <app-location-map
+            [pins]="overviewPins"
+            [interactive]="false"
+            (pinSelected)="openOverviewPin($event)">
+          </app-location-map>
+        } @else {
+          <div class="location-name-row">
+            <button type="button" class="location-name-back" (click)="clearLocationSelection()" aria-label="All locations">
+              <ng-icon name="jamChevronLeft" size="1.15rem"></ng-icon>
+            </button>
+            <div class="location-name-field">
+              <label class="location-name-label" for="location-name-input">Edit name</label>
+              <div class="location-search" [class.location-search--active]="!!locationNameDraft.trim()">
+                <div class="location-search__field">
+                  <input
+                    id="location-name-input"
+                    type="text"
+                    class="location-search__input"
+                    [ngModel]="locationNameDraft"
+                    (ngModelChange)="locationNameDraft = $event"
+                    (keydown.enter)="saveLocationName()"
+                    [disabled]="!!selectedLocation.stadium || savingLocationName"
+                    placeholder="Location name"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                </div>
+              </div>
+            </div>
+            @if (!selectedLocation.stadium) {
+              <button type="button" class="location-name-save" (click)="saveLocationName()" [disabled]="!canSaveLocationName">Save</button>
+            }
           </div>
 
-          <form class="location-create-form" [formGroup]="newLocationForm" (ngSubmit)="addLocation()">
-            <label class="location-create-label" for="new-location-name">Location name</label>
-            <input
-              id="new-location-name"
-              type="text"
-              class="form-control location-create-input"
-              placeholder="e.g. Home, Sports Bar, Camp Nou…"
-              formControlName="name"
-              autocomplete="off"
-            />
-
-            <div class="location-create-actions">
-              <button class="btn btn-primary location-create-submit" type="submit" [disabled]="!newLocationForm.valid">
-                <ng-icon name="jamPlus" aria-hidden="true"></ng-icon>
-                <span>Add location</span>
-              </button>
-              <button class="btn btn-outline-secondary location-create-cancel" type="button" (click)="resetAddLocationForm()">
-                Clear
-              </button>
+          @if (selectedLocation.stadium) {
+            <p class="location-panel-subtitle">Official Stadium</p>
+          } @else {
+            <div class="location-place-search">
+              <div class="location-search" [class.location-search--active]="!!placeQuery.trim()">
+                <div class="location-search__field">
+                  <span class="location-search__icon-wrap" aria-hidden="true">
+                    <ng-icon name="jamSearch" class="location-search__icon" size="1.15rem"></ng-icon>
+                  </span>
+                  <input
+                    type="text"
+                    class="location-search__input"
+                    [ngModel]="placeQuery"
+                    (ngModelChange)="onPlaceQueryChange($event)"
+                    [disabled]="!canEditPlace"
+                    placeholder="Search a pub, address, stadium…"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search a place on the map"
+                  />
+                  @if (searchingPlaces) {
+                    <span class="location-place-spinner" aria-hidden="true"></span>
+                  } @else if (placeQuery.trim()) {
+                    <button type="button" class="location-search__clear" (click)="clearPlaceSearch()" aria-label="Clear place search">
+                      <ng-icon name="jamClose" size="0.9rem" aria-hidden="true"></ng-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+              @if (placeResults.length) {
+                <div class="location-place-results" role="listbox">
+                  @for (result of placeResults; track result.osmType + result.osmId) {
+                    <button type="button" class="location-place-result" (click)="choosePlaceResult(result)">
+                      <span class="location-place-result__name">{{ result.name }}</span>
+                      @if (result.formattedAddress) {
+                        <span class="location-place-result__address">{{ result.formattedAddress }}</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
             </div>
-          </form>
-        </div>
+          }
+
+          <app-location-map
+            [marker]="mapMarker"
+            [interactive]="canEditPlace"
+            (pinPicked)="onPinPicked($event)">
+          </app-location-map>
+
+          <div class="location-place-summary">
+            <div class="location-place-summary__text">
+              @if (placeSummaryTitle) {
+                <span class="location-place-summary__name">{{ placeSummaryTitle }}</span>
+              }
+              @if (placeSummaryAddress && placeSummaryAddress !== placeSummaryTitle) {
+                <span class="location-place-summary__address">{{ placeSummaryAddress }}</span>
+              }
+            </div>
+            @if (!selectedLocation.stadium) {
+              <button type="button" class="location-place-clear" (click)="clearPlace()" [disabled]="savingPlace || !selectedLocation.place">Remove from map</button>
+            }
+          </div>
+          @if (placeError) {
+            <p class="location-place-error">{{ placeError }}</p>
+          }
+        }
       </div>
     </div>
   </div>
@@ -275,8 +389,8 @@
               }
             </div>
           } @else {
-            <cdk-virtual-scroll-viewport itemSize="40" class="matches-container">
-              @for (match of filteredRealMatches; track match.fixture.id) {
+            <div class="matches-container">
+              @for (match of pagedRealMatches; track match.fixture.id) {
                 <div class="match-row" 
                      [class.match-warning]="isMatchAlreadyViewed(match)" 
                      [class.match-success]="isMatchViewedAtSelectedLocation(match)"
@@ -331,7 +445,10 @@
                   }
                 </div>
               }
-            </cdk-virtual-scroll-viewport>
+            </div>
+            <div class="locations-pagination" [class.locations-pagination--hidden]="filteredRealMatches.length <= matchesPerPage">
+              <app-pagination [elements]="filteredRealMatches" [elementsPerPage]="matchesPerPage" [(elementsFiltered)]="pagedRealMatches" />
+            </div>
           }
       </div>
     </div>
@@ -370,8 +487,8 @@
               }
             </div>
           } @else {
-            <cdk-virtual-scroll-viewport itemSize="40" class="matches-container-viewed">
-              @for (match of filteredViewedMatches; track match._id) {
+            <div class="matches-container-viewed">
+              @for (match of pagedViewedMatches; track match._id) {
                 <div class="match-row" [title]="getViewedMatchLocationTooltip(match)">
                   <div class="stadium-column">
                     @if (isMatchViewedAtStadiumLocation(match)) {
@@ -404,10 +521,24 @@
                   No matches viewed at this location
                 </div>
               }
-            </cdk-virtual-scroll-viewport>
+            </div>
+            <div class="locations-pagination" [class.locations-pagination--hidden]="filteredViewedMatches.length <= matchesPerPage">
+              <app-pagination [elements]="filteredViewedMatches" [elementsPerPage]="matchesPerPage" [(elementsFiltered)]="pagedViewedMatches" />
+            </div>
           }
       </div>
     </div>
   </div>
   </section>
 </div>
+
+@if (newLocationOpen) {
+  <div class="new-location-backdrop" (click)="closeNewLocation()">
+    <app-new-location-dialog
+      [saving]="savingLocation"
+      [error]="newLocationError"
+      (save)="saveNewLocation($event)"
+      (cancel)="closeNewLocation()">
+    </app-new-location-dialog>
+  </div>
+}

@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { FormsModule, FormBuilder, ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
+import { Component, HostListener, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ScrollingModule } from '@angular/cdk/scrolling';
 import { NgOptimizedImage } from '@angular/common';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,38 +8,60 @@ import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/ma
 import { MatInputModule } from '@angular/material/input';
 
 import { NgIconComponent, provideIcons, provideNgIconsConfig } from '@ng-icons/core';
-import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose } from '@ng-icons/jam-icons';
+import { jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose, jamChevronLeft } from '@ng-icons/jam-icons';
 
 import { MegaGoalService } from '../../services/megagoal.service';
 import { ImagesService } from '../../services/images.service';
-import { Location } from '../../models/location';
+import { DEFAULT_MAP_STADIUMS, Location, LocationPlace, LocationPlaceResult } from '../../models/location';
+import { LocationMapComponent, LocationMapPin } from './location-map/location-map.component';
+import { NewLocationDialogComponent, NewLocationDraft } from './new-location-dialog/new-location-dialog.component';
 import { RealMatch } from '../../models/realMatch';
 import { Match } from '../../models/match';
 import { LeaguesSettings } from '../../models/leaguesSettings';
 import { shortTeam } from '../../models/team';
 import { SeasonInfo } from '../../models/season';
 import { MatchParserService } from '../../services/match-parser.service';
+import { PaginationComponent } from '../pagination/pagination.component';
 
 @Component({
   selector: 'app-locations',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, NgIconComponent, CommonModule, ScrollingModule, NgOptimizedImage, MatFormFieldModule, MatAutocompleteModule, MatInputModule],
+  imports: [FormsModule, NgIconComponent, CommonModule, NgOptimizedImage, MatFormFieldModule, MatAutocompleteModule, MatInputModule, LocationMapComponent, NewLocationDialogComponent, PaginationComponent],
   templateUrl: './locations.component.html',
   styleUrl: './locations.component.css',
   providers: [provideNgIconsConfig({
     size: '1.5em',
-  }), provideIcons({ jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose })]
+  }), provideIcons({ jamShieldF, jamEyeF, jamPlus, jamMinus, jamFilter, jamSearch, jamClose, jamChevronLeft })]
 })
 export class LocationsComponent implements OnInit {
 
   locations: Location[] = [];
   selectedLocation: Location | null = null;
   locationSearchQuery = '';
-  newLocationForm: any;
+  newLocationOpen = false;
+  newLocationError = '';
+  savingLocation = false;
+  private pendingSelectLocationId: string | null = null;
+  placeQuery = '';
+  locationNameDraft = '';
+  savingLocationName = false;
+  locationListFilter: 'all' | 'map' | 'stadium' = 'all';
+  private previewPin: { lat: number; lng: number } | null = null;
+  private stadiumView: { lat: number; lng: number; title: string; address: string } | null = null;
+  private mapSelectionId: string | null = null;
+  private overviewPinsCache: { key: string; pins: LocationMapPin[] } = { key: '', pins: [] };
+  placeResults: LocationPlaceResult[] = [];
+  searchingPlaces = false;
+  savingPlace = false;
+  placeError = '';
+  draftPin: { lat: number; lng: number } | null = null;
+  private placeSearchSerial = 0;
+  private placeSearchTimer: ReturnType<typeof setTimeout> | null = null;
   
   // Left column - Available matches
   availableRealMatches: RealMatch[] = [];
   filteredRealMatches: RealMatch[] = [];
+  pagedRealMatches: RealMatch[] = [];
   leagues: LeaguesSettings[] = [];
   displayLeagues: LeaguesSettings[] = [];
   leagueSearchQuery = '';
@@ -58,6 +79,8 @@ export class LocationsComponent implements OnInit {
   // Right column - Viewed matches
   viewedMatches: Match[] = [];
   filteredViewedMatches: Match[] = [];
+  pagedViewedMatches: Match[] = [];
+  readonly matchesPerPage = 20;
   
   // Filters
   selectedLeague: LeaguesSettings | null = null;
@@ -71,8 +94,7 @@ export class LocationsComponent implements OnInit {
   readonly skeletonMatchSlots = [1, 2, 3, 4, 5, 6, 7, 8];
   
   constructor(
-    private megagoal: MegaGoalService, 
-    private formBuilder: FormBuilder,
+    private megagoal: MegaGoalService,
     private matchParser: MatchParserService,
     private imagesService: ImagesService
   ) {
@@ -88,9 +110,6 @@ export class LocationsComponent implements OnInit {
   }
 
   init(): void {
-    this.newLocationForm = this.formBuilder.group({
-      name: ['', Validators.required]
-    });
     this.locations = [];
     this.loadViewedMatches();
     this.getLocationsCounts(true);
@@ -102,6 +121,15 @@ export class LocationsComponent implements OnInit {
     this.megagoal.getLocationsCounts().subscribe(result => {
       this.locations = <Location[]>result;
       this.locations.sort((a, b) => a.matchCount > b.matchCount ? -1 : 1);
+      if (this.pendingSelectLocationId) {
+        const createdId = this.pendingSelectLocationId;
+        this.pendingSelectLocationId = null;
+        this.selectedLocation = this.locations.find(loc => loc.id === createdId) || null;
+        this.locationNameDraft = this.selectedLocation?.name ?? '';
+        this.prepareMapForSelection();
+        this.onLocationChange();
+        return;
+      }
       if (this.selectedLocation) {
         this.selectedLocation = this.locations.find(loc => loc.id === this.selectedLocation!.id) || null;
         if (refresh) {
@@ -111,22 +139,126 @@ export class LocationsComponent implements OnInit {
     })
   }
 
-  addLocation() {
-    if (this.newLocationForm?.valid) {
-      this.megagoal.createLocation(this.newLocationForm.value).subscribe(result => {
-        this.init();
-        this.newLocationForm.reset();
-      })
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.newLocationOpen && !this.savingLocation) {
+      this.closeNewLocation();
     }
   }
 
-  get displayLocations(): Location[] {
-    const q = this.locationSearchQuery.trim().toLowerCase();
-    if (!q) {
-      return this.locations;
-    }
+  openNewLocation(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.newLocationError = '';
+    this.newLocationOpen = true;
+  }
 
-    return this.locations.filter(location => location.name.toLowerCase().includes(q));
+  closeNewLocation(): void {
+    if (this.savingLocation) {
+      return;
+    }
+    this.newLocationOpen = false;
+    this.newLocationError = '';
+  }
+
+  saveNewLocation(draft: NewLocationDraft): void {
+    const name = draft.name.trim();
+    if (!name || this.savingLocation) {
+      return;
+    }
+    const existing = this.locations.find(loc =>
+      !loc.stadium && loc.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (existing) {
+      this.selectedLocation = existing;
+      this.locationNameDraft = existing.name;
+      this.prepareMapForSelection();
+      this.onLocationChange();
+      this.newLocationOpen = false;
+      return;
+    }
+    const place = draft.place;
+    this.savingLocation = true;
+    this.newLocationError = '';
+    this.megagoal.createLocation({ name }).subscribe({
+      next: (created) => {
+        const finish = () => {
+          this.savingLocation = false;
+          this.newLocationOpen = false;
+          this.pendingSelectLocationId = created.id;
+          this.getLocationsCounts(true);
+        };
+        if (!place) {
+          finish();
+          return;
+        }
+        this.megagoal.setLocationPlace(created.id, place).subscribe({
+          next: () => finish(),
+          error: () => {
+            this.placeError = 'Could not save the map position.';
+            finish();
+          }
+        });
+      },
+      error: () => {
+        this.savingLocation = false;
+        this.newLocationError = 'Could not save that location.';
+      }
+    });
+  }
+
+  private randomStadiumPin(): { lat: number; lng: number } {
+    const stadium = DEFAULT_MAP_STADIUMS[Math.floor(Math.random() * DEFAULT_MAP_STADIUMS.length)];
+    return { lat: stadium.lat, lng: stadium.lng };
+  }
+
+  get displayLocations(): Location[] {
+    const q = this.normalizeSearchText(this.locationSearchQuery);
+    const compactQuery = q.replace(/ /g, '');
+
+    return this.locations.filter(location => {
+      if (this.locationListFilter === 'map' && !location.place) {
+        return false;
+      }
+      if (this.locationListFilter === 'stadium' && !location.stadium) {
+        return false;
+      }
+      if (!q) {
+        return true;
+      }
+      const name = this.normalizeSearchText(location.name);
+      return name.includes(q) || name.replace(/ /g, '').includes(compactQuery);
+    });
+  }
+
+  toggleLocationFilter(filter: 'map' | 'stadium'): void {
+    this.locationListFilter = this.locationListFilter === filter ? 'all' : filter;
+  }
+
+  clearLocationSearch(): void {
+    this.locationSearchQuery = '';
+  }
+
+  clearPlaceSearch(): void {
+    if (this.placeSearchTimer) {
+      clearTimeout(this.placeSearchTimer);
+      this.placeSearchTimer = null;
+    }
+    this.placeSearchSerial++;
+    this.placeQuery = '';
+    this.placeResults = [];
+    this.searchingPlaces = false;
+  }
+
+  private normalizeSearchText(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/['’`´._-]+/g, ' ')
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   isLocationSelected(location: Location): boolean {
@@ -134,17 +266,289 @@ export class LocationsComponent implements OnInit {
   }
 
   selectLocation(location: Location): void {
+    this.resetPlaceEditor();
     this.selectedLocation = this.isLocationSelected(location) ? null : location;
+    this.locationNameDraft = this.selectedLocation?.name ?? '';
+    this.prepareMapForSelection();
     this.onLocationChange();
+  }
+
+  get overviewPins(): LocationMapPin[] {
+    const pins = this.locations
+      .filter(location => !!location.place)
+      .map(location => ({
+        id: location.id,
+        name: location.name,
+        lat: location.place!.lat,
+        lng: location.place!.lng,
+        matchCount: location.matchCount || 0
+      }));
+    const key = pins.map(pin => `${pin.id}:${pin.lat},${pin.lng}:${pin.name}:${pin.matchCount}`).join('|');
+    if (key === this.overviewPinsCache.key) {
+      return this.overviewPinsCache.pins;
+    }
+    this.overviewPinsCache = { key, pins };
+    return pins;
+  }
+
+  openOverviewPin(locationId: string): void {
+    const location = this.locations.find(item => item.id === locationId);
+    if (location) {
+      this.selectLocation(location);
+    }
   }
 
   clearLocationSelection(): void {
+    this.resetPlaceEditor();
     this.selectedLocation = null;
+    this.locationNameDraft = '';
+    this.prepareMapForSelection();
     this.onLocationChange();
   }
 
-  resetAddLocationForm(): void {
-    this.newLocationForm.reset();
+  get canEditPlace(): boolean {
+    return !!this.selectedLocation && !this.selectedLocation.stadium && !this.savingPlace;
+  }
+
+  get canSaveLocationName(): boolean {
+    if (!this.selectedLocation || this.selectedLocation.stadium || this.savingLocationName) {
+      return false;
+    }
+    const name = this.locationNameDraft.trim();
+    return !!name && name !== this.selectedLocation.name;
+  }
+
+  get placeSummaryTitle(): string {
+    if (this.selectedLocation?.place?.osmName) {
+      return this.selectedLocation.place.osmName;
+    }
+    if (this.selectedLocation?.stadium) {
+      return this.stadiumView?.title || this.selectedLocation.name;
+    }
+    return '';
+  }
+
+  get placeSummaryAddress(): string {
+    if (this.selectedLocation?.place?.formattedAddress) {
+      return this.selectedLocation.place.formattedAddress;
+    }
+    if (this.selectedLocation?.stadium) {
+      return this.stadiumView?.address || '';
+    }
+    return '';
+  }
+
+  get mapMarker(): { lat: number; lng: number } | null {
+    if (!this.selectedLocation) {
+      return null;
+    }
+    if (this.draftPin && !this.selectedLocation.stadium) {
+      return this.draftPin;
+    }
+    if (this.selectedLocation.place) {
+      return { lat: this.selectedLocation.place.lat, lng: this.selectedLocation.place.lng };
+    }
+    if (this.selectedLocation.stadium && this.stadiumView) {
+      return { lat: this.stadiumView.lat, lng: this.stadiumView.lng };
+    }
+    return this.previewPin;
+  }
+
+  private prepareMapForSelection(): void {
+    const locationId = this.selectedLocation?.id ?? null;
+    if (locationId === this.mapSelectionId) {
+      return;
+    }
+    this.mapSelectionId = locationId;
+    this.previewPin = null;
+    this.stadiumView = null;
+    const location = this.selectedLocation;
+    if (!location) {
+      return;
+    }
+    if (location.stadium) {
+      this.resolveStadiumPin(location);
+      return;
+    }
+    if (!location.place) {
+      this.previewPin = this.randomStadiumPin();
+    }
+  }
+
+  private resolveStadiumPin(location: Location): void {
+    const locationName = this.normalizeSearchText(location.name);
+    const known = DEFAULT_MAP_STADIUMS.find(stadium => locationName.includes(this.normalizeSearchText(stadium.name)));
+    if (known) {
+      this.stadiumView = { lat: known.lat, lng: known.lng, title: location.name, address: known.name };
+      return;
+    }
+    this.megagoal.searchLocationPlaces(location.name).subscribe({
+      next: (results) => {
+        if (this.selectedLocation?.id !== location.id) {
+          return;
+        }
+        const first = results[0];
+        if (!first) {
+          return;
+        }
+        this.stadiumView = {
+          lat: first.lat,
+          lng: first.lng,
+          title: location.name,
+          address: first.formattedAddress || first.name
+        };
+      },
+      error: () => {}
+    });
+  }
+
+  onPlaceQueryChange(value: string): void {
+    this.placeQuery = value;
+    this.placeError = '';
+    if (this.placeSearchTimer) {
+      clearTimeout(this.placeSearchTimer);
+    }
+    const serial = ++this.placeSearchSerial;
+    const query = value.trim();
+    if (!this.canEditPlace || query.length < 2) {
+      this.placeResults = [];
+      this.searchingPlaces = false;
+      return;
+    }
+    this.placeSearchTimer = setTimeout(() => {
+      if (serial !== this.placeSearchSerial) {
+        return;
+      }
+      this.searchingPlaces = true;
+      this.megagoal.searchLocationPlaces(query).subscribe({
+        next: (results) => {
+          if (serial !== this.placeSearchSerial) {
+            return;
+          }
+          this.placeResults = results;
+          this.searchingPlaces = false;
+        },
+        error: () => {
+          if (serial !== this.placeSearchSerial) {
+            return;
+          }
+          this.placeResults = [];
+          this.searchingPlaces = false;
+          this.placeError = 'Place search is unavailable.';
+        }
+      });
+    }, 300);
+  }
+
+  choosePlaceResult(result: LocationPlaceResult): void {
+    this.placeQuery = '';
+    this.placeResults = [];
+    this.placeSearchSerial++;
+    this.draftPin = { lat: result.lat, lng: result.lng };
+    this.savePlace({
+      provider: 'osm',
+      lat: result.lat,
+      lng: result.lng,
+      osmId: result.osmId,
+      osmType: result.osmType,
+      osmName: result.name,
+      ...(result.formattedAddress ? { formattedAddress: result.formattedAddress } : {})
+    });
+  }
+
+  onPinPicked(pin: { lat: number; lng: number }): void {
+    this.draftPin = pin;
+    this.savePlace({
+      provider: 'osm',
+      lat: pin.lat,
+      lng: pin.lng
+    });
+  }
+
+  clearPlace(): void {
+    this.draftPin = null;
+    this.savePlace(null);
+  }
+
+  saveLocationName(): void {
+    if (!this.selectedLocation || this.selectedLocation.stadium || this.savingLocationName) {
+      return;
+    }
+    const name = this.locationNameDraft.trim();
+    if (!name || name === this.selectedLocation.name) {
+      return;
+    }
+    const locationId = this.selectedLocation.id;
+    this.savingLocationName = true;
+    this.placeError = '';
+    this.megagoal.renameLocation(locationId, name).subscribe({
+      next: (updated) => {
+        this.savingLocationName = false;
+        this.locations = this.locations.map(location =>
+          location.id === updated.id ? { ...location, name: updated.name } : location
+        );
+        if (this.selectedLocation?.id === locationId) {
+          this.selectedLocation = this.locations.find(location => location.id === locationId) ?? null;
+          this.locationNameDraft = this.selectedLocation?.name ?? updated.name;
+        }
+      },
+      error: () => {
+        this.savingLocationName = false;
+        if (this.selectedLocation?.id === locationId) {
+          this.locationNameDraft = this.selectedLocation.name;
+          this.placeError = 'Could not rename that location.';
+        }
+      }
+    });
+  }
+
+  private resetPlaceEditor(): void {
+    if (this.placeSearchTimer) {
+      clearTimeout(this.placeSearchTimer);
+      this.placeSearchTimer = null;
+    }
+    this.placeSearchSerial++;
+    this.placeQuery = '';
+    this.placeResults = [];
+    this.searchingPlaces = false;
+    this.placeError = '';
+    this.draftPin = null;
+  }
+
+  private savePlace(place: LocationPlace | null): void {
+    if (!this.selectedLocation || this.selectedLocation.stadium) {
+      return;
+    }
+    const locationId = this.selectedLocation.id;
+    this.savingPlace = true;
+    this.placeError = '';
+    this.megagoal.setLocationPlace(locationId, place).subscribe({
+      next: (updated) => {
+        this.savingPlace = false;
+        if (this.selectedLocation?.id !== locationId) {
+          return;
+        }
+        const nextPlace = updated.place ?? undefined;
+        this.locations = this.locations.map(location =>
+          location.id === updated.id
+            ? { ...location, official: updated.official, stadium: updated.stadium, place: nextPlace }
+            : location
+        );
+        this.selectedLocation = this.locations.find(location => location.id === updated.id) ?? null;
+        this.draftPin = null;
+        if (!nextPlace && this.selectedLocation && !this.selectedLocation.stadium) {
+          const stadium = DEFAULT_MAP_STADIUMS[Math.floor(Math.random() * DEFAULT_MAP_STADIUMS.length)];
+          this.previewPin = { lat: stadium.lat, lng: stadium.lng };
+        }
+      },
+      error: () => {
+        this.savingPlace = false;
+        if (this.selectedLocation?.id === locationId) {
+          this.draftPin = null;
+          this.placeError = 'Could not save that place.';
+        }
+      }
+    });
   }
 
   checkRealMatchesByLocation() {

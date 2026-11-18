@@ -1,5 +1,5 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Observable, of, Subscription, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -18,21 +18,39 @@ import { isNotStartedStatus } from '../../config/matchStatus';
 import { RealMatch } from '../../models/realMatch';
 import { Match } from '../../models/match';
 import { Location } from '../../models/location';
+import { NewLocationDialogComponent, NewLocationDraft } from '../locations/new-location-dialog/new-location-dialog.component';
 import { MatchViewsCountBadgeComponent } from '../real-match-card/match-views-count-badge/match-views-count-badge.component';
+import { bindLocationPanelToCard } from '../real-match-card/location-select-panel';
+import { BodyDialogPortal } from '../real-match-card/body-dialog-portal';
 
 @Component({
   selector: 'app-general-match-card',
   standalone: true,
-  imports: [NgIconComponent, CommonModule, MatFormFieldModule, MatSelectModule, FormsModule, MatchViewsCountBadgeComponent],
+  imports: [NgIconComponent, CommonModule, MatFormFieldModule, MatSelectModule, FormsModule, MatchViewsCountBadgeComponent, NewLocationDialogComponent],
   templateUrl: './general-match-card.component.html',
   styleUrl: './general-match-card.component.css',
   providers: [ImagesService, MegaGoalService, provideNgIconsConfig({
     size: '1.2em',
   }), provideIcons({ jamEyeCloseF, jamEyeF })]
 })
-export class GeneralMatchCardComponent implements OnInit, OnChanges {
-  @ViewChild(MatSelect) private locationSelect?: MatSelect;
-  @ViewChild('newLocationInput') private newLocationInput?: ElementRef<HTMLInputElement>;
+export class GeneralMatchCardComponent implements OnInit, OnChanges, OnDestroy {
+  @ViewChild(MatSelect)
+  set locationSelect(select: MatSelect | undefined) {
+    if (select === this.watchedLocationSelect) {
+      return;
+    }
+    this.locationPanelAttach?.unsubscribe();
+    this.locationPanelAttach = undefined;
+    this.watchedLocationSelect = select;
+    this.locationPanelAttach = bindLocationPanelToCard(
+      select,
+      () => this.host.nativeElement.querySelector('.match-card-container')
+    );
+  }
+  @ViewChild('newLocationBackdrop') private newLocationBackdrop?: ElementRef<HTMLElement>;
+  private watchedLocationSelect?: MatSelect;
+  private locationPanelAttach?: Subscription;
+  private newLocationPortal = new BodyDialogPortal();
   @Input() realMatch!: RealMatch;
   @Output() watchedChange = new EventEmitter<boolean>();
   @Output() watchedMatchChange = new EventEmitter<Match | null>();
@@ -41,7 +59,6 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
   watched: boolean = false;
   locations: Location[] = [];
   newLocationOpen = false;
-  newLocationName = '';
   newLocationError = '';
   savingLocation = false;
 
@@ -61,8 +78,14 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
     private megaGoal: MegaGoalService, 
     public matchParser: MatchParserService,
     private router: Router,
-    private leagueColorsService: LeagueColorsService
+    private leagueColorsService: LeagueColorsService,
+    private host: ElementRef<HTMLElement>
   ) {}
+
+  ngOnDestroy(): void {
+    this.locationPanelAttach?.unsubscribe();
+    this.newLocationPortal.detach();
+  }
 
   ngOnInit() {
     this.loadMatchData();
@@ -169,23 +192,28 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
   openNewLocation(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    this.locationSelect?.close();
-    this.newLocationName = '';
+    this.watchedLocationSelect?.close();
     this.newLocationError = '';
     this.newLocationOpen = true;
-    setTimeout(() => this.newLocationInput?.nativeElement.focus());
+    setTimeout(() => {
+      const backdrop = this.newLocationBackdrop?.nativeElement;
+      if (backdrop) {
+        this.newLocationPortal.attach(backdrop);
+      }
+    });
   }
 
   closeNewLocation(): void {
     if (this.savingLocation) {
       return;
     }
+    this.newLocationPortal.detach();
     this.newLocationOpen = false;
     this.newLocationError = '';
   }
 
-  saveNewLocation(): void {
-    const name = this.newLocationName.trim();
+  saveNewLocation(draft: NewLocationDraft): void {
+    const name = draft.name.trim();
     if (!name || this.savingLocation || !this.match) {
       return;
     }
@@ -194,26 +222,37 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
     );
     if (existing) {
       this.applyLocation(existing.id);
-      this.newLocationOpen = false;
+      this.closeNewLocation();
       return;
     }
     this.savingLocation = true;
     this.newLocationError = '';
     this.megaGoal.createLocation({ name }).subscribe({
       next: (created) => {
-        this.locations.push({
-          name: created.name,
-          id: created.id,
-          user: { username: '' },
-          private: true,
-          stadium: false,
-          official: false,
-          matchCount: 0
+        const finish = (place = draft.place) => {
+          this.locations.push({
+            name: created.name,
+            id: created.id,
+            user: { username: '' },
+            private: true,
+            stadium: false,
+            official: Boolean(place?.osmId),
+            matchCount: 0,
+            ...(place ? { place } : {})
+          });
+          this.orderLocations();
+          this.applyLocation(created.id);
+          this.savingLocation = false;
+          this.closeNewLocation();
+        };
+        if (!draft.place) {
+          finish(null);
+          return;
+        }
+        this.megaGoal.setLocationPlace(created.id, draft.place).subscribe({
+          next: (updated) => finish(updated.place),
+          error: () => finish(null)
         });
-        this.orderLocations();
-        this.applyLocation(created.id);
-        this.savingLocation = false;
-        this.newLocationOpen = false;
       },
       error: () => {
         this.savingLocation = false;
@@ -231,11 +270,11 @@ export class GeneralMatchCardComponent implements OnInit, OnChanges {
     const resolvedLocation = existingLocation?.id ?? locationId;
 
     const venue = selectedVenue ? this.match.venue : undefined;
+    this.match.location = resolvedLocation;
     this.megaGoal.setLocation(fixtureId, resolvedLocation, venue).subscribe(result => {});
   }
 
   private applyLocation(locationId: string): void {
-    this.match.location = locationId;
     this.setLocation(this.match.fixture.id, locationId);
   }
 

@@ -490,7 +490,8 @@
                         <app-real-match-card 
                           [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
                           [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-                          [locations]="locations">
+                          [locations]="locations"
+                          (locationSet)="rememberMatchLocation($event)">
                         </app-real-match-card>
                       </div>
                     </div>
@@ -513,7 +514,8 @@
                         <app-real-match-card 
                           [match]="matchParser.realMatchToMatch(match, findRealMatchInMatches(match.fixture.id))"
                           [watched]="findRealMatchInMatches(match.fixture.id) !== undefined"
-                          [locations]="locations">
+                          [locations]="locations"
+                          (locationSet)="rememberMatchLocation($event)">
                         </app-real-match-card>
                       </div>
                     </div>

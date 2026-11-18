@@ -107,7 +107,7 @@ export class TopMenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.updateNavScrollFades();
+    setTimeout(() => this.updateNavScrollFades());
   }
 
   ngOnDestroy(): void {

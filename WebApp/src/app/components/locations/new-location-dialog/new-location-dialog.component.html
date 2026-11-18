@@ -1,0 +1,80 @@
+<form class="new-location-dialog" (click)="$event.stopPropagation()" (ngSubmit)="submit()">
+  <h2 class="new-location-title">Add a new location</h2>
+  <label class="new-location-label" for="new-location-name">Location name</label>
+  <input
+    id="new-location-name"
+    #nameInput
+    class="new-location-input"
+    name="locationName"
+    [(ngModel)]="name"
+    autocomplete="off"
+    [disabled]="saving">
+  @if (error) {
+    <p class="new-location-error">{{ error }}</p>
+  }
+  <div class="location-place-search">
+    <div class="location-search" [class.location-search--active]="!!placeQuery.trim()">
+      <div class="location-search__field">
+        <span class="location-search__icon-wrap" aria-hidden="true">
+          <ng-icon name="jamSearch" class="location-search__icon" size="1.15rem"></ng-icon>
+        </span>
+        <input
+          type="text"
+          class="location-search__input"
+          [ngModel]="placeQuery"
+          (ngModelChange)="onPlaceQueryChange($event)"
+          (keydown.enter)="$event.preventDefault()"
+          [disabled]="saving"
+          placeholder="Search a pub, address, stadium…"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Search a place on the map"
+        />
+        @if (searchingPlaces) {
+          <span class="location-place-spinner" aria-hidden="true"></span>
+        } @else if (placeQuery.trim()) {
+          <button type="button" class="location-search__clear" (click)="clearPlaceSearch()" aria-label="Clear place search">
+            <ng-icon name="jamClose" size="0.9rem" aria-hidden="true"></ng-icon>
+          </button>
+        }
+      </div>
+    </div>
+    @if (placeResults.length) {
+      <div class="location-place-results" role="listbox">
+        @for (result of placeResults; track result.osmType + result.osmId) {
+          <button type="button" class="location-place-result" (click)="choosePlaceResult(result)">
+            <span class="location-place-result__name">{{ result.name }}</span>
+            @if (result.formattedAddress) {
+              <span class="location-place-result__address">{{ result.formattedAddress }}</span>
+            }
+          </button>
+        }
+      </div>
+    }
+  </div>
+  <div class="new-location-map">
+    <app-location-map
+      [marker]="mapMarker"
+      [interactive]="!saving"
+      (pinPicked)="onPinPicked($event)">
+    </app-location-map>
+  </div>
+  <div class="location-place-summary">
+    <div class="location-place-summary__text">
+      @if (placeSummaryTitle) {
+        <span class="location-place-summary__name">{{ placeSummaryTitle }}</span>
+      }
+      @if (placeSummaryAddress && placeSummaryAddress !== placeSummaryTitle) {
+        <span class="location-place-summary__address">{{ placeSummaryAddress }}</span>
+      }
+    </div>
+    <button type="button" class="location-place-clear" (click)="clearPlace()" [disabled]="saving || !draftPlace">Remove from map</button>
+  </div>
+  @if (placeError) {
+    <p class="new-location-error">{{ placeError }}</p>
+  }
+  <div class="new-location-actions">
+    <button type="button" class="new-location-cancel" (click)="cancel.emit()" [disabled]="saving">Cancel</button>
+    <button type="submit" class="new-location-save" [disabled]="saving || !name.trim()">Save</button>
+  </div>
+</form>
