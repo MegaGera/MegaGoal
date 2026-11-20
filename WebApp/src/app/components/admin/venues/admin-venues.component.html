@@ -7,12 +7,42 @@
       </div>
     </div>
 
-    <input
-      class="search-input"
-      type="search"
-      placeholder="Search countries"
-      [(ngModel)]="countrySearch"
-    />
+    <div class="country-toolbar">
+      <input
+        class="search-input"
+        type="search"
+        placeholder="Search countries"
+        [(ngModel)]="countrySearch"
+        (ngModelChange)="refreshCountryFilter()"
+      />
+      <div class="country-controls">
+        <div class="sort-group" role="group" aria-label="Sort countries">
+          <button type="button" class="btn btn-toggle" [class.active]="countrySort === 'name'" (click)="setCountrySort('name')">Name</button>
+          <button type="button" class="btn btn-toggle" [class.active]="countrySort === 'venues'" (click)="setCountrySort('venues')">Venues</button>
+        </div>
+        <button
+          type="button"
+          class="btn btn-toggle"
+          [class.active]="withVenuesOnly"
+          [attr.aria-pressed]="withVenuesOnly"
+          (click)="toggleWithVenues()">
+          With venues
+        </button>
+        <button type="button" class="btn btn-cleanup" (click)="cleanupDuplicates()" [disabled]="cleaning">
+          @if (cleaning) {
+            <span class="btn-spinner" aria-hidden="true"></span>
+          }
+          Remove duplicates
+        </button>
+      </div>
+    </div>
+
+    @if (cleanupMessage) {
+      <p class="update-message">{{ cleanupMessage }}</p>
+    }
+    @if (error && countries.length > 0) {
+      <div class="alert" role="alert">{{ error }}</div>
+    }
 
     @if (loadingCountries && countries.length === 0) {
       <div class="skeleton-list" aria-hidden="true">
@@ -26,10 +56,18 @@
         <button type="button" class="btn btn-sm" (click)="loadCountries()">Retry</button>
       </div>
     } @else if (filteredCountries.length === 0) {
-      <p class="empty-message">No countries match that search.</p>
+      <p class="empty-message">
+        @if (countrySearch.trim()) {
+          No countries match that search.
+        } @else if (withVenuesOnly) {
+          No countries have venues yet.
+        } @else {
+          No countries stored yet.
+        }
+      </p>
     } @else {
       <div class="country-list">
-        @for (country of filteredCountries; track country.name) {
+        @for (country of pagedCountries; track country.name) {
           <button type="button" class="country-row" (click)="openCountry(country)">
             <span class="country-identity">
               @if (country.flag) {
@@ -37,31 +75,53 @@
               }
               <span class="country-name">{{ country.name }}</span>
             </span>
-            <span class="venue-count">{{ country.venueCount }}</span>
+            <span class="country-counts">
+              <span class="venue-count">{{ country.venueCount }}</span>
+              <span class="pin-count" [attr.aria-label]="country.pinnedCount + ' with pin'">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/>
+                </svg>
+                {{ country.pinnedCount }}
+              </span>
+            </span>
           </button>
         }
       </div>
+      @if (filteredCountries.length > pageSize) {
+        <div class="venues-pagination">
+          <app-pagination [elements]="filteredCountries" [elementsPerPage]="pageSize" [(elementsFiltered)]="pagedCountries" />
+        </div>
+      }
     }
   } @else {
+    <button type="button" class="country-back" (click)="backToCountries()">
+      <span aria-hidden="true">←</span>
+      Countries
+    </button>
     <div class="admin-header-row">
-      <div class="detail-title">
-        <button type="button" class="btn btn-ghost" (click)="backToCountries()">Back</button>
-        <div>
-          <h1 class="section-title">
-            @if (selectedCountry.flag) {
-              <img class="country-flag" [src]="selectedCountry.flag" [alt]="selectedCountry.name" />
-            }
-            {{ selectedCountry.name }}
-          </h1>
-          <p class="section-description">{{ selectedCountry.venueCount }} venues stored</p>
-        </div>
+      <div>
+        <h1 class="section-title">
+          @if (selectedCountry.flag) {
+            <img class="country-flag" [src]="selectedCountry.flag" [alt]="selectedCountry.name" />
+          }
+          {{ selectedCountry.name }}
+        </h1>
+        <p class="section-description">{{ selectedCountry.venueCount }} venues stored · {{ selectedCountry.pinnedCount }} with pin</p>
       </div>
-      <button type="button" class="btn btn-primary" (click)="updateVenues()" [disabled]="updating">
-        @if (updating) {
-          <span class="btn-spinner" aria-hidden="true"></span>
-        }
-        Update venues
-      </button>
+      <div class="detail-actions">
+        <button type="button" class="btn btn-outline" (click)="setMapPins()" [disabled]="placing || updating">
+          @if (placing) {
+            <span class="btn-spinner" aria-hidden="true"></span>
+          }
+          Set map pins
+        </button>
+        <button type="button" class="btn btn-primary" (click)="updateVenues()" [disabled]="updating || placing">
+          @if (updating) {
+            <span class="btn-spinner" aria-hidden="true"></span>
+          }
+          Update venues
+        </button>
+      </div>
     </div>
 
     @if (updateMessage) {
@@ -71,12 +131,27 @@
       <div class="alert" role="alert">{{ error }}</div>
     }
 
-    <input
-      class="search-input"
-      type="search"
-      placeholder="Search venues"
-      [(ngModel)]="venueSearch"
-    />
+    <div class="country-toolbar">
+      <input
+        class="search-input"
+        type="search"
+        placeholder="Search venues"
+        [(ngModel)]="venueSearch"
+        (ngModelChange)="refreshVenueFilter()"
+      />
+      <div class="sort-group" role="group" aria-label="Sort venues">
+        <button type="button" class="btn btn-toggle" [class.active]="venueSort === 'name'" (click)="setVenueSort('name')">Name</button>
+        <button type="button" class="btn btn-toggle" [class.active]="venueSort === 'capacity'" (click)="setVenueSort('capacity')">Capacity</button>
+      </div>
+      <button
+        type="button"
+        class="btn btn-toggle"
+        [class.active]="withoutPinOnly"
+        [attr.aria-pressed]="withoutPinOnly"
+        (click)="toggleWithoutPin()">
+        Without pin
+      </button>
+    </div>
 
     @if (loadingVenues && venues.length === 0) {
       <div class="skeleton-list" aria-hidden="true">
@@ -87,39 +162,75 @@
     } @else if (venues.length === 0) {
       <p class="empty-message">No venues stored for this country yet.</p>
     } @else if (filteredVenues.length === 0) {
-      <p class="empty-message">No venues match that search.</p>
+      <p class="empty-message">
+        @if (venueSearch.trim()) {
+          No venues match that search.
+        } @else {
+          Every venue in this country has a pin.
+        }
+      </p>
     } @else {
       <div class="venue-list">
-        @for (venue of filteredVenues; track venue.id) {
-          <article class="venue-card">
-            @if (venue.image) {
-              <img class="venue-image" [src]="venue.image" [alt]="venue.name" />
-            }
-            <div class="venue-body">
+        @for (venue of pagedVenues; track venue.id) {
+          <article class="venue-card venue-card--link" (click)="openVenue(venue)" (keydown.enter)="openVenue(venue)" tabindex="0" role="link">
+            <div class="venue-corner">
+              <button
+                type="button"
+                class="venue-locate"
+                (click)="locateVenue($event, venue)"
+                [disabled]="locatingVenueId === venue.id"
+                [attr.aria-label]="'Update map location for ' + venue.name">
+                @if (locatingVenueId === venue.id) {
+                  <span class="venue-locate-spinner" aria-hidden="true"></span>
+                } @else {
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4C7.58 4 4.01 7.58 4.01 12S7.58 20 12 20c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                  </svg>
+                }
+              </button>
+              @if (hasPin(venue)) {
+                <span class="venue-pin" title="Map pin saved" aria-label="Map pin saved">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/>
+                  </svg>
+                </span>
+              }
+            </div>
+            <div class="venue-image-wrap">
+              @if (venue.image) {
+                <img class="venue-image" [src]="venue.image" [alt]="venue.name" />
+              }
+            </div>
+            <div class="venue-heading">
               <h2 class="venue-name">{{ venue.name }}</h2>
               <p class="venue-meta">{{ venue.city || '—' }}</p>
-              <dl class="venue-fields">
-                <div>
-                  <dt>Address</dt>
-                  <dd>{{ venue.address || '—' }}</dd>
-                </div>
-                <div>
-                  <dt>Capacity</dt>
-                  <dd>{{ formatCapacity(venue.capacity) }}</dd>
-                </div>
-                <div>
-                  <dt>Surface</dt>
-                  <dd>{{ venue.surface || '—' }}</dd>
-                </div>
-                <div>
-                  <dt>Id</dt>
-                  <dd>{{ venue.id }}</dd>
-                </div>
-              </dl>
             </div>
+            <dl class="venue-fields">
+              <div>
+                <dt>Address</dt>
+                <dd>{{ venue.address || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Capacity</dt>
+                <dd>{{ formatCapacity(venue.capacity) }}</dd>
+              </div>
+              <div>
+                <dt>Surface</dt>
+                <dd>{{ venue.surface || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Id</dt>
+                <dd>{{ venue.id }}</dd>
+              </div>
+            </dl>
           </article>
         }
       </div>
+      @if (filteredVenues.length > pageSize) {
+        <div class="venues-pagination">
+          <app-pagination [elements]="filteredVenues" [elementsPerPage]="pageSize" [(elementsFiltered)]="pagedVenues" />
+        </div>
+      }
     }
   }
 </div>

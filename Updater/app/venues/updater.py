@@ -2,8 +2,6 @@ from urllib.parse import quote
 
 from ..utils import MatchUpdater
 
-MAX_VENUE_PAGES = 100
-
 
 class UnknownCountryError(Exception):
     """Raised when the requested country is not in the countries collection."""
@@ -23,7 +21,8 @@ class VenuesUpdater:
 
     def update_venues_by_country(self, country):
         """
-        Fetch every page of GET /venues?country=... and upsert by venue id.
+        Fetch GET /venues?country=... and upsert by venue id.
+        The venues endpoint rejects a page parameter and returns the country in one response.
         Venues already stored for this country that the API no longer returns are left in place.
         """
         country = str(country or '').strip()
@@ -34,47 +33,31 @@ class VenuesUpdater:
 
         self.ensure_indexes()
 
-        page = 1
-        total_pages = 1
         fetched = 0
         inserted = 0
         updated = 0
         skipped = 0
 
-        while page <= total_pages and page <= MAX_VENUE_PAGES:
-            endpoint = f"/venues?country={quote(country)}&page={page}"
-            print(f"Getting venues from API for {country}, page {page}")
-            payload = self.updater._make_api_request_with_retry(endpoint)
-            response = payload.get('response') if isinstance(payload, dict) else None
-            if not isinstance(response, list):
-                raise Exception('Unexpected /venues API response shape')
+        endpoint = f"/venues?country={quote(country)}"
+        print(f"Getting venues from API for {country}")
+        payload = self.updater._make_api_request_with_retry(endpoint)
+        response = payload.get('response') if isinstance(payload, dict) else None
+        if not isinstance(response, list):
+            raise Exception('Unexpected /venues API response shape')
 
-            paging = payload.get('paging') if isinstance(payload, dict) else {}
-            if not isinstance(paging, dict):
-                paging = {}
-            total_pages = int(paging.get('total') or 1)
-            if total_pages < 1:
-                total_pages = 1
+        for item in response:
+            outcome = self._upsert_venue(item, country)
+            fetched += 1
+            if outcome == 'inserted':
+                inserted += 1
+            elif outcome == 'updated':
+                updated += 1
+            else:
+                skipped += 1
 
-            if len(response) == 0:
-                break
-
-            for item in response:
-                outcome = self._upsert_venue(item, country)
-                fetched += 1
-                if outcome == 'inserted':
-                    inserted += 1
-                elif outcome == 'updated':
-                    updated += 1
-                else:
-                    skipped += 1
-
-            page += 1
-
-        truncated = total_pages > MAX_VENUE_PAGES
         print(
             f"Venues sync for {country}: fetched={fetched}, inserted={inserted}, "
-            f"updated={updated}, skipped={skipped}, pages={min(total_pages, MAX_VENUE_PAGES)}"
+            f"updated={updated}, skipped={skipped}"
         )
         return {
             'country': country,
@@ -82,8 +65,6 @@ class VenuesUpdater:
             'inserted': inserted,
             'updated': updated,
             'skipped': skipped,
-            'pages': min(total_pages, MAX_VENUE_PAGES),
-            'truncated': truncated,
         }
 
     def _upsert_venue(self, item, country):

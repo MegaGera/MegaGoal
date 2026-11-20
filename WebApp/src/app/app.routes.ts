@@ -5,6 +5,7 @@ import { TeamComponent } from './components/team/team.component';
 import { HomeComponent } from './components/home/home.component';
 import { LocationsComponent } from './components/locations/locations.component';
 import { AdminComponent } from './components/admin/admin.component';
+import { AdminVenueComponent } from './components/admin/venues/admin-venue.component';
 import { FeedbackComponent } from './components/feedback/feedback.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { MatchesComponent } from './components/matches/matches.component';
@@ -29,6 +30,7 @@ export const routes: Routes = [
         { path: 'players', component: PlayersComponent },
         { path: 'player', component: PlayerInfoComponent },
         { path: 'locations', component: LocationsComponent },
+        { path: 'admin/venues/:id', component: AdminVenueComponent, canActivate: [adminGuard] },
         { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
         { path: 'feedback', component: FeedbackComponent },
         { path: 'profile', component: ProfileComponent },

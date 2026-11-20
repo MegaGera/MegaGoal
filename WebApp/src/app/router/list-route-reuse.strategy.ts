@@ -15,7 +15,7 @@ interface DetachedListHandle extends DetachedRouteHandle {
  * Browser back and forward put that same instance back on screen, so it does not load again.
  * Opening a screen from a link or the menu drops the saved instance and loads again.
  *
- * A team, player, match, and matches date each keep their own instance.
+ * A team, player, match, matches date, and admin section each keep their own instance.
  * A league season stays on the same league page. Filter query changes stay on the same instance.
  *
  * The router asks for the saved handle twice during one navigation
@@ -100,6 +100,13 @@ export class ListRouteReuseStrategy implements RouteReuseStrategy {
     }
     if (path === 'matches') {
       return `matches/${query['date'] || this.todayIso()}`;
+    }
+    if (path === 'admin') {
+      const view = query['view'];
+      if (view === 'matches' || view === 'players' || view === 'feedback' || view === 'users' || view === 'venues') {
+        return `admin/${view}`;
+      }
+      return 'admin';
     }
     return path === '' ? 'landing' : path;
   }

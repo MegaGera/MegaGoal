@@ -1,6 +1,6 @@
 import express from 'express';
 import { changeIsActive, changeUpdateFrequency, changeDailyUpdate, changeLeagueColors, createLeagueSetting, deleteLeagueSetting, getRealMatchesWithoutStatistics, addLandingMatch, removeLandingMatch, getLandingMatches, createDatabaseIndexes, updateMatchLineups } from '../controllers/adminController.js';
-import { getVenueCountries, getVenuesByCountry } from '../controllers/venueController.js';
+import { cleanupDuplicateVenues, getVenue, getVenueCountries, getVenuesByCountry, searchVenuePlace, setVenuePlace, setVenuePlaces } from '../controllers/venueController.js';
 
 const router = express.Router();
 
@@ -16,7 +16,12 @@ router.post('/landing_matches/add', addLandingMatch);
 router.delete('/landing_matches/remove', removeLandingMatch);
 router.get('/landing_matches', getLandingMatches);
 router.get('/venues/countries', getVenueCountries);
+router.post('/venues/cleanup', cleanupDuplicateVenues);
+router.post('/venues/places', setVenuePlaces);
 router.get('/venues', getVenuesByCountry);
+router.get('/venues/:id', getVenue);
+router.post('/venues/:id/place/search', searchVenuePlace);
+router.put('/venues/:id/place', setVenuePlace);
 router.post('/database/indexes', createDatabaseIndexes);
 
 export default router;

@@ -22,7 +22,7 @@ import { LeagueSearchResult } from '../models/leagueSearch';
 import { GlobalSearchResult } from '../models/globalSearch';
 import { UserMe } from '../models/userMe';
 import { LeagueStandingsSummaryResponse } from '../models/leagueStandingsSummary';
-import { Venue, VenueCountry } from '../models/venue';
+import { Venue, VenueCountry, VenuePlace } from '../models/venue';
 
 @Injectable({
   providedIn: 'root'
@@ -479,6 +479,42 @@ export class MegaGoalService {
 
   getVenueCountries(): Observable<VenueCountry[]> {
     return this.http.get<VenueCountry[]>(this.url + '/admin/venues/countries', this.options);
+  }
+
+  cleanupDuplicateVenues(): Observable<{ removed: number; duplicateGroups: number }> {
+    return this.http.post<{ removed: number; duplicateGroups: number }>(
+      this.url + '/admin/venues/cleanup',
+      {},
+      this.options
+    );
+  }
+
+  setVenuePlaces(country: string): Observable<{ placed: number; skipped: number; notFound: number; failed: number }> {
+    return this.http.post<{ placed: number; skipped: number; notFound: number; failed: number }>(
+      this.url + '/admin/venues/places',
+      { country },
+      this.options
+    );
+  }
+
+  getVenue(id: number): Observable<Venue> {
+    return this.http.get<Venue>(this.url + '/admin/venues/' + id, this.options);
+  }
+
+  searchVenuePlace(id: number): Observable<{ id: number; place: VenuePlace }> {
+    return this.http.post<{ id: number; place: VenuePlace }>(
+      this.url + '/admin/venues/' + id + '/place/search',
+      {},
+      this.options
+    );
+  }
+
+  setVenuePlace(id: number, place: VenuePlace): Observable<{ id: number; place: VenuePlace }> {
+    return this.http.put<{ id: number; place: VenuePlace }>(
+      this.url + '/admin/venues/' + id + '/place',
+      { place },
+      this.options
+    );
   }
 
   getVenuesByCountry(country: string): Observable<Venue[]> {

@@ -1,0 +1,77 @@
+<div class="admin-venue">
+  <a class="venue-back" [routerLink]="['/app/admin']" [queryParams]="backQuery">
+    <span aria-hidden="true">←</span>
+    Venues
+  </a>
+
+  @if (loading) {
+    <div class="skeleton-title"></div>
+    <div class="skeleton-map"></div>
+  } @else if (!venue) {
+    <div class="alert" role="alert">{{ error }}</div>
+  } @else {
+    <div class="venue-heading">
+      <div>
+        <h1 class="venue-title">{{ venue.name }}</h1>
+        <p class="venue-subtitle">{{ venue.city || '—' }} · {{ venue.country }}</p>
+      </div>
+      <p class="pin-state" [class.pin-state--on]="pinned">{{ pinned ? 'Pinned' : 'Not pinned' }}</p>
+    </div>
+    @if (draftPlace?.formattedAddress || venue.place?.formattedAddress) {
+      <p class="venue-address">{{ draftPlace?.formattedAddress || venue.place?.formattedAddress }}</p>
+    }
+
+    <div class="venue-place-search">
+      <div class="search-field">
+        <input
+          type="search"
+          class="search-input"
+          [ngModel]="placeQuery"
+          (ngModelChange)="onPlaceQueryChange($event)"
+          placeholder="Search a place"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Search a place on the map"
+        />
+        @if (searchingPlaces) {
+          <span class="search-spinner" aria-hidden="true"></span>
+        } @else if (placeQuery.trim()) {
+          <button type="button" class="search-clear" (click)="clearPlaceSearch()" aria-label="Clear place search">×</button>
+        }
+      </div>
+      @if (placeResults.length) {
+        <div class="place-results" role="listbox">
+          @for (result of placeResults; track result.osmType + result.osmId) {
+            <button type="button" class="place-result" (click)="choosePlaceResult(result)">
+              <span class="place-result-name">{{ result.name }}</span>
+              @if (result.formattedAddress) {
+                <span class="place-result-address">{{ result.formattedAddress }}</span>
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    @if (error) {
+      <div class="alert" role="alert">{{ error }}</div>
+    }
+
+    <div class="venue-save-row">
+      <button type="button" class="venue-save" (click)="savePlace()" [disabled]="!canSave">
+        @if (saving) {
+          <span class="search-spinner venue-save-spinner" aria-hidden="true"></span>
+        }
+        Save location
+      </button>
+    </div>
+
+    <div class="venue-map" [class.venue-map--saving]="saving">
+      <app-location-map
+        [marker]="mapMarker"
+        [interactive]="!saving"
+        (pinPicked)="onPinPicked($event)">
+      </app-location-map>
+    </div>
+  }
+</div>

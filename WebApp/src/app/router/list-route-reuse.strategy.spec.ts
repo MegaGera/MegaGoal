@@ -128,5 +128,14 @@ describe('ListRouteReuseStrategy', () => {
     const otherFilter = snapshot('home', { queryParams: { chip: '2' }, config: homeConfig });
     expect(strategy.shouldReuseRoute(otherFilter, filtered)).toBeTrue();
     expect(strategy.shouldReuseRoute(snapshot('teams'), snapshot('home'))).toBeFalse();
+
+    const adminConfig: Route = { path: 'admin', component: class {} };
+    const leagues = snapshot('admin', { config: adminConfig });
+    const leaguesExplicit = snapshot('admin', { queryParams: { view: 'leagues' }, config: adminConfig });
+    const venues = snapshot('admin', { queryParams: { view: 'venues' }, config: adminConfig });
+    expect(strategy.shouldReuseRoute(leaguesExplicit, leagues)).toBeTrue();
+    expect(strategy.shouldReuseRoute(venues, leagues)).toBeFalse();
+    const venuesCountry = snapshot('admin', { queryParams: { view: 'venues', country: 'Spain' }, config: adminConfig });
+    expect(strategy.shouldReuseRoute(venuesCountry, venues)).toBeTrue();
   });
 });

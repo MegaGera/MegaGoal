@@ -1,7 +1,7 @@
 <div class="admin-container">
   <section class="fade-in">
     <div class="admin-header-row" style="margin-bottom: 12px; display: flex; gap: 12px; align-items: center;">
-      <select class="form-select form-select-sm view-select" style="width: 220px;" [(ngModel)]="selectedAdminView">
+      <select class="form-select form-select-sm view-select" style="width: 220px;" [ngModel]="selectedAdminView" (ngModelChange)="onAdminViewChange($event)">
         <option [ngValue]="'leagues'">Leagues Administration</option>
         <option [ngValue]="'matches'">Matches Administration</option>
         <option [ngValue]="'players'">Players Administration</option>
